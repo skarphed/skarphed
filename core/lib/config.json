@@ -1,0 +1,10 @@
+{
+  "db.ip"  :"192.168.0.23",
+  "db.name":"scoville_grindhold.gdb",
+  "db.user":"zigapeda",
+  "db.password":"test",
+  
+  "core.name":"Scoville Grindhold's VM",
+  
+  "modules.path" : "lib/"
+}

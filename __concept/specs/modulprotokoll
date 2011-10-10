@@ -1,0 +1,121 @@
+  ======================================
+--=   Spezifikationen Modulprotokoll   =--
+  ======================================
+
+Server und Repo kommunizieren per HTTP mittels JSON-Paketen
+Ein Modul wird folgendermaßen dargestellt:
+
+{
+  'type'          :'module',
+  'name'          :'de.grindhold.scoville.modulname',
+  'hrname'        :'Modulname'                      //für menschen lesbarer name
+  'version_major' : 1,
+  'version_minor' : 2,
+  'revision'      : 3,
+  'md5'           : 'a545abfafbcc465464c45fe1c135a4de' //md5-hash der moduldaten
+  'signed'        : 1,                       //gibt an ob das modul signiert ist
+  'publicKey'     : 'stringstrring' //publickey im falle eines signierten pakets
+}
+ 
+
+---------------------------------------------------------------
+ I. Kommunikation des Servers mit dem Repository
+---------------------------------------------------------------
+
+>>Fall 1: Abfrage der im Repo vorhandenen Module
+
+  Server -> {'c':1}
+  Repo   -> {'r':[ {modul1}, {modul2}, ... , {modulN}]}
+
+  Hierbei wird immer nur die Aktuellste im Repo vorhandene Version eines Moduls 
+  zurueckgegeben
+
+
+>>Fall 2: Abfrage der verschiedenen Versionen eines Moduls
+
+  Server -> {'c':2, 'm':{modul}}
+  Repo   -> {'r': [{modul1}, {modul2}, ... , {modulN}]}
+    
+  Der Server schickt ein Modul-JSON an das Repo. Das Repo listet alle Versionen 
+  des Moduls auf und schickt diese in einer Liste als Modul-JSONs zurueck.
+   
+    
+>>Fall 3: Abhaengigkeiten  nach unten Aufloesen
+  
+  Server -> {'c': 3, 'm':{modul}}
+  Repo   -> {'r': [{modul1}, {modul2}, ... , {modulN}]}
+  
+  Der Server schickt das Modul-JSON, dessen Abhaengigkeiten berechnet werden 
+  sollen Das Repo schickt _vollaufgeloest_ (d.h. bis zum letzten glied) eine 
+  vollstaendige Modulliste. Die Modulliste ist so sortiert, dass die module von 
+  vorne nach hinten installiert werden koennen, ohne abhaengigkeiten zu 
+  verletzen.
+
+
+>>Fall 4: Abhaengigkeiten nach Oben aufloesen
+
+  Server -> {'c': 4, 'm':{modul}}
+  Repo   -> {'r': [{modul1}, {modul2}, ... , {modulN}]}
+  
+  Selbes verhalten wie vorgaenger, nur diesmal wird bestimmt, welche Module
+  nicht mehr funktionieren, wenn das vom Server gesendete Modul fehlt. Auch hier
+  gilt: Module werden in der Reihenfolge zurueckgegeben, in der sie gefahrlos
+  auf dem Server Deinstalliert werden koennen
+  
+>>Fall 5: Herunterladen eines Moduls
+
+  Server -> {'c' : 5, 'm':{modul}}
+  Repo   -> {'r' : {modul}, 'data' : 'BASE64_ENCODED_GZIPPED_MODULE_FILE'}
+  
+  Das vom Server requestierte modul wird als Base64encodierter string vom Repo
+  zum Server geschickt
+  
+---------------------------------------------------------------
+ II. Kommunikation des Modulprogrammierers mit dem Repo
+---------------------------------------------------------------
+
+Im Zuge des Bestrebens die Module moeglichst sicher zu gestalten wird folgendes
+Konzept vorgeschlagen:
+
+Der Programmierer braucht fuer Seine Scoville-Karriere ein gueltiges RSA-
+Schluesselpaar.
+
+Er kann sich bei einem Scoville-Repository mit einem nickname registrieren und
+hinterlegt dabei seinen Public key. 
+
+Der Programmierer identifiziert sich beim Server, indem er ihm das als String
+'scoville' verschluesselt uebertraegt und der Server diesen String mit dem 
+Publickey aufschluesseln kann.
+
+  Coder -> {'c': 100, 'n' : 'grindhold', 'p' : 'WEAFADSCASYXFAFWAAF'}
+  Repo  -> {'r': errorcode }
+  
+Der Uploadvorgang sieht dementsprechend so aus:
+
+  Coder -> {'c': 101, 'n' : 'grindhold, 'a' : 'scovilleverschluesselt',
+            'nationality' : 'de', 'modulname': 'modulX', 'hrname': 'modulX',
+            'version_major' : 1, 'version_minor': 2, 'revision': 3,
+            'data' : 'BASE64_ENCODED_GZIPPED_MODULE_FILE'}
+  Repo  -> {'r': errorcode }
+
+Das Repo generiert den echten Modulnamen aus den uebergebenen informationen. So
+kann die Manipulation am Modul eingeschraenkt werden.
+
+Ueberlegungen:
+Das Repo muss sicherstellen, dass Module keine zyklischen abhaengigkeiten 
+Aufbauen.
+
+
+Die Command-Codes nochmal im Überblick
+
+
+  1: Vorhandene Module Abfragen
+  2: Verschiedene Versionen eines Moduls abfragen
+  3: Abhaengigkeiten nach unten aufloesen
+  4: Abhaengigkeitne nach oben aufloesen
+  5: Herunterladen eines Moduls
+
+100: Programmierer registriert sich bei einem Repo
+101: Programmierer laedt ein Modul hoch
+
+

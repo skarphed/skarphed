@@ -1,0 +1,11 @@
+Scoville Lizenztechnisches und Abhaengigkeiten
+
+Schriftart  "IDM"  ::  Public Domain -> ueberpruefen!!!
+
+
+Abhaengigkeiten: 
+
+Qooxdoo :: LGPL
+
+
+Load-Image im Adminmodul ist momentan irgendeine ausm internet

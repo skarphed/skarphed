@@ -1,0 +1,37 @@
+{
+  "info" :
+  {
+    "name" : "RpcPhp",
+  
+    "summary" : "qooxdoo RPC server in PHP",
+    "description": "",
+    "keywords" : ["RPC","PHP"],
+    "homepage" : "http://qooxdoo.org/documentation/1.1/RPC",
+    
+    "license" : "LGPL/EPL",    
+    "authors" : [
+      {
+        "name" : "Derrell Lipman",
+        "user" : "derrell",
+        "email" : "derrell DOT lipman AT unwireduniverse DOT com"
+      },
+      {
+        "name" : "Christian Boulanger",
+        "user" : "cboulanger",
+        "email" : "c.boulanger@qxtransformer.org"
+      }
+    ],
+    
+    "version" : "trunk",
+    "qooxdoo-versions": ["0.7", "0.8", "1.0","1.1" ]
+  },
+  "provides" : {
+    "namespace"   : "",
+    "encoding"    : "utf-8",
+    "class"       : "",
+    "resource"    : "",
+    "translation" : "",
+    "type"        : "library"  
+  
+  }  
+}

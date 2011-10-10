@@ -1,0 +1,8 @@
+modul x  ---> TAB_A TAB_B TAB_C
+
+datenbankklasse legt drei tabellen an und mappt in der tabelle 
+MODULETABLES diese namen auf statische Tabellennamen.
+
+${TAB_A} wird dann ersetzt durch die TAB_00001 die von der datenbankklasse angelegt wurde.
+
+Unsere datenbankklasse basiert auf php_interbase
