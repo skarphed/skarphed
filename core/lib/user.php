@@ -54,6 +54,8 @@ class User {
 	}
 	
 	public function authenticate($password){
+		$core = Core::getInstance();
+		$core->debugGrindlog(hash('ripemd160',$password.User::SALT)."<-->".$this->password );
 		if (hash('ripemd160',$password.User::SALT) == $this->password){
 			return true;
 		}
