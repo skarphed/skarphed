@@ -8,7 +8,9 @@
 //  $db->getInfo();
   $parser = $core->getHtmlParser();
   $parser->parseHtml();
-  //$core->getModuleManager()->installModule('de.grindhold.scoville.news');
+//   $core->getModuleManager()->installModule('de.zigapeda.scoville.clock');
+//   $core->getModuleManager()->installModule('de.zigapeda.scoville.date');
+//   $core->getModuleManager()->installModule('de.zigapeda.scoville.flatmenu');
   //init alles moegliche
   //html laden
 //  echo "<!DOCTYPE HTML>
