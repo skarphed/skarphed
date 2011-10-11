@@ -70,6 +70,7 @@ qx.Class.define("scoville_admin.NewServerPage",{
 			  var username = me.userentry.getValue();
 			  var password = me.passwordentry.getValue();
 			  me.app.loadServer(raw_ip,me,username,password);
+			  me.app.storeServerlistCookie();
 			  me.tabs.remove(me);
 			};
 			return r;

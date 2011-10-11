@@ -21,6 +21,7 @@ qx.Class.define("scoville_admin.TreeContextMenu",{
 		serverRemove : function(server){
 			return function(){
 				server.getParent().remove(server);
+				server.app.storeServerlistCookie();
 			}
 		},
 		

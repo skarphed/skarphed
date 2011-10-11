@@ -63,6 +63,17 @@ qx.Class.define("scoville_admin.Application",
     	return 1;
     },
     
+    storeServerlistCookie : function (){
+    	var servers = this.tree.getRoot().getChildren();
+    	var serverlist = [];
+    	for (var i = 0; i < servers.length; i++){
+    		if (servers[i].classname == "scoville_admin.Server"){
+    			serverlist.push (servers[i].getIp());
+    		}
+    	}
+    	qx.bom.Cookie.set("scv_admin", qx.lang.Json.stringify(serverlist));
+    },
+    
     main : function()
     {
       // Call super class
@@ -122,15 +133,6 @@ qx.Class.define("scoville_admin.Application",
       
       this.but_server_register_new.addListener("execute", this.createNewServerCallback(this));
       
-      
-
-      // Add button to document at fixed coordinates
-      
-      
-      
-      //this.tabview.add(testseite1);
-      //this.tabview.add(testseite2);
-      
       this.mainpane.add(this.tree, 1);
       this.mainpane.add(this.tabview, 4);
       this.vcontainer.add(this.testimg);
@@ -143,9 +145,19 @@ qx.Class.define("scoville_admin.Application",
         alert("Hello World!");
       });
       
-      this.loadServer('192.168.0.106','','');
-      this.loadServer('192.168.0.13');
-      this.loadServer('84.201.4.47');
+      
+      try{
+      	var cookieServers = qx.bom.Cookie.get("scv_admin");
+      	this.serverList = qx.lang.Json.parse(cookieServers);
+      }catch(e){
+      	this.serverList = [];
+      };
+      
+      for (var i = 0; i < this.serverList.length; i++){
+      	this.loadServer(this.serverList[i],'','');
+      }
+      
+
       
     },
 
