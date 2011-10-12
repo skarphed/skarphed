@@ -171,6 +171,10 @@ class UserManager extends Singleton {
 		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS WHERE USR_NAME= ? ;",array($username));
 		$userset = $db->fetchObject($res);
 		
+		if(!$userset){
+			throw new UserException("No User with Name $username");
+		}
+		
 		$user = new User();
 		$user->setId($userset->USR_ID);
 		$user->setName($userset->USR_NAME);
@@ -178,12 +182,16 @@ class UserManager extends Singleton {
 		return $user;
 	}
 	
-	public function getUserById($username){
+	public function getUserById($userId){
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
-		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS WHERE USR_NAME= ? ;",array($username));
+		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS WHERE USR_ID= ? ;",array($userId));
 		$userset = $db->fetchObject($res);
+		
+		if(!$userset){
+			throw new UserException("No User with Id $userId");
+		}
 		
 		$user = new User();
 		$user->setId($userset->USR_ID);
