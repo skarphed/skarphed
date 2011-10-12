@@ -5,12 +5,7 @@ include_once "repo_database.php";
 	$con = new repo_database();
 	$con->set_all("zigapeda","192.168.0.111","scvrepo.gdb","test");
 	$con->connect();
-	
-	
-
-	
-	
-//	$getin(json_decode($_REQUEST));
+	//	$getin(json_decode($_REQUEST));
 	$getin = $_GET;
 	switch((int)$getin['a']){
 		case 1:
@@ -32,7 +27,11 @@ include_once "repo_database.php";
 	//		return 1 + $getin['b'];	
 			break;
 		case 2:
-			return 2;
+			$resultset = $con->query("select mod_name, mod_versionmajor, mod_versionminor, mod_revision from module where mod_name like '%".$getin['b']."%'");
+			while($result = $con->fetchArray($resultset)){
+			echo "${result["MOD_NAME"]} ${result["MOD_VERSIONMAJOR"]}.${result["MOD_VERSIONMINOR"]}.${result["MOD_REVISION"]}";
+				echo "<br>";
+			}
 			break;
 		case 3:
 			return 3;
