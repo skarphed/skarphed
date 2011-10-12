@@ -34,7 +34,11 @@ include_once "repo_database.php";
 			}
 			break;
 		case 3:
-			return 3;
+			$resultset = $con->query("select distinct mod_name, dep_mod_dependson from module inner join dependency on (mod_id = dep_mod_id) where mod_name like '%".$getin['b']."%'");
+			while($result = $con->fetchArray($resultset)){
+				echo "${result["MOD_NAME"]} ${result["DEP_MOD_DEPENDSON"]}";
+				echo "<br>";
+			}			
 			break;
 		case 4:
 			return 4;
