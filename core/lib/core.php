@@ -39,6 +39,7 @@ class Core extends Singleton implements IModule{
 	
 	protected function init(){
 		session_start();
+		$this->debugGrindlog("====== New Session! Time: ".time());
 		$this->config = new Config();
 		$this->database = new Database();
 		$this->config->initFromDb($this->database);
@@ -85,5 +86,11 @@ class Core extends Singleton implements IModule{
 	public function renderJavascript($moduleInstanceId){
 		return false;
 	}
+	
+	//EIGENER LOG FUER DEBUGGING
+	public function debugGrindlog($message){
+		system("echo '".escapeshellarg($message)."' >> /tmp/Grindlog.log");
+	}
+	
 }
 ?>

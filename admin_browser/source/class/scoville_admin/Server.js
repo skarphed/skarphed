@@ -71,7 +71,7 @@ qx.Class.define("scoville_admin.Server",
 		createAuthenticationHandler : function(me){
 			var f = function(result,exc){
 				if (exc == null){
-					if (this.newtablistener != null){
+					if (me.newtablistener != null){
 						me.removeListenerById(me.newtablistener);
 					}
 					if (result != false){
@@ -107,6 +107,7 @@ qx.Class.define("scoville_admin.Server",
 						me.setIcon('scoville_admin/server_locked.png');
 					}
 					me.newtablistener = me.addListener('dblclick', me.openServerCallback(me));
+					
 					
 					
 				}else{

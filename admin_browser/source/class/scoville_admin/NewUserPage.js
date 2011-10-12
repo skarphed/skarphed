@@ -12,6 +12,7 @@ qx.Class.define("scoville_admin.NewUserPage",{
 		this.buildGui();
 		this.setShowCloseButton(true);
 		this.tabs.add(this);
+		this.finalUserName = "";
 		
 	},
 	
@@ -32,7 +33,10 @@ qx.Class.define("scoville_admin.NewUserPage",{
 			return function(result, exc){
 				if (exc == null){
 					if (result == true){
-						me.getParent().remove(me);
+						var user = new scoville_admin.User(me.app, {'name':me.finalUserName});
+						me.users.add(user);
+						me.app.newUserPage=null;
+						me.app.tabview.remove(me);
 					}else{
 						alert("FFFUUUUU");
 					}
@@ -54,6 +58,7 @@ qx.Class.define("scoville_admin.NewUserPage",{
 			return function(){
 				me.savebutton.setEnabled(true);
 				me.savebutton.setLabel("Create User");
+				me.finalUserName = me.nameentry.getValue();
 				if (me.validator.getValid()){
 					var rpc = new qx.io.remote.Rpc("http://"+me.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
 			        rpc.setCrossDomain(true);
@@ -152,6 +157,7 @@ qx.Class.define("scoville_admin.NewUserPage",{
 		heading:null,
 		app:null,
 		tabs:null
+		
 	}
 	
 });
