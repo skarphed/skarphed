@@ -46,7 +46,7 @@ class class_scvRpc {
 		return false;
 	}
 	
-  }
+  }/*TEST*/
 
   function method_getUsers($params,$error){
   	$core = scv\Core::getInstance();
@@ -64,6 +64,10 @@ class class_scvRpc {
 	$userM = $core->getUserManager();
 	$userM->createUser($username,$password,null);
 	return true;
+  }
+  
+  function method_getRightlistGranted($params,$error){
+  	
   }
 }
 ?>
