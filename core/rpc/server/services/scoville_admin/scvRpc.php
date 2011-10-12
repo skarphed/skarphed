@@ -65,5 +65,35 @@ class class_scvRpc {
 	$userM->createUser($username,$password,null);
 	return true;
   }
+  
+  function method_grantRightToUser($params,$error){
+  	$userId = $params[0];
+	$rightName = $params[1];
+	
+	$core = scv\Core::getInstance();	
+	
+	$user = $core->getUserManager()->getUserById($userId);
+	$user->grantRight($rightName);
+	return true;
+  }
+  
+  function method_revokeRightFromUser($params, $error){
+  	$userId = $params[0];
+	$rightName = $params[1];
+	
+	$core = scv\Core::getInstance();	
+	
+	$user = $core->getUserManager()->getUserById($userId);
+	$user->revokeRight($rightName);
+	return true;  	
+  }
+  
+  function method_getRightsForUserPage($params,$error){
+  	$userId = $params[0];
+	$core = scv\Core::getInstance();	
+	$user = $core->getUserManager()->getUserById($userId);	
+	return json_encode($user->getGrantableRights());	
+  }
+  
 }
 ?>

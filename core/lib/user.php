@@ -83,6 +83,60 @@ class User {
 		}
 	}
 	
+	public function grantRight($right, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
+		$checkstring = "";
+		if ($checkRight){
+			$checkstring = " WHERE 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.grant_revoke')) ";
+		}
+		$rightId = $rightM->getIdForRight($right);
+		if ($rightId == null){
+			throw new UserException("Granting Right: There is no such right as $right");
+		}
+		if ($rightM->checkRight($right, $sessionUser) and $rightId != null){
+			$db->query("UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) $checkstring ;",array($this->id, $rightId));
+			if (ibase_errmsg() != false){
+				throw new UserException("Granting Right: Something went wrong in the Database");
+			} 
+		}
+	}
+	
+	public function revokeRight($right, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
+		$checkstring = "";
+		if ($checkRight){
+			$checkstring = " 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.grant_revoke')) ";
+		}
+		$rightId = $rightM->getIdForRight($right);
+		if ($rightId == null){
+			throw new UserException("Revoking Right: There is no such right as $right");
+		}
+		if ($sessionUser->getId() == $this->getId()){
+			throw new UserException("Revoking Right: You cannot revoke your own rights");
+		}
+		if ($rightM->checkRight($right, $sessionUser) and $rightId != null){ 
+			$db->query("DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? AND $checkstring ;",array($this->id, $rightId));
+			if (ibase_errmsg() != false){
+				throw new UserException("Revoking Right: Something went wrong in the Database");
+			} 
+		}
+	}
+	
+	public function getGrantableRights(){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		$rightArray = $rightM->getGrantableRights($this);
+		return $rightArray; 
+	}
+	
 }
 
 class UserManager extends Singleton {
@@ -142,7 +196,6 @@ class UserManager extends Singleton {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		$checkstring = "";
-		system($this->getSessionUserId(). ">> GRINDLOG.log");
 		if ($checkRight){
 			$checkstring = " WHERE 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $this->getSessionUserId().",'scoville.users.view')) ";
 		}
@@ -177,5 +230,7 @@ class UserManager extends Singleton {
 		}
 		return $ret;
 	}
+	
+	
 	
 }

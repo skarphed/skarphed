@@ -65,4 +65,38 @@ class RightsManager extends Singleton{
 		
 	}
 	
+	public function getGrantableRights($user){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
+		$sessionRights = $this->getRightsForUser($sessionUser);
+		$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
+		$res = $db->query($core,$stmnt,array($user->getId()));
+		$resrights = array();
+		while($set = $db->fetchArray($res)){
+			$resrights[] = $set['RIG_NAME'];
+		}
+		$result = array();
+		foreach ($sessionRights as $sessionRight){
+			if (in_array($sessionRight,$resrights)){
+				$result[] = array('right'=>$sessionRight,'granted'=>true);
+			}else{
+				$result[] = array('right'=>$sessionRight,'granted'=>false);
+			}
+		}
+		return $result;
+	}
+	
+	public function getIdForRight($right){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$stmnt = "SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ? ;";
+		$res = $db->query($core,$stmnt, array($right));
+		while($set = $db->fetchArray($res)){
+			return $set['RIG_ID'];
+		}
+		return null;
+	}
+	
 }
