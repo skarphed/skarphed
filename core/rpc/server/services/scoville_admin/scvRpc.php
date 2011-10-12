@@ -77,7 +77,7 @@ class class_scvRpc {
 	
 	$core = scv\Core::getInstance();
 	
-	$user = $core->getUserManager()->getUserById($userId);
+	$user = $core->getUserManager()->getUserByName($userId);
 	$user->grantRight($rightName);
 	return true;
   }
@@ -88,7 +88,7 @@ class class_scvRpc {
 	
 	$core = scv\Core::getInstance();	
 	
-	$user = $core->getUserManager()->getUserById($userId);
+	$user = $core->getUserManager()->getUserByName($userId);
 	$user->revokeRight($rightName);
 	return true;  	
   }
@@ -96,7 +96,7 @@ class class_scvRpc {
   function method_getRightsForUserPage($params,$error){
   	$userId = $params[0];
 	$core = scv\Core::getInstance();
-	$user = $core->getUserManager()->getUserById($userId);	
+	$user = $core->getUserManager()->getUserByName($userId);	
 	return json_encode($user->getGrantableRights());	
   }
   

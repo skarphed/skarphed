@@ -59,9 +59,9 @@ qx.Class.define("scoville_admin.UserPage",{
 		    	var rpc = new qx.io.remote.Rpc("http://"+me.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
                 rpc.setCrossDomain(true);
                 if (value){
-                	rpc.callAsync(me.changedPermission(me),"grantRightToUser",me.user.getId(),right);
+                	rpc.callAsync(me.changedPermission(me),"grantRightToUser",me.user.getName(),right);
                 }else{
-                	rpc.callAsync(me.changedPermission(me),"revokeRightFromUser",me.user.getId(),right);
+                	rpc.callAsync(me.changedPermission(me),"revokeRightFromUser",me.user.getName(),right);
                 }
                 me.permissionPermissionTable.setEnabled(false);
 		    }
@@ -113,7 +113,7 @@ qx.Class.define("scoville_admin.UserPage",{
 				
 				var rpc = new qx.io.remote.Rpc("http://"+this.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
                 rpc.setCrossDomain(true);
-                rpc.callAsync(this.updatePermissionList(this),"getRightsForUserPage",this.user.getId());
+                rpc.callAsync(this.updatePermissionList(this),"getRightsForUserPage",this.user.getName());
                 
 				this.permissionPermissionTable = new qx.ui.table.Table(this.permissionPermissionTableModel, {tableColumnModel : 
 					                                                        function(obj){return (new qx.ui.table.columnmodel.Resize(obj));}});
