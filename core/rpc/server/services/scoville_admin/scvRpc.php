@@ -75,7 +75,7 @@ class class_scvRpc {
   	$userId = $params[0];
 	$rightName = $params[1];
 	
-	$core = scv\Core::getInstance();	
+	$core = scv\Core::getInstance();
 	
 	$user = $core->getUserManager()->getUserById($userId);
 	$user->grantRight($rightName);

@@ -55,7 +55,6 @@ class User {
 	
 	public function authenticate($password){
 		$core = Core::getInstance();
-		$core->debugGrindlog(hash('ripemd160',$password.User::SALT)."<-->".$this->password );
 		if (hash('ripemd160',$password.User::SALT) == $this->password){
 			return true;
 		}
@@ -83,6 +82,8 @@ class User {
 		}
 	}
 	
+	
+	
 	public function grantRight($right, $checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -90,15 +91,15 @@ class User {
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
 		$checkstring = "";
-		if ($checkRight){
-			$checkstring = " WHERE 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.grant_revoke')) ";
-		}
+        if (!$rightM->checkRight('scoville.users.grant_revoke', $sessionUser)){
+        	throw new UserException("Granting Right: This user is not allowed to grant rights!");
+        }
 		$rightId = $rightM->getIdForRight($right);
 		if ($rightId == null){
 			throw new UserException("Granting Right: There is no such right as $right");
 		}
 		if ($rightM->checkRight($right, $sessionUser) and $rightId != null){
-			$db->query("UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) $checkstring ;",array($this->id, $rightId));
+			$db->query($core,"UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;",array($this->id, $rightId));
 			if (ibase_errmsg() != false){
 				throw new UserException("Granting Right: Something went wrong in the Database");
 			} 
@@ -123,7 +124,7 @@ class User {
 			throw new UserException("Revoking Right: You cannot revoke your own rights");
 		}
 		if ($rightM->checkRight($right, $sessionUser) and $rightId != null){ 
-			$db->query("DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? AND $checkstring ;",array($this->id, $rightId));
+			$db->query($core,"DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? AND $checkstring ;",array($this->id, $rightId));
 			if (ibase_errmsg() != false){
 				throw new UserException("Revoking Right: Something went wrong in the Database");
 			} 

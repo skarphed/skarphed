@@ -5,6 +5,8 @@ qx.Class.define("scoville_admin.User",{
 		this.app=app;
 		this.base(arguments);
 		this.name = data.name;
+		//this.id = data.id;
+		this.id = 34;
 		this.setLabel(this.name);
 		this.setIcon('scoville_admin/user.png');
 		this.addListener('dblclick', this.createUserCallback(this));
@@ -27,6 +29,10 @@ qx.Class.define("scoville_admin.User",{
 		
 		getName: function(){
 			return this.name;
+		},
+		
+		getId:function(){
+			return this.id
 		}
 		
 	}
