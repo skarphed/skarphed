@@ -9,3 +9,9 @@ Qooxdoo :: LGPL
 
 
 Load-Image im Adminmodul ist momentan irgendeine ausm internet
+
+
+
+PHP-Dependencies (apt-get paketnamen):
+	php-http-request
+	
