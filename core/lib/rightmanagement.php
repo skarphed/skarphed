@@ -9,6 +9,22 @@ class Role {
 	private $roleId = "";
 	private $roleName = "";
 	
+	public function getId(){
+		return $this->roleId;
+	}
+	
+	public function getName(){
+		return $this->roleName;
+	}
+	
+	public function setId($roleId){
+		$this->roleId = (int)$roleId;
+	}
+	
+	public function setName($roleName){
+		$this->roleName = $roleName;
+	}
+	
 	public function store($checkRight=true){
 		$core=Core::getInstance();
 		$db = $core->getDB();
@@ -77,14 +93,6 @@ class Role {
 		$rightM = $core->getRightsManager();
 		$rightArray = $rightM->getGrantableRights($this);
 		return $rightArray; 
-	}
-	
-	public function setRoleId($roleId){
-		$this->roleId = (int)$roleId;
-	}
-	
-	public function setRoleName($roleName){
-		$this->roleName = $roleName;
 	}
 	
 	public function delete($checkRight=true){
@@ -206,6 +214,33 @@ class RightsManager extends Singleton{
 			return $set['RIG_ID'];
 		}
 		return null;
+	}
+	
+	public function getRoles($checkRight=false){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES ;";
+		$res = $db->query($core,$stmnt);
+		$ret = array();
+		while($set = $db->fetchArray($res)){
+			$role = new Role();
+			$role->setId($set["ROL_ID"]);
+			$role->setName($set["ROL_NAME"]);
+			$ret[] = $role;
+		}
+		return $ret;
+	}
+	
+	public function getRole($roleId){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES WHERE ROL_ID = ?;";
+		$res = $db->query($core,$stmnt,$roleId);
+		$set = $db->fetchArray($res);
+		$role = new Role();
+		$role->setId($set["ROL_ID"]);
+		$role->setName($set["ROL_NAME"]);
+		return $role;
 	}
 	
 }
