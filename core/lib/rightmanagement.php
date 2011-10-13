@@ -6,7 +6,7 @@ include_once 'core.php';
 class RightsException extends \Exception{}
 
 class Role {
-	private $roleId = "";
+	private $roleId = null;
 	private $roleName = "";
 	
 	public function getId(){
@@ -22,7 +22,11 @@ class Role {
 	}
 	
 	public function setName($roleName){
-		$this->roleName = $roleName;
+		if ($roleName != null and is_string($roleName)){
+			$this->roleName = $roleName;
+			return true;
+		}
+		return false;
 	}
 	
 	public function store($checkRight=true){
@@ -31,6 +35,13 @@ class Role {
 		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();
 	    
+		if ($this->roleId == null){
+			throw new RightsException("Create Role: Can't save a role without Id");	
+		}
+		if ($this->roleName == ""){
+			throw new RightsException("Create Role: Can't save a role without a Name");
+		}
+		
 		if ($rightM->checkRight('scoville.roles.create', $userM->getSessionUser()) or !$checkRight){
 			$stmnt = "INSERT OR UPDATE INTO ROLE (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID); ";
 			$db->query($core,$stmnt, $this->roleId, $this->roleName);
@@ -45,6 +56,9 @@ class Role {
 		$userM = $core->getUserManager();
 		
 		if ($rightM->checkRight('scoville.roles.modify',$userM->getSessionUser()) or !$checkRight){
+			if (!$rightM->checkRight(rightId,$userM->getSessionUser())){
+				throw new RightsException("Add Right: User Cannot edit a Roleright that he does not possess himself!");
+			}
 			$stmnt = "UPDATE OR INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) 
 		    	        VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) 
 		        	  MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
@@ -56,11 +70,16 @@ class Role {
 	public function removeRight($rightId, $checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();
 		
 		$checkString="";
 		if ($checkRight){
 			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
+		}
+		
+		if (!$rightM->checkRight(rightId,$userM->getSessionUser())){
+				throw new RightsException("Remove Right: User Cannot edit a Roleright that he does not possess himself!");
 		}
 		
 		$stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = ? $checkString ; ";
@@ -243,4 +262,39 @@ class RightsManager extends Singleton{
 		return $role;
 	}
 	
+	public function createRole($data){
+		if ($data == null){
+			throw new RightsException("Create Role: Cannot Create role without roleData");
+		}
+		if (!isset($data->name)){
+			throw new RightsException("Create Role: Cannot Create a role without a name");
+		}
+		
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+		
+		if($rightM->checkRight('scoville.roles.create', $userM->getSessionUser())){
+			$id = $db->getSeqNext('ROL_GEN');
+			$role = new Role();
+			$role->setId($id);
+			$role->setName($data->name);
+			$role->store();
+				
+			if (isset($data->rights)){
+				foreach ($data->rights as $right){
+					if ($right->granted){
+						$role->addRight($right->name);
+					}else{
+						$role->removeRight($right->name);
+					}
+				}
+				$role->store();
+			}
+			return $role;
+			
+		}
+		throw new RightsException("Create Role: User is not permitted to create roles");
+	}
 }

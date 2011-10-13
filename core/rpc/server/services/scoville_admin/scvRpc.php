@@ -142,6 +142,14 @@ class class_scvRpc {
 	return json_encode($role->getGrantableRights());	
   }
   
+  function method_createRole($params,$error){
+  	$data = $params[0];
+  	
+	$core = scv\Core::getInstance();
+	$rightM = $core->getRightsManager();
+	$rightM->createRole($data);
+	
+  }
   
   
 }
