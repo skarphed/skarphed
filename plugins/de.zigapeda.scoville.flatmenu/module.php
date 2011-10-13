@@ -22,6 +22,8 @@ class de_zigapeda_scoville_flatmenu {
 	
 	public function renderJavascript($moduleInstanceId){
 		return "function ${moduleInstanceId}init() {
+	  }
+	  function ${moduleInstanceId}destroy() {
 	  }";
 	}
 	
