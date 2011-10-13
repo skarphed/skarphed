@@ -1,13 +1,13 @@
-qx.Class.define("scoville_admin.User",{
+qx.Class.define("scoville_admin.Role",{
 	extend: qx.ui.tree.TreeFolder,
 	
 	construct: function(app,data){
 		this.app=app;
 		this.base(arguments);
 		this.name = data.name;
-		//this.id = data.id;  //TODO: Integrate ID in Data
+		//this.id = data.id;  //TODO: Integrate RoleId into Data
 		this.setLabel(this.name);
-		this.setIcon('scoville_admin/user.png');
+		this.setIcon('scoville_admin/role.png');
 		this.addListener('dblclick', this.createUserCallback(this));
 	},
 	
@@ -17,7 +17,7 @@ qx.Class.define("scoville_admin.User",{
 				
 		createUserCallback: function (me){
 			var f = function(e){
-				new scoville_admin.UserPage(me.app, me);
+				new scoville_admin.RolePage(me.app, me);
 			};
 			return f;
 		},

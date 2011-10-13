@@ -107,9 +107,6 @@ qx.Class.define("scoville_admin.Server",
 						me.setIcon('scoville_admin/server_locked.png');
 					}
 					me.newtablistener = me.addListener('dblclick', me.openServerCallback(me));
-					
-					
-					
 				}else{
 					alert(exc);
 					me.setLabel("Auth Error ["+me.ip+"]");
