@@ -5,6 +5,105 @@ include_once 'core.php';
 
 class RightsException extends \Exception{}
 
+class Role {
+	private $roleId = "";
+	private $roleName = "";
+	
+	public function store($checkRight=true){
+		$core=Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+	    
+		if ($rightM->checkRight('scoville.roles.create', $userM->getSessionUser()) or !$checkRight){
+			$stmnt = "INSERT OR UPDATE INTO ROLE (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID); ";
+			$db->query($core,$stmnt, $this->roleId, $this->roleName);
+		}
+		return;
+	}
+	
+	public function addRight($rightId, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+		
+		if ($rightM->checkRight('scoville.roles.modify',$userM->getSessionUser()) or !$checkRight){
+			$stmnt = "UPDATE OR INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) 
+		    	        VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) 
+		        	  MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
+			$db->query($core, $stmnt, $this->roleId, $rightId);	
+		}
+		return;
+	}
+	
+	public function removeRight($rightId, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$userM = $core->getUserManager();
+		
+		$checkString="";
+		if ($checkRight){
+			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
+		}
+		
+		$stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = ? $checkString ; ";
+		$db->query($stmnt);
+		return;
+	}
+	
+	public function getRights($checkRight = true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$userM = $core->getUserManager();
+		
+		$checkString="";
+		if ($checkRight){
+			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
+		}
+		
+		$stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) 
+		            WHERE RRI_ROL_ID = ? $checkstring;";
+        $res = $db->query($core, $stmnt, $this->roleId);
+		$ret = array();
+		while ($set = $db->fetchArray($res)){
+			$ret[] = $set["RIG_NAME"];  
+		}
+		return $ret;
+	}
+	
+	public function getGrantableRights($checkRight = true){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		$rightArray = $rightM->getGrantableRights($this);
+		return $rightArray; 
+	}
+	
+	public function setRoleId($roleId){
+		$this->roleId = (int)$roleId;
+	}
+	
+	public function setRoleName($roleName){
+		$this->roleName = $roleName;
+	}
+	
+	public function delete($checkRight=true){
+		$core=Core::getInstance();
+		$db = $core->getDB();
+		$userM = $core->getUserManager();
+		
+		$checkString="";
+		if ($checkRight){
+			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.users.view')) ";
+		}
+		
+		$stmntUserRoles = "DELETE FROM USERROLES WHERE URO_ROL_ID = ? $checkString ;";
+		$stmntRole = "DELETE FROM ROLES WHERE ROL_ID = ? $checkString ;";
+		$db->query($core,$stmntUserRoles, $this->roleId);
+		$db->query($core,$stmntRole, $this->roleId);
+	}
+}
+
 class RightsManager extends Singleton{
 	private static $instance = null;
 	
@@ -65,14 +164,24 @@ class RightsManager extends Singleton{
 		
 	}
 	
-	public function getGrantableRights($user){
+	public function getGrantableRights($object){
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
 		$sessionRights = $this->getRightsForUser($sessionUser);
-		$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
-		$res = $db->query($core,$stmnt,array($user->getId()));
+		switch(get_class($object)){
+			case 'User':
+				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
+				break;
+			case 'Role':
+				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;";
+				break;
+			default:
+				throw new RightsException("Cannot get grantable Rights from Class: ".get_class($object));//TODO: Here be dragons. Injection von Klassennamen ueber Module	
+		}
+		
+		$res = $db->query($core,$stmnt,array($object->getId()));
 		$resrights = array();
 		while($set = $db->fetchArray($res)){
 			$resrights[] = $set['RIG_NAME'];
