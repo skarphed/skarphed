@@ -32,7 +32,12 @@ class class_scvRpc {
 	$password = $params[1];
 	
 	$usermanager = $core->getUserManager();
-	$user = $usermanager->getUserByName($username);
+	try{
+		$user = $usermanager->getUserByName($username);
+	}catch(scv\UserException $e){
+		session_destroy();
+		return false;
+	}
 	if($user->authenticate($password)){
 		$_SESSION['loggedin'] = "true";
 		$_SESSION['user'] = $user;
@@ -65,5 +70,35 @@ class class_scvRpc {
 	$userM->createUser($username,$password,null);
 	return true;
   }
+  
+  function method_grantRightToUser($params,$error){
+  	$userId = $params[0];
+	$rightName = $params[1];
+	
+	$core = scv\Core::getInstance();
+	
+	$user = $core->getUserManager()->getUserByName($userId);
+	$user->grantRight($rightName);
+	return true;
+  }
+  
+  function method_revokeRightFromUser($params, $error){
+  	$userId = $params[0];
+	$rightName = $params[1];
+	
+	$core = scv\Core::getInstance();	
+	
+	$user = $core->getUserManager()->getUserByName($userId);
+	$user->revokeRight($rightName);
+	return true;  	
+  }
+  
+  function method_getRightsForUserPage($params,$error){
+  	$userId = $params[0];
+	$core = scv\Core::getInstance();
+	$user = $core->getUserManager()->getUserByName($userId);	
+	return json_encode($user->getGrantableRights());	
+  }
+  
 }
 ?>

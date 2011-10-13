@@ -55,7 +55,6 @@ class User {
 	
 	public function authenticate($password){
 		$core = Core::getInstance();
-		$core->debugGrindlog(hash('ripemd160',$password.User::SALT)."<-->".$this->password );
 		if (hash('ripemd160',$password.User::SALT) == $this->password){
 			return true;
 		}
@@ -81,6 +80,62 @@ class User {
 				throw new UserException("Storing User: Something went wrong in the Database");
 			} 
 		}
+	}
+	
+	
+	
+	public function grantRight($right, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
+		$checkstring = "";
+        if (!$rightM->checkRight('scoville.users.grant_revoke', $sessionUser)){
+        	throw new UserException("Granting Right: This user is not allowed to grant rights!");
+        }
+		$rightId = $rightM->getIdForRight($right);
+		if ($rightId == null){
+			throw new UserException("Granting Right: There is no such right as $right");
+		}
+		if ($rightM->checkRight($right, $sessionUser) and $rightId != null){
+			$db->query($core,"UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;",array($this->id, $rightId));
+			if (ibase_errmsg() != false){
+				throw new UserException("Granting Right: Something went wrong in the Database");
+			} 
+		}
+	}
+	
+	public function revokeRight($right, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
+		$checkstring = "";
+		if ($checkRight){
+			$checkstring = " 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.grant_revoke')) ";
+		}
+		$rightId = $rightM->getIdForRight($right);
+		if ($rightId == null){
+			throw new UserException("Revoking Right: There is no such right as $right");
+		}
+		if ($sessionUser->getId() == $this->getId()){
+			throw new UserException("Revoking Right: You cannot revoke your own rights");
+		}
+		if ($rightM->checkRight($right, $sessionUser) and $rightId != null){ 
+			$db->query($core,"DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? AND $checkstring ;",array($this->id, $rightId));
+			if (ibase_errmsg() != false){
+				throw new UserException("Revoking Right: Something went wrong in the Database");
+			} 
+		}
+	}
+	
+	public function getGrantableRights(){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		$rightArray = $rightM->getGrantableRights($this);
+		return $rightArray; 
 	}
 	
 }
@@ -117,6 +172,10 @@ class UserManager extends Singleton {
 		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS WHERE USR_NAME= ? ;",array($username));
 		$userset = $db->fetchObject($res);
 		
+		if(!$userset){
+			throw new UserException("No User with Name $username");
+		}
+		
 		$user = new User();
 		$user->setId($userset->USR_ID);
 		$user->setName($userset->USR_NAME);
@@ -124,12 +183,16 @@ class UserManager extends Singleton {
 		return $user;
 	}
 	
-	public function getUserById($username){
+	public function getUserById($userId){
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
-		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS WHERE USR_NAME= ? ;",array($username));
+		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS WHERE USR_ID= ? ;",array($userId));
 		$userset = $db->fetchObject($res);
+		
+		if(!$userset){
+			throw new UserException("No User with Id $userId");
+		}
 		
 		$user = new User();
 		$user->setId($userset->USR_ID);
@@ -142,7 +205,6 @@ class UserManager extends Singleton {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		$checkstring = "";
-		system($this->getSessionUserId(). ">> GRINDLOG.log");
 		if ($checkRight){
 			$checkstring = " WHERE 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $this->getSessionUserId().",'scoville.users.view')) ";
 		}
@@ -177,5 +239,7 @@ class UserManager extends Singleton {
 		}
 		return $ret;
 	}
+	
+	
 	
 }

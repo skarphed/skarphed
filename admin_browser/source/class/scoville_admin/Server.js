@@ -111,6 +111,7 @@ qx.Class.define("scoville_admin.Server",
 					
 					
 				}else{
+					alert(exc);
 					me.setLabel("Auth Error ["+me.ip+"]");
 					me.setIcon('scoville_admin/server_invalid.png');
 				}

@@ -16,6 +16,58 @@ qx.Class.define("scoville_admin.UserPage",{
 	},
 	
 	members : {
+		updatePermissionList : function(me){
+			return function(result,exc){
+				if (exc == null){
+					var dataset = []
+					var jsonResult = qx.lang.Json.parse(result);
+					for (var i = 0; i<jsonResult.length; i++){
+						var currentset = [jsonResult[i].granted, jsonResult[i].right, ""];
+						dataset.push(currentset); 
+					}
+					me.permissionPermissionTableModel.setData(dataset);
+					if (!me.permissionTableInitialized){
+						me.permissionPermissionTableModel.addListener("dataChanged",me.changedData(me));
+						me.permissionTableInitialized=true;
+					}
+				}else{
+					alert(exc);
+				}
+				
+			}
+		},
+		
+		changedPermission : function(me){
+			return function(result,exc){
+				if (exc == null){
+					me.permissionPermissionTable.setEnabled(true);
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
+		changedData : function(me){ 
+	        return function(event){
+		    	if(!(event instanceof qx.event.type.Data)){
+		    		return;
+		    	}
+		    	var changedData = event.getData();
+		    	var model = me.permissionPermissionTableModel;
+		    	var value = model.getValue(changedData.firstColumn, changedData.firstRow);
+		    	var right = model.getValue(1, changedData.firstRow);
+		    	var rpc = new qx.io.remote.Rpc("http://"+me.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
+                rpc.setCrossDomain(true);
+                if (value){
+                	rpc.callAsync(me.changedPermission(me),"grantRightToUser",me.user.getName(),right);
+                }else{
+                	rpc.callAsync(me.changedPermission(me),"revokeRightFromUser",me.user.getName(),right);
+                }
+                me.permissionPermissionTable.setEnabled(false);
+		    }
+		},
+		
+		
 		buildGui: function(){
 			this.setLayout(new qx.ui.layout.VBox());
 			//TODO: Eliminate risk of Codeinjection in next line (HTML is interpreted)!!! Search for this.user.name !
@@ -40,25 +92,56 @@ qx.Class.define("scoville_admin.UserPage",{
 				this.permissionbox.add(this.permissionPermissionBox,{flex:5});
 				this.permissionbox.add(this.permissionRoleBox,{flex:5});
 				
+				
+				//Permission-Table
+				
+				var propertyCellEditorFactoryFunc = function (cellInfo)
+			    {
+			      if (cellInfo.col == 0){
+			      	return new qx.ui.table.celleditor.CheckBox();
+			      }else{
+			      	//return new qx.ui.table.celleditor.TextField();
+			      }
+			    }
+			    
+			    
+			    
+			    var propertyCellEditorFactory = new qx.ui.table.celleditor.Dynamic(propertyCellEditorFactoryFunc);
+				
 				this.permissionPermissionTableModel = new qx.ui.table.model.Simple();
 				this.permissionPermissionTableModel.setColumns(["Active","Permission Identifier","Permission Name"]);
-				this.permissionPermissionTableModel.setData([[false,"scoville.users.view","The user is allowed to view all Users!"],
-															 [true ,"scoville.roles.assign","The user is allowed to assign Roles to Users"]]);
+				
+				var rpc = new qx.io.remote.Rpc("http://"+this.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
+                rpc.setCrossDomain(true);
+                rpc.callAsync(this.updatePermissionList(this),"getRightsForUserPage",this.user.getName());
+                
 				this.permissionPermissionTable = new qx.ui.table.Table(this.permissionPermissionTableModel, {tableColumnModel : 
 					                                                        function(obj){return (new qx.ui.table.columnmodel.Resize(obj));}});
 				this.permissionPermissionTable.setColumnWidth(0,20);
                 this.permissionPermissionTable.setColumnWidth(1,60);
                 this.permissionPermissionTable.setColumnWidth(2,300);
+                
+                var permissionTCM = this.permissionPermissionTable.getTableColumnModel();
+				permissionTCM.setDataCellRenderer(0, new qx.ui.table.cellrenderer.Boolean());
+				permissionTCM.setCellEditorFactory(0, propertyCellEditorFactory);
+				this.permissionPermissionTableModel.setColumnEditable(0,true);
+                
 				this.permissionPermissionLabel = new qx.ui.basic.Atom("Please choose the Permissions you want to assign to "+this.user.name+" here:", "scoville_admin/permission.png");
 				this.permissionPermissionBox.add(this.permissionPermissionLabel);
 				this.permissionPermissionBox.add(this.permissionPermissionTable);
 				
+				
+				
+				//Role-Table
 				this.permissionRoleTableModel = new qx.ui.table.model.Simple();
 				this.permissionRoleTableModel.setColumns(["Active","Role Identifier","Role Name"]);
 				this.permissionRoleTableModel.setData([[false,"scoville.usermanager","The user can change every User attribute!"],
 															 [true ,"scoville.rolemanager","The user can change any role"]]);
 				this.permissionRoleTable = new qx.ui.table.Table(this.permissionRoleTableModel, {tableColumnModel : 
 					                                                        function(obj){return (new qx.ui.table.columnmodel.Resize(obj));}});
+				/*var roleTCM = this.permissionRoleTable.getTableColumnModel();
+				roleTCM.setDataCellRenderer(0, new qx.ui.table.cellrenderer.Boolean());
+				this.permission*/					                                                        
                 this.permissionRoleTable.setColumnWidth(0,20);
                 this.permissionRoleTable.setColumnWidth(1,60);
                 this.permissionRoleTable.setColumnWidth(2,300);
@@ -69,33 +152,14 @@ qx.Class.define("scoville_admin.UserPage",{
 				this.add(this.permissionbox);
 			}
 			
-			
-			/*
-			this.testbutton = new qx.ui.form.Button('test');
-			
-			this.testbutton.addListener("execute", function(e) {
-		        var rpc = new qx.io.remote.Rpc("http://192.168.0.30/rpc/","scoville_admin.scvRpc");
-		        rpc.setCrossDomain(true);
-		        var handler= function(result,exc){
-		        	if(exc == null){
-		        		alert("Result of call"+result);
-		        	}else{
-		        		alert("Error: "+exc);
-		        	}
-		        };
-		        rpc.callAsync(handler,"test","test");
-		      });
-			this.infobox.add(this.testbutton, {top:200, left:300});
-			*/
-			
-			
 	    },
 		
 		
 		heading:null,
 		app:null,
 		tabs:null,
-		user:null
+		user:null,
+		permissionTableInitialized:false
 	}
 	
 });
