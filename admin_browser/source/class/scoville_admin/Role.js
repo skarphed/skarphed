@@ -22,6 +22,22 @@ qx.Class.define("scoville_admin.Role",{
 			return f;
 		},
 		
+		removeCallback:function(me){
+			return function(result,exc){
+				if (exc==null){
+					me.getParent().remove(me);
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
+		remove: function(){
+			var rpc = new qx.io.remote.Rpc("http://"+this.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
+            rpc.setCrossDomain(true);
+            rpc.callAsync(this.removeCallback(this),"deleteRole",this.getId());
+		},
+		
 		getServer : function(){
 			return this.getParent().getParent();
 		},

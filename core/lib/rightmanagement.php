@@ -128,9 +128,9 @@ class Role {
 			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.users.view')) ";
 		}
 		
-		$stmntUserRoles = "DELETE FROM USERROLES WHERE URO_ROL_ID = ? $checkString ;";
+		//USERROLES und ROLERIGHTS DURCH FOREIGN-KEY BERUECKSICHTIGT!
+		
 		$stmntRole = "DELETE FROM ROLES WHERE ROL_ID = ? $checkString ;";
-		$db->query($core,$stmntUserRoles, array($this->roleId));
 		$db->query($core,$stmntRole, array($this->roleId));
 	}
 }

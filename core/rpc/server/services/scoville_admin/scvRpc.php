@@ -152,6 +152,13 @@ class class_scvRpc {
 	
   }
   
+  function method_deleteRole($params,$error){
+  	$roleId = $params[0];
+	$core = scv\Core::getInstance();
+	$rightM = $core->getRightsManager();
+	$rightM->getRole($roleId)->delete();
+  }
+  
   
 }
 ?>

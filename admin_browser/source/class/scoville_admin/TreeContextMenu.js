@@ -44,6 +44,12 @@ qx.Class.define("scoville_admin.TreeContextMenu",{
 			}
 		},
 		
+		roleRemove : function(role){
+			return function(){
+				role.remove();
+			}
+		},
+		
 		createAppearListener: function(me){
 			return function(){
 				var treeobject = me.getOpener().getSelection()[0];
@@ -71,6 +77,13 @@ qx.Class.define("scoville_admin.TreeContextMenu",{
 							this.add(button);
 						}
 				    	break;
+				    
+				    case "scoville_admin.Role":
+				    	button = new qx.ui.menu.Button('Remove Role',"scoville_admin/delete.png");
+				    	button.addListener('execute',this.roleRemove(treeobject));
+						this.add(button);
+				    	break;
+				    
 				    
 				    case "scoville_admin.Roles":
 				    	if (treeobject.getServer().rightsForSession.indexOf('scoville.roles.create') != -1){
