@@ -43,8 +43,10 @@ class Role {
 		}
 		
 		if ($rightM->checkRight('scoville.roles.create', $userM->getSessionUser()) or !$checkRight){
-			$stmnt = "INSERT OR UPDATE INTO ROLE (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID); ";
-			$db->query($core,$stmnt, $this->roleId, $this->roleName);
+			$core->debugGrindlog("OFLBOPEER  ".$this->roleId." ".$this->roleName);
+			$stmnt = "UPDATE OR INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID); ";
+			$db->query($core,$stmnt, array($this->roleId, $this->roleName));
+			$core->debugGrindlog("NOFAIL");
 		}
 		return;
 	}
@@ -53,16 +55,18 @@ class Role {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		$rightM = $core->getRightsManager();
-		$userM = $core->getUserManager();
+		$userM = $core->getUserManager();		
 		
 		if ($rightM->checkRight('scoville.roles.modify',$userM->getSessionUser()) or !$checkRight){
-			if (!$rightM->checkRight(rightId,$userM->getSessionUser())){
+			if (!$rightM->checkRight($rightId,$userM->getSessionUser())){
 				throw new RightsException("Add Right: User Cannot edit a Roleright that he does not possess himself!");
 			}
 			$stmnt = "UPDATE OR INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) 
 		    	        VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) 
 		        	  MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
-			$db->query($core, $stmnt, $this->roleId, $rightId);	
+			$db->query($core, $stmnt, array($this->roleId, $rightId));	
+		}else{
+			throw new RightsException("Add Right: You are not Allowed to modify Roles");
 		}
 		return;
 	}
@@ -78,12 +82,12 @@ class Role {
 			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
 		}
 		
-		if (!$rightM->checkRight(rightId,$userM->getSessionUser())){
+		if (!$rightM->checkRight($rightId,$userM->getSessionUser())){
 				throw new RightsException("Remove Right: User Cannot edit a Roleright that he does not possess himself!");
 		}
 		
-		$stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = ? $checkString ; ";
-		$db->query($stmnt);
+		$stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ?) $checkString ; ";
+		$db->query($core,$stmnt, array($this->roleId,$rightId));
 		return;
 	}
 	
@@ -99,7 +103,7 @@ class Role {
 		
 		$stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) 
 		            WHERE RRI_ROL_ID = ? $checkstring;";
-        $res = $db->query($core, $stmnt, $this->roleId);
+        $res = $db->query($core, $stmnt, array($this->roleId));
 		$ret = array();
 		while ($set = $db->fetchArray($res)){
 			$ret[] = $set["RIG_NAME"];  
@@ -126,8 +130,8 @@ class Role {
 		
 		$stmntUserRoles = "DELETE FROM USERROLES WHERE URO_ROL_ID = ? $checkString ;";
 		$stmntRole = "DELETE FROM ROLES WHERE ROL_ID = ? $checkString ;";
-		$db->query($core,$stmntUserRoles, $this->roleId);
-		$db->query($core,$stmntRole, $this->roleId);
+		$db->query($core,$stmntUserRoles, array($this->roleId));
+		$db->query($core,$stmntRole, array($this->roleId));
 	}
 }
 
@@ -198,15 +202,16 @@ class RightsManager extends Singleton{
 		$sessionUser = $userM->getSessionUser();
 		$sessionRights = $this->getRightsForUser($sessionUser);
 		switch(get_class($object)){
-			case 'User':
+			case 'scv\User':
 				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
 				break;
-			case 'Role':
+			case 'scv\Role':
 				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;";
 				break;
 			default:
 				throw new RightsException("Cannot get grantable Rights from Class: ".get_class($object));//TODO: Here be dragons. Injection von Klassennamen ueber Module	
 		}
+		$core->debugGrindlog($object->getId());
 		
 		$res = $db->query($core,$stmnt,array($object->getId()));
 		$resrights = array();
@@ -254,7 +259,7 @@ class RightsManager extends Singleton{
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		$stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES WHERE ROL_ID = ?;";
-		$res = $db->query($core,$stmnt,$roleId);
+		$res = $db->query($core,$stmnt,array($roleId));
 		$set = $db->fetchArray($res);
 		$role = new Role();
 		$role->setId($set["ROL_ID"]);
@@ -279,6 +284,7 @@ class RightsManager extends Singleton{
 			$id = $db->getSeqNext('ROL_GEN');
 			$role = new Role();
 			$role->setId($id);
+			$core->debugGrindlog($data->name);
 			$role->setName($data->name);
 			$role->store();
 				

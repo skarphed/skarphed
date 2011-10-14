@@ -47,6 +47,15 @@ qx.Class.define("scoville_admin.Application",
     	}
     },
     
+    addRole : function(roles){
+    	if (this.newRolePage == null){
+    		this.newRolePage = new scoville_admin.NewRolePage(this,roles);
+    		this.tabview.setSelection([this.newRolePage]);
+    	}else{
+    		this.tabview.setSelection([this.newRolePage]);
+    	}
+    },
+    
     loadServer : function(ip,me,username,password){
     	//TODO: code Fuer Ajax-Request
     	var servers = this.tree.getRoot().getChildren();

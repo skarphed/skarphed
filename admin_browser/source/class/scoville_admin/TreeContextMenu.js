@@ -38,6 +38,12 @@ qx.Class.define("scoville_admin.TreeContextMenu",{
 			}
 		},
 		
+		roleAdd : function(roles){
+			return function(){
+				roles.app.addRole(roles);
+			}
+		},
+		
 		createAppearListener: function(me){
 			return function(){
 				var treeobject = me.getOpener().getSelection()[0];
@@ -65,6 +71,15 @@ qx.Class.define("scoville_admin.TreeContextMenu",{
 							this.add(button);
 						}
 				    	break;
+				    
+				    case "scoville_admin.Roles":
+				    	if (treeobject.getServer().rightsForSession.indexOf('scoville.roles.create') != -1){
+					    	button = new qx.ui.menu.Button('Add Role',"scoville_admin/add.png");
+					    	button.addListener('execute',this.roleAdd(treeobject));
+							this.add(button);
+						}
+				    	break;
+				    					    	
 					default:
 						break;
 				}

@@ -119,7 +119,7 @@ class class_scvRpc {
 	$rightM = $core->getRightsManager();
 	$role = $rightM->getRole($roleId);
 	$role->addRight($rightName);
-	$role->store();
+	//$role->store();
 	return;
   }
   
@@ -131,7 +131,7 @@ class class_scvRpc {
 	$rightM = $core->getRightsManager();
 	$role = $rightM->getRole($roleId);
 	$role->removeRight($rightName);
-	$role->store();
+	//$role->store();
 	return;
   }
   
@@ -147,7 +147,8 @@ class class_scvRpc {
   	
 	$core = scv\Core::getInstance();
 	$rightM = $core->getRightsManager();
-	$rightM->createRole($data);
+	$role = $rightM->createRole($data);
+	return $role->getId();
 	
   }
   

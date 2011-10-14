@@ -5,7 +5,7 @@ qx.Class.define("scoville_admin.Role",{
 		this.app=app;
 		this.base(arguments);
 		this.name = data.name;
-		//this.id = data.id;  //TODO: Integrate RoleId into Data
+		this.id = data.id;  
 		this.setLabel(this.name);
 		this.setIcon('scoville_admin/role.png');
 		this.addListener('dblclick', this.createUserCallback(this));
