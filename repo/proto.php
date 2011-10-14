@@ -1,5 +1,5 @@
 <?php
-echo "<html>\n<body>";
+// echo "<html>\n<body>";
 include_once "repo_database.php";
 
 	$con = new repo_database();
@@ -93,5 +93,5 @@ include_once "repo_database.php";
 
 
 
-echo "</body>\n</html>";
+// echo "</body>\n</html>";
 ?>
