@@ -15,7 +15,8 @@ class de_zigapeda_scoville_clock {
 	}
 	
 	public function renderJavascript($moduleInstanceId){
-		return "function " . $moduleInstanceId . "timer() {
+		return "var ${moduleInstanceId}interval;
+		function " . $moduleInstanceId . "timer() {
 	    var date = new Date();
 	    var hours = date.getHours();
       var mins = date.getMinutes();
@@ -28,7 +29,11 @@ class de_zigapeda_scoville_clock {
 	  
 	  function " . $moduleInstanceId . "init() { 
 		  " . $moduleInstanceId . "timer();
-		  window.setInterval('" . $moduleInstanceId . "timer()',1000);
+		  ${moduleInstanceId}interval = window.setInterval('" . $moduleInstanceId . "timer()',500);
+	  }
+	  
+	  function ${moduleInstanceId}destroy() {
+	    window.clearInterval(${moduleInstanceId}interval);
 	  }";
 	}
 	

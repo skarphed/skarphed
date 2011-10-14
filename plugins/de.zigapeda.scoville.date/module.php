@@ -15,7 +15,8 @@ class de_zigapeda_scoville_date {
 	}
 	
 	public function renderJavascript($moduleInstanceId){
-		return "function " . $moduleInstanceId . "timer() {
+		return "var ${moduleInstanceId}interval;
+		function " . $moduleInstanceId . "timer() {
 	    var date = new Date();
 	    var day = date.getDate();
       var mon = date.getMonth();
@@ -28,7 +29,11 @@ class de_zigapeda_scoville_date {
 	  
 	  function " . $moduleInstanceId . "init() { 
 		  " . $moduleInstanceId . "timer();
-		  window.setInterval('" . $moduleInstanceId . "timer()',1000);
+		  ${moduleInstanceId}interval = window.setInterval('" . $moduleInstanceId . "timer()',1000);
+	  }
+	  
+	  function ${moduleInstanceId}destroy() {
+	    window.clearInterval(${moduleInstanceId}interval);
 	  }";
 	}
 	
