@@ -54,7 +54,6 @@ qx.Class.define("scoville_admin.Server",
 						return;
 					}
 					me.users = new scoville_admin.Users(me.app);
-					me.users.setIcon('scoville_admin/user.png');
 					me.add(me.users);
 					for (var i = 0; i < result.length; i++ ){
 						var user = new scoville_admin.User(me.app, result[i])
@@ -66,6 +65,25 @@ qx.Class.define("scoville_admin.Server",
 				}
 			}
 			return f;
+		},
+		
+		createGetRolesHandler : function(me){
+			return function(result,exc){
+				if (exc == null){
+					if (result === false){
+						return;
+					}
+					var resultJson = qx.lang.Json.parse(result);
+					me.roles = new scoville_admin.Roles(me.app);
+					me.add(me.roles);
+					for (var i = 0; i < resultJson.length; i++ ){
+						var role = new scoville_admin.Role(me.app, resultJson[i])
+						me.roles.add(role);
+					}
+				}else{
+					alert(exc);
+				}
+			}
 		},
 		
 		createAuthenticationHandler : function(me){
@@ -93,13 +111,20 @@ qx.Class.define("scoville_admin.Server",
 						
 						me.add(me.sites);
 						me.add(me.modules);
-						me.add(me.roles);
 						
 						if (me.rightsForSession.indexOf('scoville.users.view')!=-1){
 							var rpc = new qx.io.remote.Rpc("http://"+me.ip+"/rpc/","scoville_admin.scvRpc");
 					        rpc.setCrossDomain(true);
 					        rpc.callAsync(me.createGetUsersHandler(me),"getUsers");
 					    }
+					    
+						if (me.rightsForSession.indexOf('scoville.roles.view')!=-1){
+							var rpc = new qx.io.remote.Rpc("http://"+me.ip+"/rpc/","scoville_admin.scvRpc");
+					        rpc.setCrossDomain(true);
+					        rpc.callAsync(me.createGetRolesHandler(me),"getRoles");
+					    }
+					    
+					    
 						
 					}else{
 						me.password = '';
@@ -107,9 +132,6 @@ qx.Class.define("scoville_admin.Server",
 						me.setIcon('scoville_admin/server_locked.png');
 					}
 					me.newtablistener = me.addListener('dblclick', me.openServerCallback(me));
-					
-					
-					
 				}else{
 					alert(exc);
 					me.setLabel("Auth Error ["+me.ip+"]");

@@ -5,6 +5,136 @@ include_once 'core.php';
 
 class RightsException extends \Exception{}
 
+class Role {
+	private $roleId = null;
+	private $roleName = "";
+	
+	public function getId(){
+		return $this->roleId;
+	}
+	
+	public function getName(){
+		return $this->roleName;
+	}
+	
+	public function setId($roleId){
+		$this->roleId = (int)$roleId;
+	}
+	
+	public function setName($roleName){
+		if ($roleName != null and is_string($roleName)){
+			$this->roleName = $roleName;
+			return true;
+		}
+		return false;
+	}
+	
+	public function store($checkRight=true){
+		$core=Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+	    
+		if ($this->roleId == null){
+			throw new RightsException("Create Role: Can't save a role without Id");	
+		}
+		if ($this->roleName == ""){
+			throw new RightsException("Create Role: Can't save a role without a Name");
+		}
+		
+		if ($rightM->checkRight('scoville.roles.create', $userM->getSessionUser()) or !$checkRight){
+			$core->debugGrindlog("OFLBOPEER  ".$this->roleId." ".$this->roleName);
+			$stmnt = "UPDATE OR INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID); ";
+			$db->query($core,$stmnt, array($this->roleId, $this->roleName));
+			$core->debugGrindlog("NOFAIL");
+		}
+		return;
+	}
+	
+	public function addRight($rightId, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();		
+		
+		if ($rightM->checkRight('scoville.roles.modify',$userM->getSessionUser()) or !$checkRight){
+			if (!$rightM->checkRight($rightId,$userM->getSessionUser())){
+				throw new RightsException("Add Right: User Cannot edit a Roleright that he does not possess himself!");
+			}
+			$stmnt = "UPDATE OR INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) 
+		    	        VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) 
+		        	  MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
+			$db->query($core, $stmnt, array($this->roleId, $rightId));	
+		}else{
+			throw new RightsException("Add Right: You are not Allowed to modify Roles");
+		}
+		return;
+	}
+	
+	public function removeRight($rightId, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+		
+		$checkString="";
+		if ($checkRight){
+			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
+		}
+		
+		if (!$rightM->checkRight($rightId,$userM->getSessionUser())){
+				throw new RightsException("Remove Right: User Cannot edit a Roleright that he does not possess himself!");
+		}
+		
+		$stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ?) $checkString ; ";
+		$db->query($core,$stmnt, array($this->roleId,$rightId));
+		return;
+	}
+	
+	public function getRights($checkRight = true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$userM = $core->getUserManager();
+		
+		$checkString="";
+		if ($checkRight){
+			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
+		}
+		
+		$stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) 
+		            WHERE RRI_ROL_ID = ? $checkstring;";
+        $res = $db->query($core, $stmnt, array($this->roleId));
+		$ret = array();
+		while ($set = $db->fetchArray($res)){
+			$ret[] = $set["RIG_NAME"];  
+		}
+		return $ret;
+	}
+	
+	public function getGrantableRights($checkRight = true){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		$rightArray = $rightM->getGrantableRights($this);
+		return $rightArray; 
+	}
+	
+	public function delete($checkRight=true){
+		$core=Core::getInstance();
+		$db = $core->getDB();
+		$userM = $core->getUserManager();
+		
+		$checkString="";
+		if ($checkRight){
+			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.users.view')) ";
+		}
+		
+		$stmntUserRoles = "DELETE FROM USERROLES WHERE URO_ROL_ID = ? $checkString ;";
+		$stmntRole = "DELETE FROM ROLES WHERE ROL_ID = ? $checkString ;";
+		$db->query($core,$stmntUserRoles, array($this->roleId));
+		$db->query($core,$stmntRole, array($this->roleId));
+	}
+}
+
 class RightsManager extends Singleton{
 	private static $instance = null;
 	
@@ -65,14 +195,25 @@ class RightsManager extends Singleton{
 		
 	}
 	
-	public function getGrantableRights($user){
+	public function getGrantableRights($object){
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
 		$sessionRights = $this->getRightsForUser($sessionUser);
-		$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
-		$res = $db->query($core,$stmnt,array($user->getId()));
+		switch(get_class($object)){
+			case 'scv\User':
+				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
+				break;
+			case 'scv\Role':
+				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;";
+				break;
+			default:
+				throw new RightsException("Cannot get grantable Rights from Class: ".get_class($object));//TODO: Here be dragons. Injection von Klassennamen ueber Module	
+		}
+		$core->debugGrindlog($object->getId());
+		
+		$res = $db->query($core,$stmnt,array($object->getId()));
 		$resrights = array();
 		while($set = $db->fetchArray($res)){
 			$resrights[] = $set['RIG_NAME'];
@@ -99,4 +240,67 @@ class RightsManager extends Singleton{
 		return null;
 	}
 	
+	public function getRoles($checkRight=false){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES ;";
+		$res = $db->query($core,$stmnt);
+		$ret = array();
+		while($set = $db->fetchArray($res)){
+			$role = new Role();
+			$role->setId($set["ROL_ID"]);
+			$role->setName($set["ROL_NAME"]);
+			$ret[] = $role;
+		}
+		return $ret;
+	}
+	
+	public function getRole($roleId){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES WHERE ROL_ID = ?;";
+		$res = $db->query($core,$stmnt,array($roleId));
+		$set = $db->fetchArray($res);
+		$role = new Role();
+		$role->setId($set["ROL_ID"]);
+		$role->setName($set["ROL_NAME"]);
+		return $role;
+	}
+	
+	public function createRole($data){
+		if ($data == null){
+			throw new RightsException("Create Role: Cannot Create role without roleData");
+		}
+		if (!isset($data->name)){
+			throw new RightsException("Create Role: Cannot Create a role without a name");
+		}
+		
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$rightM = $core->getRightsManager();
+		$userM = $core->getUserManager();
+		
+		if($rightM->checkRight('scoville.roles.create', $userM->getSessionUser())){
+			$id = $db->getSeqNext('ROL_GEN');
+			$role = new Role();
+			$role->setId($id);
+			$core->debugGrindlog($data->name);
+			$role->setName($data->name);
+			$role->store();
+				
+			if (isset($data->rights)){
+				foreach ($data->rights as $right){
+					if ($right->granted){
+						$role->addRight($right->name);
+					}else{
+						$role->removeRight($right->name);
+					}
+				}
+				$role->store();
+			}
+			return $role;
+			
+		}
+		throw new RightsException("Create Role: User is not permitted to create roles");
+	}
 }

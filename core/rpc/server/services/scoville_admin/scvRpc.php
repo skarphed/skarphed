@@ -62,6 +62,17 @@ class class_scvRpc {
 	
   }
   
+  function method_getRoles($params,$error){
+  	$core = scv\Core::getInstance();
+	$rightM = $core->getRightsManager();
+	$roles = $rightM->getRoles();
+	$ret = array();
+	foreach ($roles as $role){
+		$ret[] = array("id"=>$role->getId(),"name"=>$role->getName());
+	}
+	return json_encode($ret);
+  }
+  
   function method_createUser($params,$error){
   	$username = $params[0];
 	$password = $params[1];
@@ -99,6 +110,48 @@ class class_scvRpc {
 	$user = $core->getUserManager()->getUserByName($userId);	
 	return json_encode($user->getGrantableRights());	
   }
+  
+  function method_grantRightToRole($params,$error){
+  	$roleId = $params[0];
+	$rightName = $params[1];
+	
+	$core = scv\Core::getInstance();
+	$rightM = $core->getRightsManager();
+	$role = $rightM->getRole($roleId);
+	$role->addRight($rightName);
+	//$role->store();
+	return;
+  }
+  
+  function method_revokeRightFromRole($params,$error){
+  	$roleId = $params[0];
+	$rightName = $params[1];
+	
+	$core = scv\Core::getInstance();
+	$rightM = $core->getRightsManager();
+	$role = $rightM->getRole($roleId);
+	$role->removeRight($rightName);
+	//$role->store();
+	return;
+  }
+  
+  function method_getRightsForRolePage($params,$error){
+  	$roleId = $params[0];
+	$core = scv\Core::getInstance();
+	$role = $core->getRightsManager()->getRole($roleId);	
+	return json_encode($role->getGrantableRights());	
+  }
+  
+  function method_createRole($params,$error){
+  	$data = $params[0];
+  	
+	$core = scv\Core::getInstance();
+	$rightM = $core->getRightsManager();
+	$role = $rightM->createRole($data);
+	return $role->getId();
+	
+  }
+  
   
 }
 ?>
