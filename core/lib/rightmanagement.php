@@ -304,3 +304,4 @@ class RightsManager extends Singleton{
 		throw new RightsException("Create Role: User is not permitted to create roles");
 	}
 }
+?>

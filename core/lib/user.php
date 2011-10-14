@@ -239,7 +239,5 @@ class UserManager extends Singleton {
 		}
 		return $ret;
 	}
-	
-	
-	
 }
+?>
