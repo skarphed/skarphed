@@ -82,7 +82,23 @@ class User {
 		}
 	}
 	
+	public function hasRole($role){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		return $rightM->hasRoleUser($role,$this);
+	}
 	
+	public function getRights(){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		return $rightM->getRightsForUser($this);
+	}
+	
+	public function getRoles(){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		return $rightM->getRolesForUser($this);
+	}	
 	
 	public function grantRight($right, $checkRight=true){
 		$core = Core::getInstance();
@@ -138,6 +154,20 @@ class User {
 		return $rightArray; 
 	}
 	
+	public function getGrantableRoles(){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		$roleArray = $rightM->getGrantableRoles($this);
+		return $roleArray;
+	}
+	
+	public function assignRole($role){
+		return $role->assignTo($this);
+	}
+	
+	public function revokeRole($role){
+		return $role->revokeFrom($this);
+	}
 }
 
 class UserManager extends Singleton {

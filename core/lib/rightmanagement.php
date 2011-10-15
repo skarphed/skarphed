@@ -43,10 +43,8 @@ class Role {
 		}
 		
 		if ($rightM->checkRight('scoville.roles.create', $userM->getSessionUser()) or !$checkRight){
-			$core->debugGrindlog("OFLBOPEER  ".$this->roleId." ".$this->roleName);
 			$stmnt = "UPDATE OR INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID); ";
 			$db->query($core,$stmnt, array($this->roleId, $this->roleName));
-			$core->debugGrindlog("NOFAIL");
 		}
 		return;
 	}
@@ -133,6 +131,53 @@ class Role {
 		$stmntRole = "DELETE FROM ROLES WHERE ROL_ID = ? $checkString ;";
 		$db->query($core,$stmntRole, array($this->roleId));
 	}
+	
+	public function assignTo($user, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		if (!$checkRight){
+			$stmnt = "UPDATE OR INSERT INTO USERROLES (URO_USR_ID, URO_ROL_ID) VALUES (?,?) MATCHING (URO_USR_ID, URO_ROL_ID) ;";
+			$db->query($core,$stmnt,array($user->getId(),$this->roleId));
+			return;
+		}
+		
+		$userM = $core->getUserManager();
+		$rightM = $core->getRightsManager();
+		if(!$rightM->checkRight('scoville.users.grant_revoke', $userM->getSessionUser())){
+			throw RightsException("Grant Role: This user is not allowed to grant Roles");
+		}
+		$grantableRoles = $user->getGrantableRoles();
+		foreach ($grantableRoles as $gRole){
+			if ($gRole['name'] == $this->roleName){
+		 		$stmnt = "UPDATE OR INSERT INTO USERROLES (URO_USR_ID, URO_ROL_ID) VALUES (?,?) MATCHING (URO_USR_ID, URO_ROL_ID) ;";
+				$db->query($core,$stmnt,array($user->getId(),$this->roleId));
+				return;
+			}
+		}
+		throw new RightsException("Grant Role: You can only allow Roles you possess yourself OR roles, that can be made up of the rights you own.");
+	}
+	
+	public function revokeFrom($user, $checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		if (!$checkRight){
+			$stmnt= "DELETE FROM USERROLES WHERE URO_USR_ID = ? AND URO_ROL_ID = ? ;";
+			$db->query($core,$stmnt,array($user->getId(),$this->roleId));
+			return;
+		}
+		
+		$userM = $core->getUserManager();
+		$rightM = $core->getRightsManager();
+		if(!$rightM->checkRight('scoville.users.grant_revoke', $userM->getSessionUser())){
+			throw RightsException("Grant Role: This user is not allowed to grant Roles");
+		}
+		$stmnt= "DELETE FROM USERROLES WHERE URO_USR_ID = ? AND URO_ROL_ID = ? ;";
+		$db->query($core,$stmnt,array($user->getId(),$this->roleId));
+		return;
+	}
+	
 }
 
 class RightsManager extends Singleton{
@@ -211,7 +256,6 @@ class RightsManager extends Singleton{
 			default:
 				throw new RightsException("Cannot get grantable Rights from Class: ".get_class($object));//TODO: Here be dragons. Injection von Klassennamen ueber Module	
 		}
-		$core->debugGrindlog($object->getId());
 		
 		$res = $db->query($core,$stmnt,array($object->getId()));
 		$resrights = array();
@@ -227,6 +271,52 @@ class RightsManager extends Singleton{
 			}
 		}
 		return $result;
+	}
+
+    public function getGrantableRoles($user){
+    	$core = Core::getInstance();
+		$db = $core->getDB();
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
+		$sessionRights = $this->getRightsForUser();
+		
+		$ret = array();
+		
+		$roles = $this->getRoles();
+		foreach ($roles as $role){
+			if ($sessionUser->hasRole($role)){
+				if ($user->hasRole($role)){
+					$ret[] = array('name'=>$role->getName(),'id'=>$role->getId(),'granted'=>true); 
+				}else{
+					$ret[] = array('name'=>$role->getName(),'id'=>$role->getId(),'granted'=>false);
+				}
+				continue;
+			}
+			$rolerights = $role->getRights();
+			foreach ($rolerights as $roleright){
+				if(!in_array($roleright,$sessionRights)){
+					continue 2;
+				}
+				if ($user->hasRole($role)){
+					$ret[] = array('name'=>$role->getName(),'id'=>$role->getId(),'granted'=>true); 
+				}else{
+					$ret[] = array('name'=>$role->getName(),'id'=>$role->getId(),'granted'=>false);
+				}
+			}
+		}
+		return $ret;
+    }
+	
+	public function hasRoleUser($role, $user){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		$stmnt = "SELECT URO_ROL_ID FROM USERROLES WHERE URO_ROL_ID = ? AND URO_USR_ID = ?;";
+		$res = $db->query($core,$stmnt,array($role->getId(),$user->getId()));
+		while($set = $db->fetchArray($set)){
+			return true;
+		}
+		return false;
 	}
 	
 	public function getIdForRight($right){
@@ -245,6 +335,21 @@ class RightsManager extends Singleton{
 		$db = $core->getDB();
 		$stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES ;";
 		$res = $db->query($core,$stmnt);
+		$ret = array();
+		while($set = $db->fetchArray($res)){
+			$role = new Role();
+			$role->setId($set["ROL_ID"]);
+			$role->setName($set["ROL_NAME"]);
+			$ret[] = $role;
+		}
+		return $ret;
+	}
+	
+	public function getRolesForUser($user,$checkRight=false){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES INNER JOIN USERROLES ON (ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ?;";
+		$res = $db->query($core,$stmnt,array($user->getId()));
 		$ret = array();
 		while($set = $db->fetchArray($res)){
 			$role = new Role();
@@ -284,7 +389,6 @@ class RightsManager extends Singleton{
 			$id = $db->getSeqNext('ROL_GEN');
 			$role = new Role();
 			$role->setId($id);
-			$core->debugGrindlog($data->name);
 			$role->setName($data->name);
 			$role->store();
 				
