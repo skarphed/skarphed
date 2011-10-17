@@ -122,7 +122,6 @@ class Role {
 		$stmnt = "SELECT RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) 
 		            WHERE RRI_ROL_ID = ? AND RIG_NAME = ?;";
         $res = $db->query($core, $stmnt, array($this->roleId, $right));
-		$ret = array();
 		while ($set = $db->fetchArray($res)){
 			return true;
 		}
@@ -269,9 +268,11 @@ class RightsManager extends Singleton{
 		$sessionRights = $this->getRightsForUser($sessionUser);
 		switch(get_class($object)){
 			case 'scv\User':
-				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? 
-				            AND RIG_ID NOT IN (SELECT RRI_RIG_ID FROM ROLERIGHTS INNER JOIN USERROLES ON (RRI_ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ?) ;";
-				$res = $db->query($core,$stmnt,array($object->getId(),$object->getId()));
+				$stmnt = "SELECT RIG_NAME,0 AS ROLEBOUND FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? 
+				            AND RIG_ID NOT IN (SELECT RRI_RIG_ID FROM ROLERIGHTS INNER JOIN USERROLES ON (RRI_ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ?) 
+                          UNION SELECT RIG_NAME,1 AS ROLEBOUND FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? 
+				            AND RIG_ID IN (SELECT RRI_RIG_ID FROM ROLERIGHTS INNER JOIN USERROLES ON (RRI_ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ?) ;";
+				$res = $db->query($core,$stmnt,array($object->getId(),$object->getId(),$object->getId(),$object->getId()));
 				break;
 			case 'scv\Role':
 				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;";
@@ -280,40 +281,24 @@ class RightsManager extends Singleton{
 			default:
 				throw new RightsException("Cannot get grantable Rights from Class: ".get_class($object));//TODO: Here be dragons. Injection von Klassennamen ueber Module	
 		}
-		
-		//TODO: Here be dragons (Performance leak)
-		
+
 		$resrights = array();
-		$failrights = array();
-		
-		if (get_class($object) == 'scv\User'){
-			$roles = $sessionUser->getRoles();
-			while($set = $db->fetchArray($res)){
-				foreach($roles as $role){
-					if ($role->hasRight($set['RIG_NAME'])){
-						$failrights[] = $set['RIG_NAME'];
-						continue 2;
-					}
-				}
-				$resrights[] = $set['RIG_NAME'];
-				
+		$skiprights = array();
+		while($set = $db->fetchArray($res)){
+			if (!(bool)$set['ROLEBOUND']){
+			    $resrights[] = $set['RIG_NAME'];
+			}else{
+				$skiprights[] = $set['RIG_NAME'];
 			}
 		}
-		else{
-			
-			while($set = $db->fetchArray($res)){
-				$resrights[] = $set['RIG_NAME'];
-			}
-		}
-		
-		
 		
 		$result = array();
 		foreach ($sessionRights as $sessionRight){
+			if (in_array($sessionRight,$skiprights)){
+				continue;
+			}
 			if (in_array($sessionRight,$resrights)){
-				$result[] = array('right'=>$sessionRight,'granted'=>true);
-			}elseif (in_array($sessionRight,$failrights)){
-				
+				$result[] = array('right'=>$sessionRight,'granted'=>true);		
 			}else{
 				$result[] = array('right'=>$sessionRight,'granted'=>false);
 			}
