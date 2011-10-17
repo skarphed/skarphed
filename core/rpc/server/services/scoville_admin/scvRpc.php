@@ -159,6 +159,33 @@ class class_scvRpc {
 	$rightM->getRole($roleId)->delete();
   }
   
+  function method_getRolesForUserPage($params,$error){
+  	$userName = $params[0];
+	$core = scv\Core::getInstance();
+	$user = $core->getUserManager()->getUserByName($userName);	
+	return json_encode($user->getGrantableRoles());
+  }
   
+  function method_assignRoleToUser($params,$error){
+  	$userName = $params[0];
+	$roleId = $params[1];
+	
+	$core = scv\Core::getInstance();
+	$rightM = $core->getRightsManager();
+	$role = $rightM->getRole($roleId);
+	$core->getUserManager()->getUserByName($userId)->assignRole($role);
+	return;
+  }
+  
+  function method_revokeRoleFromUser($params,$error){
+  	$userName = $params[0];
+	$roleId = $params[1];
+	
+	$core = scv\Core::getInstance();
+	$rightM = $core->getRightsManager();
+	$role = $rightM->getRole($roleId);
+	$core->getUserManager()->getUserByName($userId)->revokeRole($role);
+	return;
+  }
 }
 ?>

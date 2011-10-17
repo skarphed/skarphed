@@ -19,7 +19,7 @@ qx.Class.define("scoville_admin.UserPage",{
 		updatePermissionList : function(me){
 			return function(result,exc){
 				if (exc == null){
-					var dataset = []
+					var dataset = [];
 					var jsonResult = qx.lang.Json.parse(result);
 					for (var i = 0; i<jsonResult.length; i++){
 						var currentset = [jsonResult[i].granted, jsonResult[i].right, ""];
@@ -27,13 +27,33 @@ qx.Class.define("scoville_admin.UserPage",{
 					}
 					me.permissionPermissionTableModel.setData(dataset);
 					if (!me.permissionTableInitialized){
-						me.permissionPermissionTableModel.addListener("dataChanged",me.changedData(me));
+						me.permissionPermissionTableModel.addListener("dataChanged",me.changedPermissionData(me));
 						me.permissionTableInitialized=true;
 					}
 				}else{
 					alert(exc);
 				}
 				
+			}
+		},
+		
+		updateRoleList : function(me){
+			return function(result,exc){
+				if (exc==null){
+					var dataset = [];
+					var jsonResult = qx.lang.Json.parse(result);
+					for (var i = 0; i<jsonResult.length; i++){
+						var currentset = [jsonResult[i].granted, jsonResult[i].name , jsonResult[i].id];
+						dataset.push(currentset);
+					}
+					me.permissionRoleTableModel.setData(dataset);
+					if (!me.roleTableInitialized){
+						me.permissionRoleTableModel.addListener("dataChanged", me.changedRoleData(me));
+						me.roleTableInitialized=true;
+					}
+				}else{
+					alert(exc);
+				}
 			}
 		},
 		
@@ -47,7 +67,17 @@ qx.Class.define("scoville_admin.UserPage",{
 			}
 		},
 		
-		changedData : function(me){ 
+		changedRole : function(me){
+			return function(result,exc){
+				if (exc == null){
+					me.permissionRoleTable.setEnabled(true);
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
+		changedPermissionData : function(me){ 
 	        return function(event){
 		    	if(!(event instanceof qx.event.type.Data)){
 		    		return;
@@ -65,6 +95,26 @@ qx.Class.define("scoville_admin.UserPage",{
                 }
                 me.permissionPermissionTable.setEnabled(false);
 		    }
+		},
+		
+		changedRoleData : function(me){
+			return function(event){
+				if(!(event instanceof qx.event.type.Data)){
+					return;
+				}
+				var changedData = event.getData();
+				var model = me.permissionRoleTableModel;
+				var value = model.getValue(changedData.firstColumn, changedData.firstRow);
+				var roleId = model.getValue(2, changedData.firstRow);
+				var rpc = new qx.io.remote.Rpc("http://"+me.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
+                rpc.setCrossDomain(true);
+                if (value){
+                	rpc.callAsync(me.changedRole(me),"assignRoleToUser",me.user.getName(),roleId);
+                }else{
+                	rpc.callAsync(me.changedRole(me),"revokeRoleFromUser",me.user.getName(),roleId);
+                }
+                me.permissionRoleTable.setEnabled(false);
+			}
 		},
 		
 		
@@ -134,14 +184,20 @@ qx.Class.define("scoville_admin.UserPage",{
 				
 				//Role-Table
 				this.permissionRoleTableModel = new qx.ui.table.model.Simple();
-				this.permissionRoleTableModel.setColumns(["Active","Role Identifier","Role Name"]);
-				this.permissionRoleTableModel.setData([[false,"scoville.usermanager","The user can change every User attribute!"],
-															 [true ,"scoville.rolemanager","The user can change any role"]]);
+				this.permissionRoleTableModel.setColumns(["Active","Role Name"]);
+				
+				var rpc = new qx.io.remote.Rpc("http://"+this.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
+                rpc.setCrossDomain(true);
+                rpc.callAsync(this.updateRoleList(this),"getRolesForUserPage",this.user.getName());
+				
 				this.permissionRoleTable = new qx.ui.table.Table(this.permissionRoleTableModel, {tableColumnModel : 
 					                                                        function(obj){return (new qx.ui.table.columnmodel.Resize(obj));}});
-				/*var roleTCM = this.permissionRoleTable.getTableColumnModel();
+				
+				var roleTCM = this.permissionRoleTable.getTableColumnModel();
 				roleTCM.setDataCellRenderer(0, new qx.ui.table.cellrenderer.Boolean());
-				this.permission*/					                                                        
+				roleTCM.setCellEditorFactory(0, propertyCellEditorFactory);
+				this.permissionRoleTableModel.setColumnEditable(0,true);
+				                                                        
                 this.permissionRoleTable.setColumnWidth(0,20);
                 this.permissionRoleTable.setColumnWidth(1,60);
                 this.permissionRoleTable.setColumnWidth(2,300);
