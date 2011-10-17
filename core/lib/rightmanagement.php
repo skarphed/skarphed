@@ -109,6 +109,26 @@ class Role {
 		return $ret;
 	}
 	
+	public function hasRight($right, $checkRight = true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$userM = $core->getUserManager();
+		$rightM = $core->getRightsManager();
+		
+		if (!$rightM->checkRight('scoville.roles.modify', $userM->getSessionUser()) and $checkRight){
+			throw new RightsException("hasRight: Not allowed To do that!");
+		}
+		
+		$stmnt = "SELECT RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) 
+		            WHERE RRI_ROL_ID = ? AND RIG_NAME = ?;";
+        $res = $db->query($core, $stmnt, array($this->roleId, $right));
+		$ret = array();
+		while ($set = $db->fetchArray($res)){
+			return true;
+		}
+		return false;
+	}
+	
 	public function getGrantableRights($checkRight = true){
 		$core = Core::getInstance();
 		$rightM = $core->getRightsManager();
@@ -249,16 +269,22 @@ class RightsManager extends Singleton{
 		$sessionRights = $this->getRightsForUser($sessionUser);
 		switch(get_class($object)){
 			case 'scv\User':
-				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
+				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? 
+				            AND RIG_ID NOT IN (SELECT RRI_RIG_ID FROM ROLERIGHTS INNER JOIN USERROLES ON (RRI_ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ?) ;";
+				$res = $db->query($core,$stmnt,array($object->getId(),$object->getId()));
 				break;
 			case 'scv\Role':
 				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;";
+				$res = $db->query($core,$stmnt,array($object->getId()));
 				break;
 			default:
 				throw new RightsException("Cannot get grantable Rights from Class: ".get_class($object));//TODO: Here be dragons. Injection von Klassennamen ueber Module	
 		}
 		
-		$res = $db->query($core,$stmnt,array($object->getId()));
+		//TODO: Here be dragons (Performance leak)
+		
+		
+		
 		$resrights = array();
 		while($set = $db->fetchArray($res)){
 			$resrights[] = $set['RIG_NAME'];
