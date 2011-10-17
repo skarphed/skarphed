@@ -147,6 +147,7 @@ class Role {
 		if(!$rightM->checkRight('scoville.users.grant_revoke', $userM->getSessionUser())){
 			throw RightsException("Grant Role: This user is not allowed to grant Roles");
 		}
+		
 		$grantableRoles = $user->getGrantableRoles();
 		foreach ($grantableRoles as $gRole){
 			if ($gRole['name'] == $this->roleName){
@@ -278,7 +279,7 @@ class RightsManager extends Singleton{
 		$db = $core->getDB();
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
-		$sessionRights = $this->getRightsForUser();
+		$sessionRights = $this->getRightsForUser($sessionUser);
 		
 		$ret = array();
 		
@@ -302,6 +303,7 @@ class RightsManager extends Singleton{
 				}else{
 					$ret[] = array('name'=>$role->getName(),'id'=>$role->getId(),'granted'=>false);
 				}
+				continue 2;
 			}
 		}
 		return $ret;
@@ -313,7 +315,7 @@ class RightsManager extends Singleton{
 		
 		$stmnt = "SELECT URO_ROL_ID FROM USERROLES WHERE URO_ROL_ID = ? AND URO_USR_ID = ?;";
 		$res = $db->query($core,$stmnt,array($role->getId(),$user->getId()));
-		while($set = $db->fetchArray($set)){
+		while($set = $db->fetchArray($res)){
 			return true;
 		}
 		return false;

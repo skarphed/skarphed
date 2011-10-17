@@ -173,7 +173,7 @@ class class_scvRpc {
 	$core = scv\Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$role = $rightM->getRole($roleId);
-	$core->getUserManager()->getUserByName($userId)->assignRole($role);
+	$core->getUserManager()->getUserByName($userName)->assignRole($role);
 	return;
   }
   
@@ -184,7 +184,7 @@ class class_scvRpc {
 	$core = scv\Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$role = $rightM->getRole($roleId);
-	$core->getUserManager()->getUserByName($userId)->revokeRole($role);
+	$core->getUserManager()->getUserByName($userName)->revokeRole($role);
 	return;
   }
 }

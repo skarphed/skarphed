@@ -184,7 +184,7 @@ qx.Class.define("scoville_admin.UserPage",{
 				
 				//Role-Table
 				this.permissionRoleTableModel = new qx.ui.table.model.Simple();
-				this.permissionRoleTableModel.setColumns(["Active","Role Name"]);
+				this.permissionRoleTableModel.setColumns(["Active","Role Name", "roleid"]);
 				
 				var rpc = new qx.io.remote.Rpc("http://"+this.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
                 rpc.setCrossDomain(true);
