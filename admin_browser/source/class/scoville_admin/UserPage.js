@@ -25,10 +25,12 @@ qx.Class.define("scoville_admin.UserPage",{
 						var currentset = [jsonResult[i].granted, jsonResult[i].right, ""];
 						dataset.push(currentset); 
 					}
+					if(me.permissionTableChangehandler){
+						me.permissionPermissionTableModel.removeListenerById(me.permissionTableChangehandler);
+					}
 					me.permissionPermissionTableModel.setData(dataset);
-					if (!me.permissionTableInitialized){
-						me.permissionPermissionTableModel.addListener("dataChanged",me.changedPermissionData(me));
-						me.permissionTableInitialized=true;
+					if (!me.permissionTableChangehandler){
+						me.permissionTableChangehandler=me.permissionPermissionTableModel.addListener("dataChanged",me.changedPermissionData(me));
 					}
 				}else{
 					alert(exc);
@@ -71,6 +73,9 @@ qx.Class.define("scoville_admin.UserPage",{
 			return function(result,exc){
 				if (exc == null){
 					me.permissionRoleTable.setEnabled(true);
+					var rpc = new qx.io.remote.Rpc("http://"+me.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
+	                rpc.setCrossDomain(true);
+	                rpc.callAsync(me.updatePermissionList(me),"getRightsForUserPage",me.user.getName());
 				}else{
 					alert(exc);
 				}
@@ -215,7 +220,7 @@ qx.Class.define("scoville_admin.UserPage",{
 		app:null,
 		tabs:null,
 		user:null,
-		permissionTableInitialized:false
+		permissionTableChangehandler:false
 	}
 	
 });
