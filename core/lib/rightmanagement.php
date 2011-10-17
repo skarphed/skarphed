@@ -283,16 +283,37 @@ class RightsManager extends Singleton{
 		
 		//TODO: Here be dragons (Performance leak)
 		
-		
-		
 		$resrights = array();
-		while($set = $db->fetchArray($res)){
-			$resrights[] = $set['RIG_NAME'];
+		$failrights = array();
+		
+		if (get_class($object) == 'scv\User'){
+			$roles = $sessionUser->getRoles();
+			while($set = $db->fetchArray($res)){
+				foreach($roles as $role){
+					if ($role->hasRight($set['RIG_NAME'])){
+						$failrights[] = $set['RIG_NAME'];
+						continue 2;
+					}
+				}
+				$resrights[] = $set['RIG_NAME'];
+				
+			}
 		}
+		else{
+			
+			while($set = $db->fetchArray($res)){
+				$resrights[] = $set['RIG_NAME'];
+			}
+		}
+		
+		
+		
 		$result = array();
 		foreach ($sessionRights as $sessionRight){
 			if (in_array($sessionRight,$resrights)){
 				$result[] = array('right'=>$sessionRight,'granted'=>true);
+			}elseif (in_array($sessionRight,$failrights)){
+				
 			}else{
 				$result[] = array('right'=>$sessionRight,'granted'=>false);
 			}
