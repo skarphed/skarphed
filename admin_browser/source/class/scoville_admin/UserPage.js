@@ -27,6 +27,7 @@ qx.Class.define("scoville_admin.UserPage",{
 					}
 					if(me.permissionTableChangehandler){
 						me.permissionPermissionTableModel.removeListenerById(me.permissionTableChangehandler);
+						me.permissionTableChangehandler = null;
 					}
 					me.permissionPermissionTableModel.setData(dataset);
 					if (!me.permissionTableChangehandler){
