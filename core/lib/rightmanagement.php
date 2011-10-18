@@ -218,8 +218,10 @@ class RightsManager extends Singleton{
 		$db = $core->getDB();
 		$stmnt = "SELECT AVAILABLE FROM CHECK_RIGHT(? , ?);";
 		$res = $db->query($core,$stmnt,array($user->getId(),$right));
-		$set = $db->fetchArray($res);
-		return $set['AVAILABLE']; 
+		while($set = $db->fetchArray($res)){
+			return true;
+		}
+		return false; 
 	}
 	
 	public function createRight($right, $moduleId){
@@ -266,13 +268,17 @@ class RightsManager extends Singleton{
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
 		$sessionRights = $this->getRightsForUser($sessionUser);
+		
+		$result = array();
+		$resrights = array();
+		$skiprights = array();
+		
 		switch(get_class($object)){
 			case 'scv\User':
-				$stmnt = "SELECT RIG_NAME,0 AS ROLEBOUND FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? 
-				            AND RIG_ID NOT IN (SELECT RRI_RIG_ID FROM ROLERIGHTS INNER JOIN USERROLES ON (RRI_ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ?) 
-                          UNION SELECT RIG_NAME,1 AS ROLEBOUND FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? 
-				            AND RIG_ID IN (SELECT RRI_RIG_ID FROM ROLERIGHTS INNER JOIN USERROLES ON (RRI_ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ?) ;";
-				$res = $db->query($core,$stmnt,array($object->getId(),$object->getId(),$object->getId(),$object->getId()));
+				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
+				$stmnt2 = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) INNER JOIN USERROLES ON (URO_ROL_ID = RRI_ROL_ID) WHERE URO_USR_ID = ?; ";
+				$res = $db->query($core,$stmnt,array($object->getId()));
+				$res2 = $db->query($core,$stmnt2,array($object->getId())); 
 				break;
 			case 'scv\Role':
 				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;";
@@ -282,17 +288,18 @@ class RightsManager extends Singleton{
 				throw new RightsException("Cannot get grantable Rights from Class: ".get_class($object));//TODO: Here be dragons. Injection von Klassennamen ueber Module	
 		}
 
-		$resrights = array();
-		$skiprights = array();
+		
 		while($set = $db->fetchArray($res)){
-			if (!(bool)$set['ROLEBOUND']){
-			    $resrights[] = $set['RIG_NAME'];
-			}else{
-				$skiprights[] = $set['RIG_NAME'];
+		    $resrights[] = $set['RIG_NAME'];
+		}
+		
+		if (isset($res2)){
+			while($set = $db->fetchArray($res2)){
+		    	$skiprights[] = $set['RIG_NAME'];
 			}
 		}
 		
-		$result = array();
+		
 		foreach ($sessionRights as $sessionRight){
 			if (in_array($sessionRight,$skiprights)){
 				continue;
