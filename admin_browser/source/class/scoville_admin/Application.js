@@ -38,6 +38,12 @@ qx.Class.define("scoville_admin.Application",
      * @lint ignoreDeprecated(alert)
      */
     
+    createRPCObject : function(ip){
+    	var rpc = new qx.io.remote.Rpc("http://"+ip+"/rpc/","scoville_admin.scvRpc");
+        rpc.setCrossDomain(true);
+        return rpc;
+    },
+    
     addUser : function(users){
     	if (this.newUserPage == null){
     		this.newUserPage = new scoville_admin.NewUserPage(this,users);

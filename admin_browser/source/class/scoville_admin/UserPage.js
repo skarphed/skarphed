@@ -73,9 +73,7 @@ qx.Class.define("scoville_admin.UserPage",{
 			return function(result,exc){
 				if (exc == null){
 					me.permissionRoleTable.setEnabled(true);
-					var rpc = new qx.io.remote.Rpc("http://"+me.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-	                rpc.setCrossDomain(true);
-	                rpc.callAsync(me.updatePermissionList(me),"getRightsForUserPage",me.user.getName());
+	                me.app.createRPCObject(me.user.getServer().getIp()).callAsync(me.updatePermissionList(me),"getRightsForUserPage",me.user.getName());
 				}else{
 					alert(exc);
 				}
@@ -91,12 +89,10 @@ qx.Class.define("scoville_admin.UserPage",{
 		    	var model = me.permissionPermissionTableModel;
 		    	var value = model.getValue(changedData.firstColumn, changedData.firstRow);
 		    	var right = model.getValue(1, changedData.firstRow);
-		    	var rpc = new qx.io.remote.Rpc("http://"+me.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-                rpc.setCrossDomain(true);
-                if (value){
-                	rpc.callAsync(me.changedPermission(me),"grantRightToUser",me.user.getName(),right);
+		    	if (value){
+                	me.app.createRPCObject(me.user.getServer().getIp()).callAsync(me.changedPermission(me),"grantRightToUser",me.user.getName(),right);
                 }else{
-                	rpc.callAsync(me.changedPermission(me),"revokeRightFromUser",me.user.getName(),right);
+                	me.app.createRPCObject(me.user.getServer().getIp()).callAsync(me.changedPermission(me),"revokeRightFromUser",me.user.getName(),right);
                 }
                 me.permissionPermissionTable.setEnabled(false);
 		    }
@@ -111,12 +107,10 @@ qx.Class.define("scoville_admin.UserPage",{
 				var model = me.permissionRoleTableModel;
 				var value = model.getValue(changedData.firstColumn, changedData.firstRow);
 				var roleId = model.getValue(2, changedData.firstRow);
-				var rpc = new qx.io.remote.Rpc("http://"+me.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-                rpc.setCrossDomain(true);
                 if (value){
-                	rpc.callAsync(me.changedRole(me),"assignRoleToUser",me.user.getName(),roleId);
+                	me.app.createRPCObject(me.user.getServer().getIp()).callAsync(me.changedRole(me),"assignRoleToUser",me.user.getName(),roleId);
                 }else{
-                	rpc.callAsync(me.changedRole(me),"revokeRoleFromUser",me.user.getName(),roleId);
+                	me.app.createRPCObject(me.user.getServer().getIp()).callAsync(me.changedRole(me),"revokeRoleFromUser",me.user.getName(),roleId);
                 }
                 me.permissionRoleTable.setEnabled(false);
 			}
@@ -166,9 +160,7 @@ qx.Class.define("scoville_admin.UserPage",{
 				this.permissionPermissionTableModel = new qx.ui.table.model.Simple();
 				this.permissionPermissionTableModel.setColumns(["Active","Permission Identifier","Permission Name"]);
 				
-				var rpc = new qx.io.remote.Rpc("http://"+this.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-                rpc.setCrossDomain(true);
-                rpc.callAsync(this.updatePermissionList(this),"getRightsForUserPage",this.user.getName());
+                this.app.createRPCObject(this.user.getServer().getIp()).callAsync(this.updatePermissionList(this),"getRightsForUserPage",this.user.getName());
                 
 				this.permissionPermissionTable = new qx.ui.table.Table(this.permissionPermissionTableModel, {tableColumnModel : 
 					                                                        function(obj){return (new qx.ui.table.columnmodel.Resize(obj));}});
@@ -191,9 +183,7 @@ qx.Class.define("scoville_admin.UserPage",{
 				this.permissionRoleTableModel = new qx.ui.table.model.Simple();
 				this.permissionRoleTableModel.setColumns(["Active","Role Name", "roleid"]);
 				
-				var rpc = new qx.io.remote.Rpc("http://"+this.user.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-                rpc.setCrossDomain(true);
-                rpc.callAsync(this.updateRoleList(this),"getRolesForUserPage",this.user.getName());
+                this.app.createRPCObject(this.user.getServer().getIp()).callAsync(this.updateRoleList(this),"getRolesForUserPage",this.user.getName());
 				
 				this.permissionRoleTable = new qx.ui.table.Table(this.permissionRoleTableModel, {tableColumnModel : 
 					                                                        function(obj){return (new qx.ui.table.columnmodel.Resize(obj));}});

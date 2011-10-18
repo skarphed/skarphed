@@ -60,9 +60,7 @@ qx.Class.define("scoville_admin.NewUserPage",{
 				me.savebutton.setLabel("Create User");
 				me.finalUserName = me.nameentry.getValue();
 				if (me.validator.getValid()){
-					var rpc = new qx.io.remote.Rpc("http://"+me.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-			        rpc.setCrossDomain(true);
-			        rpc.callAsync(me.createFinishedCallback(me),"createUser",me.nameentry.getValue(),me.pw1entry.getValue());
+			        me.app.createRPCObject(me.getServer().getIp()).callAsync(me.createFinishedCallback(me),"createUser",me.nameentry.getValue(),me.pw1entry.getValue());
 				}
 			}
 		},

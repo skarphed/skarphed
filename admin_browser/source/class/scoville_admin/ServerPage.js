@@ -75,10 +75,8 @@ qx.Class.define("scoville_admin.ServerPage",{
 			    var password = me.passwordentry.getValue();
 				
  				me.tabs.remove(me);
-								
-				var rpc = new qx.io.remote.Rpc("http://"+me.server.ip+"/rpc/","scoville_admin.scvRpc");
-				rpc.setCrossDomain(true);
-				rpc.callAsync(me.server.createAuthenticationHandler(me.server),"authenticateUser",username,password);
+				
+				me.app.createRPCObject(me.server.ip).callAsync(me.server.createAuthenticationHandler(me.server),"authenticateUser",username,password);
 			};
 			
 			

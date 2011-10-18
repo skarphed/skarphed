@@ -47,12 +47,10 @@ qx.Class.define("scoville_admin.RolePage",{
 		    	var model = me.permissionboxTableModel;
 		    	var value = model.getValue(changedData.firstColumn, changedData.firstRow);
 		    	var right = model.getValue(1, changedData.firstRow);
-		    	var rpc = new qx.io.remote.Rpc("http://"+me.role.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-                rpc.setCrossDomain(true);
                 if (value){
-                	rpc.callAsync(me.changedPermission(me),"grantRightToRole",me.role.getId(),right);
+                	me.app.createRPCObject(me.role.getServer().getIp()).callAsync(me.changedPermission(me),"grantRightToRole",me.role.getId(),right);
                 }else{
-                	rpc.callAsync(me.changedPermission(me),"revokeRightFromRole",me.role.getId(),right);
+                	me.app.createRPCObject(me.role.getServer().getIp()).callAsync(me.changedPermission(me),"revokeRightFromRole",me.role.getId(),right);
                 }
                 me.permissionboxTable.setEnabled(false);
 		    }
@@ -120,9 +118,7 @@ qx.Class.define("scoville_admin.RolePage",{
 			this.permissionboxTableModel = new qx.ui.table.model.Simple();
 			this.permissionboxTableModel.setColumns(["Active","Permission Identifier","Permission Name"]);
 			
-			var rpc = new qx.io.remote.Rpc("http://"+this.role.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-            rpc.setCrossDomain(true);
-            rpc.callAsync(this.updatePermissionList(this),"getRightsForRolePage",this.role.getId());
+            this.app.createRPCObject(this.role.getServer().getIp()).callAsync(this.updatePermissionList(this),"getRightsForRolePage",this.role.getId());
             
 			this.permissionboxTable = new qx.ui.table.Table(this.permissionboxTableModel, {tableColumnModel : 
 				                                                        function(obj){return (new qx.ui.table.columnmodel.Resize(obj));}});

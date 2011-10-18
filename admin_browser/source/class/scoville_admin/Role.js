@@ -33,9 +33,7 @@ qx.Class.define("scoville_admin.Role",{
 		},
 		
 		remove: function(){
-			var rpc = new qx.io.remote.Rpc("http://"+this.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-            rpc.setCrossDomain(true);
-            rpc.callAsync(this.removeCallback(this),"deleteRole",this.getId());
+            this.app.createRPCObject(this.getServer().getIp()).callAsync(this.removeCallback(this),"deleteRole",this.getId());
 		},
 		
 		getServer : function(){

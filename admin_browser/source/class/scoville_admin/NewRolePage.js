@@ -60,9 +60,7 @@ qx.Class.define("scoville_admin.NewRolePage",{
 				me.savebutton.setLabel("Create Role");
 				me.finalRoleName = me.infoboxNameEntry.getValue();
 				if (me.validator.getValid()){
-					var rpc = new qx.io.remote.Rpc("http://"+me.getServer().getIp()+"/rpc/","scoville_admin.scvRpc");
-			        rpc.setCrossDomain(true);
-			        rpc.callAsync(me.createFinishedCallback(me),"createRole",{'name':me.infoboxNameEntry.getValue()});
+			        me.app.createRPCObject(me.getServer().getIp()).callAsync(me.createFinishedCallback(me),"createRole",{'name':me.infoboxNameEntry.getValue()});
 				}
 			}
 		},
