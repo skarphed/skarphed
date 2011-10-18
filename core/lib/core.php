@@ -38,7 +38,6 @@ class Core extends Singleton implements IModule{
 	}
 	
 	protected function init(){
-		session_start();
 		$this->debugGrindlog("====== New Session! Time: ".time());
 		$this->config = new Config();
 		$this->database = new Database();
