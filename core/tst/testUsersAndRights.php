@@ -8,9 +8,9 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
     protected function setUp() {
-    	try{
+    	/*try{
 		  session_destroy();
-		}catch(Exception $e){}
+		}catch(Exception $e){}*/
         // Array-Fixture erzeugen.
         $this->fixture = scv\Core::getInstance();
     }
