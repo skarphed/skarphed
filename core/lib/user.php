@@ -63,6 +63,8 @@ class User {
 	
 	public function delete($checkRight=true){
 		$core = Core::getInstance();
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
 		$db = $core->getDB();
 		
 		$checkstring = "";
