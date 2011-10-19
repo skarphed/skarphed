@@ -148,7 +148,7 @@ class User {
 		$sessionUser = $userM->getSessionUser();
 		$checkstring = "";
 		if ($checkRight){
-			$checkstring = " 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.grant_revoke')) ";
+			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.grant_revoke')) ";
 		}
 		$rightId = $rightM->getIdForRight($right);
 		if ($rightId == null){
@@ -161,7 +161,7 @@ class User {
 			if($checkRight and !$rightM->checkRight($right,$sessionUser)){
 				return;
 			} 
-			$db->query($core,"DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? AND $checkstring ;",array($this->id, $rightId));
+			$db->query($core,"DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? $checkstring ;",array($this->id, $rightId));
 			if (ibase_errmsg() != false){
 				throw new UserException("Revoking Right: Something went wrong in the Database");
 			} 
