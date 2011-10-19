@@ -62,7 +62,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user->alterPassword("tochangepassword","falsepassword");
 	}
 	
-	/*public function testGrantAndRevokeRightUserWithoutCheck(){
+	public function testGrantAndRevokeRightUserWithoutCheck(){
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testGrantAndRevokeRightUserWithoutCheckUser", "testpassword", null);
 		$user = $userM->getUserByName("testGrantAndRevokeRightUserWithoutCheckUser");
@@ -77,7 +77,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user->delete(false);		
 	}
 	
-	public function testGrantAndRevokeRightUserWithCheck_S(){
+	/*public function testGrantAndRevokeRightUserWithCheck_S(){
 		session_start();
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_S", "testpassword", null);
