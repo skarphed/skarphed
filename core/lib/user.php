@@ -61,6 +61,20 @@ class User {
 		return false;
 	}
 	
+	public function delete($checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		$checkstring = "";
+		if ($checkRight){
+			$checkstring = "WHERE  1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.delete')) ";
+		}
+		
+		$stmnt="DELETE FROM USERS WHERE USR_ID = ? $checkstring ;";
+		$res = $db->query($core,$stmnt,array($this->getId()));
+		return;
+	}
+	
 	public function store( $checkRight = true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
