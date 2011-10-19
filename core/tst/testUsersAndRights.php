@@ -49,8 +49,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user = $userM->getUserByName("genericTestUser");
 		try{
 			$user->alterPassword("tochangepassword","falsepassword");
-			$this->assertTrue(false);
-		}catch (UserException $e ){}
+		}catch (UserException $e ){ return ;}
+		$this->assertTrue(false);
 	}
 	
 	
