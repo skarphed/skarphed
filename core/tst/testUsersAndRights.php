@@ -39,7 +39,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user = $userM->getUserByName("genericTestUser");
 		$this->assertFalse($user->authenticate("tochangepassword"));
 		$user->alterPassword("tochangepassword", "testpassword");
-		$this->assertTrue( $user->authenticate("tochangepassword"));
+		$this->assertTrue($user->authenticate("tochangepassword"));
 		$user->alterPassword("testpassword", "tochangepassword");
 		$this->assertFalse($user->authenticate("tochangepassword"));
 	}
