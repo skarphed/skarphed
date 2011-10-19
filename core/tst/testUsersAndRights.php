@@ -74,7 +74,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user->revokeRight('scoville.manageserverdata',false);
 		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
 		
-		$user->delete();		
+		$user->delete(false);		
 	}
 	
 	public function testGrantAndRevokeRightUserWithCheck_S(){
@@ -97,8 +97,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user->revokeRight('scoville.manageserverdata',true);
 		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
 		
-		$user->delete();
-		$_SESSION['user']->delete();		
+		$user->delete(false);
+		$_SESSION['user']->delete(false);		
 		session_destroy();
 	}
 
@@ -117,8 +117,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		
 		$user->grantRight('scoville.manageserverdata',true);
 		
-		$user->delete();
-		$_SESSION['user']->delete();		
+		$user->delete(false);
+		$_SESSION['user']->delete(false);		
 		session_destroy();
 	}
 	
@@ -137,8 +137,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user->grantRight('scoville.manageserverdata',true);
 		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
 		
-		$user->delete();
-		$_SESSION['user']->delete();		
+		$user->delete(false);
+		$_SESSION['user']->delete(false);		
 		session_destroy();
 	}
 	
