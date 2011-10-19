@@ -32,7 +32,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user = $userM->getUserByName("testCreateAndDeleteUser");
 		$this->assertEquals('scv\User', get_class($user));
 		$this->assertTrue($user->authenticate("testpassword"));
-		$user->delete();
+		$user->delete(true);
 		$this->assertTrue(true);
 	}
 	
