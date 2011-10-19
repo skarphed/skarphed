@@ -124,8 +124,8 @@ class User {
 		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
-		$core->debugGrindlog("ADSF".json_encode($sessionUser->getRights()));
 		if ($checkRight){
+			$core->debugGrindlog("ADSF".json_encode($sessionUser->getRights()));
 	        if (!$rightM->checkRight('scoville.users.grant_revoke', $sessionUser)){
 	        	throw new UserException("Granting Right: This user is not allowed to grant rights!");
 	        }
