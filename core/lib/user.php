@@ -37,8 +37,6 @@ class User {
 			$set = $db->fetchObject($res);
 			if ($this->password != $set->USR_PASSWORD){
 				throw new UserException("Could not set Password: Some Error in Database");
-			}else{
-				$this->password = $newpassword;
 			}
 		}else{
 			throw new UserException("Could not set Password: Old password is wrong");
@@ -59,10 +57,12 @@ class User {
 			return true;
 		}
 		return false;
-	}
+	} 
 	
 	public function delete($checkRight=true){
 		$core = Core::getInstance();
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
 		$db = $core->getDB();
 		
 		$checkstring = "";
