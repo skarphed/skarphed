@@ -11,7 +11,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
         // Array-Fixture erzeugen.
         $this->fixture = scv\Core::getInstance();
 		$userM= $this->fixture->getUserManager();
-		$userM->createUser("genericTestUser", "testpassword", null);
+		//$userM->createUser("genericTestUser", "testpassword", null);
     }
  
     public function testNameIsRight() {
