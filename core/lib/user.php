@@ -154,10 +154,13 @@ class User {
 		if ($rightId == null){
 			throw new UserException("Revoking Right: There is no such right as $right");
 		}
-		if ($sessionUser->getId() == $this->getId()){
+		if ($sessionUser and $sessionUser->getId() == $this->getId()){
 			throw new UserException("Revoking Right: You cannot revoke your own rights");
 		}
-		if ($rightM->checkRight($right, $sessionUser) and $rightId != null){ 
+		if ($rightId != null){
+			if($checkRight and !$rightM->checkRight($right,$sessionUser)){
+				return;
+			} 
 			$db->query($core,"DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? AND $checkstring ;",array($this->id, $rightId));
 			if (ibase_errmsg() != false){
 				throw new UserException("Revoking Right: Something went wrong in the Database");
