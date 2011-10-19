@@ -120,15 +120,19 @@ class User {
 		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
-		$checkstring = "";
-        if (!$rightM->checkRight('scoville.users.grant_revoke', $sessionUser)){
-        	throw new UserException("Granting Right: This user is not allowed to grant rights!");
-        }
+		if ($checkRight){
+	        if (!$rightM->checkRight('scoville.users.grant_revoke', $sessionUser)){
+	        	throw new UserException("Granting Right: This user is not allowed to grant rights!");
+	        }
+		}
 		$rightId = $rightM->getIdForRight($right);
 		if ($rightId == null){
 			throw new UserException("Granting Right: There is no such right as $right");
 		}
-		if ($rightM->checkRight($right, $sessionUser) and $rightId != null){
+		if ($rightId != null){
+			if($checkRight and !$rightM->checkRight($right,$sessionUser)){
+				return;
+			}
 			$db->query($core,"UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;",array($this->id, $rightId));
 			if (ibase_errmsg() != false){
 				throw new UserException("Granting Right: Something went wrong in the Database");
