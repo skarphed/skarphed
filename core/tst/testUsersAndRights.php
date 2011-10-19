@@ -10,8 +10,6 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
     protected function setUp() {
         // Array-Fixture erzeugen.
         $this->fixture = scv\Core::getInstance();
-		$userM= $this->fixture->getUserManager();
-		//$userM->createUser("genericTestUser", "testpassword", null);
     }
  
     public function testNameIsRight() {
@@ -59,6 +57,99 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$userM = $this->fixture->getUserManager();
 		$user = $userM->getUserByName("genericTestUser");
 		$user->alterPassword("tochangepassword","falsepassword");
+	}
+	
+	public function testGrantAndRevokeRightUserWithoutCheck(){
+		$userM= $this->fixture->getUserManager();
+		$userM->createUser("testGrantAndRevokeRightUserWithoutCheckUser", "testpassword", null);
+		$user = $userM->getUserByName("testGrantAndRevokeRightUserWithoutCheckUser");
+		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
+		
+		$user->grantRight('scoville.manageserverdata',false);
+		$this->assertContains('scoville.manageserverdata',$user->getRights());
+		
+		$user->revokeRight('scoville.manageserverdata',false);
+		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
+		
+		$user->delete();		
+	}
+	
+	public function testGrantAndRevokeRightUserWithCheck_S(){
+		session_start();
+		$userM= $this->fixture->getUserManager();
+		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_S", "testpassword", null);
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$user = $userM->getUserByName("testGrantAndRevokeRightUserWithCheckUser_S");
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
+		$_SESSION['user']->grantRight('scoville.manageserverdata',false);
+		$_SESSION['user']->grantRight('scoville.users.grant_revoke',false);
+		
+		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
+		
+		$user->grantRight('scoville.manageserverdata',true);
+		$this->assertContains('scoville.manageserverdata',$user->getRights());
+		
+		$user->revokeRight('scoville.manageserverdata',true);
+		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
+		
+		$user->delete();
+		$_SESSION['user']->delete();		
+		session_destroy();
+	}
+
+    public function testGrantAndRevokeRightUserWithCheck_NotAllowed(){
+		session_start();
+		$userM= $this->fixture->getUserManager();
+		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_NotAllowed", "testpassword", null);
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$user = $userM->getUserByName("testGrantAndRevokeRightUserWithCheckUser_NotAllowed");
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
+		
+		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
+		$this->setExpectedException('scv\UserException', 'Granting Right: This user is not allowed to grant rights!');
+		
+		$user->grantRight('scoville.manageserverdata',true);
+		
+		$user->delete();
+		$_SESSION['user']->delete();		
+		session_destroy();
+	}
+	
+	public function testGrantAndRevokeRightUserWithCheck_MissingRight(){
+		session_start();
+		$userM= $this->fixture->getUserManager();
+		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_MissingRight", "testpassword", null);
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$user = $userM->getUserByName("testGrantAndRevokeRightUserWithCheckUser_MissingRight");
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
+		$_SESSION['user']->grantRight('scoville.users.grant_revoke',false);
+		
+		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
+		$user->grantRight('scoville.manageserverdata',true);
+		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
+		
+		$user->delete();
+		$_SESSION['user']->delete();		
+		session_destroy();
+	}
+	
+	public function testGetGrantableRightsUser(){
+		$userM= $this->fixture->getUserManager();
+		$userM->createUser("testAlterPasswordUser", "testpassword", null);
+		$userM->createUser("currentSession", "testpassword", null);
+		$user = $userM->getUserByName("testAlterPasswordUser");
+		
+		
+	}
+	
+	public function testGetGrantableRightsRole(){
+		
 	}
 	
 	
