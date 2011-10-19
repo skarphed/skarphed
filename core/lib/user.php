@@ -128,7 +128,7 @@ class User {
 	        if (!$rightM->checkRight('scoville.users.grant_revoke', $sessionUser)){
 	        	throw new UserException("Granting Right: This user is not allowed to grant rights!");
 	        }
-		}
+		} 
 		$rightId = $rightM->getIdForRight($right);
 		if ($rightId == null){
 			throw new UserException("Granting Right: There is no such right as $right");
