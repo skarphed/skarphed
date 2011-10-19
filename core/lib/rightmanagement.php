@@ -218,7 +218,8 @@ class RightsManager extends Singleton{
 		$db = $core->getDB();
 		$stmnt = "SELECT AVAILABLE FROM CHECK_RIGHT(? , ?);";
 		$res = $db->query($core,$stmnt,array($user->getId(),$right));
-		while($set = $db->fetchArray($res)){
+		$set = $db->fetchArray($res);
+	    if($set['AVAILABLE'] == 1){
 			return true;
 		}
 		return false; 
