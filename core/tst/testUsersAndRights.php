@@ -155,11 +155,11 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		
 	}
 	
-	protected function tearDown(){
+	/*protected function tearDown(){
 		try{
 		  session_destroy();
 		}catch(Exception $e){}
-	}
+	}*/
 	
 }
 ?>
