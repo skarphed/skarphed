@@ -37,8 +37,6 @@ class User {
 			$set = $db->fetchObject($res);
 			if ($this->password != $set->USR_PASSWORD){
 				throw new UserException("Could not set Password: Some Error in Database");
-			}else{
-				$this->password = $newpassword;
 			}
 		}else{
 			throw new UserException("Could not set Password: Old password is wrong");
