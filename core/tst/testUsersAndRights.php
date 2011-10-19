@@ -26,12 +26,14 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('de.masterprogs.scoville.core',$this->fixture->getName());
     }
 	
-	public function testCreateUser(){
+	public function testCreateAndDeleteUser(){
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testCreateAndDeleteUser", "testpassword", null);
 		$user = $userM->getUserByName("testCreateAndDeleteUser");
 		$this->assertEquals('scv\User', get_class($user));
 		$this->assertTrue($user->authenticate("testpassword"));
+		$user->delete();
+		$this->assertTrue(true);
 	}
 	
 	public function testAlterPassword(){
