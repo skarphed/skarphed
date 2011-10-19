@@ -39,7 +39,6 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	public function testAlterPassword(){
 		$userM = $this->fixture->getUserManager();
 		$user = $userM->getUserByName("genericTestUser");
-		$this->assertTrue($user->authenticate("testpassword"));
 		$user->alterPassword("tochangepassword", "testpassword");
 		$this->assertTrue($user->authenticate("tochangepassword"));
 		$user->alterPassword("testpassword", "tochangepassword");
