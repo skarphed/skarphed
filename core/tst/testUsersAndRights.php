@@ -142,7 +142,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		session_destroy();
 	}
 	
-	public function testGetGrantableRightsUser(){
+	/*public function testGetGrantableRightsUser(){
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testAlterPasswordUser", "testpassword", null);
 		$userM->createUser("currentSession", "testpassword", null);
@@ -153,7 +153,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	
 	public function testGetGrantableRightsRole(){
 		
-	}
+	}*/
 	
 	/*protected function tearDown(){
 		try{
