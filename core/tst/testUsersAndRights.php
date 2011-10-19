@@ -115,6 +115,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
 		$this->setExpectedException('scv\UserException', 'Granting Right: This user is not allowed to grant rights!');
 		
+		$this->fixture->debugGrindlog(json_encode($_SESSION['user']->getRights()));
+		
 		$user->grantRight('scoville.manageserverdata',true);
 		
 		$user->delete(false);
