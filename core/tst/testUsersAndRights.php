@@ -4,6 +4,9 @@ require_once '../lib/core.php';
 
 use scv;
 
+session_start();
+
+
 class ArrayTest extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
@@ -78,7 +81,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testGrantAndRevokeRightUserWithCheck_S(){
-		session_start();
+		
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_S", "testpassword", null);
 		$userM->createUser("currentSessionUser","testpassword",null);
@@ -103,7 +106,6 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	}
 
     public function testGrantAndRevokeRightUserWithCheck_NotAllowed(){
-		session_start();
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_NotAllowed", "testpassword", null);
 		$userM->createUser("currentSessionUser","testpassword",null);
@@ -122,8 +124,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		session_destroy();
 	}
 	
-	/*public function testGrantAndRevokeRightUserWithCheck_MissingRight(){
-		session_start();
+	public function testGrantAndRevokeRightUserWithCheck_MissingRight(){
+
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_MissingRight", "testpassword", null);
 		$userM->createUser("currentSessionUser","testpassword",null);
@@ -140,7 +142,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user->delete(false);
 		$_SESSION['user']->delete(false);		
 		session_destroy();
-	}*/
+	}
 	
 	/*public function testGetGrantableRightsUser(){
 		$userM= $this->fixture->getUserManager();
