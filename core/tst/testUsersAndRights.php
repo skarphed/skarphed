@@ -4,9 +4,6 @@ require_once '../lib/core.php';
 
 use scv;
 
-session_start();
-
-
 class ArrayTest extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
@@ -102,7 +99,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		
 		$user->delete(false);
 		$_SESSION['user']->delete(false);		
-		session_destroy();
+		unset($_SESSION['user']);
+		unset($_SESSION['loggedin']);
 	}
 
     public function testGrantAndRevokeRightUserWithCheck_NotAllowed(){
@@ -121,7 +119,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		
 		$user->delete(false);
 		$_SESSION['user']->delete(false);		
-		session_destroy();
+		unset($_SESSION['user']);
+		unset($_SESSION['loggedin']);
 	}
 	
 	public function testGrantAndRevokeRightUserWithCheck_MissingRight(){
@@ -140,8 +139,9 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
 		
 		$user->delete(false);
-		$_SESSION['user']->delete(false);		
-		session_destroy();
+		$_SESSION['user']->delete(false);
+		unset($_SESSION['user']);		
+		unset($_SESSION['loggedin']);
 	}
 	
 	/*public function testGetGrantableRightsUser(){
