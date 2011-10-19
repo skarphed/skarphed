@@ -70,8 +70,12 @@ class User {
 			$checkstring = "WHERE  1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.delete')) ";
 		}
 		
-		$stmnt="DELETE FROM USERS WHERE USR_ID = ? $checkstring ;";
-		$res = $db->query($core,$stmnt,array($this->getId()));
+		$stmnt_usr="DELETE FROM USERS WHERE USR_ID = ? $checkstring ;";
+		$stmnt_uro="DELETE FROM USERROLES WHERE URO_USR_ID = ? $checkstring ;";
+		$stmnt_uri="DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? $checkstring ;";
+		$res = $db->query($core,$stmnt_uri,array($this->getId()));
+		$res = $db->query($core,$stmnt_uro,array($this->getId()));
+		$res = $db->query($core,$stmnt_usr,array($this->getId()));
 		return;
 	}
 	
