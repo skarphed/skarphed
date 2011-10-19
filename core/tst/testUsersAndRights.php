@@ -101,7 +101,6 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$_SESSION['user']->delete(false);		
 		unset($_SESSION['user']);
 		unset($_SESSION['loggedin']);
-		$i= 1/0;
 	}
 
     public function testGrantAndRevokeRightUserWithCheck_NotAllowed(){
