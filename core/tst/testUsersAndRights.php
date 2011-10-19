@@ -77,7 +77,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user->delete(false);		
 	}
 	
-	/*public function testGrantAndRevokeRightUserWithCheck_S(){
+	public function testGrantAndRevokeRightUserWithCheck_S(){
 		session_start();
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_S", "testpassword", null);
@@ -102,7 +102,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		session_destroy();
 	}
 
-    public function testGrantAndRevokeRightUserWithCheck_NotAllowed(){
+    /*public function testGrantAndRevokeRightUserWithCheck_NotAllowed(){
 		session_start();
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testGrantAndRevokeRightUserWithCheckUser_NotAllowed", "testpassword", null);
