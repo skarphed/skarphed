@@ -49,7 +49,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$user = $userM->getUserByName("genericTestUser");
 		try{
 			$user->alterPassword("tochangepassword","falsepassword");
-		}catch (UserException $e ){ return ;}
+		}catch (scv\UserException $e ){ return ;}
 		$this->assertTrue(false);
 	}
 	
