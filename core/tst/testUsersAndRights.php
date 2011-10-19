@@ -116,6 +116,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$this->setExpectedException('scv\UserException', 'Granting Right: This user is not allowed to grant rights!');
 		
 		$this->fixture->debugGrindlog(json_encode($_SESSION['user']->getRights()));
+		$this->fixture->debugGrindlog(json_encode($userM->getSessionUser()->getRights()));
 		
 		$user->grantRight('scoville.manageserverdata',true);
 		
