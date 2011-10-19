@@ -47,12 +47,10 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testCannotSetPasswordWithoutOldPasssword(){
+		$this->setExpectedException('UserException','Could not set Password: Old password is wrong');
 		$userM = $this->fixture->getUserManager();
 		$user = $userM->getUserByName("genericTestUser");
-		try{
-			$user->alterPassword("tochangepassword","falsepassword");
-		}catch (scv\UserException $e ){ return ;}
-		$this->assertTrue(false);
+		$user->alterPassword("tochangepassword","falsepassword");
 	}
 	
 	
