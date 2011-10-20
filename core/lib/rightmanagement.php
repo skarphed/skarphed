@@ -427,8 +427,10 @@ class RightsManager extends Singleton{
 		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();
 		
-		if($checkRight and !$rightM->checkRight('scoville.roles.create', $userM->getSessionUser())){
-			throw new RightsException("Create Role: User is not permitted to create roles");
+		if($checkRight) {
+			if (!$rightM->checkRight('scoville.roles.create', $userM->getSessionUser())){
+				throw new RightsException("Create Role: User is not permitted to create roles");
+			}
 		}
 		$id = $db->getSeqNext('ROL_GEN');
 		$role = new Role();
