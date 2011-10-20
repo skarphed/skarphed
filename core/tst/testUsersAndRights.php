@@ -152,11 +152,13 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	public function testCreateDeleteRoleWithCheck(){
 		$roleData = json_decode('{"name":"testCreateDeleteRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
+		$this->fixture->debugGrindlog("run6");
 		$role = $rightM->createRole($roleData,false); 
-		
+		$this->fixture->debugGrindlog("run7");
 		$this->assertEquals('scv\Role',get_class($role));
-		
+		$this->fixture->debugGrindlog("run8");
 		$role->delete(false);
+		$this->fixture->debugGrindlog("run9");
 		//TODO: getRole Should return null or throw exception
 		
 	}
@@ -165,14 +167,15 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	public function testGrantAndRevokeRightRoleWithoutCheck(){
 		$roleData = json_decode('{"name":"testCreateDeleteRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
+		$this->fixture->debugGrindlog("run1");
 		$role = $rightM->createRole($roleData,false); 
-		
+		$this->fixture->debugGrindlog("run2");
 		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
 		$role->addRight('scoville.manageserverdata',false);
 		$this->assertContains('scoville.manageserverdata',$role->getRights());
 		$role->revokeRight('scoville.manageserverdata',false);
 		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
-		
+		$this->fixture->debugGrindlog("run3");
 		$role->delete(false);		
 	}
 	
