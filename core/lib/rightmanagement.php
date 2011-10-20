@@ -436,17 +436,17 @@ class RightsManager extends Singleton{
 		$role = new Role();
 		$role->setId($id);
 		$role->setName($data->name);
-		$role->store();
+		$role->store($checkRight);
 			
 		if (isset($data->rights)){
 			foreach ($data->rights as $right){
 				if ($right->granted){
-					$role->addRight($right->name);
+					$role->addRight($right->name,$checkRight);
 				}else{
-					$role->removeRight($right->name);
+					$role->removeRight($right->name,$checkRight);
 				}
 			}
-			$role->store();
+			$role->store($checkRight);
 		}
 		return $role;
 		
