@@ -63,7 +63,6 @@ class Role {
 		    	        VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) 
 		        	  MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
 			$db->query($core, $stmnt, array($this->roleId, $rightId));	
-			$core->debugGrindlog("LOLOL:".$this->roleId." ".$rightId);
 		}else{
 			throw new RightsException("Add Right: You are not Allowed to modify Roles");
 		}
@@ -428,22 +427,18 @@ class RightsManager extends Singleton{
 		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();
 		
-		$core->debugGrindlog("infunc1");
-		
 		if($checkRight) {
 			if (!$rightM->checkRight('scoville.roles.create', $userM->getSessionUser())){
 				throw new RightsException("Create Role: User is not permitted to create roles");
 			}
 		}
 		
-		$core->debugGrindlog("infunc2");
 		$id = $db->getSeqNext('ROL_GEN');
 		$role = new Role();
 		$role->setId($id);
 		$role->setName($data->name);
 		$role->store($checkRight);
-		
-		$core->debugGrindlog("infunc3");	
+			
 		if (isset($data->rights)){
 			foreach ($data->rights as $right){
 				if ($right->granted){
@@ -454,7 +449,6 @@ class RightsManager extends Singleton{
 			}
 			$role->store($checkRight);
 		}
-		$core->debugGrindlog("infunc4");
 		return $role;
 		
 		

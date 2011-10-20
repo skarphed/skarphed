@@ -163,9 +163,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	public function testGrantAndRevokeRightRoleWithoutCheck(){
 		$roleData = json_decode('{"name":"testGrantAndRevokeRightRoleWithoutCheck"}');
 		$rightM = $this->fixture->getRightsManager();
-		$this->fixture->debugGrindlog("run1");
 		$role = $rightM->createRole($roleData,false); 
-		$this->fixture->debugGrindlog("run2");
 		$this->assertNotContains('scoville.manageserverdata',$role->getRights(false));
 		$role->addRight('scoville.manageserverdata',false);
 		$this->assertContains('scoville.manageserverdata',$role->getRights(false));
@@ -188,9 +186,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		
 		$roleData = json_decode('{"name":"testGrantAndRevokeRightRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
-		$this->fixture->debugGrindlog("run1");
 		$role = $rightM->createRole($roleData); 
-		$this->fixture->debugGrindlog("run2");
 		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
 		$role->addRight('scoville.manageserverdata');
 		$this->assertContains('scoville.manageserverdata',$role->getRights());
@@ -218,9 +214,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		try{
 			$roleData = json_decode('{"name":"testGrantAndRevokeRightRoleWithCheck"}');
 			$rightM = $this->fixture->getRightsManager();
-			$this->fixture->debugGrindlog("run1");
 			$role = $rightM->createRole($roleData); 
-			$this->fixture->debugGrindlog("run2");
 			$this->assertNotContains('scoville.manageserverdata',$role->getRights());
 			$role->addRight('scoville.manageserverdata');
 			$this->assertContains('scoville.manageserverdata',$role->getRights());
