@@ -158,7 +158,7 @@ class User {
 		if ($rightId == null){
 			throw new UserException("Revoking Right: There is no such right as $right");
 		}
-		if ($sessionUser and $sessionUser->getId() == $this->getId()){
+		if ($checkRight and $sessionUser and $sessionUser->getId() == $this->getId()){
 			throw new UserException("Revoking Right: You cannot revoke your own rights");
 		}
 		if ($rightId != null){
