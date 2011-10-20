@@ -55,8 +55,8 @@ class Role {
 		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();		
 		
-		if ($rightM->checkRight('scoville.roles.modify',$userM->getSessionUser()) or !$checkRight){
-			if (!$rightM->checkRight($rightId,$userM->getSessionUser())){
+		if (!$checkRight or $rightM->checkRight('scoville.roles.modify',$userM->getSessionUser())){
+			if ($checkRight and !$rightM->checkRight($rightId,$userM->getSessionUser())){
 				throw new RightsException("Add Right: User Cannot edit a Roleright that he does not possess himself!");
 			}
 			$stmnt = "UPDATE OR INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) 

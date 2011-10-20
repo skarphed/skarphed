@@ -153,11 +153,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$roleData = json_decode('{"name":"testCreateDeleteRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
 		$role = $rightM->createRole($roleData,false); 
-		$this->fixture->debugGrindlog("run7");
 		$this->assertEquals('scv\Role',get_class($role));
-		$this->fixture->debugGrindlog("run8");
 		$role->delete(false);
-		$this->fixture->debugGrindlog("run9");
 		//TODO: getRole Should return null or throw exception
 		
 	}
