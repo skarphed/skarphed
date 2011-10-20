@@ -250,7 +250,6 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$roleData = json_decode('{"name":"testGetGrantableRightsRole"}');
 		$userM= $this->fixture->getUserManager();
 		$rightM = $this->fixture->getRightsManager();
-		$userM->createUser("testGetGrantableRightsRole", "testpassword", null);
 		$userM->createUser("currentSessionUser","testpassword",null);
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
