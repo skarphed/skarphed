@@ -143,7 +143,7 @@ class Role {
 		
 		$checkString="";
 		if ($checkRight){
-			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.users.view')) ";
+			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.delete')) ";
 		}
 		
 		//USERROLES und ROLERIGHTS DURCH FOREIGN-KEY BERUECKSICHTIGT!
