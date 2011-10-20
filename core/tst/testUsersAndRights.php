@@ -150,7 +150,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testCreateDeleteRoleWithCheck(){
-		$roleData = array('name'=>'testCreateDeleteRoleWithCheck');
+		$roleData = json_decode('{"name":"testCreateDeleteRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
 		$role = $rightM->createRole($roleData); 
 		
@@ -163,7 +163,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	
 	
 	public function testGrantAndRevokeRightRoleWithoutCheck(){
-		$roleData = array('name'=>'testGrantAndRevokeRightRoleWithoutCheck');
+		$roleData = json_decode('{"name":"testCreateDeleteRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
 		$role = $rightM->createRole($roleData); 
 		
