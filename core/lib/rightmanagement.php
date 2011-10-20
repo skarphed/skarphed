@@ -95,7 +95,7 @@ class Role {
 		$db = $core->getDB();
 		$userM = $core->getUserManager();
 		
-		$checkString="";
+		$checkstring="";
 		if ($checkRight){
 			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
 		}
