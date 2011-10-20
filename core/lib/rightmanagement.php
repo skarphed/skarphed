@@ -42,7 +42,7 @@ class Role {
 			throw new RightsException("Create Role: Can't save a role without a Name");
 		}
 		
-		if ($rightM->checkRight('scoville.roles.create', $userM->getSessionUser()) or !$checkRight){
+		if (!$checkRight or $rightM->checkRight('scoville.roles.create', $userM->getSessionUser())){
 			$stmnt = "UPDATE OR INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID); ";
 			$db->query($core,$stmnt, array($this->roleId, $this->roleName));
 		}
