@@ -63,6 +63,7 @@ class Role {
 		    	        VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) 
 		        	  MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
 			$db->query($core, $stmnt, array($this->roleId, $rightId));	
+			$core->debugGrindlog("LOLOL:".$this->roleId." ".$rightId);
 		}else{
 			throw new RightsException("Add Right: You are not Allowed to modify Roles");
 		}
