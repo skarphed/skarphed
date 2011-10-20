@@ -169,7 +169,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$this->assertNotContains('scoville.manageserverdata',$role->getRights(false));
 		$role->addRight('scoville.manageserverdata',false);
 		$this->assertContains('scoville.manageserverdata',$role->getRights(false));
-		$role->revokeRight('scoville.manageserverdata',false);
+		$role->removeRight('scoville.manageserverdata',false);
 		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
 		$role->delete(false);		
 	}
