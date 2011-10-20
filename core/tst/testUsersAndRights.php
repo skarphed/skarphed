@@ -180,7 +180,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
 		
-		$_SESSION['user']->grantRight('scoville.manageserverdata');
+		$_SESSION['user']->grantRight('scoville.manageserverdata',false);
 		
 		$_SESSION['user']->grantRight('scoville.roles.create',false);
 		$_SESSION['user']->grantRight('scoville.roles.modify',false);
