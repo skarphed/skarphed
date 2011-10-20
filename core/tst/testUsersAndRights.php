@@ -152,7 +152,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	public function testCreateDeleteRoleWithCheck(){
 		$roleData = json_decode('{"name":"testCreateDeleteRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
-		$role = $rightM->createRole($roleData); 
+		$role = $rightM->createRole($roleData,false); 
 		
 		$this->assertEquals('scv\Role',get_class($role));
 		
@@ -165,7 +165,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	public function testGrantAndRevokeRightRoleWithoutCheck(){
 		$roleData = json_decode('{"name":"testCreateDeleteRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
-		$role = $rightM->createRole($roleData); 
+		$role = $rightM->createRole($roleData,false); 
 		
 		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
 		$role->addRight('scoville.manageserverdata',false);

@@ -414,7 +414,7 @@ class RightsManager extends Singleton{
 		return $role;
 	}
 	
-	public function createRole($data){
+	public function createRole($data,$checkRight=true){
 		if ($data == null){
 			throw new RightsException("Create Role: Cannot Create role without roleData");
 		}
@@ -427,27 +427,29 @@ class RightsManager extends Singleton{
 		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();
 		
-		if($rightM->checkRight('scoville.roles.create', $userM->getSessionUser())){
-			$id = $db->getSeqNext('ROL_GEN');
-			$role = new Role();
-			$role->setId($id);
-			$role->setName($data->name);
-			$role->store();
-				
-			if (isset($data->rights)){
-				foreach ($data->rights as $right){
-					if ($right->granted){
-						$role->addRight($right->name);
-					}else{
-						$role->removeRight($right->name);
-					}
-				}
-				$role->store();
-			}
-			return $role;
-			
+		if($checkRight and !$rightM->checkRight('scoville.roles.create', $userM->getSessionUser())){
+			throw new RightsException("Create Role: User is not permitted to create roles");
 		}
-		throw new RightsException("Create Role: User is not permitted to create roles");
+		$id = $db->getSeqNext('ROL_GEN');
+		$role = new Role();
+		$role->setId($id);
+		$role->setName($data->name);
+		$role->store();
+			
+		if (isset($data->rights)){
+			foreach ($data->rights as $right){
+				if ($right->granted){
+					$role->addRight($right->name);
+				}else{
+					$role->removeRight($right->name);
+				}
+			}
+			$role->store();
+		}
+		return $role;
+		
+		
+		
 	}
 }
 ?>
