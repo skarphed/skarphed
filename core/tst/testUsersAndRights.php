@@ -226,8 +226,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 			$this->assertContains('scoville.manageserverdata',$role->getRights());
 			$role->removeRight('scoville.manageserverdata');
 			$this->assertNotContains('scoville.manageserverdata',$role->getRights());
-			$role->delete();
 		}catch(scv\RightsException $e){
+			$role->delete(false);
 			$_SESSION['user']->delete(false);
 			unset($_SESSION['user']);		
 			unset($_SESSION['loggedin']);	
@@ -290,6 +290,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == false){$foundRolesCreate = true;}}
 		$this->assertTrue($foundGrantRevoke and $foundRolesCreate and !$foundServerData);
 		
+		$role->delete(false);
 		$_SESSION['user']->delete(false);
 		unset($_SESSION['user']);		
 		unset($_SESSION['loggedin']);
