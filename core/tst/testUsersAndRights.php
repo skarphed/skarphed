@@ -271,6 +271,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		
 		$role->addRight('scoville.manageserverdata',false);
 		
+		$grantableRights = $role->getGrantableRights();
 		$foundGrantRevoke = false;
 		$foundServerData = false;
 		$foundRolesCreate = false;
@@ -281,6 +282,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		
 		$_SESSION->revokeRight('scoviller.manageserverdata',false);
 		
+		$grantableRights = $role->getGrantableRights();
 		$foundGrantRevoke = false;
 		$foundServerData = false;
 		$foundRolesCreate = false;
