@@ -249,6 +249,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	public function testGetGrantableRightsRole(){
 		$roleData = json_decode('{"name":"testGetGrantableRightsRole"}');
 		$userM= $this->fixture->getUserManager();
+		$rightM = $this->fixture->getRightsManager();
 		$userM->createUser("testGetGrantableRightsRole", "testpassword", null);
 		$userM->createUser("currentSessionUser","testpassword",null);
 		$user = $userM->getUserByName("testGetGrantableRightsRole");
