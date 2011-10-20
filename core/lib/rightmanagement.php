@@ -81,7 +81,7 @@ class Role {
 			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
 		}
 		
-		if (!$rightM->checkRight($rightId,$userM->getSessionUser())){
+		if ($checkRight and !$rightM->checkRight($rightId,$userM->getSessionUser())){
 				throw new RightsException("Remove Right: User Cannot edit a Roleright that he does not possess himself!");
 		}
 		
