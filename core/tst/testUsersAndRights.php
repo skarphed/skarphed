@@ -252,7 +252,6 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$rightM = $this->fixture->getRightsManager();
 		$userM->createUser("testGetGrantableRightsRole", "testpassword", null);
 		$userM->createUser("currentSessionUser","testpassword",null);
-		$user = $userM->getUserByName("testGetGrantableRightsRole");
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
 		
@@ -291,7 +290,6 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == false){$foundRolesCreate = true;}}
 		$this->assertTrue($foundGrantRevoke and $foundRolesCreate and !$foundServerData);
 		
-		$user->delete();
 		$_SESSION['user']->delete(false);
 		unset($_SESSION['user']);		
 		unset($_SESSION['loggedin']);
