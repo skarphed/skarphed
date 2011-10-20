@@ -180,6 +180,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
 		
+		$_SESSION['user']->grantRight('scoville.manageserverdata');
+		
 		$_SESSION['user']->grantRight('scoville.roles.create',false);
 		$_SESSION['user']->grantRight('scoville.roles.modify',false);
 		$_SESSION['user']->grantRight('scoville.roles.delete',false);
@@ -201,6 +203,34 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		unset($_SESSION['loggedin']);		
 	}
 	
+	public function testGrantAndRevokeRightRoleWithCheck_MissingRight(){
+		$userM= $this->fixture->getUserManager();
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
+		$this->setExpectedException('scv\RightsException','Add Right: User Cannot edit a Roleright that he does not possess himself!');
+		
+		$_SESSION['user']->grantRight('scoville.roles.create',false);
+		$_SESSION['user']->grantRight('scoville.roles.modify',false);
+		$_SESSION['user']->grantRight('scoville.roles.delete',false);
+		
+		$roleData = json_decode('{"name":"testGrantAndRevokeRightRoleWithCheck"}');
+		$rightM = $this->fixture->getRightsManager();
+		$this->fixture->debugGrindlog("run1");
+		$role = $rightM->createRole($roleData); 
+		$this->fixture->debugGrindlog("run2");
+		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
+		$role->addRight('scoville.manageserverdata');
+		$this->assertContains('scoville.manageserverdata',$role->getRights());
+		$role->removeRight('scoville.manageserverdata');
+		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
+		$role->delete();
+		
+		$_SESSION['user']->delete(false);
+		unset($_SESSION['user']);		
+		unset($_SESSION['loggedin']);		
+	}
 	
 	/*public function testGetGrantableRightsUser(){
 		$userM= $this->fixture->getUserManager();
