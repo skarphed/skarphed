@@ -67,7 +67,7 @@ class User {
 		
 		$checkstring = "";
 		if ($checkRight){
-			$checkstring = "WHERE  1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.delete')) ";
+			$checkstring = "AND  1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.delete')) ";
 		}
 		
 		$stmnt_usr="DELETE FROM USERS WHERE USR_ID = ? $checkstring ;";
