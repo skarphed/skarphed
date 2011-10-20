@@ -149,6 +149,33 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		unset($_SESSION['loggedin']);
 	}
 	
+	public function testCreateDeleteRoleWithCheck(){
+		$roledata = array('name'=>'testCreateDeleteRoleWithCheck');
+		$rightM = $this->fixture->getRightsManager();
+		$role = $rightM->createRole($roleData); 
+		
+		$this->assertEquals('scv\Role',get_class($role));
+		
+		$role->delete(false);
+		//TODO: getRole Should return null or throw exception
+		
+	}
+	
+	
+	public function testGrantAndRevokeRightRoleWithoutCheck(){
+		$roledata = array('name'=>'testGrantAndRevokeRightRoleWithoutCheck');
+		$rightM = $this->fixture->getRightsManager();
+		$role = $rightM->createRole($roleData); 
+		
+		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
+		$role->addRight('scoville.manageserverdata',false);
+		$this->assertContains('scoville.manageserverdata',$role->getRights());
+		$role->revokeRight('scoville.manageserverdata',false);
+		$this->assertNotContains('scoville.manageserverdata',$role->getRights());
+		
+		$role->delete(false);		
+	}
+	
 	/*public function testGetGrantableRightsUser(){
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testAlterPasswordUser", "testpassword", null);
