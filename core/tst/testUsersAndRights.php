@@ -320,14 +320,13 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$_SESSION['user']->revokeRight('scoville.users.grant_revoke',false);
 		
 		$grantableRights = $user->getGrantableRights();
-		$this->fixture->debugGrindlog(json_encode($user->getGrantableRights()));
 		
 		$foundGrantRevoke = false;
 		$foundServerData = false;
 		$foundRolesCreate = false;
 		foreach($grantableRights as $r){if ($r['right'] == 'scoville.users.grant_revoke' and $r['granted'] == false){$foundGrantRevoke = true;}}
 		foreach($grantableRights as $r){if ($r['right'] == 'scoville.manageserverdata' and $r['granted'] == false){$foundServerData = true;}}
-		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == true){$foundRolesCreate = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == false){$foundRolesCreate = true;}}
 		$this->assertTrue(!$foundGrantRevoke and $foundRolesCreate and !$foundServerData);
 		
 		
