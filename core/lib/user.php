@@ -322,6 +322,13 @@ class User {
 class UserManager extends Singleton {
 	private static $instance = null;
 	
+	/**
+	 * Get Instance of UserManager
+	 * 
+	 * Get the Singleton Instance of UserManager
+	 * 
+	 * @return UserManager the user manager
+	 */
 	public static function getInstance(){
 		if (UserManager::$instance==null){
 			UserManager::$instance = new UserManager();
@@ -332,18 +339,40 @@ class UserManager extends Singleton {
 	
 	protected function init(){}
 	
+	/**
+	 * Get current Session user
+	 * 
+	 * Return the user, that is affiliated with the current Session
+	 * 
+	 * @return User The current session User
+	 */
 	public function getSessionUser(){
 		if(isset($_SESSION['user'])){
 			return $_SESSION['user'];
 		}else{return null;}
 	}
 	
+	/**
+	 * Get Id of current Session user
+	 * 
+	 * Return the id of the User, that is affiliated with the current Session
+	 * 
+	 * @return int the current session users ID
+	 */
 	public function getSessionUserId(){
 		if(isset($_SESSION['user']) and $_SESSION['user'] != null){
 			return $_SESSION['user']->getId();
 		}else{return -1;}
 	}
 	
+	/**
+	 * Get User by name
+	 * 
+	 * Returns A userobject of the USer with the given name. OTherwise throws an exception
+	 * 
+	 * @param string $username The name of the user
+	 * @return User The user-object
+	 */
 	public function getUserByName($username){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -362,6 +391,14 @@ class UserManager extends Singleton {
 		return $user;
 	}
 	
+	/**
+	 * Get User by ID
+	 * 
+	 * Returns a userobject of the User with the given ID. Otherwise throws an exception
+	 * 
+	 * @param int $userId the Users ID
+	 * @return User the returned User object
+	 */
 	public function getUserById($userId){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -380,6 +417,15 @@ class UserManager extends Singleton {
 		return $user;
 	}
 	
+	
+	/**
+	 * Get Users
+	 * 
+	 * Returns All users in an array. check right checks for 'scoville.users.view'
+	 * 
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 * @return Array an array of User-Objects 
+	 */
 	public function getUsers($checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -400,6 +446,16 @@ class UserManager extends Singleton {
 		return $users;
 	}
 	
+	/**
+	 * Create User
+	 * 
+	 * Creates a user of the given Data.
+	 * 
+	 * @param string $username The name of the user that is created
+	 * @param string $password The plaintext password of the new user
+	 * @param json $userinfo Not implemented yet
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function createUser($username, $password, $userinfo, $checkRight=true){
 		$user = new User();
 		$user->setName($username);
@@ -409,6 +465,13 @@ class UserManager extends Singleton {
 		return true;
 	}
 	
+	/**
+	 * Get Users for admin Interface
+	 * 
+	 * Returns getUsers() in a json-like structure
+	 * 
+	 * @return json userlist
+	 */
 	public function getUsersForAdminInterface(){
 		$users = $this->getUsers();
 		$ret = array();
