@@ -234,7 +234,6 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	public function testGetGrantableRightsUserWithoutRole(){
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testGetGrantableRightsUserWithoutRole", "testpassword", null);
-		$userM->createUser("currentSession", "testpassword", null);
 		$user = $userM->getUserByName("testGetGrantableRightsUserWithoutRole");
 		$userM->createUser("currentSessionUser","testpassword",null);
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
