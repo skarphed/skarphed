@@ -12,7 +12,7 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		  session_destroy();
 		}catch(Exception $e){}*/
         // Array-Fixture erzeugen.
-        $this->fixture = scv\Core::getInstance();
+        $this->fixture = scv\Core::getInstance(); 
     }
  
     public function testNameIsRight() {
@@ -231,14 +231,110 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 			
 	}
 	
-	/*public function testGetGrantableRightsUser(){
+	public function testGetGrantableRightsUserWithoutRole(){
 		$userM= $this->fixture->getUserManager();
-		$userM->createUser("testAlterPasswordUser", "testpassword", null);
+		$userM->createUser("testGetGrantableRightsUserWithoutRole", "testpassword", null);
 		$userM->createUser("currentSession", "testpassword", null);
-		$user = $userM->getUserByName("testAlterPasswordUser");
+		$user = $userM->getUserByName("testGetGrantableRightsUserWithoutRole");
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
+		$_SESSION['user']->grantRight('scoville.users.grant_revoke',false);
+		$_SESSION['user']->grantRight('scoville.manageserverdata',false);
+		$_SESSION['user']->grantRight('scoville.roles.create',false);
+		
+		$grantableRights = $user->getGrantableRights();
+		$foundGrantRevoke = false;
+		$foundServerData = false;
+		$foundRolesCreate = false;
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.users.grant_revoke' and $r['granted'] == false){$foundGrantRevoke = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.manageserverdata' and $r['granted'] == false){$foundServerData = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == false){$foundRolesCreate = true;}}
+		$this->assertTrue($foundGrantRevoke and $foundRolesCreate and $foundServerData);
+		
+		$user->grantRight('scoville.roles.create');
+		
+		$grantableRights = $user->getGrantableRights();
+		$foundGrantRevoke = false;
+		$foundServerData = false;
+		$foundRolesCreate = false;
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.users.grant_revoke' and $r['granted'] == false){$foundGrantRevoke = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.manageserverdata' and $r['granted'] == false){$foundServerData = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == true){$foundRolesCreate = true;}}
+		$this->assertTrue($foundGrantRevoke and $foundRolesCreate and $foundServerData);
+		
+		$_SESSION['user']->revokeRight('scoville.users.grant_revoke',false);
+		
+		$grantableRights = $user->getGrantableRights();
+		$foundGrantRevoke = false;
+		$foundServerData = false;
+		$foundRolesCreate = false;
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.users.grant_revoke' and $r['granted'] == false){$foundGrantRevoke = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.manageserverdata' and $r['granted'] == false){$foundServerData = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == true){$foundRolesCreate = true;}}
+		$this->assertTrue(!$foundGrantRevoke and $foundRolesCreate and $foundServerData);
+		
+		$user->delete(false);
+		$_SESSION['user']->delete(false);
+		unset($_SESSION['user']);		
+		unset($_SESSION['loggedin']);
+	}
+	
+	public function testGetGrantableRightsUserWithRole(){
+		$roleData = json_decode('{"name":"testGetGrantableRightsUserWithRole","rights":[{"name":"scoville.manageserverdata","granted":true}]}');
+		$userM= $this->fixture->getUserManager();
+		$rightM = $this->fixture->getRightsManager();
+		$userM->createUser("testGetGrantableRightsUserWithRole", "testpassword", null);
+		$user = $userM->getUserByName("testGetGrantableRightsUserWithRole");
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
+		$_SESSION['user']->grantRight('scoville.users.grant_revoke',false);
+		$_SESSION['user']->grantRight('scoville.manageserverdata',false);
+		$_SESSION['user']->grantRight('scoville.roles.create',false);
+		
+		$role = $rightM->createRole($roleData,false);
+		
+		$grantableRights = $user->getGrantableRights();
+		$foundGrantRevoke = false;
+		$foundServerData = false;
+		$foundRolesCreate = false;
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.users.grant_revoke' and $r['granted'] == false){$foundGrantRevoke = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.manageserverdata' and $r['granted'] == false){$foundServerData = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == false){$foundRolesCreate = true;}}
+		$this->assertTrue($foundGrantRevoke and $foundRolesCreate and $foundServerData);
+		
+		$user->assignRole($role,false);
+		
+		$grantableRights = $user->getGrantableRights();
+		$foundGrantRevoke = false;
+		$foundServerData = false;
+		$foundRolesCreate = false;
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.users.grant_revoke' and $r['granted'] == false){$foundGrantRevoke = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.manageserverdata' and $r['granted'] == false){$foundServerData = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == false){$foundRolesCreate = true;}}
+		$this->assertTrue($foundGrantRevoke and $foundRolesCreate and !$foundServerData);
+		
+		$_SESSION['user']->revokeRight('scoville.users.grant_revoke',false);
+		
+		$grantableRights = $user->getGrantableRights();
+		$foundGrantRevoke = false;
+		$foundServerData = false;
+		$foundRolesCreate = false;
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.users.grant_revoke' and $r['granted'] == false){$foundGrantRevoke = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.manageserverdata' and $r['granted'] == false){$foundServerData = true;}}
+		foreach($grantableRights as $r){if ($r['right'] == 'scoville.roles.create' and $r['granted'] == true){$foundRolesCreate = true;}}
+		$this->assertTrue(!$foundGrantRevoke and $foundRolesCreate and !$foundServerData);
 		
 		
-	}*/
+		$role->delete(false);
+		$user->delete(false);
+		$_SESSION['user']->delete(false);
+		unset($_SESSION['user']);		
+		unset($_SESSION['loggedin']);
+	}
 	
 	public function testGetGrantableRightsRole(){
 		$roleData = json_decode('{"name":"testGetGrantableRightsRole"}');
