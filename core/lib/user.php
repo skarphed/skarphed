@@ -13,18 +13,44 @@ class User {
 	private $name = null;
 	private $password = null;
 	
+	/** 
+	 * Sets The User's Id Attribute to an integer value
+	 * 
+	 * @param int $id The new Id
+	 */
 	public function setId($id){
 		$this->id = (int)$id;
 	}
 	
+	/** 
+	 * Sets The User's Name Attribute to a string value
+	 *  
+	 * @param string $name The new Username
+	 */
 	public function setName($name){
 		$this->name = (string)$name;
 	}
 	
+	/** 
+	 * Sets The User's Password to an string value 
+	 * 
+	 * Only to be used internally! To change the password use User::alterPassword()!
+	 * The password is a ripemd160 hash
+	 * 
+	 * @param int $pwd The new Passwordhash
+	 */
 	public function setPassword($pwd){
 		$this->password = (string)$pwd;
 	}
 	
+	
+	/**
+	 * Alters the User's password. 
+	 * 
+	 * Must be given the old password. To create a password for a new user set the $newuser flag!
+	 * 
+	 * @param string $newpassword The new Password
+	 */
 	public function alterPassword($newpassword,$oldpassword,$newuser=false){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -43,14 +69,30 @@ class User {
 		}
 	}
 	
+	/**
+	 * Get the Users current Name
+	 * 
+	 * @return string The users name
+	 */
 	public function getName(){
 		return $this->name;
 	}
 	
+	/**
+	 * Get the users Id
+	 * 
+	 * @return int The users id
+	 */
 	public function getId(){
 		return $this->id;
 	}
 	
+	/**
+	 * Authenticate the user
+	 * 
+	 * @param string $password The users plaitext password
+	 * @return bool True if authentication successful
+	 */
 	public function authenticate($password){
 		$core = Core::getInstance();
 		if (hash('ripemd160',$password.User::SALT) == $this->password){
@@ -59,6 +101,13 @@ class User {
 		return false;
 	} 
 	
+	/**
+	 * Delete the user
+	 * 
+	 * Checks for Permission to delete a user. If given, deletes the User in database and his Userroles and Userrights entries
+	 * 
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use) 
+	 */
 	public function delete($checkRight=true){
 		$core = Core::getInstance();
 		$userM = $core->getUserManager();
@@ -79,6 +128,13 @@ class User {
 		return;
 	}
 	
+	/**
+	 * Store the user
+	 * 
+	 * Stores the current state of the User-object into the database. If the user has no Id, it will assign one and write this to User::id
+	 * 
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use) 
+	 */
 	public function store( $checkRight = true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -100,24 +156,55 @@ class User {
 		}
 	}
 	
+	/**
+	 * Simple role check
+	 * 
+	 * Checks if the user is assigned a given Role.
+	 * 
+	 * @param Role $role The role-object to check for
+	 * @return bool True if role is asigned to the user 
+	 */
 	public function hasRole($role){
 		$core = Core::getInstance();
 		$rightM = $core->getRightsManager();
 		return $rightM->hasRoleUser($role,$this);
 	}
 	
+	/**
+	 * Get Rights, that are assigned to the user
+	 * 
+	 * Returns a string-array of rightnames, that are linked with the user
+	 * 
+	 * @return Array The assigned Rights
+	 */
 	public function getRights(){
 		$core = Core::getInstance();
 		$rightM = $core->getRightsManager();
 		return $rightM->getRightsForUser($this);
 	}
 	
+	/**
+	 * Get Roles, that are assigned to the User
+	 * 
+	 * Returns an array of Role-objects that are linked with the user
+	 * 
+	 * @return Array The assignes Roles
+	 */
 	public function getRoles(){
 		$core = Core::getInstance();
 		$rightM = $core->getRightsManager();
 		return $rightM->getRolesForUser($this);
 	}	
 	
+	/**
+	 * Grant a right to the user
+	 * 
+	 * Grants a given right to the user. If Permssioncheck is on, the current sessionuser has to possess the right himself or have a role that contains that right.
+	 * He must have the right 'scoville.users.grant_revoke'
+	 * 
+	 * @param string $right The right to assign
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function grantRight($right, $checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -144,6 +231,15 @@ class User {
 		}
 	}
 	
+	/**
+	 * Revoke right from User
+	 * 
+	 * Revokes a given right from the user. If permissioncheck is on, the sessionuser has to have the right himself. He cannot revoke his own rights.
+	 * He must have the right 'scoville.users.grant_revoke' 
+	 * 
+	 * @param string $right The right to revoke
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function revokeRight($right, $checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -172,6 +268,13 @@ class User {
 		}
 	}
 	
+	/**
+	 * Get grantable rights
+	 * 
+	 * Get The rights, that are assignable to the User By the current sessionUser
+	 * 
+	 * @return Array A String-array of rights
+	 */
 	public function getGrantableRights(){
 		$core = Core::getInstance();
 		$rightM = $core->getRightsManager();
@@ -179,6 +282,13 @@ class User {
 		return $rightArray; 
 	}
 	
+	/**
+	 * Get Grantable Roles
+	 * 
+	 * Get the roles that are assignable to the User by the current sessionUser
+	 * 
+	 * @return Array An array of Roles represented as array {'name':string, 'granted':bool,'id':int  }
+	 */	
 	public function getGrantableRoles(){
 		$core = Core::getInstance();
 		$rightM = $core->getRightsManager();
@@ -186,10 +296,24 @@ class User {
 		return $roleArray;
 	}
 	
+	/**
+	 * Assign Role
+	 * 
+	 * Assign a role to the user. Redirects to Role->assignTo
+	 * 
+	 * @param Role $role The role-object to assign
+	 */
 	public function assignRole($role,$checkRight=true){
 		return $role->assignTo($this,$checkRight);
 	}
 	
+	/**
+	 * Revoke Role
+	 * 
+	 * Revoke a role  from the user. Redirects to Role->revokeFrom
+	 * 
+	 * @param Role $role The role-object to revoke
+	 */
 	public function revokeRole($role,$checkRight=true){
 		return $role->revokeFrom($this,$checkRight);
 	}
