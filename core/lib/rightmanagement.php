@@ -9,18 +9,47 @@ class Role {
 	private $roleId = null;
 	private $roleName = "";
 	
+	/**
+	 * Get the role Id
+	 * 
+	 * Returns the Role ID of this Role
+	 * 
+	 * @return int Role ID
+	 */
 	public function getId(){
 		return $this->roleId;
 	}
 	
+	/**
+	 * Get the Name
+	 * 
+	 * Returns the Name of this Role
+	 * 
+	 * @return string Rolename
+	 */
 	public function getName(){
 		return $this->roleName;
 	}
 	
+	/**
+	 * Set the ID
+	 * 
+	 * Sets the id of this role by a given integer
+	 * 
+	 * @param int $roleId New role ID
+	 */
 	public function setId($roleId){
 		$this->roleId = (int)$roleId;
 	}
 	
+	
+	/**
+	 * Set the name
+	 * 
+	 * Sets the name of the role by a given string
+	 * 
+	 * @param string $roleName New rolename
+	 */
 	public function setName($roleName){
 		if ($roleName != null and is_string($roleName)){
 			$this->roleName = $roleName;
@@ -29,6 +58,13 @@ class Role {
 		return false;
 	}
 	
+	/**
+	 * Store the Role
+	 * 
+	 * Store the current state of the Role to the Database
+	 * 
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function store($checkRight=true){
 		$core=Core::getInstance();
 		$db = $core->getDB();
@@ -49,6 +85,15 @@ class Role {
 		return;
 	}
 	
+	/**
+	 * Adding a Right
+	 * 
+	 * Adds a right to be linked to this role
+	 * With permissioncheck, The sessionuser must have 'scoville.roles.modify' and have the right he wants to add himself
+	 * 
+	 * @param string $rightId The name of the right to be added
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function addRight($rightId, $checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -69,6 +114,15 @@ class Role {
 		return;
 	}
 	
+	/**
+	 * Remove a right
+	 * 
+	 * Removes the given right from the role.
+	 * The sessionuser must have the right he wants to remove, along with 'scoville.roles.modify'
+	 * 
+	 * @param string rightId The right to remove
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function removeRight($rightId, $checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -89,6 +143,15 @@ class Role {
 		return;
 	}
 	
+	/**
+	 * Get Rights of Role
+	 * 
+	 * Returns the rights of this role in a string-array
+	 * With checkrights on , the sessionUser must have 'scoville.roles.modify'
+	 * 
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 * @return Array an array with strings of the rightnames
+	 */
 	public function getRights($checkRight = true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -109,6 +172,15 @@ class Role {
 		return $ret;
 	}
 	
+	/**
+	 * Simple Right-Check
+	 * 
+	 * Returns true if the role has the given right, false if not
+	 * 
+	 * @param string $right A right string identifier
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 * @return bool has right (TRUE); does not have right (FALSE) 
+	 */
 	public function hasRight($right, $checkRight = true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -128,6 +200,16 @@ class Role {
 		return false;
 	}
 	
+	/**
+	 * Get grantable rights 
+	 * 
+	 * Gets the Rights that are available to grant to this role
+	 * Returns them in a Array as json-like objects with the current state of assignment
+	 * Redirects to RightsManager::getGrantableRights($object)
+	 * 
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 * @return Array Rights as associative arrays with their current state
+	 */
 	public function getGrantableRights($checkRight = true){
 		$core = Core::getInstance();
 		$rightM = $core->getRightsManager();
@@ -135,6 +217,14 @@ class Role {
 		return $rightArray; 
 	}
 	
+	/**
+	 * Delete role
+	 * 
+	 * Deletes this Role from the database
+	 * The sessionUser must have the right 'scoville.roles.delete'
+	 * 
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function delete($checkRight=true){
 		$core=Core::getInstance();
 		$db = $core->getDB();
@@ -151,6 +241,17 @@ class Role {
 		$db->query($core,$stmntRole, array($this->roleId));
 	}
 	
+	/**
+	 * Assign a role to a User
+	 * 
+	 * Assigns this role to a user given as parameter
+	 * if checkRight is on:
+	 *   sessionUser must have 'scoville.users.grant_revoke
+	 *   sessionUser must have all rights, that this role is linked to
+	 * 
+	 * @param User $user The user that this role shall be assigned to
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function assignTo($user, $checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -178,6 +279,15 @@ class Role {
 		throw new RightsException("Grant Role: You can only allow Roles you possess yourself OR roles, that can be made up of the rights you own.");
 	}
 	
+	/**
+	 * Revoke Role From User
+	 * 
+	 * Revokes a Role from a User
+	 * If checkRight is on, the user must have 'scoville.users.grant_revoke'
+	 * 
+	 * @param User $user The user this role shall be revoked from
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 */
 	public function revokeFrom($user, $checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -203,6 +313,13 @@ class Role {
 class RightsManager extends Singleton{
 	private static $instance = null;
 	
+	/**
+	 * Get Singleton Instance
+	 * 
+	 * Returns the singleton Instance of the Rightsmanager
+	 * 
+	 * @return RightsManager The rights manager
+	 */
 	public static function getInstance(){
 		if (RightsManager::$instance==null){
 			RightsManager::$instance = new RightsManager();
@@ -213,6 +330,16 @@ class RightsManager extends Singleton{
 	
 	protected function init(){}
 	
+	/**
+	 * Check right of User
+	 * 
+	 * Returns TRUE if the right is assigned to the user by a given Role or a given Right
+	 * Returns FALSE if not
+	 * 
+	 * @param string $right A string right identifier
+	 * @param User $user The user to be checked
+	 * @return bool If assigned: TRUE, if not assigned: FALSE
+	 */
 	public function checkRight($right,$user){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -225,6 +352,14 @@ class RightsManager extends Singleton{
 		return false; 
 	}
 	
+	/**
+	 * Create a right
+	 * 
+	 * Creates a new right in the Databse by given a new rightname and the modulename, the right belongs to
+	 * 
+	 * @param string $right The name of the new right
+	 * @param string $moduleId The name of the module, the right belongs to 
+	 */
 	public function createRight($right, $moduleId){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -234,6 +369,14 @@ class RightsManager extends Singleton{
 		return;
 	}
 	
+	/**
+	 * Remove a right
+	 * 
+	 * Deletes a right from the database by the rights name and the name of the module it belongs to
+	 * 
+	 * @param string $right The name of the right
+	 * @param string $moduleId The name of the module, the right belongs to
+	 */
 	public function removeRight($right, $moduleId){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -242,6 +385,14 @@ class RightsManager extends Singleton{
 		return;
 	}
 	
+	/**
+	 * Get Rights for User
+	 * 
+	 * Returns the rights that are assigned to a user by it's roles and rights as an Array of strings
+	 * 
+	 * @param User $user The user whose roles are to be returned
+	 * @return Array An array of rightidentifier strings
+	 */
 	public function getRightsForUser($user){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -263,6 +414,18 @@ class RightsManager extends Singleton{
 		
 	}
 	
+	/**
+	 * Get grantable rights
+	 * 
+	 * Gets the rights that are assignable to either a User or a Role
+	 * The function basically delivers all rights that are assigned to the sessionUser and whether 
+	 * the user to be edited has them granted or not.
+	 * The return values are associative arrays that look like this:
+	 * array('right'=>$sessionRight,'granted'=>true)
+	 * 
+	 * @param Object $object either a role or a user who is to be checked
+	 * @return Array an Array of associative arrays as described above
+	 */
 	public function getGrantableRights($object){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -313,7 +476,18 @@ class RightsManager extends Singleton{
 		}
 		return $result;
 	}
-
+    
+	/**
+	 * Get grantable roles of User
+	 * 
+	 * Returns the Roles that can be granted to a User
+	 * Basically returns all the roles that the sessionUser Owns and the ones that can be made up by the rights of 
+	 * the sessionUser as associative arrays in this style:
+	 * array('name'=>$role->getName(),'id'=>$role->getId(),'granted'=>true)
+	 * 
+	 * @param User $user The user that is to be checked
+	 * @return Array Array of associative arrays like described above 
+	 */
     public function getGrantableRoles($user){
     	$core = Core::getInstance();
 		$db = $core->getDB();
@@ -333,7 +507,7 @@ class RightsManager extends Singleton{
 				}
 				continue;
 			}
-			$rolerights = $role->getRights();
+			$rolerights = $role->getRights();  //TODO Check this algorithm again.
 			foreach ($rolerights as $roleright){
 				if(!in_array($roleright,$sessionRights)){
 					continue 2;
@@ -349,6 +523,15 @@ class RightsManager extends Singleton{
 		return $ret;
     }
 	
+	/**
+	 * User has Role
+	 * 
+	 * Checks if a User has a role, specified by given user and role objects
+	 * 
+	 * @param Role $role The role for which Rightmanager should look
+	 * @param User $user The user to check
+	 * @return bool TRUE if user has role, FALSE if user does not have Role
+	 */
 	public function hasRoleUser($role, $user){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -361,6 +544,14 @@ class RightsManager extends Singleton{
 		return false;
 	}
 	
+	/**
+	 * Get Id for Right
+	 * 
+	 * Returns the database Id for a given right string identifier
+	 * 
+	 * @param string $right The right that's id should be seeked
+	 * @return int The id of the given right string identifier
+	 */
 	public function getIdForRight($right){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -372,6 +563,14 @@ class RightsManager extends Singleton{
 		return null;
 	}
 	
+	/**
+	 * get all Roles
+	 * 
+	 * Returns all roles as an array of Objects
+	 * 
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 * @return Array an array of role objects
+	 */
 	public function getRoles($checkRight=false){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -387,6 +586,15 @@ class RightsManager extends Singleton{
 		return $ret;
 	}
 	
+	/**
+	 * get roles for User
+	 * 
+	 * Returns all roles that are assigned to a given user as Array of role objects
+	 * 
+	 * @param User $user The user that roles are to be given
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 * @return Array an array of role objects
+	 */
 	public function getRolesForUser($user,$checkRight=false){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -402,6 +610,14 @@ class RightsManager extends Singleton{
 		return $ret;
 	}
 	
+	/**
+	 * Get Role
+	 * 
+	 * Get a role from the database by a given roleId. returns a role object
+	 * 
+	 * @param int $roleId The roles roleID
+	 * @return Role a role object
+	 */
 	public function getRole($roleId){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -414,6 +630,18 @@ class RightsManager extends Singleton{
 		return $role;
 	}
 	
+	/**
+	 * create a new role
+	 * 
+	 * Creates a new role in the database by given data in the following form:
+	 * {'name':string, 'rights':[{'name':string,'granted':bool},{'name',string,'granted':bool},...]}
+	 * if checkright is on, the user has to have 'scoville.roles.create' and every right, he wants to add to the role
+	 * 
+	 * @param Array $data The data the role should be built on
+	 * @param bool $checkRight Set false to omit permissionchecks (testing and internal use)
+	 * @return Role The created Role
+	 * 
+	 */
 	public function createRole($data,$checkRight=true){
 		if ($data == null){
 			throw new RightsException("Create Role: Cannot Create role without roleData");
