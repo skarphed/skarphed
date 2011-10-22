@@ -186,12 +186,12 @@ class User {
 		return $roleArray;
 	}
 	
-	public function assignRole($role){
-		return $role->assignTo($this);
+	public function assignRole($role,$checkRight=true){
+		return $role->assignTo($this,$checkRight);
 	}
 	
-	public function revokeRole($role){
-		return $role->revokeFrom($this);
+	public function revokeRole($role,$checkRight=true){
+		return $role->revokeFrom($this,$checkRight);
 	}
 }
 
