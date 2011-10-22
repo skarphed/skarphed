@@ -387,11 +387,23 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		
 	}
 	
-	/*protected function tearDown(){
+	protected function tearDown(){
 		try{
-		  session_destroy();
+		  $role->delete(false);
 		}catch(Exception $e){}
-	}*/
+		try{
+		  $user->delete(false);
+		}catch(Exception $e){}
+		try{
+		  $_SESSION['user']->delete(false);
+		}catch(Exception $e){}
+		try{
+		  unset($_SESSION['user']);
+		}catch(Exception $e){}
+		try{
+		  unset($_SESSION['loggedin']);
+		}catch(Exception $e){}
+	}
 	
 }
 ?>
