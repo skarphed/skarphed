@@ -4,7 +4,7 @@ require_once '../lib/core.php';
 
 use scv;
 
-class ArrayTest extends PHPUnit_Framework_TestCase {
+class TestUsersAndRights extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
     protected function setUp() {
