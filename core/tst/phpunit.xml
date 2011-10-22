@@ -1,0 +1,9 @@
+<phpunit>
+  <testsuites>
+    <testsuite name="Scoville">
+      <file>./TestCore.php</file>
+      <file>./TestDatabase.php</file>
+      <file>./TestUsersAndRights.php</file>
+    </testsuite>
+  </testsuites>
+</phpunit>
