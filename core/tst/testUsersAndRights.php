@@ -320,6 +320,8 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 		$_SESSION['user']->revokeRight('scoville.users.grant_revoke',false);
 		
 		$grantableRights = $user->getGrantableRights();
+		$this->fixture->debugGrindlog(json_encode($user->getGrantableRights));
+		
 		$foundGrantRevoke = false;
 		$foundServerData = false;
 		$foundRolesCreate = false;
