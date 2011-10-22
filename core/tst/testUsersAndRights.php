@@ -389,19 +389,29 @@ class ArrayTest extends PHPUnit_Framework_TestCase {
 	
 	protected function tearDown(){
 		try{
-		  $role->delete(false);
+		    if (isset($role) and $role != null and get_class($role) == 'scv\Role'){
+		    	$role->delete(false);
+		    }
 		}catch(Exception $e){}
 		try{
-		  $user->delete(false);
+		    if (isset($user) and $user != null and get_class($user) == 'scv\User'){
+		    	$user->delete(false);
+		    }
 		}catch(Exception $e){}
 		try{
-		  $_SESSION['user']->delete(false);
+		    if (isset($_SESSION['user']) and $_SESSION['user'] != null and get_class($_SESSION['user']) == 'scv\User'){
+		  		$_SESSION['user']->delete(false);
+		  	}
 		}catch(Exception $e){}
 		try{
-		  unset($_SESSION['user']);
+		  	if (isset($_SESSION['user'])){
+		  		unset($_SESSION['user']);
+		  	}
 		}catch(Exception $e){}
 		try{
-		  unset($_SESSION['loggedin']);
+			if (isset($_SESSION['loggedin'])){
+		  		unset($_SESSION['loggedin']);
+		  	}
 		}catch(Exception $e){}
 	}
 	
