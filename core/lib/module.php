@@ -145,7 +145,9 @@ class ModuleManager extends Singleton {
 		system('rm /tmp/'.escapeshellarg($moduleId).".tar.gz > /dev/null");
 	}
 	
-	
+	public function listRepositoryModules($repository) {
+    return json_decode(file_get_contents("http://$repository/proto.php?j=".json_encode(array("c"=>1))));
+  }
 	
 	public function installModuleFromRepository($repository, $moduleId){
 		//TODO: Implement
