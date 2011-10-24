@@ -46,10 +46,20 @@ class CssManager extends Singleton{
 	 * @return CssPropertySet A CssPropertySet Object or an Array of CssPropertySet Objects
 	 */
 	public function getCssPropertySet($moduleId=null,$widgetId=null,$sessionId=null){
-		$cssPropertySet = new CssPropertySet();
+		$core = Core::getInstance();
+		$db = $core->getDB();
 		if ($moduleId != null){
+			$cssPropertySet = $this->getCssPropertySet();
 			if ($moduleId == CssManager::ALL){
 				
+			}
+			$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME
+		                 FROM CSS 
+		                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
+		                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL AND CSS_MOD_ID = ? ;";
+			$res = $db->query($core,$stmnt_module,array($moduleId));
+			while($set = $db->fetchArray($res)){
+				$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE'],false);
 			}
 			return $cssPropertySet;
 		}
@@ -64,10 +74,11 @@ class CssManager extends Singleton{
 		}
 		
 		//The Standard CssPropertySet
+		$cssPropertySet = new CssPropertySet();
 		$stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
 		$res = $db->query($core,$stmnt);
 		while($set = $db->fetchArray($res)){
-			$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
+			$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE'],false);
 		}
 		
 		return $cssPropertySet;
@@ -257,7 +268,11 @@ class CssPropertySet {
 	 * @param string $value The value this tag should be set to
 	 * @param bool $inherited If this flag is set, the value is inherited from a higher level
 	 */
-	public function editValue ($selector, $tag, $value, $inherited=false){
-		$properties[$selector]= array('t'=>$tag,'v'=>$value,'i'=>false); //t Tag v Value i Inherited
+	public function editValue ($selector, $tag, $value, $inherited=true){
+		$properties[$selector]= array('t'=>$tag,'v'=>$value,'i'=>true); //t Tag v Value i Inherited
+	}
+	
+	public function getValue ($selector, $tag){
+		
 	}
 }
