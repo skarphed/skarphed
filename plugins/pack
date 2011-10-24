@@ -1,0 +1,11 @@
+#!/bin/bash
+case $1 in
+  *.* ) path=$1;;
+  * ) path="de.zigapeda.scoville."$1;;
+esac
+cd /var/www/plugins/$path/
+if [ -f $path.tar.gz ] ; then
+  rm $path.tar.gz
+fi
+tar cfz $path.tar.gz *
+cp $path.tar.gz /tmp/
