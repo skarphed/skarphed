@@ -81,7 +81,6 @@ create table widgets (
   wgt_sit_id int,
   wgt_mod_id int,
   wgt_space int,
-  wgt_init bool,
   constraint wgt_pk primary key (wgt_id),
   constraint wgt_fk_sit foreign key (wgt_sit_id) references sites (sit_id) on update cascade on delete cascade,
   constraint wgt_fk_mod foreign key (wgt_mod_id) references modules (mod_id) on update cascade on delete cascade
@@ -96,12 +95,14 @@ create table actionlists (
 create table actions (
   act_id int,
   act_name nstring,
-  act_atl_id int,
+  act_atl_id int not null,
+  act_order int not null,
   act_sit_id int,
   act_space int,
   act_wgt_id int,
   act_url varchar(1024),
   constraint act_pk primary key (act_id),
+  constraint act_uni_order unique (act_atl_id,act_order),
   constraint act_fk_atl foreign key (act_atl_id) references actionlists (atl_id) on update cascade on delete cascade,
   constraint act_fk_sit foreign key (act_sit_id) references sites (sit_id) on update cascade on delete cascade,
   constraint act_fk_wgt foreign key (act_wgt_id) references widgets (wgt_id) on update cascade on delete cascade
@@ -120,11 +121,13 @@ create table sites (
 create table menuitems (
   mni_id int,
   mni_name nstring,
-  mni_mnu_id int,
+  mni_mnu_id int not null,
+  mni_order int not null,
   mni_mni_id int,
   mni_atl_id int,
   constraint mni_pk primary key (mni_id),
   constraint mni_uni_name unique (mni_name),
+  constraint mni_uni_order unique (mni_mnu_id, mni_order),
   constraint mni_fk_mnu foreign key (mni_mnu_id) references menus (mnu_id) on update cascade on delete cascade,
   constraint mni_fk_mni foreign key (mni_mni_id) references menuitems (mni_id) on update cascade on delete cascade,
   constraint mni_fk_atl foreign key (mni_atl_id) references actionlists (atl_id) on update cascade on delete set null
