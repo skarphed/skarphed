@@ -89,17 +89,6 @@ class ModuleManager extends Singleton {
 	/**
 	 * registerModule registers the Module and yields a unique moduleid
 	 */
-	
-<<<<<<< HEAD
-	public function listRepositoryModules($repository) {
-    return json_decode(file_get_contents("http://$repository/proto.php?j=".json_encode(array("c"=>1))));
-  }
-	// public function listRepositoryModules() {
-	  // echo file_get_contents("http://192.168.0.111/proto.php?j=".json_encode(array("c"=>1)));
-	// }
-	
-=======
->>>>>>> refs/remotes/origin/master
 	public function registerModule($manifest){
 		$core =  Core::getInstance();
 		$db = $core->getDB();
