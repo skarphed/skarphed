@@ -9,7 +9,7 @@ class CssManager extends Singleton{
 	private static $instance = null;
 	
 	const ALL = -1;
-	
+
 	public static function getInstance(){
 		if (CssManager::$instance==null){
 			CssManager::$instance = new CssManager();
@@ -20,57 +20,122 @@ class CssManager extends Singleton{
 	
 	protected function init(){}
 	
-	
 	/**
-	 * Set Css PropertySet
+	 * Create CssPropertySet from Serialized Data
 	 * 
-	 * Takes a Css Propertyset-Object and Saves Its contents to the database
-	 * Automatically generates a new CSS-File Hash for all the sessions or
-	 * The current session, depending on what has been changed
+	 * Creates a new CssPropertySet and tries to Load it with the Data from $set
+	 * If succeeds, the new CssPropertyset will be returned
 	 * 
-	 * @param CssPropertySet $propertyset The CSS PropertySet that is to be entered to DB
-	 * 
+	 * @param Array $set The serialized Data
+	 * @return CssPropertySet The new CssPropertySet 
 	 */
-	public function setCssPropertySet($propertyset){
-		
+	public function createCssPropertySetFromSerial($set){
+		$cssPropertySet = new CssPropertySet();
+		$cssPropertySet->buildSerialized($set);
+		return $cssPropertySet;
 	}
 	
 	/**
 	 * Get CSS Propertyset
 	 * 
 	 * Gets either the general Propertyset XOR The propertyset for a module, widget or a sessionid
+	 * If $moduleId, $widgetId or $sessionId is given CssManager::ALL, it returns all CssSettings of that type
 	 * 
 	 * @param int $moduleId A Module ID
 	 * @param int $widgetId A Widget ID
 	 * @param string $sessionId A PHP Session ID
+	 * @param bool $withInherited If TRUE, generates a CssPropertySet with all inherited values (ignored, when fetching ALL sets)
 	 * @return CssPropertySet A CssPropertySet Object or an Array of CssPropertySet Objects
 	 */
-	public function getCssPropertySet($moduleId=null,$widgetId=null,$sessionId=null){
+	public function getCssPropertySet($moduleId=null,$widgetId=null,$sessionId=null,$withInherited=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		if ($moduleId != null){
-			$cssPropertySet = $this->getCssPropertySet();
 			if ($moduleId == CssManager::ALL){
+				$ret = array();
+				$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, MOD_ID
+			                 FROM CSS 
+			                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
+			                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL ;";
+				$res = $db->query($core,$stmnt_module);
+				while($set = $db->fetchArray($res)){
+					if (!isset($ret[$set['MOD_ID']])){
+						$ret[$set['MOD_ID']] = new CssPropertySet();
+						$ret[$set['MOD_ID']]->setModuleId($set['MOD_ID']);
+					}
+					$ret[$set['MOD_ID']]->editValue($set['CSS_SELECTOR'],$set['CSS_TAG'],$set['CSS_VALUE']);
+				}
+				return $ret;
+			}else{
+				if ($withInherited){
+					$cssPropertySet = $this->getCssPropertySet();
+					$cssPropertySet->setAllInherited();
+				}else{
+					$cssPropertySet = new CssPropertySet();
+				}
+				$cssPropertySet->setModuleId($moduleId);
 				
+				$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME
+			                 FROM CSS 
+			                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
+			                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL AND CSS_MOD_ID = ? ;";
+				$res = $db->query($core,$stmnt_module,array($moduleId));
+				while($set = $db->fetchArray($res)){
+					$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
+				}
+				return $cssPropertySet;
 			}
-			$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME
-		                 FROM CSS 
-		                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
-		                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL AND CSS_MOD_ID = ? ;";
-			$res = $db->query($core,$stmnt_module,array($moduleId));
-			while($set = $db->fetchArray($res)){
-				$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE'],false);
-			}
-			return $cssPropertySet;
 		}
 		if ($widgetId != null){
 			if ($widgetId = CssManager::ALL){
+				$ret = array();
+				$stmnt_widget = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, MOD_ID, WGT_NAME, WGT_ID 
+	    				 FROM CSS
+	    				   INNER JOIN WIDGET ON (CSS_WGT_ID = WGT_ID)
+	    				   INNER JOIN MODULE ON (WGT_MOD_ID = MOD_ID)
+	    				 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL;";
+				$res = $db->query($core, $stmnt_widget);
+				while($set=$db->fetchArray($res)){
+					if (!isset($ret[$set['WGT_ID']])){
+						$ret[$set['WGT_ID']] = new CssPropertySet();
+						$ret[$set['WGT_ID']]->setWidgetId($set['WGT_ID']);
+					}
+					$ret[$set['WGT_ID']]->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
+				}
+				return $ret;
 				
+			}else{
+				if ($withInherited){
+					$stmnt_moduleId = "SELECT WGT_MOD_ID FROM WIDGET WHERE WGT_ID = ? ; ";
+					$res = $db->query($core,$stmnt_moduleId,array($widgetId));
+					if ($set = $db->fetchArray($res)){
+						$cssPropertyset = $this->getCssPropertySet($moduleId=$set['WGT_MOD_ID']);
+						$cssPropertyset->setAllInherited();
+					}else{
+						throw new CssException('Get CssPropertySet: This Widget does not exist!');
+					}
+				}else{
+					$cssPropertySet = new CssPropertySet();
+				}
+				$cssPropertySet->setWidgetId=($widgetId);
+				$stmnt_widget = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, WGT_NAME 
+		    				 FROM CSS
+		    				   INNER JOIN WIDGET ON (CSS_WGT_ID = WGT_ID)
+		    				   INNER JOIN MODULE ON (WGT_MOD_ID = MOD_ID)
+		    				 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL AND CSS_WGT_ID = ? ;";
+				$res = $db->query($core,$stmnt_widget,array($widgetId));
+				while($set = $db->fetchArray($res)){
+					$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
+				}
+				return $cssPropertySet;
 			}
-			return $cssPropertySet;
 		}
 		if ($sessionId != null){
-			return $cssPropertySet;
+			return null;
+			//TODO: Implement
+			
+			/*$stmnt_session = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS
+			WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NOT NULL;";*/
 		}
 		
 		//The Standard CssPropertySet
@@ -78,7 +143,7 @@ class CssManager extends Singleton{
 		$stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
 		$res = $db->query($core,$stmnt);
 		while($set = $db->fetchArray($res)){
-			$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE'],false);
+			$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
 		}
 		
 		return $cssPropertySet;
@@ -90,25 +155,40 @@ class CssManager extends Singleton{
 	 * Renders the CSS from the databasecontents into a Css file on the server. The CSS-File
 	 * Is named after a MD5-Hash of the current user's PHPsession and a random value
 	 */
-	public function render(){
-		$core = Core::getInstance();
-		$db = $core->getDB();
-		
-	    $stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
-		$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME
-		                 FROM CSS 
-		                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
-		                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
-	    $stmnt_widget = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, WGT_NAME 
-	    				 FROM CSS
-	    				   INNER JOIN WIDGET ON (CSS_WGT_ID = WGT_ID)
-	    				   INNER JOIN MODULE ON (WGT_MOD_ID = MOD_ID)
-	    				 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL;";
-		$stmnt_session = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS
-						 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NOT NULL;";
-		
-		
-		
+	public function render($filename){
+		$css = "";
+		if ($this->getCssPropertySet($sessionId=session_id())==null){
+			$genericSet = $this->getCssPropertySet();
+			$moduleSets = $this->getCssPropertySet($moduleId=CssManager::ALL);
+			$widgetSets = $this->getCssPropertySet($widgetId=CssManager::ALL);
+			
+			$css.=$genericSet->render();
+			foreach ($moduleSets as $moduleSet){
+				$css.=$moduleSet->render();
+			}
+			foreach ($widgetSets as $widgetSet){
+				$css.=$widgetSet->render();
+			}
+			$cssFile = fopen($filename,'w');
+			fwrite($cssFile,$css);
+			fclose($cssFile);
+		}else{
+			$genericSet = $this->getCssPropertySet();
+			$moduleSets = $this->getCssPropertySet($moduleId=CssManager::ALL);
+			$widgetSets = $this->getCssPropertySet($widgetId=CssManager::ALL);
+			
+			$css.=$genericSet->render();
+			foreach ($moduleSets as $moduleSet){
+				$css.=$moduleSet->render();
+			}
+			foreach ($widgetSets as $widgetSet){
+				$css.=$widgetSet->render();
+			}
+			$cssFile = fopen($filename,'w');
+			fwrite($cssFile,$css);
+			fclose($cssFile);
+		}		
+		return; 
 	}
 	
 	/**
@@ -117,19 +197,54 @@ class CssManager extends Singleton{
 	 * Gets the name of the CSS file for the current session User
 	 */	
 	public function getCssFile(){
+		$cssFolder = "_css/"; // Auslagern in die config  UND Folder nicht mehr in der DB mitspeichern
+		
+		if(!file_exists($cssFolder) or !is_dir($cssFolder)){
+			mkdir($cssFolder);
+		}
+		
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		if (isset($_SESSION['user']) and isset($_SESSION['loggedin']) and $_SESSION['loggedin'] == true){
-			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = ? ;";
+			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = ? WHERE CSE_OUTDATED = FALSE;";
 			$res = $db->query($core,$stmnt,array(session_id()));
 			if ($set = $db->fetchArray($res)){
-				return ($set['CSE_FILE']);
+				$filename =  $set['CSE_FILE'];
 			}else{
-				return "css_generic.css";
+				$filename = $cssFolder.'style_'.hash('md5',session_id().rand(0,9999)).'.css';
+				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES (?,?,FALSE) ;";
+				$db->query($core,$stmnt,array(session_id(),$filename));
 			}
 		}else{
-			return "css_generic.css";
+			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = 'GENERAL' WHERE CSE_OUTDATED = FALSE ;";
+			$res = $db->query($core,$stmnt);
+			if ($set = $db->fetchArray($res)){
+				$filename = $set['CSE_FILE'];
+			}else{
+				$filename = $cssFolder.'style_'.hash('md5','general'.rand(0,9999)).'.css';
+				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,FALSE) ;";
+				$db->query($core,$stmnt,array($filename));
+			}
 		}
+		if (!file_exists($filename)){
+			$this->render($filename);
+		}
+		$this->cleanUpCssSessionTable();
+		return $filename;
+		
+	}
+	
+	/**
+	 * Clean up CSS Session Table
+	 * 
+	 * Deletes all Entries from CSSSESSION with CSE_OUTDATED marked as TRUE
+	 */
+	private function cleanUpCssSessionTable(){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$stmnt = "DELETE FROM CSSSESSION WHERE CSE_OUTDATED = TRUE;";
+		$db->query($core,$stmnt);
+		return;
 	}
 	
 	public function setSessionCssProperty(){
@@ -140,6 +255,8 @@ class CssManager extends Singleton{
 
 class CssPropertySet {
 	private $properties = array();
+	
+	const SPLIT = "?";
 	
 	const GENERAL = 0;
 	const MODULE = 1;
@@ -268,11 +385,212 @@ class CssPropertySet {
 	 * @param string $value The value this tag should be set to
 	 * @param bool $inherited If this flag is set, the value is inherited from a higher level
 	 */
-	public function editValue ($selector, $tag, $value, $inherited=true){
-		$properties[$selector]= array('t'=>$tag,'v'=>$value,'i'=>true); //t Tag v Value i Inherited
+	public function editValue ($selector, $tag, $value, $inherited=false){
+		//$this->properties[array('s'=>$selector,'t'=>$tag)]= array('v'=>$value,'i'=>false); //t Tag v Value i Inherited
+		$this->properties[$selector.CssPropertySet::SPLIT.$tag]= array('v'=>$value,'i'=>false); //t Tag v Value i Inherited
 	}
 	
+	/**
+	 * Get Value
+	 * 
+	 * Get A CSS Value of this CssPropertySet determined by a selector and a Tag
+	 */
 	public function getValue ($selector, $tag){
+	    if (isset($this->properties[$selector.CssPropertySet::SPLIT.$tag])){
+	    	return $this->properties[$selector.CssPropertySet::SPLIT.$tag];
+	    }else{
+	    	return null;
+	    }
+	     
+	}
+	
+	/**
+	 * Set All Values Inherited
+	 * 
+	 * Marks every CSS Property as Inherited from another CssPropertySet of higher level
+	 * Use is to easily Fetch a specialized CssPropertySet in CssManager::getCssPropertySet()
+	 */	
+	public function setAllInherited(){
+		foreach($this->properties as $selector => $setting){
+			$setting['i'] = true;
+		}
+	}
+	
+	/**
+	 * Get Non-Inherited Properties
+	 * 
+	 * GetAll non-Inherited Properties of this set
+	 * 
+	 * @return Array Non inherited Properties
+	 */
+	private function getNonInherited(){
+		$ret = array();
+		foreach ($this->properties as $selector => $values){
+			if (!$values['i']){
+				$ret[$selector] = $values;
+			}
+		}
+		return $ret;
+	}
+	
+	/**
+	 * Store the CssPropertySet
+	 * 
+	 * Store the Current State of the CssPropertyset into the Database
+	 */
+	public function store(){
+		$core = Core::getInstance();
+		$db = $core->getDB();
 		
+		$this->delete(); //Effizienter implementieren
+		
+		$valuesToStore = $this->getNonInherited();
+		$stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SESSION)
+		           VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION);";
+		foreach($valuesToStore as $selector => $values){
+			$splittedSelector = split('/\?/',$selector);
+			
+			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values['v'],$this->moduleId,$this->widgetId,$this->session));
+		}
+		
+		if ($this->type==CssPropertySet::SESSION){
+			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = TRUE WHERE CSE_SESSION = ? ;";
+			$db->query($core,$stmnt,array(session_id()));
+		}else{
+			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = TRUE;";
+			$db->query($core,$stmnt);
+		}
+		return;
+	}
+	
+	/**
+	 * Delete the CssPropertySet
+	 * 
+	 * Delete this CssPropertySet from the Database
+	 */
+	public function delete(){
+		$core = Core::getInstance();
+		$db = $core->getDB();		
+		$stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID = ? AND CSS_WGT_ID = ? AND CSS_SESSION = ? ;";
+		$db->query($core,$stmnt,array($this->moduleId,$this->widgetId,$this->session));
+		
+		if ($this->type==CssPropertySet::SESSION){
+			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = TRUE WHERE CSE_SESSION = ? ;";
+			$db->query($core,$stmnt,array(session_id()));
+		}else{
+			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = TRUE;";
+			$db->query($core,$stmnt);
+		}
+		return;
+	}
+	
+	/**
+	 * Render The CssPropertySet
+	 * 
+	 * Render This Css PropertySet
+	 * 
+	 * @return string CSS-Code
+	 */
+	public function render(){
+		$core = Core::getInstance();
+		$moduleM = $core->getModuleManager();
+		$css = "";
+		switch($this->type){
+			case CssPropertySet::GENERAL:
+				$selectorlist = array();
+				foreach ($this->getNonInherited() as $selector => $values){
+					$splittedSelector = split('/\?/',$selector);
+					if(!isset($selectorlist[$splittedSelector[0]])){
+						$selectorlist[$splittedSelector[0]]= array();
+					}
+					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
+				}
+				foreach($selectorlist as $selector => $values){
+					$css.=$selector."{";
+					foreach ($values as $value){
+						$css.=$values['t'].":".$values['v'].";";
+					}
+					$css.="}";
+				}
+				break;
+			case CssPropertySet::MODULE:
+				$selectorlist = array();
+				$moduleName = $moduleM->loadModule($this->moduleId);
+				str_replace(".", "_", $moduleName);
+				foreach ($this->getNonInherited() as $selector => $values){
+					$splittedSelector = split('/\?/',$selector);
+					if(!isset($selectorlist[$splittedSelector[0]])){
+						$selectorlist[$splittedSelector[0]]= array();
+					}
+					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
+				}
+				foreach($selectorlist as $selector => $values){
+					$css.=".".$moduleName." ".$selector."{";
+					foreach ($values as $value){
+						$css.=$values['t'].":".$values['v'].";";
+					}
+					$css.="}";
+				}
+				break;
+			case CssPropertySet::WIDGET:
+				break;
+			case CssPropertySet::SESSION:
+				break;	
+		}
+		return $css;
+	}
+
+	/**
+	 * SerializeSet
+	 * 
+	 * Serialize this object (preferably for json export to the Admin interface)
+	 * 
+	 * @return Array The serialized Object
+	 */
+	public function serializeSet(){
+		$ret = array();
+		$ret['type'] = $this->type;
+		$ret['moduleId'] = $this->moduleId;
+		$ret['widgetId'] = $this->widgetId;
+		$ret['session'] = $this->session;
+		$ret['properties'] = $this->properties;
+		return $ret;
+	}
+	
+	/**
+	 * Build from Serialized Data
+	 * 
+	 * Checks whether the serialized data is valid. If yes, builds this CssPropertySet from the data
+	 * 
+	 * @param Array $set The Serialized CssPropertySet Data
+	 */
+	public function buildSerialized($set){
+		switch($set->type){
+			case CssPropertySet::GENERAL:
+				if ($set->moduleId != null or $set->widgetId != null or $set->session !=null){
+					throw new CssException('Invalid Propertyset: GENERAL type set must not have any Ids');
+				}
+				break;
+			case CssPropertySet::MODULE:
+				if ($set->moduleId == null or $set->widgetId != null or $set->session !=null){
+					throw new CssException('Invalid Propertyset: MODULE type set must not have any Ids but must have ModuleId');
+				}
+				break;
+			case CssPropertySet::WIDGET:
+				if ($set->moduleId != null or $set->widgetId == null or $set->session !=null){
+					throw new CssException('Invalid Propertyset: WIDGET type set must not have any Ids but must have WidgetId');
+				}
+				break;
+			case CssPropertySet::SESSION:
+				if ($set->moduleId != null or $set->widgetId != null or $set->session ==null){
+					throw new CssException('Invalid Propertyset: SESSION type set must not have any Ids but must have Session');
+				}
+				break;
+		}
+		$this->moduleId = $set->moduleId;
+		$this->widgetId = $set->widgetId;
+		$this->session = $set->session;
+		$this->type = $set->type;
+		$this->properties = $set->properties;
 	}
 }

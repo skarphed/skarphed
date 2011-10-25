@@ -12,7 +12,15 @@ class de_zigapeda_scoville_flatmenu {
 	
 	public function renderHTML($moduleInstanceId){
 	  $db = $this->core->getDB();
-	  $resultset = $db->query($this,"select mnu_name, mni_name, mni_atl_id from widgets join sites on sit_id = wgt_sit_id join menus on mnu_id = sit_mnu_id join menuitems on mni_mnu_id = mnu_id where wgt_id = 1");
+	  $resultset = $db->query($this,"select mnu_name
+	                                       ,mni_name
+	                                       ,mni_atl_id
+	                                 from widgets
+	                                 join sites on sit_id = wgt_sit_id
+	                                 join menus on mnu_id = sit_mnu_id
+	                                 join menuitems on mni_mnu_id = mnu_id
+	                                 where wgt_id = 1
+	                                 order by mni_order");
 	  $text = "<div id='$moduleInstanceId'>";
 	  while($result = $db->fetchArray($resultset)) {
 	    $text .= "<a href='javascript:action(${result["MNI_ATL_ID"]}); void 0'>${result["MNI_NAME"]}</a>";

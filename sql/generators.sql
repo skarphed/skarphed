@@ -4,6 +4,7 @@ create generator mdt_gen;
 create generator mni_gen;
 create generator mnu_gen;
 create generator mod_gen;
+create generator rep_gen;
 create generator rig_gen;
 create generator rol_gen;
 create generator sit_gen;
