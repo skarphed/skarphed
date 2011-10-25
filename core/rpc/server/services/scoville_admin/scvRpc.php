@@ -187,5 +187,27 @@ class class_scvRpc {
 	$core->getUserManager()->getUserByName($userName)->revokeRole($role);
 	return;
   }
+  
+  function getCssPropertySet($params,$error){
+  	$moduleId = $params[0];
+	$widgetId = $params[1];
+	$session =  $params[2];
+	
+	$core = scv\Core::getInstance();
+	$cssM = $core->getCssManager();
+	$cssPropertySet = $cssM->getCssPropertySet($moduleId,$widgetId,$session);
+	$data = $cssPropertySet->serializeSet();
+	return json_encode($data);
+  }
+  
+  function setCssPropertySet($params,$error){
+  	$data = $params[0];
+	
+	$core = scv\Core::getInstance();
+	$cssM = $core->getCssManager();
+	$cssPropertySet = $cssM->createCssPropertySetFromSerial($data);
+	$cssPropertySet->store();
+	return;
+  }
 }
 ?>
