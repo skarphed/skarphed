@@ -140,6 +140,7 @@ class CssManager extends Singleton{
 		
 		//The Standard CssPropertySet
 		$cssPropertySet = new CssPropertySet();
+		$cssPropertySet->setTypeGeneral();
 		$stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
 		$res = $db->query($core,$stmnt);
 		while($set = $db->fetchArray($res)){
@@ -156,8 +157,9 @@ class CssManager extends Singleton{
 	 * Is named after a MD5-Hash of the current user's PHPsession and a random value
 	 */
 	public function render($filename){
+		$core = Core::getInstance();
 		$css = "";
-		if ($this->getCssPropertySet($sessionId=session_id())==null){
+		if ($this->getCssPropertySet(null,null,session_id())==null){
 			$genericSet = $this->getCssPropertySet();
 			$moduleSets = $this->getCssPropertySet($moduleId=CssManager::ALL);
 			$widgetSets = $this->getCssPropertySet($widgetId=CssManager::ALL);
@@ -499,18 +501,18 @@ class CssPropertySet {
 			case CssPropertySet::GENERAL:
 				$selectorlist = array();
 				foreach ($this->getNonInherited() as $selector => $values){
-					$splittedSelector = split('/\?/',$selector);
+					$splittedSelector = explode('?',$selector);
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
 					}
 					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
 				}
 				foreach($selectorlist as $selector => $values){
-					$css.=$selector."{";
+					$css.=$selector."{\n";
 					foreach ($values as $value){
-						$css.=$values['t'].":".$values['v'].";";
+						$css.=$value['t'].":".$value['v'].";\n";
 					}
-					$css.="}";
+					$css.="}\n\n";
 				}
 				break;
 			case CssPropertySet::MODULE:
@@ -518,18 +520,18 @@ class CssPropertySet {
 				$moduleName = $moduleM->loadModule($this->moduleId);
 				str_replace(".", "_", $moduleName);
 				foreach ($this->getNonInherited() as $selector => $values){
-					$splittedSelector = split('/\?/',$selector);
+					$splittedSelector = explode('?',$selector);
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
 					}
 					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
 				}
 				foreach($selectorlist as $selector => $values){
-					$css.=".".$moduleName." ".$selector."{";
+					$css.=".".$moduleName." ".$selector."{\n";
 					foreach ($values as $value){
-						$css.=$values['t'].":".$values['v'].";";
+						$css.=$value['t'].":".$value['v'].";\n";
 					}
-					$css.="}";
+					$css.="}\n\n";
 				}
 				break;
 			case CssPropertySet::WIDGET:
