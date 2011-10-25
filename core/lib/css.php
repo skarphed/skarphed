@@ -9,6 +9,7 @@ class CssManager extends Singleton{
 	private static $instance = null;
 	
 	const ALL = -1;
+	const TAGS = array('accelerator','border');
 	
 	public static function getInstance(){
 		if (CssManager::$instance==null){
@@ -39,38 +40,103 @@ class CssManager extends Singleton{
 	 * Get CSS Propertyset
 	 * 
 	 * Gets either the general Propertyset XOR The propertyset for a module, widget or a sessionid
+	 * If $moduleId, $widgetId or $sessionId is given CssManager::ALL, it returns all CssSettings of that type
 	 * 
 	 * @param int $moduleId A Module ID
 	 * @param int $widgetId A Widget ID
 	 * @param string $sessionId A PHP Session ID
+	 * @param bool $withInherited If TRUE, generates a CssPropertySet with all inherited values (ignored, when fetching ALL sets)
 	 * @return CssPropertySet A CssPropertySet Object or an Array of CssPropertySet Objects
 	 */
-	public function getCssPropertySet($moduleId=null,$widgetId=null,$sessionId=null){
+	public function getCssPropertySet($moduleId=null,$widgetId=null,$sessionId=null,$withInherited=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		if ($moduleId != null){
-			$cssPropertySet = $this->getCssPropertySet();
 			if ($moduleId == CssManager::ALL){
+				$ret = array();
+				$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, MOD_ID
+			                 FROM CSS 
+			                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
+			                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL ;";
+				$res = $db->query($core,$stmnt_module);
+				while($set = $db->fetchArray($res)){
+					if (!isset($ret[$set['MOD_ID']])){
+						$ret[$set['MOD_ID']] = new CssPropertySet();
+						$ret[$set['MOD_ID']]->setModuleId($set['MOD_ID']);
+					}
+					$ret[$set['MOD_ID']]->editValue($set['CSS_SELECTOR'],$set['CSS_TAG'],$set['CSS_VALUE']);
+				}
+				return $ret;
+			}else{
+				if ($withInherited){
+					$cssPropertySet = $this->getCssPropertySet();
+					$cssPropertySet->setAllInherited();
+				}else{
+					$cssPropertySet = new CssPropertySet();
+				}
+				$cssPropertySet->setModuleId($moduleId);
 				
+				$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME
+			                 FROM CSS 
+			                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
+			                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL AND CSS_MOD_ID = ? ;";
+				$res = $db->query($core,$stmnt_module,array($moduleId));
+				while($set = $db->fetchArray($res)){
+					$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
+				}
+				return $cssPropertySet;
 			}
-			$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME
-		                 FROM CSS 
-		                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
-		                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL AND CSS_MOD_ID = ? ;";
-			$res = $db->query($core,$stmnt_module,array($moduleId));
-			while($set = $db->fetchArray($res)){
-				$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE'],false);
-			}
-			return $cssPropertySet;
 		}
 		if ($widgetId != null){
 			if ($widgetId = CssManager::ALL){
+				$ret = array();
+				$stmnt_widget = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, MOD_ID, WGT_NAME, WGT_ID 
+	    				 FROM CSS
+	    				   INNER JOIN WIDGET ON (CSS_WGT_ID = WGT_ID)
+	    				   INNER JOIN MODULE ON (WGT_MOD_ID = MOD_ID)
+	    				 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL;";
+				$res = $db->query($core, $stmnt_widget);
+				while($set=$db->fetchArray($res)){
+					if (!isset($ret[$set['WGT_ID']])){
+						$ret[$set['WGT_ID']] = new CssPropertySet();
+						$ret[$set['WGT_ID']]->setWidgetId($set['WGT_ID']);
+					}
+					$ret[$set['WGT_ID']]->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
+				}
+				return $ret;
 				
+			}else{
+				if ($withInherited){
+					$stmnt_moduleId = "SELECT WGT_MOD_ID FROM WIDGET WHERE WGT_ID = ? ; ";
+					$res = $db->query($core,$stmnt_moduleId,array($widgetId));
+					if ($set = $db->fetchArray($res)){
+						$cssPropertyset = $this->getCssPropertySet($moduleId=$set['WGT_MOD_ID']);
+						$cssPropertyset->setAllInherited();
+					}else{
+						throw new CssException('Get CssPropertySet: This Widget does not exist!');
+					}
+				}else{
+					$cssPropertySet = new CssPropertySet();
+				}
+				$cssPropertySet->setWidgetId=($widgetId);
+				$stmnt_widget = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, WGT_NAME 
+		    				 FROM CSS
+		    				   INNER JOIN WIDGET ON (CSS_WGT_ID = WGT_ID)
+		    				   INNER JOIN MODULE ON (WGT_MOD_ID = MOD_ID)
+		    				 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL AND CSS_WGT_ID = ? ;";
+				$res = $db->query($core,$stmnt_widget,array($widgetId));
+				while($set = $db->fetchArray($res)){
+					$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
+				}
+				return $cssPropertySet;
 			}
-			return $cssPropertySet;
 		}
 		if ($sessionId != null){
 			return $cssPropertySet;
+			//TODO: Implement
+			
+			/*$stmnt_session = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS
+			WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NOT NULL;";*/
 		}
 		
 		//The Standard CssPropertySet
@@ -78,7 +144,7 @@ class CssManager extends Singleton{
 		$stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
 		$res = $db->query($core,$stmnt);
 		while($set = $db->fetchArray($res)){
-			$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE'],false);
+			$cssPropertySet->editValue($set['CSS_SELECTOR'], $set['CSS_TAG'], $set['CSS_VALUE']);
 		}
 		
 		return $cssPropertySet;
@@ -91,24 +157,14 @@ class CssManager extends Singleton{
 	 * Is named after a MD5-Hash of the current user's PHPsession and a random value
 	 */
 	public function render(){
-		$core = Core::getInstance();
-		$db = $core->getDB();
-		
-	    $stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
-		$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME
-		                 FROM CSS 
-		                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
-		                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
-	    $stmnt_widget = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, WGT_NAME 
-	    				 FROM CSS
-	    				   INNER JOIN WIDGET ON (CSS_WGT_ID = WGT_ID)
-	    				   INNER JOIN MODULE ON (WGT_MOD_ID = MOD_ID)
-	    				 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL;";
-		$stmnt_session = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS
-						 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NOT NULL;";
-		
-		
-		
+		if ($this->getCssPropertySet($sessionId=session_id())==null){
+			$filename = hash('md5','general'.rand(0,9999));
+			
+			
+			
+		}else{
+			$filename = hash('md5',session_id().rand(0,9999));
+		}		
 	}
 	
 	/**
@@ -268,11 +324,23 @@ class CssPropertySet {
 	 * @param string $value The value this tag should be set to
 	 * @param bool $inherited If this flag is set, the value is inherited from a higher level
 	 */
-	public function editValue ($selector, $tag, $value, $inherited=true){
-		$properties[$selector]= array('t'=>$tag,'v'=>$value,'i'=>true); //t Tag v Value i Inherited
+	public function editValue ($selector, $tag, $value, $inherited=false){
+		$this->properties[$selector]= array('t'=>$tag,'v'=>$value,'i'=>false); //t Tag v Value i Inherited
 	}
 	
 	public function getValue ($selector, $tag){
-		
+	
+	}
+	
+	/**
+	 * Set All Values Inherited
+	 * 
+	 * Marks every CSS Property as Inherited from another CssPropertySet of higher level
+	 * Use is to easily Fetch a specialized CssPropertySet in CssManager::getCssPropertySet()
+	 */	
+	public function setAllInherited(){
+		foreach($this->properties as $selector => $setting){
+			$setting['i'] = true;
+		}
 	}
 }
