@@ -44,9 +44,20 @@ create table userroles (
   constraint uro_fk_rol foreign key (uro_rol_id) references roles (rol_id) on update cascade on delete cascade
 );
 
+create table repositories (
+  rep_id int,
+  rep_name nstring,
+  rep_ip varchar(32),
+  rep_port int default 80,
+  rep_lastupdate timestamp,
+  constraint rep_pk primary key (rep_id),
+  constraint rep_uni_ipport unique (rep_id,rep_port)
+);
+
 create table modules (
   mod_id int,
   mod_name nstring,
+  mod_rep_id int,
   mod_displayname varchar(64),
   mod_versionmajor int,
   mod_versionminor int,
@@ -56,7 +67,8 @@ create table modules (
   mod_javascript blob sub_type text,
   mod_css blob sub_type text,*/
   constraint mod_pk primary key (mod_id),
-  constraint mod_uni_name unique (mod_name, mod_versionmajor, mod_versionminor, mod_versionrev)
+  constraint mod_uni_name unique (mod_name, mod_versionmajor, mod_versionminor, mod_versionrev),
+  constraint mod_fk_rep foreign key (mod_rep_id) references repositories (rep_id) on update cascade on delete set null
 );
 
 create table moduletables (
