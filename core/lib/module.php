@@ -90,9 +90,12 @@ class ModuleManager extends Singleton {
 	 * registerModule registers the Module and yields a unique moduleid
 	 */
 	
-	public function listRepositoryModules() {
-	  echo file_get_contents("http://192.168.0.111/proto.php?j=".json_encode(array("c"=>1)));
-	}
+	public function listRepositoryModules($repository) {
+    return json_decode(file_get_contents("http://$repository/proto.php?j=".json_encode(array("c"=>1))));
+  }
+	// public function listRepositoryModules() {
+	  // echo file_get_contents("http://192.168.0.111/proto.php?j=".json_encode(array("c"=>1)));
+	// }
 	
 	public function registerModule($manifest){
 		$core =  Core::getInstance();
@@ -144,10 +147,6 @@ class ModuleManager extends Singleton {
 		//Cleanup
 		system('rm /tmp/'.escapeshellarg($moduleId).".tar.gz > /dev/null");
 	}
-	
-	public function listRepositoryModules($repository) {
-    return json_decode(file_get_contents("http://$repository/proto.php?j=".json_encode(array("c"=>1))));
-  }
 	
 	public function installModuleFromRepository($repository, $moduleId){
 		//TODO: Implement
