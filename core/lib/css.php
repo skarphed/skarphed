@@ -199,6 +199,10 @@ class CssManager extends Singleton{
 	public function getCssFile(){
 		$cssFolder = "_css/"; // Auslagern in die config  UND Folder nicht mehr in der DB mitspeichern
 		
+		if(!file_exists($cssFolder) or !is_dir($cssFolder)){
+			mkdir($cssFolder);
+		}
+		
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		if (isset($_SESSION['user']) and isset($_SESSION['loggedin']) and $_SESSION['loggedin'] == true){
@@ -207,7 +211,7 @@ class CssManager extends Singleton{
 			if ($set = $db->fetchArray($res)){
 				$filename =  $set['CSE_FILE'];
 			}else{
-				$filename = $cssFolder.'style_'.hash('md5',session_id().rand(0,9999));
+				$filename = $cssFolder.'style_'.hash('md5',session_id().rand(0,9999)).'.css';
 				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES (?,?,FALSE) ;";
 				$db->query($core,$stmnt,array(session_id(),$filename));
 			}
@@ -217,7 +221,7 @@ class CssManager extends Singleton{
 			if ($set = $db->fetchArray($res)){
 				$filename = $set['CSE_FILE'];
 			}else{
-				$filename = $cssFolder.'style_'.hash('md5','general'.rand(0,9999));
+				$filename = $cssFolder.'style_'.hash('md5','general'.rand(0,9999)).'.css';
 				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,FALSE) ;";
 				$db->query($core,$stmnt,array($filename));
 			}
@@ -251,6 +255,8 @@ class CssManager extends Singleton{
 
 class CssPropertySet {
 	private $properties = array();
+	
+	const SPLIT = "?";
 	
 	const GENERAL = 0;
 	const MODULE = 1;
@@ -380,7 +386,8 @@ class CssPropertySet {
 	 * @param bool $inherited If this flag is set, the value is inherited from a higher level
 	 */
 	public function editValue ($selector, $tag, $value, $inherited=false){
-		$this->properties[array('s'=>$selector,'t'=>$tag)]= array('v'=>$value,'i'=>false); //t Tag v Value i Inherited
+		//$this->properties[array('s'=>$selector,'t'=>$tag)]= array('v'=>$value,'i'=>false); //t Tag v Value i Inherited
+		$this->properties[$selector.CssPropertySet::SPLIT.$tag]= array('v'=>$value,'i'=>false); //t Tag v Value i Inherited
 	}
 	
 	/**
@@ -389,8 +396,8 @@ class CssPropertySet {
 	 * Get A CSS Value of this CssPropertySet determined by a selector and a Tag
 	 */
 	public function getValue ($selector, $tag){
-	    if (isset($this->properties[array('s'=>$selector,'t'=>$tag)])){
-	    	return $this->properties[array('s'=>$selector,'t'=>$tag)];
+	    if (isset($this->properties[$selector.CssPropertySet::SPLIT.$tag])){
+	    	return $this->properties[$selector.CssPropertySet::SPLIT.$tag];
 	    }else{
 	    	return null;
 	    }
@@ -435,11 +442,15 @@ class CssPropertySet {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
+		$this->delete(); //Effizienter implementieren
+		
 		$valuesToStore = $this->getNonInherited();
 		$stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SESSION)
 		           VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION);";
 		foreach($valuesToStore as $selector => $values){
-			$db->query($core,$stmnt,array($selector['s'],$selector['t'],$values['v'],$this->moduleId,$this->widgetId,$this->session));
+			$splittedSelector = split('/\?/',$selector);
+			
+			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values['v'],$this->moduleId,$this->widgetId,$this->session));
 		}
 		
 		if ($this->type==CssPropertySet::SESSION){
@@ -488,10 +499,11 @@ class CssPropertySet {
 			case CssPropertySet::GENERAL:
 				$selectorlist = array();
 				foreach ($this->getNonInherited() as $selector => $values){
-					if(!isset($selectorlist[$selector['s']])){
-						$selectorlist[$selector['s']]= array();
+					$splittedSelector = split('/\?/',$selector);
+					if(!isset($selectorlist[$splittedSelector[0]])){
+						$selectorlist[$splittedSelector[0]]= array();
 					}
-					$selectorlist[$selector['s']][]=array('t'=>$selector['t'],'v'=>$values['v']);
+					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
 				}
 				foreach($selectorlist as $selector => $values){
 					$css.=$selector."{";
@@ -506,10 +518,11 @@ class CssPropertySet {
 				$moduleName = $moduleM->loadModule($this->moduleId);
 				str_replace(".", "_", $moduleName);
 				foreach ($this->getNonInherited() as $selector => $values){
-					if(!isset($selectorlist[$selector['s']])){
-						$selectorlist[$selector['s']]= array();
+					$splittedSelector = split('/\?/',$selector);
+					if(!isset($selectorlist[$splittedSelector[0]])){
+						$selectorlist[$splittedSelector[0]]= array();
 					}
-					$selectorlist[$selector['s']][]=array('t'=>$selector['t'],'v'=>$values['v']);
+					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
 				}
 				foreach($selectorlist as $selector => $values){
 					$css.=".".$moduleName." ".$selector."{";

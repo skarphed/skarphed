@@ -10,6 +10,8 @@ qx.Class.define("scoville_admin.CssEditorPage",{
 		
 		this.tabs = app.tabview;
 		
+		this.data = qx.lang.Json.parse(data);
+		
 		this.buildGui();
 		
 		this.setShowCloseButton(true);
@@ -17,23 +19,62 @@ qx.Class.define("scoville_admin.CssEditorPage",{
 	},
 	
 	members: {
-		buttonEnter:null,
-		buttonCancel:null,
-		label:null,
-		ipentry:null,
+		data:null,
 		server:null,
-		infobox:null,
-		infolabel:null,
 		heading:null,
+		cssbox:null,
+		tabs:null,
+		
+		fillCssTable : function(){
+			var newdata = [];
+			for (var element in this.data.properties){
+				var identifier = element.split("?");
+				newdata.push([identifier[0],identifier[1],this.data.properties[element].v, this.data.properties[element].i]);
+			}
+			this.cssboxTableModel.setData(newdata);
+		},
 		
 		buildGui : function (){
 			this.heading = new qx.ui.basic.Label().set({value:"<span style='font-size:18px; font-weight:bold;'>Edit CSS properties of </span>",rich:true});
 			
 			this.cssbox = new qx.ui.groupbox.GroupBox("CSS Properties", "scoville_admin/css.png");
-			this.cssbox.setLayout(new qx.ui.layout.Basic());
+			this.cssbox.setLayout(new qx.ui.layout.VBox());
 			this.setLayout(new qx.ui.layout.VBox());
-			this.buttonEnter.addListener("execute", this.enterNewServerCallback(this));
-			this.buttonCancel.addListener("execute", this.cancelCallback(this));
+			
+			var propertyCellEditorFactoryFunc = function (cellInfo)
+		    {
+		    	switch(cellInfo.col){
+		    		case 1:
+		    			return new qx.ui.table.celleditor.TextField();
+		    			break;
+		    		case 2:
+		    			//TODO: Implement Celleditors for different types of tags.
+		    			return new qx.ui.table.celleditor.TextField();
+		    			break;
+		    	}
+		    }
+		    
+			var cssCellEditorFactory = new qx.ui.table.celleditor.Dynamic(propertyCellEditorFactoryFunc);
+			
+			this.cssboxTableModel = new qx.ui.table.model.Simple();
+			this.cssboxTableModel.setColumns(["Selector","CSS-Property","Value", "Inherited"]);
+			
+            this.fillCssTable();
+            
+			this.cssboxTable = new qx.ui.table.Table(this.cssboxTableModel, {tableColumnModel : 
+				                                              function(obj){return (new qx.ui.table.columnmodel.Resize(obj));}});
+			this.cssboxTable.setColumnWidth(0,20);
+            this.cssboxTable.setColumnWidth(1,60);
+            this.cssboxTable.setColumnWidth(2,300);
+            
+            var cssTCM = this.cssboxTable.getTableColumnModel();
+			cssTCM.setCellEditorFactory(1, cssCellEditorFactory);
+			cssTCM.setCellEditorFactory(2, cssCellEditorFactory);
+			cssTCM.setDataCellRenderer(3, new qx.ui.table.cellrenderer.Boolean());
+			this.cssboxTableModel.setColumnEditable(1,true);
+			this.cssboxTableModel.setColumnEditable(2,true);
+			
+			this.cssbox.add(this.cssboxTable);
 			
 			this.add(this.heading);
 			this.add(this.cssbox);

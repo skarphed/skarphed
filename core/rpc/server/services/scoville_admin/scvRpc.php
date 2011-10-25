@@ -188,7 +188,7 @@ class class_scvRpc {
 	return;
   }
   
-  function getCssPropertySet($params,$error){
+  function method_getCssPropertySet($params,$error){
   	$moduleId = $params[0];
 	$widgetId = $params[1];
 	$session =  $params[2];
@@ -200,7 +200,7 @@ class class_scvRpc {
 	return json_encode($data);
   }
   
-  function setCssPropertySet($params,$error){
+  function method_setCssPropertySet($params,$error){
   	$data = $params[0];
 	
 	$core = scv\Core::getInstance();

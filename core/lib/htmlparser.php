@@ -11,12 +11,14 @@ class HtmlParser {
 	
   public function parseHtml() {
     $core = Core::getInstance();
+	$cssM = $core->getCssManager();
     $db = $core->getDB();
     $resultset = $db->query($core, "select first 1 sit_html from sites order by sit_id;");
     $result = $db->fetchArray($resultset);
     echo "<!DOCTYPE HTML>
           <html>
             <head>
+              <link type='text/css' href='".$cssM->getCssFile()."' rel='stylesheet'>
               <link type='text/css' href='style.php' rel='stylesheet'>
             </head>
             <body>

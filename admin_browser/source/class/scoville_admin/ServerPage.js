@@ -58,9 +58,27 @@ qx.Class.define("scoville_admin.ServerPage",{
 		},
 		
 		buildGui : function(){
-			
+			this.cssButton = new qx.ui.form.Button("Edit Serverwide CSS");
+			this.setLayout(new qx.ui.layout.VBox());
+			this.add(this.cssButton);
+			this.cssButton.addListener("execute", this.editCSSCallback(this));
 		},
 		
+		createOpenCSSHandler: function (me){
+			return function (result,exc){
+				if (exc == null){
+					new scoville_admin.CssEditorPage(me.app, me.server,result);
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
+		editCSSCallback : function(me){
+			return function(){
+				me.app.createRPCObject(me.server.ip).callAsync(me.createOpenCSSHandler(me),"getCssPropertySet",null,null,null);
+			}
+		},
 		
 		cancelCallback: function(me){
 			return function(){}
