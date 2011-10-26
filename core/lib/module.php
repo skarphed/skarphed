@@ -276,6 +276,10 @@ class Repository {
 	public function getModule($moduleid) {
 		
 	}
+	
+	public function store() {
+		
+	}
 }
 
 ?>
