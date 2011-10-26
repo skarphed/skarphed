@@ -145,4 +145,25 @@ create table menuitems (
   constraint mni_fk_atl foreign key (mni_atl_id) references actionlists (atl_id) on update cascade on delete set null
 );
 
-  
+create table css
+(
+  css_id int,
+  css_selector varchar(15) not null,
+  css_mod_id int,
+  css_wgt_id int,
+  css_session varchar(32),
+  css_tag varchar(20) not null,
+  css_value varchar(50) not null,
+  constraint css_pk primary key (css_id),
+  constraint css_uni_selector unique (css_selector,css_mod_id,css_wgt_id,css_session,css_tag),
+  constraint css_fk_mod foreign key (css_mod_id) references modules (mod_id) on update cascade on delete cascade,
+  constraint css_fk_wgt foreign key (css_wgt_id) references widgets (wgt_id) on update cascade on delete cascade
+);
+
+create table csssession
+(
+  cse_session varchar(32) not null,
+  cse_file varchar(50) not null,
+  cse_outdated bool,
+  constraint cse_pk primary key (cse_session,cse_file)
+);
