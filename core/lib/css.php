@@ -542,6 +542,24 @@ class CssPropertySet {
 				}
 				break;
 			case CssPropertySet::WIDGET:
+				$selectorlist = array();
+				foreach ($this->getNonInherited() as $selector => $values){
+					$splittedSelector = explode('?',$selector);
+					if (count($splittedSelector) == 1){
+						array_unshift("",$splittedSelector);
+					}
+					if(!isset($selectorlist[$splittedSelector[0]])){
+						$selectorlist[$splittedSelector[0]]= array();
+					}
+					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
+				}
+				foreach($selectorlist as $selector => $values){
+					$css.="#".$this->widgetId." ".$selector."{\n";
+					foreach ($values as $value){
+						$css.=$value['t'].":".$value['v'].";\n";
+					}
+					$css.="}\n\n";
+				}
 				break;
 			case CssPropertySet::SESSION:
 				break;	
