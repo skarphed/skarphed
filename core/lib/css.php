@@ -502,6 +502,9 @@ class CssPropertySet {
 				$selectorlist = array();
 				foreach ($this->getNonInherited() as $selector => $values){
 					$splittedSelector = explode('?',$selector);
+					if (count($splittedSelector) == 1){
+						array_unshift("",$splittedSelector);
+					}
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
 					}
@@ -517,10 +520,14 @@ class CssPropertySet {
 				break;
 			case CssPropertySet::MODULE:
 				$selectorlist = array();
-				$moduleName = $moduleM->loadModule($this->moduleId)->getName();
+				$moduleName = $moduleM->loadModuleById($this->moduleId)->getName();
 				$moduleName = str_replace(".", "_", $moduleName);
 				foreach ($this->getNonInherited() as $selector => $values){
+					
 					$splittedSelector = explode('?',$selector);
+					if (count($splittedSelector) == 1){
+						array_unshift("",$splittedSelector);
+					}
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
 					}
