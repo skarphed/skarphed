@@ -1,5 +1,6 @@
 create generator act_gen;
 create generator atl_gen;
+create generator css_gen;
 create generator mdt_gen;
 create generator mni_gen;
 create generator mnu_gen;
