@@ -222,9 +222,7 @@ class CssManager extends Singleton{
 			$res = $db->query($core,$stmnt);
 			if ($set = $db->fetchArray($res)){
 				$filename = $set['CSE_FILE'];
-				$core->debugGrindlog('USE OLD FILE');
 			}else{
-				$core->debugGrindlog('GEN NEW FILE');
 				$filename = $cssFolder.'style_'.hash('md5','general'.rand(0,9999)).'.css';
 				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,0) ;";
 				$db->query($core,$stmnt,array($filename));
@@ -428,9 +426,10 @@ class CssPropertySet {
 	 * @return Array Non inherited Properties
 	 */
 	private function getNonInherited(){
+		$core = Core::getInstance();
 		$ret = array();
 		foreach ($this->properties as $selector => $values){
-			if (!$values['i']){
+			if ($values->i != true){
 				$ret[$selector] = $values;
 			}
 		}
@@ -452,9 +451,10 @@ class CssPropertySet {
 		$stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SESSION)
 		           VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION);";
 		foreach($valuesToStore as $selector => $values){
-			$splittedSelector = split('/\?/',$selector);
+			$splittedSelector = explode('?',$selector);
 			
-			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values['v'],$this->moduleId,$this->widgetId,$this->session));
+			//TODO: HERE BE DRAGONS -> OBJEKTZUGRIFF mit pfeil. koennte das probleme machen?
+			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values->v,$this->moduleId,$this->widgetId,$this->session));
 		}
 		
 		if ($this->type==CssPropertySet::SESSION){
