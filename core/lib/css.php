@@ -517,8 +517,8 @@ class CssPropertySet {
 				break;
 			case CssPropertySet::MODULE:
 				$selectorlist = array();
-				$moduleName = $moduleM->loadModule($this->moduleId);
-				str_replace(".", "_", $moduleName);
+				$moduleName = $moduleM->loadModule($this->moduleId)->getName();
+				$moduleName = str_replace(".", "_", $moduleName);
 				foreach ($this->getNonInherited() as $selector => $values){
 					$splittedSelector = explode('?',$selector);
 					if(!isset($selectorlist[$splittedSelector[0]])){
