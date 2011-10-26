@@ -213,7 +213,7 @@ class ModuleManager extends Singleton {
 	public function loadModuleById($moduleId){
 		$core = Core::getInstance();
 		$db = $core->getDB();
-		$stmtnt = "SELECT MOD_NAME FROM MODULES WHERE MOD_ID = ? ;";
+		$stmnt = "SELECT MOD_NAME FROM MODULES WHERE MOD_ID = ? ;";
 		$res = $db->query($core,$stmnt,array($moduleId));
 		if ($set = $db->fetchArray($res)){
 			$moduleName = $set['MOD_NAME'];
@@ -221,7 +221,7 @@ class ModuleManager extends Singleton {
 			throw new ModuleException("Load Module: Module with id $moduleId does not exist!");
 		}
 		try{
-			include_once $moduleId."/module.php";
+			include_once $moduleName."/module.php";
 			$moduleClass = str_replace(".","_", $moduleName);
 			//eval("\$module = new $moduleClass(\$core);");
 			$module = new $moduleClass($core);
