@@ -10,7 +10,7 @@ class de_zigapeda_scoville_flatmenu {
 		return "de.zigapeda.scoville.flatmenu";
 	}
 	
-	public function renderHTML($moduleInstanceId){
+	public function renderHTML($moduleId, $moduleInstanceId){
 	  $db = $this->core->getDB();
 	  $resultset = $db->query($this,"select mnu_name
 	                                       ,mni_name
@@ -28,7 +28,7 @@ class de_zigapeda_scoville_flatmenu {
 		return $text . "</div>";
 	}
 	
-	public function renderJavascript($moduleInstanceId){
+	public function renderJavascript($moduleId, $moduleInstanceId){
 		return "function ${moduleInstanceId}init() {
 	  }
 	  function ${moduleInstanceId}destroy() {

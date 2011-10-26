@@ -10,11 +10,11 @@ class de_zigapeda_scoville_date {
 		return "de.zigapeda.scoville.date";
 	}
 	
-	public function renderHTML($moduleInstanceId){
+	public function renderHTML($moduleId, $moduleInstanceId){
 		return "<div id='$moduleInstanceId'></div>";
 	}
 	
-	public function renderJavascript($moduleInstanceId){
+	public function renderJavascript($moduleId, $moduleInstanceId){
 		return "var ${moduleInstanceId}interval;
 		function " . $moduleInstanceId . "timer() {
 	    var date = new Date();
