@@ -55,7 +55,7 @@ class CssManager extends Singleton{
 				$ret = array();
 				$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, MOD_ID
 			                 FROM CSS 
-			                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
+			                   INNER JOIN MODULES ON (CSS_MOD_ID = MOD_ID)
 			                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL ;";
 				$res = $db->query($core,$stmnt_module);
 				while($set = $db->fetchArray($res)){
@@ -77,7 +77,7 @@ class CssManager extends Singleton{
 				
 				$stmnt_module = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME
 			                 FROM CSS 
-			                   INNER JOIN MODULE ON (CSS_MOD_ID = MOD_ID)
+			                   INNER JOIN MODULES ON (CSS_MOD_ID = MOD_ID)
 			                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL AND CSS_MOD_ID = ? ;";
 				$res = $db->query($core,$stmnt_module,array($moduleId));
 				while($set = $db->fetchArray($res)){
@@ -91,8 +91,8 @@ class CssManager extends Singleton{
 				$ret = array();
 				$stmnt_widget = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, MOD_ID, WGT_NAME, WGT_ID 
 	    				 FROM CSS
-	    				   INNER JOIN WIDGET ON (CSS_WGT_ID = WGT_ID)
-	    				   INNER JOIN MODULE ON (WGT_MOD_ID = MOD_ID)
+	    				   INNER JOIN WIDGETS ON (CSS_WGT_ID = WGT_ID)
+	    				   INNER JOIN MODULES ON (WGT_MOD_ID = MOD_ID)
 	    				 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL;";
 				$res = $db->query($core, $stmnt_widget);
 				while($set=$db->fetchArray($res)){
@@ -106,7 +106,7 @@ class CssManager extends Singleton{
 				
 			}else{
 				if ($withInherited){
-					$stmnt_moduleId = "SELECT WGT_MOD_ID FROM WIDGET WHERE WGT_ID = ? ; ";
+					$stmnt_moduleId = "SELECT WGT_MOD_ID FROM WIDGETS WHERE WGT_ID = ? ; ";
 					$res = $db->query($core,$stmnt_moduleId,array($widgetId));
 					if ($set = $db->fetchArray($res)){
 						$cssPropertyset = $this->getCssPropertySet($moduleId=$set['WGT_MOD_ID']);
@@ -120,8 +120,8 @@ class CssManager extends Singleton{
 				$cssPropertySet->setWidgetId=($widgetId);
 				$stmnt_widget = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, WGT_NAME 
 		    				 FROM CSS
-		    				   INNER JOIN WIDGET ON (CSS_WGT_ID = WGT_ID)
-		    				   INNER JOIN MODULE ON (WGT_MOD_ID = MOD_ID)
+		    				   INNER JOIN WIDGETS ON (CSS_WGT_ID = WGT_ID)
+		    				   INNER JOIN MODULES ON (WGT_MOD_ID = MOD_ID)
 		    				 WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL AND CSS_WGT_ID = ? ;";
 				$res = $db->query($core,$stmnt_widget,array($widgetId));
 				while($set = $db->fetchArray($res)){
