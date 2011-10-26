@@ -161,8 +161,8 @@ class CssManager extends Singleton{
 		$css = "";
 		if ($this->getCssPropertySet(null,null,session_id())==null){
 			$genericSet = $this->getCssPropertySet();
-			$moduleSets = $this->getCssPropertySet($moduleId=CssManager::ALL);
-			$widgetSets = $this->getCssPropertySet($widgetId=CssManager::ALL);
+			$moduleSets = $this->getCssPropertySet($moduleId=CssManager::ALL,null,null);
+			$widgetSets = $this->getCssPropertySet(null,$widgetId=CssManager::ALL,null);
 			
 			$css.=$genericSet->render();
 			foreach ($moduleSets as $moduleSet){
@@ -176,8 +176,8 @@ class CssManager extends Singleton{
 			fclose($cssFile);
 		}else{
 			$genericSet = $this->getCssPropertySet();
-			$moduleSets = $this->getCssPropertySet($moduleId=CssManager::ALL);
-			$widgetSets = $this->getCssPropertySet($widgetId=CssManager::ALL);
+			$moduleSets = $this->getCssPropertySet($moduleId=CssManager::ALL,null,null);
+			$widgetSets = $this->getCssPropertySet(null,$widgetId=CssManager::ALL,null);
 			
 			$css.=$genericSet->render();
 			foreach ($moduleSets as $moduleSet){
@@ -208,23 +208,23 @@ class CssManager extends Singleton{
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		if (isset($_SESSION['user']) and isset($_SESSION['loggedin']) and $_SESSION['loggedin'] == true){
-			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = ? WHERE CSE_OUTDATED = FALSE;";
+			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = ? WHERE CSE_OUTDATED = 0;";
 			$res = $db->query($core,$stmnt,array(session_id()));
 			if ($set = $db->fetchArray($res)){
 				$filename =  $set['CSE_FILE'];
 			}else{
 				$filename = $cssFolder.'style_'.hash('md5',session_id().rand(0,9999)).'.css';
-				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES (?,?,FALSE) ;";
+				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES (?,?,0) ;";
 				$db->query($core,$stmnt,array(session_id(),$filename));
 			}
 		}else{
-			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = 'GENERAL' WHERE CSE_OUTDATED = FALSE ;";
+			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = 'GENERAL' WHERE CSE_OUTDATED = 0 ;";
 			$res = $db->query($core,$stmnt);
 			if ($set = $db->fetchArray($res)){
 				$filename = $set['CSE_FILE'];
 			}else{
 				$filename = $cssFolder.'style_'.hash('md5','general'.rand(0,9999)).'.css';
-				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,FALSE) ;";
+				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,0) ;";
 				$db->query($core,$stmnt,array($filename));
 			}
 		}
@@ -244,7 +244,7 @@ class CssManager extends Singleton{
 	private function cleanUpCssSessionTable(){
 		$core = Core::getInstance();
 		$db = $core->getDB();
-		$stmnt = "DELETE FROM CSSSESSION WHERE CSE_OUTDATED = TRUE;";
+		$stmnt = "DELETE FROM CSSSESSION WHERE CSE_OUTDATED = 1;";
 		$db->query($core,$stmnt);
 		return;
 	}
@@ -456,10 +456,10 @@ class CssPropertySet {
 		}
 		
 		if ($this->type==CssPropertySet::SESSION){
-			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = TRUE WHERE CSE_SESSION = ? ;";
+			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1 WHERE CSE_SESSION = ? ;";
 			$db->query($core,$stmnt,array(session_id()));
 		}else{
-			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = TRUE;";
+			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1;";
 			$db->query($core,$stmnt);
 		}
 		return;
@@ -477,10 +477,10 @@ class CssPropertySet {
 		$db->query($core,$stmnt,array($this->moduleId,$this->widgetId,$this->session));
 		
 		if ($this->type==CssPropertySet::SESSION){
-			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = TRUE WHERE CSE_SESSION = ? ;";
+			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1 WHERE CSE_SESSION = ? ;";
 			$db->query($core,$stmnt,array(session_id()));
 		}else{
-			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = TRUE;";
+			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1;";
 			$db->query($core,$stmnt);
 		}
 		return;
