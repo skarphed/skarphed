@@ -208,7 +208,7 @@ class CssManager extends Singleton{
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		if (isset($_SESSION['user']) and isset($_SESSION['loggedin']) and $_SESSION['loggedin'] == true){
-			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = ? WHERE CSE_OUTDATED = 0;";
+			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = ? AND CSE_OUTDATED = 0;";
 			$res = $db->query($core,$stmnt,array(session_id()));
 			if ($set = $db->fetchArray($res)){
 				$filename =  $set['CSE_FILE'];
@@ -218,7 +218,7 @@ class CssManager extends Singleton{
 				$db->query($core,$stmnt,array(session_id(),$filename));
 			}
 		}else{
-			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = 'GENERAL' WHERE CSE_OUTDATED = 0 ;";
+			$stmnt ="SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SESSION = 'GENERAL' AND CSE_OUTDATED = 0 ;";
 			$res = $db->query($core,$stmnt);
 			if ($set = $db->fetchArray($res)){
 				$filename = $set['CSE_FILE'];
