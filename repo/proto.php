@@ -1,5 +1,4 @@
 <?php
-// echo "<html>\n<body>";
 include_once "repo_database.php";
 
 	$con = new repo_database();
@@ -80,18 +79,16 @@ include_once "repo_database.php";
 	}
 	
 	function moduldep($module, $con){
+		$modul = array();
 		$resultset = $con->query("select distinct mod_name, dep_mod_dependson from module inner join dependency on (mod_id = dep_mod_id) where mod_id = '".$module."'");
 		while($result = $con->fetchArray($resultset)){
-			echo "${result["MOD_NAME"]} ${result["DEP_MOD_DEPENDSON"]}";
-			echo "<br>";
-			echo "uebergebe hiermit ${result["DEP_MOD_DEPENDSON"]} <br>";
-//			moduldep(${result["DEP_MOD_DEPENDSON"]}, $con);
-			
+			array_push($modul, ${result['MOD_NAME']});
+//			echo "${result['MOD_NAME']}"
+			moduldep(${result["DEP_MOD_DEPENDSON"]}, $con);
+//			echo "${result["MOD_NAME"]} ${result["DEP_MOD_DEPENDSON"]}";
+//			echo "<br>";
+//			echo "uebergebe hiermit ${result["DEP_MOD_DEPENDSON"]} <br>";
 		}
+		echo json_encode($modul);
 	}
-	
-
-
-
-// echo "</body>\n</html>";
 ?>
