@@ -556,7 +556,7 @@ class CssPropertySet {
 					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
 				}
 				foreach($selectorlist as $selector => $values){
-					$css.="#w".$this->widgetId." ".$selector."{\n";
+					$css.=".w".$this->widgetId." ".$selector."{\n";
 					foreach ($values as $value){
 						$css.=$value['t'].":".$value['v'].";\n";
 					}
