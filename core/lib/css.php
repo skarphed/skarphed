@@ -222,7 +222,9 @@ class CssManager extends Singleton{
 			$res = $db->query($core,$stmnt);
 			if ($set = $db->fetchArray($res)){
 				$filename = $set['CSE_FILE'];
+				$core->debugGrindlog('USE OLD FILE');
 			}else{
+				$core->debugGrindlog('GEN NEW FILE');
 				$filename = $cssFolder.'style_'.hash('md5','general'.rand(0,9999)).'.css';
 				$stmnt = "INSERT INTO CSSSESSION (CSE_SESSION,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,0) ;";
 				$db->query($core,$stmnt,array($filename));
@@ -554,7 +556,7 @@ class CssPropertySet {
 					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
 				}
 				foreach($selectorlist as $selector => $values){
-					$css.="#".$this->widgetId." ".$selector."{\n";
+					$css.="#w".$this->widgetId." ".$selector."{\n";
 					foreach ($values as $value){
 						$css.=$value['t'].":".$value['v'].";\n";
 					}
