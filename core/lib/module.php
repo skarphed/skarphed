@@ -260,16 +260,16 @@ class Repository {
 		return $list;
 	}
 	
-	public function getAllVersions($moduleid) {
-		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>2,"m"=>$moduleid))));
+	public function getAllVersions($modulemeta) {
+		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>2,"m"=>$modulemeta))));
 		return $list;
 	}
 	
-	public function getDependencies($moduleid) {
+	public function getDependencies($modulemeta) {
 		
 	}
 	
-	public function getDescDependencies($moduleid) {
+	public function getDescDependencies($modulemeta) {
 		
 	}
 	

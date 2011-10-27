@@ -21,7 +21,7 @@ class de_zigapeda_scoville_flatmenu {
 	                                 join menuitems on mni_mnu_id = mnu_id
 	                                 where wgt_id = 1
 	                                 order by mni_order");
-	  $text = "<div id='$moduleInstanceId'>";
+	  $text = "<div id='$moduleInstanceId' class='de_zigapeda_scoville_flatmenu w$moduleId'>";
 	  while($result = $db->fetchArray($resultset)) {
 	    $text .= "<a href='javascript:action(${result["MNI_ATL_ID"]}); void 0'>${result["MNI_NAME"]}</a>";
 	  }

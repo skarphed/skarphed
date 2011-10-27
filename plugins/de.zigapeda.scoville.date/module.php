@@ -11,7 +11,7 @@ class de_zigapeda_scoville_date {
 	}
 	
 	public function renderHTML($moduleId, $moduleInstanceId){
-		return "<div id='$moduleInstanceId'></div>";
+		return "<div id='$moduleInstanceId' class='de_zigapeda_scoville_date w$moduleId'></div>";
 	}
 	
 	public function renderJavascript($moduleId, $moduleInstanceId){
