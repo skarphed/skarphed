@@ -426,9 +426,10 @@ class CssPropertySet {
 	 * @return Array Non inherited Properties
 	 */
 	private function getNonInherited(){
+		$core = Core::getInstance();
 		$ret = array();
 		foreach ($this->properties as $selector => $values){
-			if (!$values['i']){
+			if ($values->i != true){
 				$ret[$selector] = $values;
 			}
 		}
@@ -450,9 +451,10 @@ class CssPropertySet {
 		$stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SESSION)
 		           VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION);";
 		foreach($valuesToStore as $selector => $values){
-			$splittedSelector = split('/\?/',$selector);
+			$splittedSelector = explode('?',$selector);
 			
-			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values['v'],$this->moduleId,$this->widgetId,$this->session));
+			//TODO: HERE BE DRAGONS -> OBJEKTZUGRIFF mit pfeil. koennte das probleme machen?
+			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values->v,$this->moduleId,$this->widgetId,$this->session));
 		}
 		
 		if ($this->type==CssPropertySet::SESSION){
@@ -542,6 +544,24 @@ class CssPropertySet {
 				}
 				break;
 			case CssPropertySet::WIDGET:
+				$selectorlist = array();
+				foreach ($this->getNonInherited() as $selector => $values){
+					$splittedSelector = explode('?',$selector);
+					if (count($splittedSelector) == 1){
+						array_unshift("",$splittedSelector);
+					}
+					if(!isset($selectorlist[$splittedSelector[0]])){
+						$selectorlist[$splittedSelector[0]]= array();
+					}
+					$selectorlist[$splittedSelector[0]][]=array('t'=>$splittedSelector[1],'v'=>$values['v']);
+				}
+				foreach($selectorlist as $selector => $values){
+					$css.=".w".$this->widgetId." ".$selector."{\n";
+					foreach ($values as $value){
+						$css.=$value['t'].":".$value['v'].";\n";
+					}
+					$css.="}\n\n";
+				}
 				break;
 			case CssPropertySet::SESSION:
 				break;	

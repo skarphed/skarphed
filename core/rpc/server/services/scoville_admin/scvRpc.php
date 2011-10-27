@@ -203,7 +203,7 @@ class class_scvRpc {
   function method_setCssPropertySet($params,$error){
   	$data = $params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = scv\Core::getInstance();	
 	$cssM = $core->getCssManager();
 	$cssPropertySet = $cssM->createCssPropertySetFromSerial($data);
 	$cssPropertySet->store();
