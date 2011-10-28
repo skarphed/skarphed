@@ -29,6 +29,22 @@ qx.Class.define("scoville_admin.ServerPage",{
 		infolabel:null,
 		heading:null,
 		
+		enterRepoFinished : function(me){
+			return function(result,exc){
+				if (exc == null){
+					
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
+		enterRepoCallback : function(me){
+			return function(){
+				me.app.createRPCObject(me.server.ip).callAsync(me.enterRepoFinished(me),"changeRepository",me.repoEntry.getValue());
+			}
+		},
+		
 		buildLogin : function (){
 			this.heading = new qx.ui.basic.Label().set({value:"<span style='font-size:18px; font-weight:bold;'>Authentication</span>",rich:true});
 			
@@ -58,8 +74,19 @@ qx.Class.define("scoville_admin.ServerPage",{
 		},
 		
 		buildGui : function(){
+			this.repobox = new qx.ui.groupbox.GroupBox("Module Repository", "scoville_admin/module.png");
+			this.repobox.setLayout(new qx.ui.layout.HBox());
+			this.repoEntry = new qx.ui.form.TextField();
+			this.repoLabel = new qx.ui.basic.Label("IP of module-repository:");
+			this.repoSaveButton = new qx.ui.form.Button("Save");
+			this.repobox.add(this.repoLabel);
+			this.repobox.add(this.repoEntry);
+			this.repobox.add(this.repoSaveButton);
+			this.repoSaveButton.addListener("execute", this.enterRepoCallback(this));
+			
 			this.cssButton = new qx.ui.form.Button("Edit Serverwide CSS");
 			this.setLayout(new qx.ui.layout.VBox());
+			this.add(this.repobox);
 			this.add(this.cssButton);
 			this.cssButton.addListener("execute", this.editCSSCallback(this));
 		},

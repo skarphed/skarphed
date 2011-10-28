@@ -45,6 +45,25 @@ qx.Class.define("scoville_admin.Server",
 			return this.ip;
 		},
 		
+		createGetModulesHandler : function (me){
+			return function(result,exc){
+				if (exc == null){
+					if (result===false){
+						return;
+					}
+					var resultJson = qx.lang.Json.parse(result);
+					me.modules = new scoville_admin.Modules(me.app);
+					me.add(me.modules);
+					for (var i = 0; i < resultJson.length; i++){
+						var module = new scoville_admin.Module(me.app, resultJson[i]);
+						me.modules.add(module);
+					}
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
 		createGetUsersHandler : function(me){
 			var f = function(result,exc){
 				if (exc == null){
@@ -54,7 +73,7 @@ qx.Class.define("scoville_admin.Server",
 					me.users = new scoville_admin.Users(me.app);
 					me.add(me.users);
 					for (var i = 0; i < result.length; i++ ){
-						var user = new scoville_admin.User(me.app, result[i])
+						var user = new scoville_admin.User(me.app, result[i]);
 						me.users.add(user);
 					}
 						
@@ -108,7 +127,6 @@ qx.Class.define("scoville_admin.Server",
 						
 						
 						me.add(me.sites);
-						me.add(me.modules);
 						
 						if (me.rightsForSession.indexOf('scoville.users.view')!=-1){
 					        me.app.createRPCObject(me.ip).callAsync(me.createGetUsersHandler(me),"getUsers");
@@ -118,6 +136,9 @@ qx.Class.define("scoville_admin.Server",
 					        me.app.createRPCObject(me.ip).callAsync(me.createGetRolesHandler(me),"getRoles");
 					    }
 					    
+					    if (true){
+					    	me.app.createRPCObject(me.ip).callAsync(me.createGetModulesHandler(me),"getModules",true);
+					    }
 					    
 						
 					}else{
