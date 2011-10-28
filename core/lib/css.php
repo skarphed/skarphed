@@ -414,7 +414,11 @@ class CssPropertySet {
 	 */	
 	public function setAllInherited(){
 		foreach($this->properties as $selector => $setting){
-			$setting['i'] = true;
+			if (is_object($setting)){
+				$this->properties[$selector]->i = true;
+			}else{
+				$this->properties[$selector]['i'] = true;
+			}
 		}
 	}
 	
@@ -454,7 +458,6 @@ class CssPropertySet {
 		$this->delete(); //Effizienter implementieren
 		
 		$valuesToStore = $this->getNonInherited();
-		$core->debugGrindlog("PASS1");
 		$stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SESSION)
 		           VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION);";
 		foreach($valuesToStore as $selector => $values){
@@ -462,7 +465,6 @@ class CssPropertySet {
 			
 			//TODO: HERE BE DRAGONS -> OBJEKTZUGRIFF mit pfeil. koennte das probleme machen?
 			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values->v,$this->moduleId,$this->widgetId,$this->session));
-			$core->debugGrindlog("Stored");
 		}
 		
 		if ($this->type==CssPropertySet::SESSION){
@@ -473,7 +475,6 @@ class CssPropertySet {
 			$db->query($core,$stmnt);
 		}
 		
-		$core->debugGrindlog("PassEND");
 		return;
 	}
 	

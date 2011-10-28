@@ -51,6 +51,20 @@ qx.Class.define("scoville_admin.CssEditorPage",{
 			}
 		},
 		
+		changedData : function(me){ 
+	        return function(event){
+		    	if(!(event instanceof qx.event.type.Data)){
+		    		return;
+		    	}
+		    	var changedData = event.getData();
+		    	var model = me.cssboxTableModel;
+		    	
+                model.setValue(3,changedData.firstRow,false);
+                
+		    }
+		},
+		
+		
 		saveCSScallback: function(me){
 			return function(){
 				var data = me.cssboxTableModel.getData();
@@ -125,6 +139,8 @@ qx.Class.define("scoville_admin.CssEditorPage",{
 			this.cssboxTableModel.setColumnEditable(1,true);
 			this.cssboxTableModel.setColumnEditable(2,true);
 			this.cssboxTableModel.setColumnEditable(4,true);
+			
+			this.cssboxTableModel.addListener("dataChanged", this.changedData(this));
 			
 			this.savebutton = new qx.ui.form.Button("Save CSS");
 			this.savebutton.addListener("execute", this.saveCSScallback(this));
