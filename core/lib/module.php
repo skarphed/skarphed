@@ -142,6 +142,7 @@ class ModuleManager extends Singleton {
 	
 	public function addRepository($ip, $port, $name = null) {
 		$repository = new Repository(null, $name, $ip, $port, null);
+		$repository->store(); //Wird ja in dem falle auch gleich gespeichert, ziga ;)
 		return $repository;
 	}
 	
@@ -156,6 +157,17 @@ class ModuleManager extends Singleton {
 		$row = $db->fetchArray($result);
 		$repository = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
 		return $repository;
+	}
+	
+	public function getRepositories(){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$ret = array();
+		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repository;");
+		while($set = $db->fetchArray($result)){
+			$ret[] = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
+		}
+		return $ret;
 	}
 	
 	public function installModuleFromRepository($repository, $moduleId){
@@ -227,6 +239,92 @@ class ModuleManager extends Singleton {
 			$module = new $moduleClass($core);
 			return $module;
 		}catch(ModuleException $e){}
+	}
+	
+	/**
+	 * Module Version Compare
+	 * 
+	 * Compares the versions of Two modules
+	 * 1  -> module1  > module2
+	 * 0  -> module1 == module2
+	 * -1 -> module1  < module2
+	 * 
+	 * @param Array $module1 A Module
+	 * @param Array $module2 A Module
+	 * @return int The compare value
+	 */
+	function versionCompare($module1, $module2){
+		$core = Core::getInstance();
+		if (!is_object($module1)){
+			$module1 = $core->parseArrayToObject($module1);
+		}
+		if (!is_object($module2)){
+			$module2 = $core->parseArrayToObject($module2);
+		}		
+		if ($module1->version_major > $module2->version_major){
+			return 1;
+		}elseif($module1->version_major == $module2->version_major){
+			if ($module1->version_minor > $module2->version_minor){
+				return 1;
+			}elseif($module1->version_minor == $module2->version_minor){
+				if ($module1->revision > $module2->revision){
+					return 1;
+				}elseif($module1->revision == $module2->revision){
+					return 0;
+				}else{
+					return -1;
+				}
+			}else{
+				return -1;
+			}
+		}else{
+			return -1;
+		}
+	}
+	
+	/**
+	 * Get All modules of this server
+	 * 
+	 * Returns module meta descriptions
+	 * 
+	 * @param bool $onlyInstalled Returns only currently installed Modules if True
+	 * @param bool $checkRight check for permission
+	 * @return Array Array of Module Metadata as specified in module specs
+	 */
+	public function getModules($onlyInstalled=false, $checkRight=false){		
+		//TODO: Check Rights sinnvoll einbauen
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$modules = array();
+		
+		$stmnt = "SELECT MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_REP_ID, MOD_MD5 FROM MODULES ;";
+		$res = $db->query($core,$stmnt);
+		
+		while($set = $db->fetchArray($res)){
+			$modules[]=array('name'=>$set['MOD_NAME'], 'hrname'=>$set['MOD_DISPLAYNAME'], 
+							 'version_major'=>$set['MOD_VERSIONMAJOR'], 'version_minor'=>$set['MOD_VERSIONMINOR'], 
+							 'revision'=>$set ['MOD_VERSIONREV'], 'md5'=>$set['MOD_MD5'], 'serverModuleId'=> $set['MOD_ID']);
+		}
+		
+		/*if(!$onlyInstalled){
+			$repositories = $this->getRepositories();
+	    	foreach ($repositories as $repository){
+	    		$repoModules = $repository->getAllModules();
+				foreach ($repoModules as $repoModule){
+					foreach ($modules as $module){
+						if ($repomodule->name == $module['name']){
+							if ($this->versionCompare($repomodule, $module) == 1){
+								$module['toUpdate'] = true;
+							}
+							continue 2; 
+						}
+					}
+					$modules[] = $repoModule;
+				}
+	    	}
+		}*/
+		
+		return $modules;
 	}
 	
 }

@@ -209,5 +209,15 @@ class class_scvRpc {
 	$cssPropertySet->store();
 	return;
   }
+  
+  function method_getModules($params,$error){
+  	$getInstalledOnly = $params[0];
+	
+	$core = scv\Core::getInstance();
+	$moduleM = $core->getModuleManager();
+	$modules = $moduleM->getModules($getInstalledOnly);
+	
+	return json_encode($modules);
+  }
 }
 ?>
