@@ -10,7 +10,7 @@ class de_zigapeda_scoville_flatmenu {
 		return "de.zigapeda.scoville.flatmenu";
 	}
 	
-	public function renderHTML($moduleInstanceId){
+	public function renderHTML($moduleId, $moduleInstanceId){
 	  $db = $this->core->getDB();
 	  $resultset = $db->query($this,"select mnu_name
 	                                       ,mni_name
@@ -21,14 +21,14 @@ class de_zigapeda_scoville_flatmenu {
 	                                 join menuitems on mni_mnu_id = mnu_id
 	                                 where wgt_id = 1
 	                                 order by mni_order");
-	  $text = "<div id='$moduleInstanceId'>";
+	  $text = "<div id='$moduleInstanceId' class='de_zigapeda_scoville_flatmenu w$moduleId'>";
 	  while($result = $db->fetchArray($resultset)) {
 	    $text .= "<a href='javascript:action(${result["MNI_ATL_ID"]}); void 0'>${result["MNI_NAME"]}</a>";
 	  }
 		return $text . "</div>";
 	}
 	
-	public function renderJavascript($moduleInstanceId){
+	public function renderJavascript($moduleId, $moduleInstanceId){
 		return "function ${moduleInstanceId}init() {
 	  }
 	  function ${moduleInstanceId}destroy() {

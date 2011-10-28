@@ -2,14 +2,14 @@
 include_once "repo_database.php";
 
 	$con = new repo_database();
-	$con->set_all("zigapeda","192.168.0.111","scvrepo.gdb","test");
+	$con->set_all("zigapeda","192.168.0.109","scvrepo.gdb","test");
 	$con->connect();
 	//	$getin(json_decode($_REQUEST));
 	$json = json_decode($_REQUEST["j"]);
 //	$json = json_decode('{"c":1}');
 	$command = $json->c;
 //	$json = json_decode('{"m":12}');
-//	$module = $json->m;
+	$module = $json->m;
 	 
 	switch($command){
 		case 1:
@@ -59,36 +59,46 @@ include_once "repo_database.php";
 				$i ++;			
 			
 			}
-			echo json_encode($modules);
+			echo json_encode(array("r"=>$modules));
 			break;
 		case 3:
-			moduldep($module, $con);
-/*			$resultset = $con->query("select distinct mod_name, dep_mod_dependson from module inner join dependency on (mod_id = dep_mod_id) where mod_id = '".$getin['b']."'");
+			$resultset = $con->query("select distinct dep_mod_dependson from dependency where dep_mod_id = ?", array($module));
+			$moduleids = $module;
+			while($result = $con->fetchArray($resultset)) {
+				do {
+					$moduleids = $moduleids.",".$result["DEP_MOD_DEPENDSON"];
+				} while ($result = $con->fetchArray($resultset));
+				$resultset = $con->query("select dep_mod_dependson from dependency where dep_mod_id in (" . $moduleids . ") and dep_mod_dependson not in (" . $moduleids . ")");
+			}
+			$resultset = $con->query("select mod_name, mod_hrname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_revision from module where mod_id in (".$moduleids.") and mod_id != ".$module);
+			$i=0;
+			$modules = array();
 			while($result = $con->fetchArray($resultset)){
-				echo "${result["MOD_NAME"]} ${result["DEP_MOD_DEPENDSON"]}";
-				echo "<br>";
-			}			
-*/			break;
+				$modules[$i] = array('name'=>$result["MOD_NAME"],
+									 'hrname'=>$result["MOD_HRNAME"],
+									 'version_major'=>$result["MOD_VERSIONMAJOR"],
+									 'version_minor'=>$result["MOD_VERSIONMINOR"],
+									 'revision'=>$result["MOD_REVISION"],
+									 'md5'=>$result["MOD_MD5"]);
+				$i ++;			
+			}
+			echo json_encode(array("r"=>$modules));	
+			break;
 		case 4:
 			return 4;
 			break;
 		case 5:
-			return 5;
+			$resultset = $con->query("select mod_name, mod_data, mod_hrname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_revision from module where mod_id = ?", array($module));
+			if($result = $con->fetchArray($resultset)) {
+				$module = array('name'=>$result["MOD_NAME"],
+							    'hrname'=>$result["MOD_HRNAME"],
+						 	    'version_major'=>$result["MOD_VERSIONMAJOR"],
+							    'version_minor'=>$result["MOD_VERSIONMINOR"],
+							    'revision'=>$result["MOD_REVISION"],
+							    'md5'=>$result["MOD_MD5"]);
+				echo json_encode(array("r"=>$module,"data"=>base64_encode($result["MOD_DATA"])));
+			}
 			break;
 			
-	}
-	
-	function moduldep($module, $con){
-		$modul = array();
-		$resultset = $con->query("select distinct mod_name, dep_mod_dependson from module inner join dependency on (mod_id = dep_mod_id) where mod_id = '".$module."'");
-		while($result = $con->fetchArray($resultset)){
-			array_push($modul, ${result['MOD_NAME']});
-//			echo "${result['MOD_NAME']}"
-			moduldep(${result["DEP_MOD_DEPENDSON"]}, $con);
-//			echo "${result["MOD_NAME"]} ${result["DEP_MOD_DEPENDSON"]}";
-//			echo "<br>";
-//			echo "uebergebe hiermit ${result["DEP_MOD_DEPENDSON"]} <br>";
-		}
-		echo json_encode($modul);
 	}
 ?>

@@ -140,6 +140,24 @@ class ModuleManager extends Singleton {
 		system('rm /tmp/'.escapeshellarg($moduleId).".tar.gz > /dev/null");
 	}
 	
+	public function addRepository($ip, $port, $name = null) {
+		$repository = new Repository(null, $name, $ip, $port, null);
+		return $repository;
+	}
+	
+	public function removeRepository($id) {
+		
+	}
+	
+	public function getRepository($id) {
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repository where rep_id = ?;", array($id));
+		$row = $db->fetchArray($result);
+		$repository = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
+		return $repository;
+	}
+	
 	public function installModuleFromRepository($repository, $moduleId){
 		//TODO: Implement
 	}
@@ -211,6 +229,57 @@ class ModuleManager extends Singleton {
 		}catch(ModuleException $e){}
 	}
 	
+}
+
+class Repository {
+	private $id = null;
+	private $name = null;
+	private $ip = null;
+	private $port = null;
+	private $lastupdate = null;
+	
+	public function __construct($id, $name, $ip, $port, $lastupdate) {
+		$this->id = $id;
+		$this->name = $name;
+		$this->ip = $ip;
+		$this->port = $port;
+		$this->lastupdate = $lastupdate;
+	}
+	
+	private function getHost() {
+		if($port == 80) {
+			$host = "http://{$this->ip}/";
+		} else {
+			$host = "http://{$this->ip}:{$this->port}/";
+		}		
+		return $host;
+	}
+	
+	public function getAllModules() {
+		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>1))));
+		return $list;
+	}
+	
+	public function getAllVersions($modulemeta) {
+		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>2,"m"=>$modulemeta))));
+		return $list;
+	}
+	
+	public function getDependencies($modulemeta) {
+		
+	}
+	
+	public function getDescDependencies($modulemeta) {
+		
+	}
+	
+	public function getModule($moduleid) {
+		
+	}
+	
+	public function store() {
+		
+	}
 }
 
 ?>

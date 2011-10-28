@@ -48,8 +48,8 @@
             $module = $mm->loadModule($result['MOD_NAME']);
             $response['modules'][] = array('id'=>$result["WGT_ID"]
             ,'s'=>$result["WGT_SPACE"]
-            ,'c'=>$module->renderHTML("w".$result["WGT_ID"])
-            ,'j'=>$module->renderJavascript("w".$result["WGT_ID"]));
+            ,'c'=>$module->renderHTML($result["WGT_ID"],"s".$result["WGT_SPACE"]."w".$result["WGT_ID"])
+            ,'j'=>$module->renderJavascript($result["WGT_ID"],"s".$result["WGT_SPACE"]."w".$result["WGT_ID"]));
           }
           echo json_encode($response);
           break;
@@ -82,8 +82,8 @@
         $module = $mm->loadModule($result['MOD_NAME']);
         $response['modules'][] = array('id'=>$result["WGT_ID"]
         ,'s'=>$result["ACT_SPACE"]
-        ,'c'=>$module->renderHTML("w".$result["WGT_ID"])
-        ,'j'=>$module->renderJavascript("w".$result["WGT_ID"]));
+        ,'c'=>$module->renderHTML($result["WGT_ID"],"s".$result["ACT_SPACE"]."w".$result["WGT_ID"])
+        ,'j'=>$module->renderJavascript($result["WGT_ID"],"s".$result["ACT_SPACE"]."w".$result["WGT_ID"]));
       }
       echo json_encode($response);
     }
