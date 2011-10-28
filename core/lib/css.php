@@ -429,13 +429,19 @@ class CssPropertySet {
 		$core = Core::getInstance();
 		$ret = array();
 		foreach ($this->properties as $selector => $values){
-			if ($values->i != true){
-				$ret[$selector] = $values;
+			if (is_object($values)){
+				if ($values->i != true){
+					$ret[$selector] = $values;
+				}
+			}else{
+				if ($values['i'] != true){
+					$ret[$selector] = $values;
+				}	
 			}
 		}
 		return $ret;
 	}
-	
+
 	/**
 	 * Store the CssPropertySet
 	 * 
@@ -448,6 +454,7 @@ class CssPropertySet {
 		$this->delete(); //Effizienter implementieren
 		
 		$valuesToStore = $this->getNonInherited();
+		$core->debugGrindlog("PASS1");
 		$stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SESSION)
 		           VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION);";
 		foreach($valuesToStore as $selector => $values){
@@ -455,6 +462,7 @@ class CssPropertySet {
 			
 			//TODO: HERE BE DRAGONS -> OBJEKTZUGRIFF mit pfeil. koennte das probleme machen?
 			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values->v,$this->moduleId,$this->widgetId,$this->session));
+			$core->debugGrindlog("Stored");
 		}
 		
 		if ($this->type==CssPropertySet::SESSION){
@@ -464,6 +472,8 @@ class CssPropertySet {
 			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1;";
 			$db->query($core,$stmnt);
 		}
+		
+		$core->debugGrindlog("PassEND");
 		return;
 	}
 	
@@ -474,9 +484,25 @@ class CssPropertySet {
 	 */
 	public function delete(){
 		$core = Core::getInstance();
-		$db = $core->getDB();		
-		$stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID = ? AND CSS_WGT_ID = ? AND CSS_SESSION = ? ;";
-		$db->query($core,$stmnt,array($this->moduleId,$this->widgetId,$this->session));
+		$db = $core->getDB();
+		switch($this->type){
+			case CssPropertySet::GENERAL:
+				$stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
+				$db->query($core,$stmnt);
+				break;
+			case CssPropertySet::MODULE:
+				$stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID = ? AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL;";
+				$db->query($core,$stmnt,array($this->moduleId));
+				break;
+			case CssPropertySet::WIDGET:
+				$stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID = ? AND CSS_SESSION IS NULL;";
+				$db->query($core,$stmnt,array($this->widgetId));
+				break;
+			case CssPropertySet::SESSION:
+				$stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION = ? ;";
+				$db->query($core,$stmnt,array($this->session));
+				break;				
+		}		
 		
 		if ($this->type==CssPropertySet::SESSION){
 			$stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1 WHERE CSE_SESSION = ? ;";
