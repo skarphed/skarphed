@@ -119,5 +119,83 @@ class Core extends Singleton implements IModule{
 	    return $array;
 	}
 	
+	private function getLockTypeId($locktype){
+		if (!is_string($locktype)){
+			throw new LockException("Must get String as parameter!");
+		}
+		$stmnt = "SELECT LKT_ID FROM LOCKTYPES WHERE LKT_TYPE = ?; ";
+		$res = $db->query($this,$stmnt,array($locktype));
+		if($set = $db->fetchArray($res)){
+			return $res['LKT_ID'];
+		}else{
+			throw new LockException("Locktype does not exist");
+		}
+	}
+	
+	private function checkLockType($locktype){
+		if (is_string($locktype)){
+			$stmnt = "SELECT LKT_ID FROM LOCKTYPES WHERE LKT_TYPE = ?; ";
+			$res = $db->query($this,$stmnt,array($locktype));
+			if($set = $db->fetchArray($res)){
+				return true;
+			}else{
+				return false;
+			}
+		}elseif (is_int($locktype)){
+			$stmnt = "SELECT LKT_ID FROM LOCKTYPES WHERE LKT_ID = ?; ";
+			$res = $db->query($this,$stmnt,array($locktype));
+			if($set = $db->fetchArray($res)){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			throw new LockException ("Invalid datatype for \$locktype");
+		}
+	}
+	
+	public function createLock($locktype, $data){
+		$db = $this->getDB();
+		$dataString = json_encode($data);
+				
+		if (is_string($locktype)){
+			$stmnt = "SELECT LCK_ID FROM LOCKS INNER JOIN LOCKTYPES ON (LCK_LKT_ID = LKT_ID) WHERE LCK_DATA = ? AND LKT_TYPE = ?;";
+		}elseif(is_int($locktype9)){
+			$stmnt = "SELECT LCK_ID FROM LOCKS WHERE LCK_DATA = ? AND LCK_LKT_ID = ?;";
+		}else{
+			throw new LockException("Invalid Datatype: \$locktype must be string or int");
+		}
+		
+		$res = $db->query($this,$stmnt,array($dataString,$locktype));
+		if ($set = $db->fetchArray($res)){
+			throw new LockException("This Lock is set!");
+		}
+		
+		if ($this->checkLockType($locktype)){
+		
+			
+			$lockId = $db->genSeqNext('LCK_GEN');
+			$stmnt = "INSERT INTO LOCKS (LCK_ID, LCK_DATA, LCK_LKT_ID) VALUES (?,?,?); ";
+			if (is_string($locktype)){
+				$locktype = $this->getLockTypeId($locktype);
+			}
+			$db->query($this,$stmnt,array($lockId,$dataString,$locktype));
+			return $lockId;
+		}
+			
+	}
+	
+	public function removeLock($lockId){
+		if (!is_int($lockId)){
+			throw new LockException("Lock Id must be Integer!");
+		}
+		$db = $this->getDB();
+		$stmnt = "DELETE FROM LOCKS WHERE LCK_ID = ? ;";
+		$db->query($this,$stmnt, array($lockId));
+	}
+	
 }
+
+class LockException extends \Exception{}
+
 ?>

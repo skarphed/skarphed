@@ -140,7 +140,7 @@ class ModuleManager extends Singleton {
 		system('rm /tmp/'.escapeshellarg($moduleId).".tar.gz > /dev/null");
 	}
 	
-	public function addRepository($ip, $port, $name = null) {
+	public function addRepository($ip, $port, $name = '') {
 		$repository = new Repository(null, $name, $ip, $port, null);
 		$repository->store(); //Wird ja in dem falle auch gleich gespeichert, ziga ;)
 		return $repository;
@@ -154,9 +154,12 @@ class ModuleManager extends Singleton {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repository where rep_id = ?;", array($id));
-		$row = $db->fetchArray($result);
-		$repository = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
-		return $repository;
+		if ($row = $db->fetchArray($result)){
+			$repository = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
+			return $repository;
+		}else{
+			throw new RepositoryException("No such Repository");
+		}
 	}
 	
 	public function getRepositories(){
@@ -306,28 +309,31 @@ class ModuleManager extends Singleton {
 							 'revision'=>$set ['MOD_VERSIONREV'], 'md5'=>$set['MOD_MD5'], 'serverModuleId'=> $set['MOD_ID']);
 		}
 		
-		/*if(!$onlyInstalled){
+		if(!$onlyInstalled){
 			$repositories = $this->getRepositories();
 	    	foreach ($repositories as $repository){
 	    		$repoModules = $repository->getAllModules();
 				foreach ($repoModules as $repoModule){
 					foreach ($modules as $module){
 						if ($repomodule->name == $module['name']){
-							if ($this->versionCompare($repomodule, $module) == 1){
+							if ($this->versionCompare($module, $repomodule) == 1){
 								$module['toUpdate'] = true;
 							}
+							$module['installed'] = true;
 							continue 2; 
 						}
 					}
 					$modules[] = $repoModule;
 				}
 	    	}
-		}*/
+		}
 		
 		return $modules;
 	}
 	
 }
+
+class RepositoryException extends \Exception {}
 
 class Repository {
 	private $id = null;
@@ -337,11 +343,27 @@ class Repository {
 	private $lastupdate = null;
 	
 	public function __construct($id, $name, $ip, $port, $lastupdate) {
-		$this->id = $id;
-		$this->name = $name;
-		$this->ip = $ip;
-		$this->port = $port;
+		$this->id = (int)$id;
+		$this->name = (string)$name;
+		$this->ip = (string)$ip;
+		$this->port = (int)$port;
 		$this->lastupdate = $lastupdate;
+	}
+	
+	public function getIp(){
+		return $this->ip;
+	}
+	
+	public function getId(){
+		return $this->id;
+	}
+	
+	public function getName(){
+		return $this->name;
+	}
+	
+	public function getPort(){
+		return $this->port;
 	}
 	
 	private function getHost() {
@@ -376,8 +398,44 @@ class Repository {
 	}
 	
 	public function store() {
+		$core = Core::getInstance();
+		$moduleM = $core->getModuleManager();
 		
+		$db = $core->getDB();
+		$currentRepos =count($moduleM->getRepositories());
+		
+		if ($currentRepos == 1){
+			if (!is_int($this->id)){
+				throw RepositoryException("Storing Repo: There is a repository, but this one has no ID.");
+			}
+			try {
+				$repo = $moduleM->getRepository($this->id);
+			}catch(RepositoryException $e){
+				throw RepositoryException("Storing Repo: This repository is not the repository, that is already in the Database");
+			}
+		}elseif ($currentRepos == 0){
+			if ($this->id == null){
+				$this->id = $db->genSeqNext('REP_GEN');
+			}
+		}else{
+			throw new RepositoryException("There are two, even more or negative repositories. Shit's massively fucked up here!") ;
+		}
+		$stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE ) VALUES (?,?,?,?,?) MATCHING (REP_ID);";
+		$db->query($core,$stmnt,array($this->id,$this->name,$this->ip,$this->port,$this->lastupdate));
+		return;
 	}
+
+	public function delete(){
+		if (is_null($this->id)){
+			throw new RepositoryException("Can't delete Repo with null-id! ");
+		}
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		$stmnt = "DELETE FROM REPOSITORIES WHERE REP_ID = ? ;" ;
+		$db->query($core,$stmnt,array($this->id));
+		return;
+	} 
 }
 
 ?>

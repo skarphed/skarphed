@@ -5,6 +5,9 @@ include_once "repo_database.php";
 	$con->set_all("zigapeda","localhost","scvrepo.gdb","test");
 	$con->connect();
 	$json = json_decode($_REQUEST["j"]);
+	if ($json==null){
+		throw Exception("Invalid Json in parameter j");
+	}
 	$command = $json->c;
 	$module = $json->m;
 	 

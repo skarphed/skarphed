@@ -41,7 +41,7 @@ qx.Class.define("scoville_admin.ServerPage",{
 		
 		enterRepoCallback : function(me){
 			return function(){
-				me.app.createRPCObject(me.server.ip).callAsync(me.enterRepoFinished(me),"changeRepository",me.repoEntry.getValue());
+				me.app.createRPCObject(me.server.ip).callAsync(me.enterRepoFinished(me),"setRepository",me.repoEntry.getValue(),80);
 			}
 		},
 		

@@ -219,5 +219,30 @@ class class_scvRpc {
 	
 	return json_encode($modules);
   }
+  
+  function method_setRepository($params,$error){
+  	$repo = $params[0];
+	$port = (int)$params[1];
+	
+	$core = scv\Core::getInstance();
+	$moduleM = $core->getModuleManager();
+	foreach ($moduleM->getRepositories() as $repo){
+		$repo->delete();
+	}
+	$moduleM->addRepository($repo,$port,'(default)');
+  }
+  
+  function method_getRepository($params,$error){
+  	$core = scv\Core::getInstance();
+	$moduleM = $core->getModuleManager();
+	$repos = $moduleM->getRepositories();
+	if (count($repos) > 0){
+		$repo = $repos[0];
+		return json_encode(array('id'=>$repo->getId(),'ip'=>$repo->getIp(),'port'=>$repo->getPort(),'name'=>$repo->getName()));
+	}else{
+		return null;
+	}
+  }
+  
 }
 ?>

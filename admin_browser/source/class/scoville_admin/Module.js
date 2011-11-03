@@ -13,9 +13,13 @@ qx.Class.define("scoville_admin.Module",{
 		if (typeof(data.toUpdate) != 'undefined'){
 			this.updateable = data.toUpdate;
 		}
+		if (typeof(data.serverModuleId) != 'undefined'){
+			this.serverModuleId = data.serverModuleId;
+		}
 		
 		this.setLabel(this.hrname+" ["+this.version_major+"."+this.version_minor+"."+this.revision+"]");
 		this.setIcon("scoville_admin/module.png");
+		this.addListener('dblclick',this.createModuleCallback(this));
 		
 	},
 	
@@ -31,7 +35,19 @@ qx.Class.define("scoville_admin.Module",{
 		
 		getName:function(){
 			return this.name;
+		},
+		
+		getServer:function(){
+			return this.getParent().getParent();
+		},
+		
+		createModuleCallback: function (me){
+			var f = function(e){
+				new scoville_admin.ModulePage(me.app, me);
+			};
+			return f;
 		}
+		
 	}
 	
 });
