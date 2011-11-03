@@ -103,6 +103,20 @@ qx.Class.define("scoville_admin.Server",
 			}
 		},
 		
+		createGetRepositoryHandler: function(me){
+			return function(result,exc){
+				if (exc == null){
+					if (result == null){
+						return;
+					}
+					var resultJson = qx.lang.Json.parse(result);
+					me.add(new scoville_admin.Repository(me.app,resultJson));
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
 		createAuthenticationHandler : function(me){
 			var f = function(result,exc){
 				if (exc == null){
@@ -128,6 +142,8 @@ qx.Class.define("scoville_admin.Server",
 						
 						me.add(me.sites);
 						
+						
+						
 						if (me.rightsForSession.indexOf('scoville.users.view')!=-1){
 					        me.app.createRPCObject(me.ip).callAsync(me.createGetUsersHandler(me),"getUsers");
 					    }
@@ -139,6 +155,11 @@ qx.Class.define("scoville_admin.Server",
 					    if (true){
 					    	me.app.createRPCObject(me.ip).callAsync(me.createGetModulesHandler(me),"getModules",true);
 					    }
+					    
+					    if (me.rightsForSession.indexOf('scoville.modules.install')!=-1
+					    ||me.rightsForSession.indexOf('scoville.modules.uninstall')!=-1){
+							me.app.createRPCObject(me.ip).callAsync(me.createGetRepositoryHandler(me),"getRepository");
+						}
 					    
 						
 					}else{

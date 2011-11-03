@@ -153,7 +153,7 @@ class ModuleManager extends Singleton {
 	public function getRepository($id) {
 		$core = Core::getInstance();
 		$db = $core->getDB();
-		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repository where rep_id = ?;", array($id));
+		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories where rep_id = ?;", array($id));
 		if ($row = $db->fetchArray($result)){
 			$repository = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
 			return $repository;
@@ -166,9 +166,9 @@ class ModuleManager extends Singleton {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		$ret = array();
-		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repository;");
+		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories;");
 		while($set = $db->fetchArray($result)){
-			$ret[] = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
+			$ret[] = new Repository($set['REP_ID'],$set['REP_NAME'],$set['REP_IP'],$set['REP_PORT'],$set['REP_LASTUPDATE']);
 		}
 		return $ret;
 	}
@@ -406,16 +406,16 @@ class Repository {
 		
 		if ($currentRepos == 1){
 			if (!is_int($this->id)){
-				throw RepositoryException("Storing Repo: There is a repository, but this one has no ID.");
+				throw new RepositoryException("Storing Repo: There is a repository, but this one has no ID.");
 			}
 			try {
 				$repo = $moduleM->getRepository($this->id);
 			}catch(RepositoryException $e){
-				throw RepositoryException("Storing Repo: This repository is not the repository, that is already in the Database");
+				throw new RepositoryException("Storing Repo: This repository is not the repository, that is already in the Database");
 			}
 		}elseif ($currentRepos == 0){
 			if ($this->id == null){
-				$this->id = $db->genSeqNext('REP_GEN');
+				$this->id = $db->getSeqNext('REP_GEN');
 			}
 		}else{
 			throw new RepositoryException("There are two, even more or negative repositories. Shit's massively fucked up here!") ;

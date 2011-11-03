@@ -221,7 +221,7 @@ class class_scvRpc {
   }
   
   function method_setRepository($params,$error){
-  	$repo = $params[0];
+  	$ip = $params[0];
 	$port = (int)$params[1];
 	
 	$core = scv\Core::getInstance();
@@ -229,7 +229,8 @@ class class_scvRpc {
 	foreach ($moduleM->getRepositories() as $repo){
 		$repo->delete();
 	}
-	$moduleM->addRepository($repo,$port,'(default)');
+	$moduleM->addRepository($ip,$port,'(default)');
+	return;
   }
   
   function method_getRepository($params,$error){

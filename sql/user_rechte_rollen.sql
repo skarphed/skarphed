@@ -24,6 +24,8 @@ INSERT INTO RIGHTS VALUES (gen_id(rig_gen,1), 'scoville.widget.create');
 INSERT INTO RIGHTS VALUES (gen_id(rig_gen,1), 'scoville.widget.delete');
 INSERT INTO RIGHTS VALUES (gen_id(rig_gen,1), 'scoville.widget.modify');
 
+INSERT INTO RIGHTS VALUES (gen_id(rig_gen,1), 'scoville.css.edit');
+
 insert into users values (gen_id(usr_gen,1),'zigapeda','test');
 insert into users values (gen_id(usr_gen,1),'grindhold','test');
 insert into users values (gen_id(usr_gen,1),'chefpflaume','test');
