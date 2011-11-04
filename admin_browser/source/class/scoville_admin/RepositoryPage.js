@@ -19,6 +19,19 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 	members: {
 		module:null,
 		
+		createGetModulesHandler:function(me){
+			return function(result,exc){
+				if (exc == null){
+					resultJson = qx.lang.Json.parse(result);
+					for (element in resultJson){
+						
+					}
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
 		buildGui : function(){
 			
 			this.setLayout(new qx.ui.layout.VBox());
@@ -36,7 +49,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			this.modbox = new qx.ui.groupbox.GroupBox("Available and Installed Modules", "scoville_admin/module.png");
 			this.modbox.setLayout(new qx.ui.layout.VBox());
 			this.modbox.add(new qx.ui.basic.Label("Please drag a module into the opposing list to install/uninstall it"));
-			this.modboxContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+			this.modboxContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(2));
 			this.modboxCL = new qx.ui.container.Composite(new qx.ui.layout.VBox());
 			this.modboxCR = new qx.ui.container.Composite(new qx.ui.layout.VBox());
 			this.modboxCL.add(new qx.ui.basic.Label("Installed Modules"));
@@ -51,6 +64,8 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			this.modboxCR.add(this.modboxAList);
 			
 			this.add(this.modbox);
+			
+			this.app.createRPCObject(this.repo.getServer().ip).callAsync(this.createGetModuleHandler(this),"getModules",false);
 			
 		},
 		

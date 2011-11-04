@@ -8,7 +8,7 @@ qx.Class.define("scoville_admin.Repository",{
 		this.ip=data.ip;
 		this.port = data.port;
 		this.id = data.ip;
-		this.host = data.ip+data.port;
+		this.host = data.ip+":"+data.port;
 		
 		this.setLabel(this.name+" ["+this.host+"]");
 		this.setIcon("scoville_admin/repo.png");
