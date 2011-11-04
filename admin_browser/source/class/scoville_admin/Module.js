@@ -12,9 +12,18 @@ qx.Class.define("scoville_admin.Module",{
 		this.md5 = data.md5;
 		if (typeof(data.toUpdate) != 'undefined'){
 			this.updateable = data.toUpdate;
+		}else{
+			this.updateable = false;
 		}
 		if (typeof(data.serverModuleId) != 'undefined'){
 			this.serverModuleId = data.serverModuleId;
+		}else{
+			this.serverModuleId = null;
+		}
+		if (typeof(data.installed) != 'undefined'){
+			this.installed = data.installed;
+		}else{
+			this.installed = false;
 		}
 		
 		this.setLabel(this.hrname+" ["+this.version_major+"."+this.version_minor+"."+this.revision+"]");
@@ -32,6 +41,7 @@ qx.Class.define("scoville_admin.Module",{
 		revision:null,
 		updateable:false,
 		md5:null,
+		installed:null,
 		
 		getName:function(){
 			return this.name;

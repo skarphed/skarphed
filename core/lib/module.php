@@ -256,7 +256,7 @@ class ModuleManager extends Singleton {
 	 * @param Array $module2 A Module
 	 * @return int The compare value
 	 */
-	function versionCompare($module1, $module2){
+	private function versionCompare($module1, $module2){
 		$core = Core::getInstance();
 		if (!is_object($module1)){
 			$module1 = $core->parseArrayToObject($module1);
@@ -306,7 +306,7 @@ class ModuleManager extends Singleton {
 		while($set = $db->fetchArray($res)){
 			$modules[]=array('name'=>$set['MOD_NAME'], 'hrname'=>$set['MOD_DISPLAYNAME'], 
 							 'version_major'=>$set['MOD_VERSIONMAJOR'], 'version_minor'=>$set['MOD_VERSIONMINOR'], 
-							 'revision'=>$set ['MOD_VERSIONREV'], 'md5'=>$set['MOD_MD5'], 'serverModuleId'=> $set['MOD_ID']);
+							 'revision'=>$set ['MOD_VERSIONREV'], 'md5'=>$set['MOD_MD5'], 'serverModuleId'=> $set['MOD_ID'], 'installed'=>true);
 		}
 		
 		if(!$onlyInstalled){
@@ -314,12 +314,11 @@ class ModuleManager extends Singleton {
 	    	foreach ($repositories as $repository){
 	    		$repoModules = $repository->getAllModules();
 				foreach ($repoModules as $repoModule){
-					foreach ($modules as $module){
-						if ($repomodule->name == $module['name']){
-							if ($this->versionCompare($module, $repomodule) == 1){
-								$module['toUpdate'] = true;
+				    for ($i = 0; $i < count($modules); $i++){
+						if ($repoModule->name == $modules[$i]['name']){
+							if ($this->versionCompare($modules[$i], $repoModule) == -1){
+								$modules[$i]['toUpdate'] = true;
 							}
-							$module['installed'] = true;
 							continue 2; 
 						}
 					}
@@ -377,12 +376,12 @@ class Repository {
 	
 	public function getAllModules() {
 		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>1))));
-		return $list;
+		return $list->r;
 	}
 	
 	public function getAllVersions($modulemeta) {
 		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>2,"m"=>$modulemeta))));
-		return $list;
+		return $list->r;
 	}
 	
 	public function getDependencies($modulemeta) {

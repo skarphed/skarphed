@@ -99,7 +99,7 @@ class Core extends Singleton implements IModule{
 	}
 	
 	public function parseArrayToObject($array) {
-	    $object = new stdClass();
+	    $object = new \stdClass();
 	    if (is_array($array) && count($array) > 0) {
 	        foreach ($array as $name=>$value) {
 	            $name = strtolower(trim($name));

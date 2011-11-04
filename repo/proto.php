@@ -28,10 +28,10 @@ include_once "repo_database.php";
 			$modules = array();
 			while($result = $con->fetchArray($resultset)){
 				$modules[$i] = array('name'=>$result["MOD_NAME"],
-									 'displayname'=>$result["MOD_DISPLAYNAME"],
+									 'hrname'=>$result["MOD_DISPLAYNAME"],
 									 'version_major'=>$result["MOD_VERSIONMAJOR"],
 									 'version_minor'=>$result["MOD_VERSIONMINOR"],
-									 'versionrev'=>$result["MOD_VERSIONREV"],
+									 'revision'=>$result["MOD_VERSIONREV"],
 									 'md5'=>$result["MOD_MD5"]);
 				$i ++;			
 			}
@@ -43,10 +43,10 @@ include_once "repo_database.php";
 			$modules = array();
 			while($result = $con->fetchArray($resultset)){
 				$modules[$i] = array('name'=>$result["MOD_NAME"],
-									 'displayname'=>$result["MOD_DISPLAYNAME"],
+									 'hrname'=>$result["MOD_DISPLAYNAME"],
 									 'version_major'=>$result["MOD_VERSIONMAJOR"],
 									 'version_minor'=>$result["MOD_VERSIONMINOR"],
-									 'versionrev'=>$result["MOD_VERSIONREV"],
+									 'revision'=>$result["MOD_VERSIONREV"],
 									 'md5'=>$result["MOD_MD5"]);
 				$i ++;			
 			
@@ -67,10 +67,10 @@ include_once "repo_database.php";
 			$modules = array();
 			while($result = $con->fetchArray($resultset)){
 				$modules[$i] = array('name'=>$result["MOD_NAME"],
-									 'displayname'=>$result["MOD_DISPLAYNAME"],
+									 'hrname'=>$result["MOD_DISPLAYNAME"],
 									 'version_major'=>$result["MOD_VERSIONMAJOR"],
 									 'version_minor'=>$result["MOD_VERSIONMINOR"],
-									 'versionrev'=>$result["MOD_VERSIONREV"],
+									 'revision'=>$result["MOD_VERSIONREV"],
 									 'md5'=>$result["MOD_MD5"]);
 				$i ++;			
 			}
@@ -83,10 +83,10 @@ include_once "repo_database.php";
 			$resultset = $con->query("select mod_name, mod_data, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id = ?", array($module));
 			if($result = $con->fetchArray($resultset)) {
 				$module = array('name'=>$result["MOD_NAME"],
-							    'displayname'=>$result["MOD_DISPLAYNAME"],
+							    'hrname'=>$result["MOD_DISPLAYNAME"],
 						 	    'version_major'=>$result["MOD_VERSIONMAJOR"],
 							    'version_minor'=>$result["MOD_VERSIONMINOR"],
-							    'versionrev'=>$result["MOD_VERSIONREV"],
+							    'revision'=>$result["MOD_VERSIONREV"],
 							    'md5'=>$result["MOD_MD5"]);
 				echo json_encode(array("r"=>$module,"data"=>base64_encode($result["MOD_DATA"])));
 			}
