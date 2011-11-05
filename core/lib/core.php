@@ -120,6 +120,7 @@ class Core extends Singleton implements IModule{
 	}
 	
 	private function getLockTypeId($locktype){
+		$db = $this->getDB();
 		if (!is_string($locktype)){
 			throw new LockException("Must get String as parameter!");
 		}
@@ -133,6 +134,7 @@ class Core extends Singleton implements IModule{
 	}
 	
 	private function checkLockType($locktype){
+		$db = $this->getDB();
 		if (is_string($locktype)){
 			$stmnt = "SELECT LKT_ID FROM LOCKTYPES WHERE LKT_TYPE = ?; ";
 			$res = $db->query($this,$stmnt,array($locktype));
@@ -168,7 +170,7 @@ class Core extends Singleton implements IModule{
 		
 		$res = $db->query($this,$stmnt,array($dataString,$locktype));
 		if ($set = $db->fetchArray($res)){
-			throw new LockException("This Lock is set!");
+			throw new LockSetException("This Lock is set!");
 		}
 		
 		if ($this->checkLockType($locktype)){
@@ -197,5 +199,5 @@ class Core extends Singleton implements IModule{
 }
 
 class LockException extends \Exception{}
-
+class LockSetException extends LockException{}
 ?>

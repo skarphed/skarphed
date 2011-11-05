@@ -20,10 +20,12 @@ qx.Class.define("scoville_admin.ModulePage",{
 		module:null,
 		
 		buildGui : function(){
-			this.cssButton = new qx.ui.form.Button("Edit this module's CSS");
 			this.setLayout(new qx.ui.layout.VBox());
-			this.add(this.cssButton);
-			this.cssButton.addListener("execute", this.editCSSCallback(this));
+			if (this.module.getServer().rightsForSession.indexOf('scoville.css.edit')!=-1){
+				this.cssButton = new qx.ui.form.Button("Edit this module's CSS");
+				this.add(this.cssButton);
+				this.cssButton.addListener("execute", this.editCSSCallback(this));
+			}
 		},
 		
 		createOpenCSSHandler: function (me){

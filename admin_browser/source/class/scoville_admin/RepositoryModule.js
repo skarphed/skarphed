@@ -46,9 +46,22 @@ qx.Class.define("scoville_admin.RepositoryModule",{
 		updateable:false,
 		md5:null,
 		installed:null,
+		serverModuleId:null,
 		
 		getName:function(){
 			return this.name;
+		},
+		
+		toTransferObject:function(){
+			return {"name":this.name,
+					"hrname":this.hrname,
+					"version_major":this.version_major,
+					"version_minor":this.version_minor,
+					"revision":this.revision,
+					"updateable":this.updateable,
+					"md5":this.md5,
+					"installed":this.installed,
+					"serverModuleId":this.serverModuleId};
 		},
 		
 		createModuleCallback: function (me){

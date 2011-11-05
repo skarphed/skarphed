@@ -9,7 +9,7 @@ include_once "repo_database.php";
 		throw Exception("Invalid Json in parameter j");
 	}
 	$command = $json->c;
-	$module = $json->m;
+	$module = json_decode($json->m);
 	 
 	switch($command){
 		case 1:
@@ -38,18 +38,17 @@ include_once "repo_database.php";
 			echo json_encode(array("r"=>$modules));
 			break;
 		case 2:
+		    $module = json_decode($)
+		
 			$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id = '".$module."'");
-			$i=0;
 			$modules = array();
 			while($result = $con->fetchArray($resultset)){
-				$modules[$i] = array('name'=>$result["MOD_NAME"],
+				$modules[] = array('name'=>$result["MOD_NAME"],
 									 'hrname'=>$result["MOD_DISPLAYNAME"],
 									 'version_major'=>$result["MOD_VERSIONMAJOR"],
 									 'version_minor'=>$result["MOD_VERSIONMINOR"],
 									 'revision'=>$result["MOD_VERSIONREV"],
-									 'md5'=>$result["MOD_MD5"]);
-				$i ++;			
-			
+									 'md5'=>$result["MOD_MD5"]);			
 			}
 			echo json_encode(array("r"=>$modules));
 			break;
@@ -63,16 +62,14 @@ include_once "repo_database.php";
 				$resultset = $con->query("select dep_mod_dependson from depencendies where dep_mod_id in (" . $moduleids . ") and dep_mod_dependson not in (" . $moduleids . ")");
 			}
 			$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id in (".$moduleids.") and mod_id != ".$module);
-			$i=0;
 			$modules = array();
 			while($result = $con->fetchArray($resultset)){
-				$modules[$i] = array('name'=>$result["MOD_NAME"],
+				$modules[] = array('name'=>$result["MOD_NAME"],
 									 'hrname'=>$result["MOD_DISPLAYNAME"],
 									 'version_major'=>$result["MOD_VERSIONMAJOR"],
 									 'version_minor'=>$result["MOD_VERSIONMINOR"],
 									 'revision'=>$result["MOD_VERSIONREV"],
-									 'md5'=>$result["MOD_MD5"]);
-				$i ++;			
+									 'md5'=>$result["MOD_MD5"]);	
 			}
 			echo json_encode(array("r"=>$modules));	
 			break;

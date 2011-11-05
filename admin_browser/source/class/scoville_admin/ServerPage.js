@@ -74,7 +74,8 @@ qx.Class.define("scoville_admin.ServerPage",{
 		},
 		
 		buildGui : function(){
-			this.repobox = new qx.ui.groupbox.GroupBox("Module Repository", "scoville_admin/module.png");
+			this.setLayout(new qx.ui.layout.VBox());
+			this.repobox = new qx.ui.groupbox.GroupBox("Module Repository", "scoville_admin/repo.png");
 			this.repobox.setLayout(new qx.ui.layout.HBox());
 			this.repoEntry = new qx.ui.form.TextField();
 			this.repoLabel = new qx.ui.basic.Label("IP of module-repository:");
@@ -83,12 +84,14 @@ qx.Class.define("scoville_admin.ServerPage",{
 			this.repobox.add(this.repoEntry);
 			this.repobox.add(this.repoSaveButton);
 			this.repoSaveButton.addListener("execute", this.enterRepoCallback(this));
-			
-			this.cssButton = new qx.ui.form.Button("Edit Serverwide CSS");
-			this.setLayout(new qx.ui.layout.VBox());
 			this.add(this.repobox);
-			this.add(this.cssButton);
-			this.cssButton.addListener("execute", this.editCSSCallback(this));
+			
+			if (this.server.rightsForSession.indexOf('scoville.css.edit')!=-1){
+				this.cssButton = new qx.ui.form.Button("Edit Serverwide CSS");
+				
+				this.add(this.cssButton);
+				this.cssButton.addListener("execute", this.editCSSCallback(this));
+			}
 		},
 		
 		createOpenCSSHandler: function (me){

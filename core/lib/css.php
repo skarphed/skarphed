@@ -451,9 +451,17 @@ class CssPropertySet {
 	 * 
 	 * Store the Current State of the CssPropertyset into the Database
 	 */
-	public function store(){
+	public function store($checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
+		
+		if ($checkRight){
+			$userM = $core->getUserManager();
+			$rightM = $core->getRightsManager();
+			if (!$rightM->checkRight('scoville.css.edit',$userM->getSessionUser())){
+				return;
+			}
+		}
 		
 		$this->delete(); //Effizienter implementieren
 		
@@ -483,8 +491,17 @@ class CssPropertySet {
 	 * 
 	 * Delete this CssPropertySet from the Database
 	 */
-	public function delete(){
+	public function delete($checkRight=true){
 		$core = Core::getInstance();
+		
+		if ($checkRight){
+			$userM = $core->getUserManager();
+			$rightM = $core->getRightsManager();
+			if (!$rightM->checkRight('scoville.css.edit',$userM->getSessionUser())){
+				return;
+			}
+		}
+		
 		$db = $core->getDB();
 		switch($this->type){
 			case CssPropertySet::GENERAL:

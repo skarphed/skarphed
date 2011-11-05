@@ -246,11 +246,33 @@ class class_scvRpc {
   }
   
   function method_uninstallModule($params,$error){
+  	$module = $params[0];
+	$operationId = $params[1];
+	
+	$core = scv\Core::getInstance();
+	$moduleM = $core->getModuleManager();
+	$moduleM->uninstallModuleRemote($module,$operationId);
   	return true;  //TODO:implement
   }
   
   function method_installModule($params,$error){
+  	$module = $params[0];
+	$operationId = $params[1];
+	
+	$core = scv\Core::getInstance();
+	$moduleM = $core->getModuleManager();
+	$modulemeta = array("name"=>$module->name,
+						"hrname"=>$module->hrname,
+						"version_major"=>$module->version_major,
+						"version_minor"=>$module->version_minor,
+						"revision"=>$module->revision,
+						"md5"=>$module->md5);
+	$moduleM->installModuleFromRepository(null, $modulemeta,$operationId);
   	return true;  //TODO:implement
+  }
+  
+  function method_getCurrentInstallState($params, $error){
+  	
   }
 }
 ?>

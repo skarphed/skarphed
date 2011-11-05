@@ -19,6 +19,8 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 	members: {
 		module:null,
 		
+		operationsActive: false,
+		
 		createGetModulesHandler:function(me){
 			return function(result,exc){
 				if (exc == null){
@@ -78,8 +80,11 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			return function(evt){
 				var modulesToInstall = evt.getData("modules");
 				for (var i = 0; i < modulesToInstall.length; i++){
-					//TODO: Add arguments
-					me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createInstallCallback(me,modulesToInstall[i]),"installModule");
+					var operationId = modulesToInstall[i].toHashCode();
+					me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createInstallCallback(me,modulesToInstall[i]),
+																			"installModule",
+																			modulesToInstall[i].toTransferObject(),
+																			operationId);
 					me.modboxAList.remove(modulesToInstall[i]);	
 				}
 				
@@ -90,8 +95,11 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			return function(evt){
 				var modulesToUninstall = evt.getData("modules");
 				for (var i = 0; i < modulesToUninstall.length; i++){
-					//TODO: Add arguments
-					me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createUninstallCallback(me,modulesToUninstall[i]),"uninstallModule");
+					var operationId = modulesToUninstall[i].toHashCode();
+					me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createUninstallCallback(me,modulesToUninstall[i]),
+																			"uninstallModule",
+																			modulesToUninstall[i].toTransferObject(),
+																			operationId);
 					me.modboxIList.remove(modulesToUninstall[i]);	
 				}
 				

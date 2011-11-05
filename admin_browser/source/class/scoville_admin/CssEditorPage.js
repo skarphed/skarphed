@@ -1,11 +1,11 @@
 qx.Class.define("scoville_admin.CssEditorPage",{
-	extend: qx.ui.tabview.Page,
+	extend: qx.ui.window.Window,
 	
 	construct : function(app, server, data){
 		this.app=app;
 		this.base(arguments);
 		this.server = server;
-		this.setLabel("Configure CSS Data");
+		this.setCaption("Configure CSS Data");
 		this.setIcon('scoville_admin/css.png');
 		
 		this.tabs = app.tabview;
@@ -13,9 +13,9 @@ qx.Class.define("scoville_admin.CssEditorPage",{
 		this.data = qx.lang.Json.parse(data);
 		
 		this.buildGui();
+		this.setWidth(800);
+		this.open();
 		
-		this.setShowCloseButton(true);
-		this.tabs.add(this);
 	},
 	
 	members: {
