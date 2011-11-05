@@ -1,6 +1,6 @@
 qx.Class.define("scoville_admin.RepositoryModule",{
 	extend: qx.ui.form.ListItem,
-	construct: function(app,data){
+	construct: function(app,data,server){
 		this.app=app;
 		this.base(arguments);
 		
@@ -51,13 +51,11 @@ qx.Class.define("scoville_admin.RepositoryModule",{
 			return this.name;
 		},
 		
-		getServer:function(){
-			return this.getParent().getParent();
-		},
-		
 		createModuleCallback: function (me){
 			var f = function(e){
-				new scoville_admin.ModulePage(me.app, me);
+				if (me.installed){
+					new scoville_admin.ModulePage(me.app, me);
+				}
 			};
 			return f;
 		}

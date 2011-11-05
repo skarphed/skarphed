@@ -245,5 +245,12 @@ class class_scvRpc {
 	}
   }
   
+  function method_uninstallModule($params,$error){
+  	return true;  //TODO:implement
+  }
+  
+  function method_installModule($params,$error){
+  	return true;  //TODO:implement
+  }
 }
 ?>
