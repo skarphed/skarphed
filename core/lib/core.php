@@ -176,7 +176,7 @@ class Core extends Singleton implements IModule{
 		if ($this->checkLockType($locktype)){
 		
 			
-			$lockId = $db->genSeqNext('LCK_GEN');
+			$lockId = $db->getSeqNext('LCK_GEN');
 			$stmnt = "INSERT INTO LOCKS (LCK_ID, LCK_DATA, LCK_LKT_ID) VALUES (?,?,?); ";
 			if (is_string($locktype)){
 				$locktype = $this->getLockTypeId($locktype);

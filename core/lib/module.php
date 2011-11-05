@@ -186,6 +186,24 @@ class ModuleManager extends Singleton {
 			$core->removeLock($lockId);
 		}catch (LockSetException $e){
 			throw new ModuleException("Auf diesem Modul wird bereits gearbeitet");
+		}catch (\Exception $e){
+			$core->removeLock($lockId);
+			throw $e;
+		}
+	}
+	
+	
+	public function uninstallModuleRemote($repository, $module, $operationId){
+		$core = Core::getInstance();
+		
+		try{
+			$lockId = $core->createLock('repositoryjob',array("n"=>$module->name,"o"=>$operationId));
+		
+		}catch (LockSetException $e){
+			throw new ModuleException("Auf diesem Modul wird bereits gearbeitet");
+		}catch (\Exception $e){
+			$core->removeLock($lockId);
+			throw $e;
 		}
 	}
 	
@@ -406,7 +424,7 @@ class Repository {
 	
 	public function downloadModule($modulemeta){
 		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>5,"m"=>$modulemeta))));
-		$modulefile = fopen("/tmp/".$list->r->name.".tar.gz");
+		$modulefile = fopen("/tmp/".$list->r->name.".tar.gz",'w');
 		fwrite($modulefile,base64_decode($list->data));
 		fclose($modulefile);
 	}

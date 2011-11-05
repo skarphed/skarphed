@@ -9,7 +9,7 @@ include_once "repo_database.php";
 		throw Exception("Invalid Json in parameter j");
 	}
 	$command = $json->c;
-	$module = json_decode($json->m);
+	$module = $json->m;
 	 
 	switch($command){
 		case 1:
@@ -38,9 +38,9 @@ include_once "repo_database.php";
 			echo json_encode(array("r"=>$modules));
 			break;
 		case 2:
-		    $module = json_decode($)
-		
-			$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id = '".$module."'");
+			$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules 
+										where mod_name = ? and mod_versionmajor = ? and mod_versionminor = ? and mod_versionrev = ? and mod_md5 = ? ;",
+										array($module->name, $module->version_major,$module->version_minor,$module->revision,$module->md5));
 			$modules = array();
 			while($result = $con->fetchArray($resultset)){
 				$modules[] = array('name'=>$result["MOD_NAME"],
@@ -53,7 +53,7 @@ include_once "repo_database.php";
 			echo json_encode(array("r"=>$modules));
 			break;
 		case 3:
-			$resultset = $con->query("select distinct dep_mod_dependson from depencendies where dep_mod_id = ?", array($module));
+			$resultset = $con->query("select distinct dep_mod_dependson from dependencies where dep_mod_id = ?", array($module));
 			$moduleids = $module;
 			while($result = $con->fetchArray($resultset)) {
 				do {
@@ -77,7 +77,9 @@ include_once "repo_database.php";
 			return 4;
 			break;
 		case 5:
-			$resultset = $con->query("select mod_name, mod_data, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id = ?", array($module));
+			$resultset = $con->query("select mod_name, mod_data, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules 
+									where mod_name = ? and mod_versionmajor = ? and mod_versionminor = ? and mod_versionrev = ? and mod_md5 = ? ;",
+									array($module->name, $module->version_major,$module->version_minor,$module->revision,$module->md5));
 			if($result = $con->fetchArray($resultset)) {
 				$module = array('name'=>$result["MOD_NAME"],
 							    'hrname'=>$result["MOD_DISPLAYNAME"],
