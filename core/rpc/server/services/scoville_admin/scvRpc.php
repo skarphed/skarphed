@@ -251,7 +251,7 @@ class class_scvRpc {
 	
 	$core = scv\Core::getInstance();
 	$moduleM = $core->getModuleManager();
-	$moduleM->uninstallModuleRemote($module,$operationId);
+	$moduleM->uninstallModuleRemote(null,$module,$operationId);
   	return true;  //TODO:implement
   }
   

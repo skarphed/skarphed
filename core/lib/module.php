@@ -112,6 +112,7 @@ class ModuleManager extends Singleton {
 	public  function installModule($moduleId){
 		$core = Core::getInstance();
 		$modulesPath = $core->getConfig()->getEntry("modules.path");
+		$core->debugGrindlog("../".$modulesPath.$moduleId);
 		if (is_dir("../".$modulesPath.$moduleId)){
 			throw new ModuleException("InstallationError: This Module is already installed (Directory Exists)");
 		}
@@ -175,7 +176,9 @@ class ModuleManager extends Singleton {
 	
 	public function installModuleFromRepository($repository, $module, $operationId){
 		$core = Core::getInstance();
-		
+		if(!is_object($module)){
+			$module = $core->parseArrayToObject($module);
+		}
 		try{
 			$lockId = $core->createLock('repositoryjob',array("n"=>$module->name,"o"=>$operationId));
 		
@@ -198,7 +201,7 @@ class ModuleManager extends Singleton {
 		
 		try{
 			$lockId = $core->createLock('repositoryjob',array("n"=>$module->name,"o"=>$operationId));
-		
+		    $this->uninstallModule($module->name);
 		}catch (LockSetException $e){
 			throw new ModuleException("Auf diesem Modul wird bereits gearbeitet");
 		}catch (\Exception $e){
@@ -423,7 +426,10 @@ class Repository {
 	}
 	
 	public function downloadModule($modulemeta){
-		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>5,"m"=>$modulemeta))));
+		$core = Core::getInstance();
+		$modulemeta->md5 = "";
+		$modulemeta = $core->parseObjectToArray($modulemeta);
+		$list = json_decode(file_get_contents($this->getHost().'proto.php?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta)))));
 		$modulefile = fopen("/tmp/".$list->r->name.".tar.gz",'w');
 		fwrite($modulefile,base64_decode($list->data));
 		fclose($modulefile);
