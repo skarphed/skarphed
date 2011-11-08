@@ -108,9 +108,15 @@
 		}
 		
 		public function setValue($key,$value){
-			if (!isset($this->_values[$key])){
-				throw new OperationException("GetValue: This value is not set!");
+			$core = Core::getInstance();
+			
+			foreach ($this->_values as $k=>$v){
+				$core->debugGrindlog("[$k]$v");
 			}
+			if (!isset($this->_values[$key])){
+				throw new OperationException("SetValue: This value is not set!");
+			}
+			
 			$this->_values[$key] = $value;
 		}
 		
@@ -148,7 +154,7 @@
 		abstract public function doWorkload();
 	}
 	
-	class ModuleOperation extends Operation {
+	abstract class ModuleOperation extends Operation {
 		public function __const (){
 			$this->_values = array("name"=>null,
 									"hrname"=>null,
@@ -170,6 +176,20 @@
 		
 		public function getMeta(){
 			return $this->_values;
+		}
+		
+		public static function getCurrentlyProcessedModules(){
+			$core = Core::getInstance();
+			$opM = $core->getOperationManager();
+			$db = $core->getDB();
+			
+			$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_TYPE = 'ModuleInstallOperation' or OPE_TYPE = 'ModuleUninstallOperation';";
+			$res = $db->query($core,$stmnt);
+			$ret = array();
+			while($set = $db->fetchArray($res)){
+				$ret[] = $opM->restoreOperation($set)->getMeta();
+			}
+			return $ret;
 		}
 		
 		abstract public function optimizeQueue();

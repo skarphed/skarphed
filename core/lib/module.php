@@ -183,7 +183,7 @@ class ModuleManager extends Singleton {
 		$opM = $core->getOperationManager();
 		
 		$operation = new ModuleInstallOperation();
-		$operation->saveValuesFromMeta($module);
+		$operation->setValuesFromMeta($module);
 		$operation->optimizeQueue();
 		$operation->store();
 		
@@ -199,7 +199,7 @@ class ModuleManager extends Singleton {
 			$module = $core->parseObjectToArray($module);
 		}
 		$operation = new ModuleUninstallOperation();
-		$operation->saveValuesFromMeta($module);
+		$operation->setValuesFromMeta($module);
 		$operation->optimizeQueue();
 		$operation->store();
 		
@@ -332,7 +332,7 @@ class ModuleManager extends Singleton {
 		$stmnt = "SELECT MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_REP_ID, MOD_MD5 FROM MODULES ;";
 		$res = $db->query($core,$stmnt);
 		
-		$repositoryJobLocks = array();
+		$repositoryJobLocks = ModuleOperation::getCurrentlyProcessedModules();
 		
 		while($set = $db->fetchArray($res)){
 			$modules[]=array('name'=>$set['MOD_NAME'], 'hrname'=>$set['MOD_DISPLAYNAME'], 
@@ -351,7 +351,7 @@ class ModuleManager extends Singleton {
 								$modules[$i]['toUpdate'] = true;
 							}
 							foreach($repositoryJobLocks as $rjl){
-								if ($rjl->name == $modules[$i]['name']){
+								if ($rjl["name"] == $modules[$i]['name']){
 									$modules[$i]['processing'] = 'Unstalling';
 								}
 							}
@@ -363,7 +363,7 @@ class ModuleManager extends Singleton {
 							$repoModule->processing = 'Installing';
 						}
 					}
-					$modules[] = $repoModule;
+					$modules[] = $core->parseObjectToArray($repoModule);
 				}
 	    	}
 		}
