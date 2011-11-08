@@ -176,38 +176,34 @@ class ModuleManager extends Singleton {
 	
 	public function installModuleFromRepository($repository, $module, $operationId){
 		$core = Core::getInstance();
-		if(!is_object($module)){
-			$module = $core->parseArrayToObject($module);
-		}
-		try{
-			$lockId = $core->createLock('repositoryjob',array("n"=>$module->name,"o"=>$operationId));
 		
-			$repositories = $this->getRepositories();
-			$repositories[0]->downloadModule($module);
-			$this->installModule($module->name);
-		
-			$core->removeLock($lockId);
-		}catch (LockSetException $e){
-			throw new ModuleException("Auf diesem Modul wird bereits gearbeitet");
-		}catch (\Exception $e){
-			$core->removeLock($lockId);
-			throw $e;
+		if(!is_array($module)){
+			$module = $core->parseObjectToArray($module);
 		}
+		$opM = $core->getOperationManager();
+		
+		$operation = new ModuleInstallOperation();
+		$operation->saveValuesFromMeta($module);
+		$operation->optimizeQueue();
+		$operation->store();
+		
+		$opM->doQueue();
+		
+		//TODO: Implementieren von Abhaengigkeit
 	}
 	
 	
 	public function uninstallModuleRemote($repository, $module, $operationId){
 		$core = Core::getInstance();
-		
-		try{
-			$lockId = $core->createLock('repositoryjob',array("n"=>$module->name,"o"=>$operationId));
-		    $this->uninstallModule($module->name);
-		}catch (LockSetException $e){
-			throw new ModuleException("Auf diesem Modul wird bereits gearbeitet");
-		}catch (\Exception $e){
-			$core->removeLock($lockId);
-			throw $e;
+		if(!is_array($module)){
+			$module = $core->parseObjectToArray($module);
 		}
+		$operation = new ModuleUninstallOperation();
+		$operation->saveValuesFromMeta($module);
+		$operation->optimizeQueue();
+		$operation->store();
+		
+		//TODO: Implementieren von Abhaengigkeit
 	}
 	
 	public function uninstallModule($moduleId){
@@ -336,7 +332,7 @@ class ModuleManager extends Singleton {
 		$stmnt = "SELECT MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_REP_ID, MOD_MD5 FROM MODULES ;";
 		$res = $db->query($core,$stmnt);
 		
-		$repositoryJobLocks = $core->getLockData('repositoryjob');
+		$repositoryJobLocks = array();
 		
 		while($set = $db->fetchArray($res)){
 			$modules[]=array('name'=>$set['MOD_NAME'], 'hrname'=>$set['MOD_DISPLAYNAME'], 
