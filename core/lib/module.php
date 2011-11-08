@@ -336,6 +336,8 @@ class ModuleManager extends Singleton {
 		$stmnt = "SELECT MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_REP_ID, MOD_MD5 FROM MODULES ;";
 		$res = $db->query($core,$stmnt);
 		
+		$repositoryJobLocks = $core->getLockData('repositoryjob');
+		
 		while($set = $db->fetchArray($res)){
 			$modules[]=array('name'=>$set['MOD_NAME'], 'hrname'=>$set['MOD_DISPLAYNAME'], 
 							 'version_major'=>$set['MOD_VERSIONMAJOR'], 'version_minor'=>$set['MOD_VERSIONMINOR'], 
@@ -352,7 +354,17 @@ class ModuleManager extends Singleton {
 							if ($this->versionCompare($modules[$i], $repoModule) == -1){
 								$modules[$i]['toUpdate'] = true;
 							}
+							foreach($repositoryJobLocks as $rjl){
+								if ($rjl->name == $modules[$i]['name']){
+									$modules[$i]['processing'] = 'Unstalling';
+								}
+							}
 							continue 2; 
+						}
+					}
+					foreach($repositoryJobLocks as $rjl){
+						if ($rjl->name == $modules[$i]['name']){
+							$repoModule->processing = 'Installing';
 						}
 					}
 					$modules[] = $repoModule;
@@ -430,7 +442,13 @@ class Repository {
 		$modulemeta->md5 = "";
 		$modulemeta = $core->parseObjectToArray($modulemeta);
 		$list = json_decode(file_get_contents($this->getHost().'proto.php?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta)))));
+		if($list == null){
+			throw new ModuleException("DownloadModule: Could not download module");
+		}
 		$modulefile = fopen("/tmp/".$list->r->name.".tar.gz",'w');
+		if(!$modulefile){
+			throw new ModuleException("DownloadModule: Could not write module to harddrive");
+		}
 		fwrite($modulefile,base64_decode($list->data));
 		fclose($modulefile);
 	}

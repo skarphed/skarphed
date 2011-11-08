@@ -198,6 +198,21 @@ class Core extends Singleton implements IModule{
 		$db->query($this,$stmnt, array($lockId));
 	}
 	
+	public function getLockData($lockType){
+		if (!isset($lockType) or $lockType == null){
+			throw new LockException("Need locktype!");
+		}
+		$db = $this->getDB();
+		
+		$stmnt = "SELECT LCK_DATA FROM LOCK INNER JOIN LOCKTYPES ON (LCK_LKT_ID = LKT_ID) WHERE LKT_TYPE = ? ;";
+		$res = $db->query($core,$stmnt,array($lockType));
+		$ret = array();
+		while($set = $db->fetchArray($res)){
+			$ret[] = json_decode($set['LCK_DATA']);
+		}
+		return $ret;
+	}
+	
 }
 
 class LockException extends \Exception{}

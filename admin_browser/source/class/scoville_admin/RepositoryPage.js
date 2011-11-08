@@ -9,6 +9,8 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 		this.setIcon('scoville_admin/repo.png');
 		this.tabs = app.tabview;
 		
+		this.operationsActive = false;
+		
 		this.buildGui();
 		
 		this.setShowCloseButton(true);
@@ -21,17 +23,38 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 		
 		operationsActive: false,
 		
+		refreshTimer: function(me){
+			return function(evt){
+				if (!me.operationsActive){
+					return;
+				}
+				me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createGetModulesHandler(me),"getModules",false);
+			}
+		},
+		
 		createGetModulesHandler:function(me){
 			return function(result,exc){
 				if (exc == null){
 					var resultJson = qx.lang.Json.parse(result);
+					me.modboxIList.removeAll();
+					me.modboxAList.removeAll();
+					me.modboxCList.removeAll();
+					var countProcessing = 0;
 					for (var element in resultJson){
-						if (resultJson[element].installed){
-							me.modboxIList.add(new scoville_admin.RepositoryModule(me.app,resultJson[element]));
+						if (typeof(resultJson[element].processing) != 'undefined'){
+							var mod = new scoville_admin.RepositoryModule(me.app,resultJson[element]);
+							mod.setLabel(mod.getLabel()+" [ "+resultJson[element].processing+"]");
+							me.modboxCList.add(mod);
+							countProcessing++;
 						}else{
-							me.modboxAList.add(new scoville_admin.RepositoryModule(me.app,resultJson[element]));
+							if (resultJson[element].installed){
+								me.modboxIList.add(new scoville_admin.RepositoryModule(me.app,resultJson[element]));
+							}else{
+								me.modboxAList.add(new scoville_admin.RepositoryModule(me.app,resultJson[element]));
+							}
 						}
 					}
+					me.operationsActive = countProcessing != 0;
 				}else{
 					alert(exc);
 				}
@@ -40,7 +63,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 		
 		dragStartHandlerIList : function(me){
 			return function (evt){
-				evt.addType("modules");
+				evt.addType("modules_uninstall");
 				
 				evt.addAction("copy");
 				evt.addAction("move");
@@ -50,7 +73,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 
 		dragStartHandlerAList : function(me){
 			return function (evt){
-				evt.addType("modules");
+				evt.addType("modules_install");
 				
 				evt.addAction("copy");
 				evt.addAction("move");
@@ -60,8 +83,8 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 		
 		dropRequestHandlerIList : function(me){
 			return function (evt){
-				if (evt.getCurrentType() == "modules"){
-					evt.addData("modules",me.modboxIList.getSelection());
+				if (evt.getCurrentType() == "modules_uninstall"){
+					evt.addData("modules_uninstall",me.modboxIList.getSelection());
 				}
 				return null;
 			}
@@ -69,8 +92,8 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 		
 		dropRequestHandlerAList : function(me){
 			return function (evt){
-				if (evt.getCurrentType() == "modules"){
-					evt.addData("modules",me.modboxAList.getSelection());
+				if (evt.getCurrentType() == "modules_install"){
+					evt.addData("modules_install",me.modboxAList.getSelection());
 				}
 				return null;
 			}
@@ -78,7 +101,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 		
 		dropHandlerIList:function(me){
 			return function(evt){
-				var modulesToInstall = evt.getData("modules");
+				var modulesToInstall = evt.getData("modules_install");
 				for (var i = 0; i < modulesToInstall.length; i++){
 					var operationId = modulesToInstall[i].toHashCode();
 					me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createInstallCallback(me,modulesToInstall[i]),
@@ -93,7 +116,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 		
 		dropHandlerAList:function(me){
 			return function(evt){
-				var modulesToUninstall = evt.getData("modules");
+				var modulesToUninstall = evt.getData("modules_uninstall");
 				for (var i = 0; i < modulesToUninstall.length; i++){
 					var operationId = modulesToUninstall[i].toHashCode();
 					me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createUninstallCallback(me,modulesToUninstall[i]),
@@ -111,6 +134,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 				if (exc == null){
 					module.setLabel(module.getLabel()+" [ Installing ]");
 					me.modboxCList.add(module);
+					me.operationsActive = true;
 				}else{
 					alert(exc);
 				}
@@ -122,8 +146,25 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 				if (exc == null){
 					module.setLabel(module.getLabel()+" [ Uninstalling ]");
 					me.modboxCList.add(module);
+					me.operationsActive = true;
 				}else{
 					alert(exc);
+				}
+			}
+		},
+		
+		preventDropIList : function (me){
+			return function(evt){
+				if (!evt.supportsType("modules_install")){
+					evt.preventDefault();
+				}
+			}
+		},
+		
+		preventDropAList : function (me){
+			return function(evt){
+				if (!evt.supportsType("modules_uninstall")){
+					evt.preventDefault();
 				}
 			}
 		},
@@ -172,31 +213,21 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			this.modboxAList.addListener("droprequest", this.dropRequestHandlerAList(this));
 			this.modboxIList.addListener("drop", this.dropHandlerIList(this));
 			this.modboxAList.addListener("drop", this.dropHandlerAList(this));
+			this.modboxIList.addListener("dragover", this.preventDropIList(this));
+			this.modboxAList.addListener("dragover", this.preventDropAList(this));
 			this.modboxIList.setDraggable(true);
 			this.modboxAList.setDraggable(true);
 			this.modboxIList.setDroppable(true);
 			this.modboxAList.setDroppable(true);
 			this.modboxIList.setSelectionMode("multi");
 			this.modboxAList.setSelectionMode("multi");
-						
+			
+			this.refreshtimer = new qx.event.Timer(500);
+			this.refreshtimer.addListener("interval",this.refreshTimer(this));
+			this.refreshtimer.setEnabled(true);
+			
 			this.app.createRPCObject(this.repo.getServer().ip).callAsync(this.createGetModulesHandler(this),"getModules",false);
 			
-		},
-		
-		createOpenCSSHandler: function (me){
-			return function (result,exc){
-				if (exc == null){
-					new scoville_admin.CssEditorPage(me.app, me.module.getServer(),result);
-				}else{
-					alert(exc);
-				}
-			}
-		},
-		
-		editCSSCallback : function(me){
-			return function(){
-				me.app.createRPCObject(me.module.getServer().ip).callAsync(me.createOpenCSSHandler(me),"getCssPropertySet",me.module.serverModuleId,null,null);
-			}
-		}	
+		}
 	}
 });
