@@ -37,10 +37,12 @@
 			
 			$core = Core::getInstance();
 			$db = $core->getDB();
-			$stmnt = "SELECT OPD_KEY, OPD_VALUE FROM OPERATIONDATA WHERE OPD_OPE_ID = ? ;";
+			$stmnt = "SELECT OPD_KEY, OPD_VALUE, OPD_TYPE FROM OPERATIONDATA WHERE OPD_OPE_ID = ? ;";
 			$res = $db->query($core, $stmnt, array($set['OPE_ID']));
 			while($set = $db->fetchArray($res)){
-				$operationObject->setValue($set['OPD_KEY'], $set['OPD_VALUE']);
+				$val = $set['OPD_VALUE'];
+				settype($val,$set['OPD_TYPE']);
+				$operationObject->setValue($set['OPD_KEY'], $val);
 			}
 			return $operationObject;
 		}
@@ -54,34 +56,64 @@
 			touch("/tmp/scv_operating.lck");
 			if ($this->currentParent == null){
 				$stmnt_lock = "UPDATE OPERATIONS SET OPE_ACTIVE = 1 
-								WHERE OPE_ID IN (SELECT FIRST 1 OPE_ID WHERE OPE_OPE_PARENT IS NULL ORDER BY OPE_INVOKED);";
-				$stmnt = "SELECT FIRST 1 OPE_ID, OPE_TYPE WHERE OPE_OPE_PARENT IS NULL ORDER BY OPE_INVOKED ;";
+								WHERE OPE_ID IN (
+								  SELECT FIRST 1 OPE_ID FROM OPERATIONS 
+								  WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0 ORDER BY OPE_INVOKED
+								);";
+				$stmnt = "SELECT FIRST 1 OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL ORDER BY OPE_INVOKED ;";
+				$core->debugGrindlog("APASS1");
 				$db->query($core,$stmnt_lock);
+				$core->debugGrindlog("APASS2");
 				$res = $db->query($core,$stmnt);
+				$core->debugGrindlog("aPASS3");
 				if ($set = $db->fetchArray($res)){
 					$this->currentParent = $set['OPE_ID'];
 					$operation = $this->restoreOperation($set);
-					$operation->doWorkload();
+					$core->debugGrindlog("APASS4");
+					try{
+						$operation->doWorkload();
+					}catch (\Exception $e){
+						//TODO: Implement errorlogging!!!11
+					}
+					$core->debugGrindlog("APASS5");
+					
 				}else{
 					return false;
 				}
 			}else{
 				$stmnt_lock = "UPDATE OPERATIONS SET OPE_ACTIVE = 1 
-								WHERE OPE_ID IN (SELECT FIRST 1 OPE_ID WHERE OPE_OPE_PARENT = ? ORDER BY OPE_INVOKED);";
-				$stmnt = "SELECT FIRST 1 OPE_ID, OPE_TYPE WHERE OPE_OPE_PARENT = ? ORDER BY OPE_INVOKED ;";
+								WHERE OPE_ID IN (
+								  SELECT FIRST 1 OPE_ID FROM OPERATIONS 
+								  WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0 ORDER BY OPE_INVOKED
+								);";
+				$stmnt = "SELECT FIRST 1 OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ? ORDER BY OPE_INVOKED ;";
+				$core->debugGrindlog("BPASS1");
 				$res = $db->query($core,$stmnt_lock,array($this->currentParent));
+				$core->debugGrindlog("BPASS2");
 				$res = $db->query($core,$stmnt,array($this->currentParent));
+				$core->debugGrindlog("BPASS3");
 				if ($set = $db->fetchArray($res)){
 					$operation = $this->restoreOperation($set);
-					$operation->doWorkload();
+					$core->debugGrindlog("BPASS4");
+					try{
+						$operation->doWorkload();
+					}catch (\Exception $e){
+						//TODO: Implement errorlogging!!!11
+					}
+					$core->debugGrindlog("BPASS5");
+					
 				}else{
 					$this->currentParent = null;
-					return true;
+					
 				}
 			}
+			$core->debugGrindlog("VPASS1");
 			if (!unlink("/tmp/scv_operating.lck")){
 				throw new OperationException("Processing: Could not remove Lock");
+				$core->debugGrindlog("VPASS2");
 			}
+			$core->debugGrindlog("VPASS3");
+			return true;
 		}
 		
 		public function doQueue(){
@@ -94,7 +126,9 @@
 	abstract class Operation{
 		private $_id = null;
 		private $_parent = null;
-		protected $_values = array();
+		protected $_values = null;
+		
+		private static $validStorageTypes = array('integer','boolean','string'); 
 		
 		public function __const($parentId = null){
 			$this->_parent = $parentId;
@@ -102,19 +136,14 @@
 		
 		public function getValue($key){
 			if (!isset($this->_values[$key])){
-				throw new OperationException("GetValue: This value is not set!");
+				throw new OperationException("GetValue: This value is not set $key!");
 			}
 			return $this->_values[$key];
 		}
 		
 		public function setValue($key,$value){
-			$core = Core::getInstance();
-			
-			foreach ($this->_values as $k=>$v){
-				$core->debugGrindlog("[$k]$v");
-			}
 			if (!isset($this->_values[$key])){
-				throw new OperationException("SetValue: This value is not set!");
+				throw new OperationException("SetValue: This value is not set $key!");
 			}
 			
 			$this->_values[$key] = $value;
@@ -135,19 +164,18 @@
 			if($this->_id == null){
 				$this->_id = $db->getSeqNext('OPE_GEN');
 			}
-			
 			$stmnt = "UPDATE OR INSERT INTO OPERATIONS (OPE_ID, OPE_OPE_PARENT, OPE_INVOKED, OPE_TYPE) 
 			          VALUES (?,?,CURRENT_TIMESTAMP,?) MATCHING (OPE_ID);";
 		    $db->query($core,$stmnt,array($this->_id, $this->_parent, get_class($this)));
 			
-			$objectdata = get_object_vars($object);
-			
-			$stmnt = "UPDATE OR INSERT INTO OPERATIONDATA (OPD_OPE_ID, OPD_KEY, OPD_VALUE)
-					  VALUES ( ?, ?, ?) MATCHING(OPD_OPE_ID,OPD_KEY);";
-		    foreach ($objectdata as $key=>$value){
-		    	if (strstr($key,"_")!==1){
-		    		$db->query($core,$stmnt,array($this->_id,$key,$value));
+			$stmnt = "UPDATE OR INSERT INTO OPERATIONDATA (OPD_OPE_ID, OPD_KEY, OPD_VALUE, OPD_TYPE)
+					  VALUES ( ?, ?, ?, ?) MATCHING(OPD_OPE_ID,OPD_KEY);";
+		    foreach ($this->_values as $key=>$value){
+		    	$type = gettype($value);
+		    	if (!in_array($type,Operation::$validStorageTypes)){
+		    		continue;
 		    	}
+		    	$db->query($core,$stmnt,array($this->_id,$key,$value,gettype($value)));
 			}
 		} 
 		
@@ -155,14 +183,12 @@
 	}
 	
 	abstract class ModuleOperation extends Operation {
-		public function __const (){
-			$this->_values = array("name"=>null,
-									"hrname"=>null,
-									"version_major"=>null,
-									"version_minor"=>null,
-									"revision"=>null,
-									"md5"=>null);
-		}
+		protected $_values = array("name"=>"",
+									"hrname"=>"",
+									"version_major"=>"",
+									"version_minor"=>"",
+									"revision"=>"",
+									"md5"=>"");
 		
 		public function setValuesFromMeta($module){
 			$this->setValue("name", $module["name"]);
@@ -209,7 +235,7 @@
 		}	
 	}
 	
-	class ModuleUninstallOperation extends Operation {
+	class ModuleUninstallOperation extends ModuleOperation {
 		public function doWorkload(){
 			$core = Core::getInstance();
 			$moduleM = $core->getModuleManager();

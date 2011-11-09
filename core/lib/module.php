@@ -331,9 +331,9 @@ class ModuleManager extends Singleton {
 		
 		$stmnt = "SELECT MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_REP_ID, MOD_MD5 FROM MODULES ;";
 		$res = $db->query($core,$stmnt);
-		
+		$core->debugGrindlog("XPASS1");
 		$repositoryJobLocks = ModuleOperation::getCurrentlyProcessedModules();
-		
+		$core->debugGrindlog("XPASS2");
 		while($set = $db->fetchArray($res)){
 			$modules[]=array('name'=>$set['MOD_NAME'], 'hrname'=>$set['MOD_DISPLAYNAME'], 
 							 'version_major'=>$set['MOD_VERSIONMAJOR'], 'version_minor'=>$set['MOD_VERSIONMINOR'], 
@@ -435,8 +435,11 @@ class Repository {
 	
 	public function downloadModule($modulemeta){
 		$core = Core::getInstance();
-		$modulemeta->md5 = "";
-		$modulemeta = $core->parseObjectToArray($modulemeta);
+		if(!is_array($modulemeta)){
+			$modulemeta = $core->parseObjectToArray($modulemeta);
+		}
+		$modulemeta['md5'] = "";
+		
 		$list = json_decode(file_get_contents($this->getHost().'proto.php?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta)))));
 		if($list == null){
 			throw new ModuleException("DownloadModule: Could not download module");

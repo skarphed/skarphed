@@ -50,6 +50,7 @@ class Core extends Singleton implements IModule{
 		$this->modules = ModuleManager::getInstance();
 		$this->users = UserManager::getInstance();
 		$this->css = CssManager::getInstance();
+		$this->operations = OperationManager::getInstance();
 	}
 	
 	public function getDB(){
