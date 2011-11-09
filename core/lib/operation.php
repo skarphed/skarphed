@@ -57,10 +57,17 @@
 			if ($this->currentParent == null){
 				$stmnt_lock = "UPDATE OPERATIONS SET OPE_ACTIVE = 1 
 								WHERE OPE_ID IN (
-								  SELECT FIRST 1 OPE_ID FROM OPERATIONS 
-								  WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0 ORDER BY OPE_INVOKED
+								  SELECT OPE_ID FROM OPERATIONS 
+								  WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0
+								  AND OPE_INVOKED = (
+								    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
+								    WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0)
 								);";
-				$stmnt = "SELECT FIRST 1 OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL ORDER BY OPE_INVOKED ;";
+				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS 
+				          WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0 AND OPE_INVOKED = (
+						    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
+						    WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0
+						  );";
 				$core->debugGrindlog("APASS1");
 				$db->query($core,$stmnt_lock);
 				$core->debugGrindlog("APASS2");
@@ -73,24 +80,35 @@
 					try{
 						$operation->doWorkload();
 					}catch (\Exception $e){
-						//TODO: Implement errorlogging!!!11
+						$core->debugGrindlog($e->getMessage());
 					}
 					$core->debugGrindlog("APASS5");
 					
 				}else{
+					if (!unlink("/tmp/scv_operating.lck")){
+						throw new OperationException("Processing: Could not remove Lock");
+						$core->debugGrindlog("VPASS2");
+					}
 					return false;
 				}
 			}else{
 				$stmnt_lock = "UPDATE OPERATIONS SET OPE_ACTIVE = 1 
 								WHERE OPE_ID IN (
-								  SELECT FIRST 1 OPE_ID FROM OPERATIONS 
-								  WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0 ORDER BY OPE_INVOKED
+								  SELECT OPE_ID FROM OPERATIONS 
+								  WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0
+								  AND OPE_INVOKED = (
+								    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
+								    WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0)
 								);";
-				$stmnt = "SELECT FIRST 1 OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ? ORDER BY OPE_INVOKED ;";
+				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS 
+				          WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0 AND OPE_INVOKED = (
+						    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
+						    WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0
+						  );";
 				$core->debugGrindlog("BPASS1");
-				$res = $db->query($core,$stmnt_lock,array($this->currentParent));
+				$res = $db->query($core,$stmnt_lock,array($this->currentParent, $this->currentParent));
 				$core->debugGrindlog("BPASS2");
-				$res = $db->query($core,$stmnt,array($this->currentParent));
+				$res = $db->query($core,$stmnt,array($this->currentParent,$this->currentParent));
 				$core->debugGrindlog("BPASS3");
 				if ($set = $db->fetchArray($res)){
 					$operation = $this->restoreOperation($set);
@@ -98,7 +116,7 @@
 					try{
 						$operation->doWorkload();
 					}catch (\Exception $e){
-						//TODO: Implement errorlogging!!!11
+						$core->debugGrindlog($e->getMessage());
 					}
 					$core->debugGrindlog("BPASS5");
 					
@@ -117,9 +135,7 @@
 		}
 		
 		public function doQueue(){
-			while($this->processNext()){
-				error_log("PROCESSED OPERATION");
-			}
+			while($this->processNext()){}
 		}
 	}
 	

@@ -198,10 +198,16 @@ class ModuleManager extends Singleton {
 		if(!is_array($module)){
 			$module = $core->parseObjectToArray($module);
 		}
+		$opM = $core->getOperationManager();
+		
 		$operation = new ModuleUninstallOperation();
 		$operation->setValuesFromMeta($module);
 		$operation->optimizeQueue();
 		$operation->store();
+		
+		$core->debugGrindlog("QPASS1");
+		$opM->doQueue();
+		$core->debugGrindlog("QPASS2");
 		
 		//TODO: Implementieren von Abhaengigkeit
 	}
@@ -331,9 +337,9 @@ class ModuleManager extends Singleton {
 		
 		$stmnt = "SELECT MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_REP_ID, MOD_MD5 FROM MODULES ;";
 		$res = $db->query($core,$stmnt);
-		$core->debugGrindlog("XPASS1");
+		
 		$repositoryJobLocks = ModuleOperation::getCurrentlyProcessedModules();
-		$core->debugGrindlog("XPASS2");
+		
 		while($set = $db->fetchArray($res)){
 			$modules[]=array('name'=>$set['MOD_NAME'], 'hrname'=>$set['MOD_DISPLAYNAME'], 
 							 'version_major'=>$set['MOD_VERSIONMAJOR'], 'version_minor'=>$set['MOD_VERSIONMINOR'], 
