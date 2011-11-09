@@ -63,11 +63,7 @@
 								    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
 								    WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0)
 								);";
-				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS 
-				          WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0 AND OPE_INVOKED = (
-						    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
-						    WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0
-						  );";
+				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 1;";
 				$core->debugGrindlog("APASS1");
 				$db->query($core,$stmnt_lock);
 				$core->debugGrindlog("APASS2");
@@ -85,6 +81,8 @@
 					$core->debugGrindlog("APASS5");
 					
 				}else{
+					$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_ACTIVE = 1;";
+					$db->query($core,$delstmnt);
 					if (!unlink("/tmp/scv_operating.lck")){
 						throw new OperationException("Processing: Could not remove Lock");
 						$core->debugGrindlog("VPASS2");
@@ -100,15 +98,11 @@
 								    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
 								    WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0)
 								);";
-				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS 
-				          WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0 AND OPE_INVOKED = (
-						    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
-						    WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0
-						  );";
+				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ?  AND OPE_ACTIVE = 1;";
 				$core->debugGrindlog("BPASS1");
 				$res = $db->query($core,$stmnt_lock,array($this->currentParent, $this->currentParent));
 				$core->debugGrindlog("BPASS2");
-				$res = $db->query($core,$stmnt,array($this->currentParent,$this->currentParent));
+				$res = $db->query($core,$stmnt,array($this->currentParent));
 				$core->debugGrindlog("BPASS3");
 				if ($set = $db->fetchArray($res)){
 					$operation = $this->restoreOperation($set);
@@ -126,6 +120,8 @@
 				}
 			}
 			$core->debugGrindlog("VPASS1");
+			$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_ACTIVE = 1;";
+			$db->query($core,$delstmnt);
 			if (!unlink("/tmp/scv_operating.lck")){
 				throw new OperationException("Processing: Could not remove Lock");
 				$core->debugGrindlog("VPASS2");
