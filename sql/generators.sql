@@ -11,3 +11,4 @@ create generator rol_gen;
 create generator sit_gen;
 create generator usr_gen;
 create generator wgt_gen;
+CREATE GENERATOR OPE_GEN;
