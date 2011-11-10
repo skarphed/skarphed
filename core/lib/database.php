@@ -172,6 +172,10 @@ class Database {
 	  return ibase_fetch_object($resultset);
 	}
 	
+	public function commit(){
+		ibase_commit();
+	}
+	
 	/**
 	 * This function creates the tables necessary to run a module
 	 * by interpreting the objectlist $table

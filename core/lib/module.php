@@ -112,11 +112,9 @@ class ModuleManager extends Singleton {
 	public  function installModule($moduleId){
 		$core = Core::getInstance();
 		$modulesPath = $core->getConfig()->getEntry("modules.path");
-		$core->debugGrindlog("../".$modulesPath.$moduleId);
 		if (is_dir("../".$modulesPath.$moduleId)){
 			throw new ModuleException("InstallationError: This Module is already installed (Directory Exists)");
 		}
-
 		system('mkdir ../'.$modulesPath.escapeshellarg($moduleId)." > /dev/null");
 		system('tar xfz /tmp/'.escapeshellarg($moduleId).'.tar.gz -C ../'.$modulesPath.escapeshellarg($moduleId).'/ > /dev/null');
 		
@@ -186,9 +184,6 @@ class ModuleManager extends Singleton {
 		$operation->setValuesFromMeta($module);
 		$operation->optimizeQueue();
 		$operation->store();
-		
-		$opM->doQueue();
-		
 		//TODO: Implementieren von Abhaengigkeit
 	}
 	
@@ -204,11 +199,6 @@ class ModuleManager extends Singleton {
 		$operation->setValuesFromMeta($module);
 		$operation->optimizeQueue();
 		$operation->store();
-		
-		$core->debugGrindlog("QPASS1");
-		$opM->doQueue();
-		$core->debugGrindlog("QPASS2");
-		
 		//TODO: Implementieren von Abhaengigkeit
 	}
 	
@@ -357,7 +347,7 @@ class ModuleManager extends Singleton {
 								$modules[$i]['toUpdate'] = true;
 							}
 							foreach($repositoryJobLocks as $rjl){
-								if ($rjl["name"] == $modules[$i]['name']){
+								if ($rjl['name'] == $modules[$i]['name']){
 									$modules[$i]['processing'] = 'Unstalling';
 								}
 							}
@@ -365,7 +355,7 @@ class ModuleManager extends Singleton {
 						}
 					}
 					foreach($repositoryJobLocks as $rjl){
-						if ($rjl->name == $modules[$i]['name']){
+						if ($rjl['name'] == $repoModule->name){
 							$repoModule->processing = 'Installing';
 						}
 					}
@@ -413,7 +403,7 @@ class Repository {
 	}
 	
 	private function getHost() {
-		if($port == 80) {
+		if($this->port == 80) {
 			$host = "http://{$this->ip}/";
 		} else {
 			$host = "http://{$this->ip}:{$this->port}/";

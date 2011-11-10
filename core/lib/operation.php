@@ -17,19 +17,8 @@
 		}
 		
 		protected function init(){}
-		
-		
-		private $queue = array();
-		
+
 		private $currentParent = null;
-		
-		
-		public function addOperation($operation){
-			if (!in_array(Operation,class_parents($operation))){
-				throw new OperationException("Add Operation: Only Operations can be added to A Queue");
-			}
-			array_unshift($this->queue,$operation);
-		}
 		
 		public function restoreOperation($set){
 			$classname = $set['OPE_TYPE'];
@@ -64,28 +53,24 @@
 								    WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0)
 								);";
 				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 1;";
-				$core->debugGrindlog("APASS1");
 				$db->query($core,$stmnt_lock);
-				$core->debugGrindlog("APASS2");
+				$db->commit();
 				$res = $db->query($core,$stmnt);
-				$core->debugGrindlog("aPASS3");
 				if ($set = $db->fetchArray($res)){
 					$this->currentParent = $set['OPE_ID'];
 					$operation = $this->restoreOperation($set);
-					$core->debugGrindlog("APASS4");
 					try{
 						$operation->doWorkload();
 					}catch (\Exception $e){
-						$core->debugGrindlog($e->getMessage());
+						$core->debugGrindlog("While Operation: ".$e->getMessage());
 					}
-					$core->debugGrindlog("APASS5");
 					
 				}else{
 					$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_ACTIVE = 1;";
 					$db->query($core,$delstmnt);
+					$db->commit();
 					if (!unlink("/tmp/scv_operating.lck")){
 						throw new OperationException("Processing: Could not remove Lock");
-						$core->debugGrindlog("VPASS2");
 					}
 					return false;
 				}
@@ -99,39 +84,31 @@
 								    WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0)
 								);";
 				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ?  AND OPE_ACTIVE = 1;";
-				$core->debugGrindlog("BPASS1");
-				$res = $db->query($core,$stmnt_lock,array($this->currentParent, $this->currentParent));
-				$core->debugGrindlog("BPASS2");
+				$db->query($core,$stmnt_lock,array($this->currentParent, $this->currentParent));
+				$db->commit();
 				$res = $db->query($core,$stmnt,array($this->currentParent));
-				$core->debugGrindlog("BPASS3");
 				if ($set = $db->fetchArray($res)){
 					$operation = $this->restoreOperation($set);
-					$core->debugGrindlog("BPASS4");
 					try{
 						$operation->doWorkload();
 					}catch (\Exception $e){
-						$core->debugGrindlog($e->getMessage());
+						$core->debugGrindlog("While OperationChild ".$e->getMessage());
 					}
-					$core->debugGrindlog("BPASS5");
 					
 				}else{
 					$this->currentParent = null;
-					
 				}
 			}
-			$core->debugGrindlog("VPASS1");
 			$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_ACTIVE = 1;";
 			$db->query($core,$delstmnt);
+			$db->commit();
 			if (!unlink("/tmp/scv_operating.lck")){
-				throw new OperationException("Processing: Could not remove Lock");
-				$core->debugGrindlog("VPASS2");
+				throw new OperationException("Processing: Could not remove Lock");;
 			}
-			$core->debugGrindlog("VPASS3");
 			return true;
 		}
 		
 		public function doQueue(){
-			while($this->processNext()){}
 		}
 	}
 	
@@ -221,7 +198,7 @@
 			$opM = $core->getOperationManager();
 			$db = $core->getDB();
 			
-			$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_TYPE = 'ModuleInstallOperation' or OPE_TYPE = 'ModuleUninstallOperation';";
+			$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_TYPE = 'scv\ModuleInstallOperation' or OPE_TYPE = 'scv\ModuleUninstallOperation';";
 			$res = $db->query($core,$stmnt);
 			$ret = array();
 			while($set = $db->fetchArray($res)){
@@ -240,6 +217,7 @@
 			$repositories = $moduleM->getRepositories();
 			$repositories[0]->downloadModule($this->getMeta());
 			$moduleM->installModule($this->getValue("name"));
+			//sleep(1);
 		}
 		
 		public function optimizeQueue(){
@@ -252,6 +230,7 @@
 			$core = Core::getInstance();
 			$moduleM = $core->getModuleManager();
 			$moduleM->uninstallModule($this->getValue("name"));
+			//sleep(1);
 		}
 		
 		public function optimizeQueue(){
