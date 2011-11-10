@@ -179,12 +179,25 @@ class ModuleManager extends Singleton {
 			$module = $core->parseObjectToArray($module);
 		}
 		$opM = $core->getOperationManager();
+		/*$repositories = $this->getRepositories();
+		$repo = $repositories[0];
+		$dependencies = $repo->getDescDependencies($module);*/
 		
 		$operation = new ModuleInstallOperation();
 		$operation->setValuesFromMeta($module);
+		/*$operationId = $operation->setDBIP();
+		
+		foreach ($dependencies as $dep){
+			$dep = $core->parseObjectToArray();
+			$subOp = new ModuleInstallOperation();
+			$subOp->setValuesFromMeta($dep);
+			$subOp->setParent($operationId);
+			$subOp->optimizeQueue();
+			$subOp->store();
+		}*/
+		
 		$operation->optimizeQueue();
 		$operation->store();
-		//TODO: Implementieren von Abhaengigkeit
 	}
 	
 	
@@ -194,12 +207,26 @@ class ModuleManager extends Singleton {
 			$module = $core->parseObjectToArray($module);
 		}
 		$opM = $core->getOperationManager();
+		/*$repositories = $this->getRepositories();
+		$repo = $repositories[0];
+		$dependencies = $repo->getDependencies($module);*/
 		
 		$operation = new ModuleUninstallOperation();
 		$operation->setValuesFromMeta($module);
+		/*$operationId = $operation->setDBIP();
+		
+		foreach ($dependencies as $dep){
+			$dep = $core->parseObjectToArray();
+			$subOp = new ModuleUninstallOperation();
+			$subOp->setValuesFromMeta($dep);
+			$subOp->setParent($operationId);
+			$subOp->optimizeQueue();
+			$subOp->store();
+		}*/
+		
 		$operation->optimizeQueue();
 		$operation->store();
-		//TODO: Implementieren von Abhaengigkeit
+		
 	}
 	
 	public function uninstallModule($moduleId){

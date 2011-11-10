@@ -146,6 +146,13 @@
 			return $this->_parent;
 		}
 		
+		public function setDBIP(){
+			if($this->_id == null){
+				$this->_id = $db->getSeqNext('OPE_GEN');
+			}
+			return $this->_id;
+		}
+		
 		public function store(){
 			$core  = Core::getInstance();
 			$db = $core->getDB();
