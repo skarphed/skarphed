@@ -55,6 +55,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 						}
 					}
 					me.operationsActive = countProcessing != 0;
+					me.repo.getServer().modules.update();
 				}else{
 					alert(exc);
 				}
