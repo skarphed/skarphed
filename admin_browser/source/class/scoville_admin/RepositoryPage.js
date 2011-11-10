@@ -12,6 +12,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 		this.operationsActive = false;
 		
 		this.buildGui();
+		this.buildToolbar();
 		
 		this.setShowCloseButton(true);
 		this.tabs.add(this);
@@ -19,15 +20,19 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 	},
 	
 	members: {
+		app:null,
 		module:null,
+		toolbarExtension:[],
 		
 		operationsActive: false,
+		updateActive:false,
 		
 		refreshTimer: function(me){
 			return function(evt){
-				if (!me.operationsActive){
+				if (!me.operationsActive || me.updateActive){
 					return;
 				}
+				me.updateActive  = true;
 				me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createGetModulesHandler(me),"getModules",false);
 			}
 		},
@@ -55,6 +60,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 						}
 					}
 					me.operationsActive = countProcessing != 0;
+					me.updateActive = false;
 					me.repo.getServer().modules.update();
 				}else{
 					alert(exc);
@@ -227,8 +233,26 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			this.refreshtimer.addListener("interval",this.refreshTimer(this));
 			this.refreshtimer.setEnabled(true);
 			
+			this.updateActive = true;
 			this.app.createRPCObject(this.repo.getServer().ip).callAsync(this.createGetModulesHandler(this),"getModules",false);
 			
-		}
+		},
+		
+		updateHandler : function(me){
+			return function(){
+				me.updateActive = true;
+				me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createGetModulesHandler(me),"getModules",false);
+			}
+		},
+		
+		buildToolbar : function () {
+				var reload = new qx.ui.toolbar.Button("Reload","scoville_admin/reload.png");
+				reload.addListener("execute", this.updateHandler(this));
+				this.toolbarExtension.push(reload);
+		},
+		
+		getToolbarExtension : function(){
+			return this.toolbarExtension;
+		}	
 	}
 });

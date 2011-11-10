@@ -23,11 +23,6 @@ qx.Class.define("scoville_admin.ModulePage",{
 		
 		buildGui : function(){
 			this.setLayout(new qx.ui.layout.VBox());
-			if (this.module.getServer().rightsForSession.indexOf('scoville.css.edit')!=-1){
-				this.cssButton = new qx.ui.form.Button("Edit this module's CSS");
-				this.add(this.cssButton);
-				this.cssButton.addListener("execute", this.editCSSCallback(this));
-			}
 		},
 		
 		createOpenCSSHandler: function (me){
@@ -47,9 +42,11 @@ qx.Class.define("scoville_admin.ModulePage",{
 		},
 		
 		buildToolbar : function () {
-			var css = new qx.ui.toolbar.Button("Edit CSS","scoville_admin/css.png");
-			css.addListener("execute", this.editCSSCallback(this));
-			this.toolbarExtension.push(css);
+			if (this.module.getServer().rightsForSession.indexOf('scoville.css.edit')!=-1){
+				var css = new qx.ui.toolbar.Button("Edit CSS","scoville_admin/css.png");
+				css.addListener("execute", this.editCSSCallback(this));
+				this.toolbarExtension.push(css);
+			}
 		},
 		
 		getToolbarExtension : function(){

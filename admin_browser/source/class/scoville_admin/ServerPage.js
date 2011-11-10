@@ -11,6 +11,7 @@ qx.Class.define("scoville_admin.ServerPage",{
 		this.tabs = app.tabview;
 		if (server.loggedin){
 			this.buildGui();
+			this.buildToolbar();
 		}else{
 			this.buildLogin();
 		}
@@ -28,6 +29,7 @@ qx.Class.define("scoville_admin.ServerPage",{
 		infobox:null,
 		infolabel:null,
 		heading:null,
+		toolbarExtension:[],
 		
 		enterRepoFinished : function(me){
 			return function(result,exc){
@@ -59,7 +61,7 @@ qx.Class.define("scoville_admin.ServerPage",{
 			this.passwordlabel = new qx.ui.basic.Label("Password:");
 			this.passwordentry = new qx.ui.form.PasswordField();
 			
-			this.buttonEnter.addListener("execute", this.enterNewServerCallback(this));
+			this.buttonEnter.addListener("execute", this.enterNewServerCallback(this),"Enter");
 			this.buttonCancel.addListener("execute", this.cancelCallback(this));
 			
 			this.infobox.add(this.infolabel,{top:10, left:100});
@@ -85,13 +87,6 @@ qx.Class.define("scoville_admin.ServerPage",{
 			this.repobox.add(this.repoSaveButton);
 			this.repoSaveButton.addListener("execute", this.enterRepoCallback(this));
 			this.add(this.repobox);
-			
-			if (this.server.rightsForSession.indexOf('scoville.css.edit')!=-1){
-				this.cssButton = new qx.ui.form.Button("Edit Serverwide CSS");
-				
-				this.add(this.cssButton);
-				this.cssButton.addListener("execute", this.editCSSCallback(this));
-			}
 		},
 		
 		createOpenCSSHandler: function (me){
@@ -128,7 +123,19 @@ qx.Class.define("scoville_admin.ServerPage",{
 			};
 			
 			
-		}
+		},
+		
+		buildToolbar : function () {
+			if (this.server.rightsForSession.indexOf('scoville.css.edit')!=-1){
+				var css = new qx.ui.toolbar.Button("Edit CSS","scoville_admin/css.png");
+				css.addListener("execute", this.editCSSCallback(this));
+				this.toolbarExtension.push(css);
+			}
+		},
+		
+		getToolbarExtension : function(){
+			return this.toolbarExtension;
+		}	
 		
 		
 	}
