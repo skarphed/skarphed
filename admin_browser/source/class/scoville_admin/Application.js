@@ -89,6 +89,12 @@ qx.Class.define("scoville_admin.Application",
     	qx.bom.Cookie.set("scv_admin", qx.lang.Json.stringify(serverlist));
     },
     
+    tabviewHandler : function(me){
+    	return function(page){
+    		me.tool.updateForPage(me.tabview.getSelection()[0]);
+    	}
+    },
+    
     main : function()
     {
       // Call super class
@@ -114,7 +120,9 @@ qx.Class.define("scoville_admin.Application",
       this.vbox = new qx.ui.layout.VBox();
       this.vcontainer = new qx.ui.container.Composite(this.vbox);
       this.tabview = new qx.ui.tabview.TabView();
-      this.menu = new qx.ui.menubar.MenuBar();      
+      this.tabview.addListener("changeSelection", this.tabviewHandler(this));
+      this.menu = new qx.ui.menubar.MenuBar();  
+      this.tool = new scoville_admin.Toolbar();    
       this.button1 = new qx.ui.form.Button("First Button", "scoville_admin/test.png");
       this.button2 = new qx.ui.form.Button("LOL BUTTON" );
       this.testimg = new qx.ui.basic.Image("scoville_admin/config_header.png");
@@ -152,6 +160,7 @@ qx.Class.define("scoville_admin.Application",
       this.mainpane.add(this.tabview, 4);
       this.vcontainer.add(this.testimg);
       this.vcontainer.add(this.menu);
+      this.vcontainer.add(this.tool);
       this.vcontainer.add(this.mainpane,{flex:1});
       doc.add(this.vcontainer, {width:'100%',height:'100%'});
       

@@ -10,6 +10,7 @@ qx.Class.define("scoville_admin.ModulePage",{
 		this.tabs = app.tabview;
 		
 		this.buildGui();
+		this.buildToolbar();
 		
 		this.setShowCloseButton(true);
 		this.tabs.add(this);
@@ -18,6 +19,7 @@ qx.Class.define("scoville_admin.ModulePage",{
 	
 	members: {
 		module:null,
+		toolbarExtension:[],
 		
 		buildGui : function(){
 			this.setLayout(new qx.ui.layout.VBox());
@@ -42,6 +44,16 @@ qx.Class.define("scoville_admin.ModulePage",{
 			return function(){
 				me.app.createRPCObject(me.module.getServer().ip).callAsync(me.createOpenCSSHandler(me),"getCssPropertySet",me.module.serverModuleId,null,null);
 			}
+		},
+		
+		buildToolbar : function () {
+			var css = new qx.ui.toolbar.Button("Edit CSS","scoville_admin/css.png");
+			css.addListener("execute", this.editCSSCallback(this));
+			this.toolbarExtension.push(css);
+		},
+		
+		getToolbarExtension : function(){
+			return this.toolbarExtension;
 		}	
 	}
 });
