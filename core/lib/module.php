@@ -185,7 +185,7 @@ class ModuleManager extends Singleton {
 		
 		$operation = new ModuleInstallOperation();
 		$operation->setValuesFromMeta($module);
-		/*$operationId = $operation->setDBIP();
+		/*$operationId = $operation->setDBID();
 		
 		foreach ($dependencies as $dep){
 			$dep = $core->parseObjectToArray();
@@ -213,7 +213,7 @@ class ModuleManager extends Singleton {
 		
 		$operation = new ModuleUninstallOperation();
 		$operation->setValuesFromMeta($module);
-		/*$operationId = $operation->setDBIP();
+		/*$operationId = $operation->setDBID();
 		
 		foreach ($dependencies as $dep){
 			$dep = $core->parseObjectToArray();

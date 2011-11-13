@@ -44,29 +44,31 @@
 			}
 			touch("/tmp/scv_operating.lck");
 			if ($this->currentParent == null){
-				$stmnt_lock = "UPDATE OPERATIONS SET OPE_ACTIVE = 1 
+				$stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 
 								WHERE OPE_ID IN (
 								  SELECT OPE_ID FROM OPERATIONS 
-								  WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0
+								  WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 0
 								  AND OPE_INVOKED = (
 								    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
-								    WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 0)
+								    WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 0)
 								);";
-				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL AND OPE_ACTIVE = 1;";
+				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 1;";
 				$db->query($core,$stmnt_lock);
 				$db->commit();
 				$res = $db->query($core,$stmnt);
 				if ($set = $db->fetchArray($res)){
-					$this->currentParent = $set['OPE_ID'];
+					$this->currentParent = (int)$set['OPE_ID'];
 					$operation = $this->restoreOperation($set);
 					try{
 						$operation->doWorkload();
 					}catch (\Exception $e){
+						$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
+						$db->query($core,$stmnt_err,array((int)$set['OPE_ID']));
 						$core->debugGrindlog("While Operation: ".$e->getMessage());
 					}
 					
 				}else{
-					$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_ACTIVE = 1;";
+					$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_STATUS = 1;";
 					$db->query($core,$delstmnt);
 					$db->commit();
 					if (!unlink("/tmp/scv_operating.lck")){
@@ -75,15 +77,15 @@
 					return false;
 				}
 			}else{
-				$stmnt_lock = "UPDATE OPERATIONS SET OPE_ACTIVE = 1 
+				$stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 
 								WHERE OPE_ID IN (
 								  SELECT OPE_ID FROM OPERATIONS 
-								  WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0
+								  WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 0
 								  AND OPE_INVOKED = (
 								    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
-								    WHERE OPE_OPE_PARENT = ? AND OPE_ACTIVE = 0)
+								    WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 0)
 								);";
-				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ?  AND OPE_ACTIVE = 1;";
+				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ?  AND OPE_STATUS = 1;";
 				$db->query($core,$stmnt_lock,array($this->currentParent, $this->currentParent));
 				$db->commit();
 				$res = $db->query($core,$stmnt,array($this->currentParent));
@@ -92,6 +94,8 @@
 					try{
 						$operation->doWorkload();
 					}catch (\Exception $e){
+						$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
+						$db->query($core,$stmnt_err,array((int)$set['OPE_ID']));
 						$core->debugGrindlog("While OperationChild ".$e->getMessage());
 					}
 					
@@ -99,7 +103,7 @@
 					$this->currentParent = null;
 				}
 			}
-			$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_ACTIVE = 1;";
+			$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_STATUS = 1;";
 			$db->query($core,$delstmnt);
 			$db->commit();
 			if (!unlink("/tmp/scv_operating.lck")){
@@ -115,7 +119,11 @@
 	abstract class Operation{
 		private $_id = null;
 		private $_parent = null;
-		protected $_values = null;
+		protected $_values = array();
+		
+		const STATUS_PENDING = 0;
+		const STATUS_ACTIVE = 1;
+		const STATUS_FAILED = 2;
 		
 		private static $validStorageTypes = array('integer','boolean','string'); 
 		
@@ -146,7 +154,7 @@
 			return $this->_parent;
 		}
 		
-		public function setDBIP(){
+		public function setDBID(){
 			if($this->_id == null){
 				$this->_id = $db->getSeqNext('OPE_GEN');
 			}
@@ -205,7 +213,7 @@
 			$opM = $core->getOperationManager();
 			$db = $core->getDB();
 			
-			$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_TYPE = 'scv\ModuleInstallOperation' or OPE_TYPE = 'scv\ModuleUninstallOperation';";
+			$stmnt = "SELECT OPE_ID, OPE_OPE_PARENT, OPE_TYPE FROM OPERATIONS WHERE OPE_TYPE = 'scv\ModuleInstallOperation' or OPE_TYPE = 'scv\ModuleUninstallOperation';";
 			$res = $db->query($core,$stmnt);
 			$ret = array();
 			while($set = $db->fetchArray($res)){
@@ -224,7 +232,6 @@
 			$repositories = $moduleM->getRepositories();
 			$repositories[0]->downloadModule($this->getMeta());
 			$moduleM->installModule($this->getValue("name"));
-			//sleep(1);
 		}
 		
 		public function optimizeQueue(){
@@ -237,11 +244,22 @@
 			$core = Core::getInstance();
 			$moduleM = $core->getModuleManager();
 			$moduleM->uninstallModule($this->getValue("name"));
-			//sleep(1);
 		}
 		
 		public function optimizeQueue(){
 			
 		}	
 	}
+	
+	class FailOperation extends Operation{
+  		public function doWorkload(){
+  			$core = Core::getInstance();
+			$core->debugGrindlog("IN WORKLOAD");
+			echo "IN WORLOAD";
+  			throw new \Exception("I failed so fuckin hard!");
+  			
+  			
+  		}
+	}
+	
 ?>
