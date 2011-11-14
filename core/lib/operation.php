@@ -111,8 +111,9 @@
 			}
 			return true;
 		}
-		
-		public function doQueue(){
+
+		public function getCurrentOperations(){
+			
 		}
 	}
 	
@@ -155,6 +156,8 @@
 		}
 		
 		public function setDBID(){
+			$core = Core::getInstance();
+			$db = $core->getDB();
 			if($this->_id == null){
 				$this->_id = $db->getSeqNext('OPE_GEN');
 			}
@@ -261,5 +264,14 @@
   			
   		}
 	}
+	
+	class TestOperation extends Operation{
+		public $_values = array("val"=>10);
+		public function doWorkload(){
+			echo("I AM A PARENT!111one!1  ".(string)$this->getValue("val"));
+		}
+	}
+	
+	
 	
 ?>
