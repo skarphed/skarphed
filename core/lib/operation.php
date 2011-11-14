@@ -23,6 +23,7 @@
 		public function restoreOperation($set){
 			$classname = $set['OPE_TYPE'];
 			$operationObject = new $classname();
+			$operationObject->setId($set['OPE_ID']);
 			
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -48,7 +49,7 @@
 				$db->query($core,$stmnt_lock,array($childOperation->getId()));
 				try{
 					$this->processChildren($childOperation);
-					$this->doWorkload();
+					$childOperation->doWorkload();
 				}catch(\Exception $e){
 					$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
 					$db->query($core,$stmnt_err,array((int)$set['OPE_ID']));
@@ -153,6 +154,10 @@
 				$this->_id = $db->getSeqNext('OPE_GEN');
 			}
 			return $this->_id;
+		}
+		
+		public function setId($id){
+			$this->_id = $id;
 		}
 		
 		public function getId(){
