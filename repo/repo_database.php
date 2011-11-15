@@ -48,6 +48,17 @@ class repo_database {
 		return ibase_fetch_object($resultset);
 	}
 	
+	public function getSeqNext($sequenceId){
+		return ibase_gen_id($sequenceId);
+	}
+	
+	public function createBlob($data) {
+		$blh = ibase_blob_create($this->connection);
+		ibase_blob_add($blh, $data);
+		$blobid = ibase_blob_close($blh);
+		return $blobid;
+	}
+	
 }
 
 ?>
