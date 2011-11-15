@@ -188,7 +188,7 @@ class ModuleManager extends Singleton {
 		/*$operationId = $operation->setDBID();
 		
 		foreach ($dependencies as $dep){
-			$dep = $core->parseObjectToArray();
+			$dep = $core->parseObjectToArray($dep);
 			$subOp = new ModuleInstallOperation();
 			$subOp->setValuesFromMeta($dep);
 			$subOp->setParent($operationId);
@@ -216,7 +216,7 @@ class ModuleManager extends Singleton {
 		/*$operationId = $operation->setDBID();
 		
 		foreach ($dependencies as $dep){
-			$dep = $core->parseObjectToArray();
+			$dep = $core->parseObjectToArray($dep);
 			$subOp = new ModuleUninstallOperation();
 			$subOp->setValuesFromMeta($dep);
 			$subOp->setParent($operationId);

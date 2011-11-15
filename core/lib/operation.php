@@ -23,6 +23,7 @@
 		public function restoreOperation($set){
 			$classname = $set['OPE_TYPE'];
 			$operationObject = new $classname();
+			$operationObject->setId($set['OPE_ID']);
 			
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -36,6 +37,29 @@
 			return $operationObject;
 		}
 		
+		public function processChildren($operation){
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			
+			$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ? ORDER BY OPE_INVOKED ;";
+			$stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 WHERE OPE_ID = ? ;";
+			$res = $db->query($core,$stmnt,array($operation->getId()));
+			while($set = $db->fetchArray($res)){
+				$childOperation = $this->restoreOperation($set);
+				$db->query($core,$stmnt_lock,array($childOperation->getId()));
+				try{
+					$this->processChildren($childOperation);
+					$childOperation->doWorkload();
+				}catch(\Exception $e){
+					$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
+					$db->query($core,$stmnt_err,array((int)$set['OPE_ID']));
+					$core->debugGrindlog("While Operation: ".$e->getMessage());
+				}
+				$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_ID = ?;";
+				$db->query($core,$delstmnt,array($childOperation->getId()));
+			}
+		}
+		
 		public function processNext(){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -43,76 +67,45 @@
 				return;
 			}
 			touch("/tmp/scv_operating.lck");
-			if ($this->currentParent == null){
-				$stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 
-								WHERE OPE_ID IN (
-								  SELECT OPE_ID FROM OPERATIONS 
-								  WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 0
-								  AND OPE_INVOKED = (
-								    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
-								    WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 0)
-								);";
-				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 1;";
-				$db->query($core,$stmnt_lock);
-				$db->commit();
-				$res = $db->query($core,$stmnt);
-				if ($set = $db->fetchArray($res)){
-					$this->currentParent = (int)$set['OPE_ID'];
-					$operation = $this->restoreOperation($set);
-					try{
-						$operation->doWorkload();
-					}catch (\Exception $e){
-						$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
-						$db->query($core,$stmnt_err,array((int)$set['OPE_ID']));
-						$core->debugGrindlog("While Operation: ".$e->getMessage());
-					}
-					
-				}else{
-					$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_STATUS = 1;";
-					$db->query($core,$delstmnt);
-					$db->commit();
-					if (!unlink("/tmp/scv_operating.lck")){
-						throw new OperationException("Processing: Could not remove Lock");
-					}
-					return false;
+			$stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 
+							WHERE OPE_ID IN (
+							  SELECT OPE_ID FROM OPERATIONS 
+							  WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 0
+							  AND OPE_INVOKED = (
+							    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
+							    WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 0)
+							);";
+			$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 1;";
+			$db->query($core,$stmnt_lock);
+			$db->commit();
+			$res = $db->query($core,$stmnt);
+			if ($set = $db->fetchArray($res)){
+				$operation = $this->restoreOperation($set);
+				try{
+					$this->processChildren($operation);
+					$operation->doWorkload();
+				}catch (\Exception $e){
+					$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
+					$db->query($core,$stmnt_err,array($operation->getId()));
+					$core->debugGrindlog("While Operation: ".$e->getMessage());
 				}
+				$ret = true;
 			}else{
-				$stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 
-								WHERE OPE_ID IN (
-								  SELECT OPE_ID FROM OPERATIONS 
-								  WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 0
-								  AND OPE_INVOKED = (
-								    SELECT MIN(OPE_INVOKED) FROM OPERATIONS 
-								    WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 0)
-								);";
-				$stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ?  AND OPE_STATUS = 1;";
-				$db->query($core,$stmnt_lock,array($this->currentParent, $this->currentParent));
-				$db->commit();
-				$res = $db->query($core,$stmnt,array($this->currentParent));
-				if ($set = $db->fetchArray($res)){
-					$operation = $this->restoreOperation($set);
-					try{
-						$operation->doWorkload();
-					}catch (\Exception $e){
-						$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
-						$db->query($core,$stmnt_err,array((int)$set['OPE_ID']));
-						$core->debugGrindlog("While OperationChild ".$e->getMessage());
-					}
-					
-				}else{
-					$this->currentParent = null;
-				}
+				$ret = false;
 			}
 			$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_STATUS = 1;";
 			$db->query($core,$delstmnt);
 			$db->commit();
 			if (!unlink("/tmp/scv_operating.lck")){
-				throw new OperationException("Processing: Could not remove Lock");;
+				throw new OperationException("Processing: Could not remove Lock");
 			}
-			return true;
+			return $ret;
 		}
 		
-		public function doQueue(){
+		
+
+		public function getCurrentOperations(){
+			
 		}
 	}
 	
@@ -155,9 +148,19 @@
 		}
 		
 		public function setDBID(){
+			$core = Core::getInstance();
+			$db = $core->getDB();
 			if($this->_id == null){
 				$this->_id = $db->getSeqNext('OPE_GEN');
 			}
+			return $this->_id;
+		}
+		
+		public function setId($id){
+			$this->_id = $id;
+		}
+		
+		public function getId(){
 			return $this->_id;
 		}
 		
@@ -261,5 +264,14 @@
   			
   		}
 	}
+	
+	class TestOperation extends Operation{
+		public $_values = array("val"=>10);
+		public function doWorkload(){
+			echo("I AM A PARENT!111one!1  ".(string)$this->getValue("val"));
+		}
+	}
+	
+	
 	
 ?>
