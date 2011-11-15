@@ -181,7 +181,7 @@ qx.Class.define("scoville_admin.Application",
       	this.loadServer(this.serverList[i],'','');
       }
       
-
+	  treeroot.setOpen(true);
       
     },
 
