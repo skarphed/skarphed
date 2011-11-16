@@ -175,7 +175,8 @@
 				
 				$ret[$set['OPE_ID']] = array("id"=>$set['OPE_ID'],
 							   "parent"=>$set['OPE_OPE_PARENT'],
-							   "invoked"=>date("Y-m-d H:i:s",$set['OPE_INVOKED']),
+							   //"invoked"=>date("Y-m-d H:i:s",$set['OPE_INVOKED']),
+							   "invoked"=>$set['OPE_INVOKED'],
 							   "type"=>str_replace("scv\\","",$set['OPE_TYPE']),
 							   "status"=>$set['OPE_STATUS'],
 							   "data"=>$valuesToSend);
@@ -327,7 +328,7 @@
 			$moduleM = $core->getModuleManager();
 			$moduleM->uninstallModule($this->getValue("name"));
 		}
-		
+		$opM = $this->fixture->getOperationManager();
 		public function optimizeQueue(){
 			
 		}	
