@@ -24,12 +24,12 @@
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			
-			$stmnt = "SELECT OPE_ID FROM OPERATIONS WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 2 ;";
+			$stmnt = "SELECT OPE_ID FROM OPERATIONS WHERE OPE_OPE_PARENT = ? AND OPE_STATUS IN (0, 2) ;";
 			$res = $db->query($core,$stmnt,array($operationId));
 			while($set = $db->fetchArray($res)){
 				$this->dropOperation($set['OPE_ID']);
 			}
-			$stmnt_del = "DELETE FROM OPERATIONS WHERE OPE_ID = ? AND OPE_STATUS = 2 ;";
+			$stmnt_del = "DELETE FROM OPERATIONS WHERE OPE_ID = ? AND OPE_STATUS IN (0, 2) ;";
 			$db->query($core,$stmnt_del,array($operationId));
 			return;
 		}

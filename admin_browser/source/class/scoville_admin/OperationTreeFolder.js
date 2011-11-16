@@ -129,9 +129,15 @@ qx.Class.define("scoville_admin.OperationTreeFolder",{
 					this.retrybutton.setVisibility("excluded");
 					break;
 				case 2:
-					this.dropbutton.setVisibility("visible");
-					this.cancelbutton.setVisibility("excluded");
-					this.retrybutton.setVisibility("visible");
+					if (this.data.parent == null){
+						this.dropbutton.setVisibility("visible");
+						this.cancelbutton.setVisibility("excluded");
+						this.retrybutton.setVisibility("visible");
+					}else{
+						this.dropbutton.setVisibility("visible");
+						this.cancelbutton.setVisibility("excluded");
+						this.retrybutton.setVisibility("excluded");
+					}
 					break;
 				case 0:
 					this.dropbutton.setVisibility("excluded");
