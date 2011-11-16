@@ -297,9 +297,14 @@ class class_scvRpc {
   }
   
   function method_getOperations($params,$error){
+  	$operationtypes = null;
+  	if (isset($params[0])){
+  		$operationtypes = $params[0];
+  	}
+	
   	$core = scv\Core::getInstance();
 	$opM = $core->getOperationManager();
-	$operations = $opM->getCurrentOperationsForGUI();
+	$operations = $opM->getCurrentOperationsForGUI($operationtypes);
 	
 	return $operations;
   }

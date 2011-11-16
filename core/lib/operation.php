@@ -100,6 +100,7 @@
 					$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
 					$db->query($core,$stmnt_err,array((int)$set['OPE_ID']));
 					$core->debugGrindlog("While Operation: ".$e->getMessage());
+					throw $e;
 				}
 				$delstmnt = "DELETE FROM OPERATIONS WHERE OPE_ID = ?;";
 				$db->query($core,$delstmnt,array($childOperation->getId()));
@@ -147,8 +148,6 @@
 			}
 			return $ret;
 		}
-		
-		
 
 		public function getCurrentOperationsForGUI($operationTypes=null){
 			$mapping = function($name){return "scv\\".$name;};
@@ -158,6 +157,7 @@
 			
 			if (isset($operationTypes) and is_array($operationTypes)){
 				$operationTypes = array_map($mapping,$operationTypes);
+				$core->debugGrindlog(json_encode($operationTypes));
 				$stmnt = "SELECT OPE_ID, OPE_OPE_PARENT, OPE_INVOKED, OPE_TYPE, OPE_STATUS FROM OPERATIONS WHERE OPE_TYPE IN (?) ORDER BY OPE_INVOKED;";
 				$res = $db->query($core,$stmnt,array($operationTypes));
 			}else{
@@ -334,10 +334,10 @@
 	}
 	
 	class FailOperation extends Operation{
+		public $_values = array("val"=>10);
   		public function doWorkload(){
   			$core = Core::getInstance();
 			$core->debugGrindlog("IN WORKLOAD");
-			echo "IN WORLOAD";
   			throw new \Exception("I failed so fuckin hard!");
   			
   			

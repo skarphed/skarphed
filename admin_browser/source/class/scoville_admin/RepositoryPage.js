@@ -62,6 +62,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 					}
 					me.operationsActive = countProcessing != 0;
 					me.updateActive = false;
+					me.modboxCList.updateTree();
 					me.repo.getServer().modules.update();
 				}else{
 					alert(exc);
@@ -209,7 +210,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			
 			this.modboxIList = new qx.ui.form.List();  // Installed modules
 			this.modboxAList = new qx.ui.form.List();  // Available modules
-			this.modboxCList = new scoville_admin.OperationTree(this.app,this.repo.getServer(), [])  // Current processed
+			this.modboxCList = new scoville_admin.OperationTree(this.app,this.repo.getServer(),["ModuleInstallOperation","ModuleUninstallOperation"])  // Current processed
 			this.modboxCL.add(this.modboxIList);
 			this.modboxCR.add(this.modboxAList);
 			this.modboxContainer.add(this.modboxCList);

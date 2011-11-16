@@ -1,11 +1,11 @@
 qx.Class.define("scoville_admin.OperationTree",{
 	extend: qx.ui.tree.Tree,
 	
-	construct : function(app, server, moduletypes){
+	construct : function(app, server, operationtypes){
 		this.app = app;
 		this.server = server;
 		this.base(arguments);
-		this.moduletypes = moduletypes;
+		this.operationtypes = (operationtypes)?operationtypes:null;
 		
 		this.root = new scoville_admin.OperationTreeFolder(this.app,{'type':'OPERATIONS','invoked':'Invoked At','status':-1});
 		this.setRoot(this.root);
@@ -18,7 +18,7 @@ qx.Class.define("scoville_admin.OperationTree",{
 	
 	members:{
 		app:null,
-		moduletypes:[],
+		operationtypes:null,
 		server:null,
 		
 		getOperationById : function(id,treefolder){
@@ -61,7 +61,7 @@ qx.Class.define("scoville_admin.OperationTree",{
 							if (result[element].parent == null){
 								me.root.add(new scoville_admin.OperationTreeFolder(me.app, result[element], me))
 							}else{
-							    var chOp = me.getOperationById(result[element].parent);
+							    var chOp = me.getOperationById(result[element].parent, me.root);
 							    if (chOp != null){
 							    	chOp.add(new scoville_admin.OperationTreeFolder(me.app, result[element], me));
 							    }else{
@@ -79,7 +79,7 @@ qx.Class.define("scoville_admin.OperationTree",{
 		},
 		
 		updateTree: function(){
-			this.app.createRPCObject(this.server.getIp()).callAsync(this.updateHandler(this),"getOperations");
+			this.app.createRPCObject(this.server.getIp()).callAsync(this.updateHandler(this),"getOperations",this.operationtypes);
 		},
 		
 		getServer: function(){
