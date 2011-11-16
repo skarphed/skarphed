@@ -178,6 +178,7 @@ class CssManager extends Singleton{
 			$genericSet = $this->getCssPropertySet();
 			$moduleSets = $this->getCssPropertySet($moduleId=CssManager::ALL,null,null);
 			$widgetSets = $this->getCssPropertySet(null,$widgetId=CssManager::ALL,null);
+			//TODO: Implement getting Sessionset
 			
 			$css.=$genericSet->render();
 			foreach ($moduleSets as $moduleSet){
@@ -388,7 +389,9 @@ class CssPropertySet {
 	 * @param bool $inherited If this flag is set, the value is inherited from a higher level
 	 */
 	public function editValue ($selector, $tag, $value, $inherited=false){
-		//$this->properties[array('s'=>$selector,'t'=>$tag)]= array('v'=>$value,'i'=>false); //t Tag v Value i Inherited
+		if ($this->getType() == CssPropertySet::GENERAL and $inherited ){
+			throw new CssException("Edit Value: GENERAL Propertyset cannot have inherited values");
+		}
 		$this->properties[$selector.CssPropertySet::SPLIT.$tag]= array('v'=>$value,'i'=>false); //t Tag v Value i Inherited
 	}
 	

@@ -5,6 +5,7 @@
       <file>./TestDatabase.php</file>
       <file>./TestUsersAndRights.php</file>
       <file>./TestOperation.php</file>
+      <file>./TestCss.php</file>
     </testsuite>
   </testsuites>
 </phpunit>
