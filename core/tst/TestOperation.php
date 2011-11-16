@@ -170,7 +170,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 	
 	protected function tearDown(){
 		$db = $this->fixture->getDB();
-		$db->query($core,"DELETE FROM OPERATIONS;");
+		$db->query($this->fixture,"DELETE FROM OPERATIONS;");
 		$db->commit();
 	}
 	
