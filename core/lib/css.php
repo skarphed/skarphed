@@ -402,7 +402,7 @@ class CssPropertySet {
 	 */
 	public function getValue ($selector, $tag){
 	    if (isset($this->properties[$selector.CssPropertySet::SPLIT.$tag])){
-	    	return $this->properties[$selector.CssPropertySet::SPLIT.$tag];
+	    	return $this->properties[$selector.CssPropertySet::SPLIT.$tag]['v'];
 	    }else{
 	    	return null;
 	    }

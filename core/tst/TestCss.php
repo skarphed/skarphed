@@ -48,7 +48,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		
 		$propertyset = new scv\CssPropertySet();
 		$propertyset->setModuleId($moduleId);
-		$this->assertEquals(0,$propertyset->getModuleId());
+		$this->assertEquals($moduleId,$propertyset->getModuleId());
 		$this->assertEquals(null,$propertyset->getWidgetId());
 		$this->assertEquals(null,$propertyset->getSessionId());
 		$this->assertEquals(scv\CssPropertySet::MODULE,$propertyset->getType());
@@ -62,7 +62,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$cssM = $this->fixture->getCssManager();
 		$fetchedset = $cssM->getCssPropertySet();
 		
-		$this->assertEquals(0,$fetchedset->getModuleId());
+		$this->assertEquals($moduleId,$fetchedset->getModuleId());
 		$this->assertEquals(null,$fetchedset->getWidgetId());
 		$this->assertEquals(null,$fetchedset->getSessionId());
 		$this->assertEquals(scv\CssPropertySet::MODULE,$fetchedset->getType());
