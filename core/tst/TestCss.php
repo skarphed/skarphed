@@ -17,6 +17,10 @@ class TestCss extends PHPUnit_Framework_TestCase {
     }
 	
 	public function testServerPropertySet(){
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
 		$propertyset = new scv\CssPropertySet();
 		$propertyset->setTypeGeneral();
 		$this->assertEquals(null,$propertyset->getModuleId());
@@ -39,6 +43,10 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$this->assertEquals("#fff", $fetchedset->getValue("div","color"));
 		$this->assertEquals(null, $fetchedset->getValue("div","notsetvalue"));
 		$fetchedset->delete();
+		
+		$_SESSION['user']->delete(false);
+		unset($_SESSION['user']);		
+		unset($_SESSION['loggedin']);
 	}
 
 	public function testModulePropertySet(){
