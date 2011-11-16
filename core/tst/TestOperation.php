@@ -39,6 +39,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testNestedOperations(){
+		$opM = $this->fixture->getOperationManager();
 		$operation = new scv\TestOperation();
 		$operationId = $operation->setDBID();
 		
@@ -65,6 +66,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testNestedFailOperations(){
+		$opM = $this->fixture->getOperationManager();
 		$operation = new scv\TestOperation();
 		$operationId = $operation->setDBID();
 		$i2ID = null;
@@ -119,6 +121,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testCancelNestedOperation(){
+		$opM = $this->fixture->getOperationManager();
 		$operation = new scv\TestOperation();
 		$operationId = $operation->setDBID();
 		$i2ID = null;
