@@ -334,7 +334,7 @@
 	}
 	
 	class FailOperation extends Operation{
-		public $_values = array("val"=>10);
+		public $_values = array("val"=>10,"st"=>"test","bl"=>false);
   		public function doWorkload(){
   			$core = Core::getInstance();
 			$core->debugGrindlog("IN WORKLOAD");
@@ -345,7 +345,7 @@
 	}
 	
 	class TestOperation extends Operation{
-		public $_values = array("val"=>10);
+		public $_values = array("val"=>10,"st"=>"test","bl"=>false);
 		public function doWorkload(){
 			echo("ID:  ".(string)$this->getValue("val")."\n");
 		}
