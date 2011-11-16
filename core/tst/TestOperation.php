@@ -13,7 +13,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
  
     public function testSingleOperation(){
     	$opM = $this->fixture->getOperationManager();
-		$op = new TestOperation();
+		$op = new scv\TestOperation();
 		$op->store();
 		
 		$this->assertEquals(1,count($opM->getCurrentOperationsForGUI()));
@@ -25,7 +25,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 	
 	public function testSingleFailOperation(){
 		$opM = $this->fixture->getOperationManager();
-		$op = new FailOperation();
+		$op = new scv\FailOperation();
 		$op->store();
 		
 		$this->assertEquals(1,count($opM->getCurrentOperationsForGUI()));
@@ -108,7 +108,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 
 	public function testCancelSingleOperation(){
 		$opM = $this->fixture->getOperationManager();
-		$op = new TestOperation();
+		$op = new scv\TestOperation();
 		$op->store();
 		
 		$this->assertEquals(1,count($opM->getCurrentOperationsForGUI()));
@@ -152,7 +152,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 	
 	public function testRestoreOperation(){
     	$opM = $this->fixture->getOperationManager();
-		$op = new TestOperation();
+		$op = new scv\TestOperation();
 		$op->store();
 		
 		$opRestored = $opM->restoreOperation(array("OPE_ID"=>$op->getId(),"OPE_TYPE"=>"scv\\TestOperation"));
