@@ -17,7 +17,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
     }
 	
 	public function testServerPropertySet(){
-		$propertyset = scv\CssPropertySet();
+		$propertyset = new scv\CssPropertySet();
 		$propertyset->setTypeGeneral();
 		$this->assertEquals(null,$propertyset->getModuleId());
 		$this->assertEquals(null,$propertyset->getWidgetId());
@@ -46,7 +46,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 	public function testModulePropertySet(){
 		$moduleId = 1; // de.zigapeda.scoville.text
 		
-		$propertyset = scv\CssPropertySet();
+		$propertyset = new scv\CssPropertySet();
 		$propertyset->setModuleId($moduleId);
 		$this->assertEquals(0,$propertyset->getModuleId());
 		$this->assertEquals(null,$propertyset->getWidgetId());
