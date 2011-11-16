@@ -20,6 +20,52 @@
 
 		private $currentParent = null;
 		
+		public function dropOperation($operationId){
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			
+			$stmnt = "SELECT OPE_ID FROM OPERATIONS WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 2 ;";
+			$res = $db->query($core,$stmnt,array($operationId));
+			while($set = $db->fetchArray($res)){
+				$this->dropOperation($set['OPE_ID']);
+			}
+			$stmnt_del = "DELETE FROM OPERATIONS WHERE OPE_ID = ? AND OPE_STATUS = 2 ;";
+			$db->query($core,$stmnt_del,array($operationId));
+			return;
+		}
+		
+		public function retryOperation($operationId){
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			
+			$stmnt = "SELECT OPE_ID FROM OPERATIONS WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 2 ;";
+			$res = $db->query($core,$stmnt,array($operationId));
+			while($set = $db->fetchArray($res)){
+				$this->retryOperation($set['OPE_ID']);
+			}
+			$stmnt_retry = "UPDATE OPERATIONS SET OPE_STATUS = 0 WHERE OPE_ID = ? AND OPE_STATUS = 2 ;";
+			$db->query($core,$stmnt_retry,array($operationId));
+			return;
+		} 
+		
+		public function cancelOperation($operationId){
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			
+			$stmnt = "SELECT OPE_ID FROM OPERATIONS WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 0 ;";
+			$res = $db->query($core,$stmnt,array($operationId));
+			while($set = $db->fetchArray($res)){
+				$this->dropOperation($set['OPE_ID']);
+			}
+			$stmnt_del = "DELETE FROM OPERATIONS WHERE OPE_ID = ? AND OPE_STATUS = 0 ;";
+			$db->query($core,$stmnt_del,array($operationId));
+			return;
+		}
+		
+		public function getOperations(){
+			
+		}
+		
 		public function restoreOperation($set){
 			$classname = $set['OPE_TYPE'];
 			$operationObject = new $classname();
@@ -104,8 +150,37 @@
 		
 		
 
-		public function getCurrentOperations(){
+		public function getCurrentOperationsForGUI($operationTypes=null){
+			$mapping = function($name){return "scv\\".$name;};
+			$core = Core::getInstance();
+			$opM = $core->getOperationManager();
+			$db = $core->getDB();
 			
+			if (isset($operationTypes) and is_array($operationTypes)){
+				$operationTypes = array_map($mapping,$operationTypes);
+				$stmnt = "SELECT OPE_ID, OPE_OPE_PARENT, OPE_INVOKED, OPE_TYPE, OPE_STATUS FROM OPERATIONS WHERE OPE_TYPE IN (?) ORDER BY OPE_INVOKED;";
+				$res = $db->query($core,$stmnt,array($operationTypes));
+			}else{
+				$stmnt = "SELECT OPE_ID, OPE_OPE_PARENT, OPE_INVOKED, OPE_TYPE, OPE_STATUS FROM OPERATIONS ORDER BY OPE_INVOKED;";
+				$res = $db->query($core,$stmnt);
+			}
+			$ret = array();
+			while($set = $db->fetchArray($res)){
+				$operation = $this->restoreOperation($set);
+				$customValues = $operation->getValues();
+				$valuesToSend = array();
+				foreach ($customValues as $key=>$value){
+					$valuesToSend[htmlentities($key)] = htmlentities($value);
+				}
+				
+				$ret[$set['OPE_ID']] = array("id"=>$set['OPE_ID'],
+							   "parent"=>$set['OPE_OPE_PARENT'],
+							   "invoked"=>date("Y-m-d H:i:s",$set['OPE_INVOKED']),
+							   "type"=>str_replace("scv\\","",$set['OPE_TYPE']),
+							   "status"=>$set['OPE_STATUS'],
+							   "data"=>$valuesToSend);
+			}
+			return $ret;
 		}
 	}
 	
@@ -129,6 +204,10 @@
 				throw new OperationException("GetValue: This value is not set $key!");
 			}
 			return $this->_values[$key];
+		}
+		
+		public function getValues(){
+			return $this->_values;
 		}
 		
 		public function setValue($key,$value){
@@ -268,7 +347,7 @@
 	class TestOperation extends Operation{
 		public $_values = array("val"=>10);
 		public function doWorkload(){
-			echo("I AM A PARENT!111one!1  ".(string)$this->getValue("val"));
+			echo("ID:  ".(string)$this->getValue("val")."\n");
 		}
 	}
 	

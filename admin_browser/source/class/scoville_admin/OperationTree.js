@@ -1,32 +1,89 @@
 qx.Class.define("scoville_admin.OperationTree",{
 	extend: qx.ui.tree.Tree,
 	
-	construct : function(app, moduletypes){
+	construct : function(app, server, moduletypes){
 		this.app = app;
+		this.server = server;
 		this.base(arguments);
+		this.moduletypes = moduletypes;
 		
-		this.root = new scoville_admin.OperationTreeFolder(this.app,{'type':'OPERATIONS','invoked':'','status':1});
+		this.root = new scoville_admin.OperationTreeFolder(this.app,{'type':'OPERATIONS','invoked':'Invoked At','status':-1});
 		this.setRoot(this.root);
 		this.root.setOpen(true);
 		this.setHideRoot(true);
 		
-		var treeItem1__ = new scoville_admin.OperationTreeFolder(this.app,{'type':'ModuleInstallOperation','invoked':'2011-11-15 10:02:15','status':2});
-		var treeItem1_1 = new scoville_admin.OperationTreeFolder(this.app,{'type':'ModuleInstallOperation','invoked':'2011-11-15 10:02:13','status':2});
-		
-		treeItem1__.add(treeItem1_1);
-		this.root.add(treeItem1__);
-		
-		var treeItem2__ = new scoville_admin.OperationTreeFolder(this.app,{'type':'ModuleInstallOperation','invoked':'2011-11-15 10:12:15','status':1});
-		
-		this.root.add(treeItem2__);
-		
-		var treeItem3__ = new scoville_admin.OperationTreeFolder(this.app,{'type':'ModuleUninstallOperation','invoked':'2011-11-15 10:13:18','status':0});
-		
-		this.root.add(treeItem3__);
+		this.updateTree();
 		
 	},
 	
 	members:{
-		app:null
+		app:null,
+		moduletypes:[],
+		server:null,
+		
+		getOperationById : function(id,treefolder){
+			var children = treefolder.getChildren();
+			for (var i = 0; i < children.length; i++){
+				if (children[i].getData().id == id){
+					return children[i];
+				}
+				
+				var res = this.getOperationById(id, children[i]);
+				if (res != null){
+					return res;
+				}
+			}
+			return null;
+		},
+		
+		deleteOld:function(idlist, treefolder){
+			var children = treefolder.getChildren();
+			for (var i = 0; i < children.length; i++){
+				if (children[i].hasChildren()){
+					this.deleteOld(idlist,children[i]);
+				}
+				if (idlist.indexOf(qx.data.Conversion.toString(children[i].getData().id)) == -1){
+					treefolder.remove(children[i]);
+				}
+			}
+			
+		},
+		
+		updateHandler : function(me){
+			return function(result,exc){
+				if (exc == null){
+					var idlist = [];
+					for (var element in result){
+						var op = me.getOperationById(element,me.root);
+						if (op != null){
+							op.update(result[element]);
+						}else{
+							if (result[element].parent == null){
+								me.root.add(new scoville_admin.OperationTreeFolder(me.app, result[element], me))
+							}else{
+							    var chOp = me.getOperationById(result[element].parent);
+							    if (chOp != null){
+							    	chOp.add(new scoville_admin.OperationTreeFolder(me.app, result[element], me));
+							    }else{
+							    	// LOL Beschissener fall!
+							    }
+							}
+						}
+						idlist.push(element);
+					}
+					me.deleteOld(idlist,me.root);
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
+		updateTree: function(){
+			this.app.createRPCObject(this.server.getIp()).callAsync(this.updateHandler(this),"getOperations");
+		},
+		
+		getServer: function(){
+			return this.server;
+		}
 	}
 });

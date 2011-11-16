@@ -271,8 +271,37 @@ class class_scvRpc {
   	return true;  //TODO:implement
   }
   
-  function method_getCurrentInstallState($params, $error){
-  	
+  function method_dropOperation($params,$error){
+  	$operationId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$opM = $core->getOperationManager();
+	$opM->dropOperation($operationId);
+	
+  }
+  
+  function method_retryOperation($params,$error){
+  	$operationId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$opM = $core->getOperationManager();
+	$opM->retryOperation($operationId);
+  }
+  
+  function method_cancelOperation($params,$error){
+  	$operationId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$opM = $core->getOperationManager();
+	$opM->cancelOperation($operationId);
+  }
+  
+  function method_getOperations($params,$error){
+  	$core = scv\Core::getInstance();
+	$opM = $core->getOperationManager();
+	$operations = $opM->getCurrentOperationsForGUI();
+	
+	return $operations;
   }
 }
 ?>

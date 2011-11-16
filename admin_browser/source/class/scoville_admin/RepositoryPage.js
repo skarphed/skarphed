@@ -34,6 +34,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 				}
 				me.updateActive  = true;
 				me.app.createRPCObject(me.repo.getServer().ip).callAsync(me.createGetModulesHandler(me),"getModules",false);
+				me.modboxCList.updateTree();
 			}
 		},
 		
@@ -43,13 +44,13 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 					var resultJson = qx.lang.Json.parse(result);
 					me.modboxIList.removeAll();
 					me.modboxAList.removeAll();
-					me.modboxCList.removeAll();
+					
 					var countProcessing = 0;
 					for (var element in resultJson){
 						if (typeof(resultJson[element].processing) != 'undefined'){
 							var mod = new scoville_admin.RepositoryModule(me.app,resultJson[element]);
 							mod.setLabel(mod.getLabel()+" [ "+resultJson[element].processing+"]");
-							me.modboxCList.add(mod);
+							
 							countProcessing++;
 						}else{
 							if (resultJson[element].installed){
@@ -140,7 +141,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			return function(result,exc){
 				if (exc == null){
 					module.setLabel(module.getLabel()+" [ Installing ]");
-					me.modboxCList.add(module);
+					
 					me.operationsActive = true;
 				}else{
 					alert(exc);
@@ -152,7 +153,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			return function(result,exc){
 				if (exc == null){
 					module.setLabel(module.getLabel()+" [ Uninstalling ]");
-					me.modboxCList.add(module);
+					
 					me.operationsActive = true;
 				}else{
 					alert(exc);
@@ -208,7 +209,7 @@ qx.Class.define("scoville_admin.RepositoryPage",{
 			
 			this.modboxIList = new qx.ui.form.List();  // Installed modules
 			this.modboxAList = new qx.ui.form.List();  // Available modules
-			this.modboxCList = new qx.ui.form.List();  // Current processed
+			this.modboxCList = new scoville_admin.OperationTree(this.app,this.repo.getServer(), [])  // Current processed
 			this.modboxCL.add(this.modboxIList);
 			this.modboxCR.add(this.modboxAList);
 			this.modboxContainer.add(this.modboxCList);
