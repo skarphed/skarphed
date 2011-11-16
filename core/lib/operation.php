@@ -5,6 +5,12 @@
 	
 	class OperationException extends \Exception{}
 	
+	
+	/**
+	 * OperationManager
+	 * 
+	 * Contais everything necessary to Handle Operations 
+	 */
 	class OperationManager extends Singleton {
 		private static $instance = null;
 	
@@ -20,6 +26,15 @@
 
 		private $currentParent = null;
 		
+		/**
+		 * Drop Operation
+		 * 
+		 * Drops an Operation, identified by it's Operation Id and
+		 * it's children recursively
+		 * Drop deletes the Operations from Database
+		 * 
+		 * @param int $operationId The operationId of the Operation to delete
+		 */
 		public function dropOperation($operationId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -34,6 +49,14 @@
 			return;
 		}
 		
+		/**
+		 * Retry Operation
+		 * 
+		 * Resets the state of an operation and it's children recursively to 0 (PENDING)
+		 * The operation is identified by a given operationId
+		 * 
+		 * @param int $operationId The operationId of the Operation to retry
+		 */
 		public function retryOperation($operationId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -48,6 +71,15 @@
 			return;
 		} 
 		
+		/**
+		 * Cancel Operation
+		 * 
+		 * Cancels an Operation, identified by it's Operation Id and
+		 * it's children recursively
+		 * Cancel Deletes the Operation from Database
+		 * 
+		 * @param int $operationId The operationId of the Operation to cancel
+		 */
 		public function cancelOperation($operationId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -62,10 +94,18 @@
 			return;
 		}
 		
-		public function getOperations(){
-			
-		}
-		
+		/**
+		 * Restore Operation
+		 * 
+		 * Restore an Operationobject stored in the database by a Dataset consisting of
+		 * the operation's ID and the operation's TYPE:
+		 * For example:   array("OPE_ID"=>100,"OPE_TYPE"=>"scv\\TestOperation")
+		 * Restores the Operationobject's $_values-property by the data saved
+		 * in the DB-Table OPERATIONDATA
+		 * 
+		 * @param Array $set The set defining the Operationobject
+		 * @return Operation an Operationobject
+		 */
 		public function restoreOperation($set){
 			$classname = $set['OPE_TYPE'];
 			$operationObject = new $classname();
@@ -83,6 +123,17 @@
 			return $operationObject;
 		}
 		
+		/**
+		 * Process Children
+		 * 
+		 * Recursively executes the workloads of Operation's Childoperations
+		 * It hereby catches exceptions in the workloads, sets the OPE_STATUS
+		 * to 2 (FAILED) if a catch occurs, then passes the exception on to the 
+		 * higher layer.
+		 * If an Operation succeeds, it's entry in DB gets deleted
+		 * 
+		 * @param Operation $operation The operation that's children shall be executed
+		 */
 		public function processChildren($operation){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -107,6 +158,15 @@
 			}
 		}
 		
+		/**
+		 * Process Next Operation in Queue
+		 * 
+		 * Sets the status of the next toplevel operation to 1 (ACTIVE)
+		 * Fetches the next toplevel-operation from the database, applies a FILESYSTEMLOCK!
+		 * Which is /tmp/scv_operating.lck !!! . 
+		 * 
+		 * @return bool True if done, False if no more Operations are available in Queue
+		 */
 		public function processNext(){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -148,7 +208,18 @@
 			}
 			return $ret;
 		}
-
+		
+		/**
+		 * Return Current Operations For Gui
+		 * 
+		 * Returns all Operations in an associative array.
+		 * The array's indices are the operationIDs
+		 * The Objects contain all information about the operations,
+		 * including the Data
+		 * 
+		 * @param Array $operationTypes=null If set, limits the selected operations to that type.
+		 * @return Array A list of Operation-Representations
+		 */
 		public function getCurrentOperationsForGUI($operationTypes=null){
 			$mapping = function($name){return "scv\\".$name;};
 			$core = Core::getInstance();
@@ -185,6 +256,11 @@
 		}
 	}
 	
+	/**
+	 * Operation
+	 * 
+	 * Abstract BaseClass for any Operation in the Queue
+	 */
 	abstract class Operation{
 		private $_id = null;
 		private $_parent = null;
@@ -194,12 +270,29 @@
 		const STATUS_ACTIVE = 1;
 		const STATUS_FAILED = 2;
 		
+		/**
+		 * Valid types for $_values
+		 * 
+		 * Defines every type that is legal for user defined values in $_values
+		 */
 		private static $validStorageTypes = array('integer','boolean','string'); 
 		
 		public function __const($parentId = null){
 			$this->_parent = $parentId;
 		}
 		
+		/**
+		 * Get a Userdefined Value
+		 * 
+		 * Returns a Value that is defined in $_values
+		 * Only classes that inherit Operation can define those values,
+		 * so make sure you look in the inherited class, that $key exists in _values
+		 * 
+		 * Throws a OperationException if the value does not exist.
+		 * 
+		 * @param string $key The key of the user-defined value
+		 * @return ? The user-defined value 
+		 */
 		public function getValue($key){
 			if (!isset($this->_values[$key])){
 				throw new OperationException("GetValue: This value is not set $key!");
@@ -207,10 +300,29 @@
 			return $this->_values[$key];
 		}
 		
+		/**
+		 * Get all Values
+		 * 
+		 * Returns _values. It returns all userdefined values of this 
+		 * inheritant of Operation.
+		 * 
+		 * @return Array The user-defined Values
+		 */
 		public function getValues(){
 			return $this->_values;
 		}
 		
+		/**
+		 * Set a user-defined value
+		 * 
+		 * Sets a user defined value. Look into the $_value declaration of the 
+		 * inheriting class to see which values are legitimate
+		 * 
+		 * Throws a OperationException if the value does not exist.
+		 * 
+		 * @param string $key The key of the user-defined value
+		 * @param ? $value The value to set
+		 */
 		public function setValue($key,$value){
 			if (!isset($this->_values[$key])){
 				throw new OperationException("SetValue: This value is not set $key!");
@@ -219,14 +331,38 @@
 			$this->_values[$key] = $value;
 		}
 		
+		/**
+		 * Set Parent
+		 * 
+		 * Sets the parent attribute. It is the id of the Operation that
+		 * acts as Parent to this Operation
+		 * 
+		 * @param int $parentId The id of the parent Operation
+		 */
 		public function setParent($parentId){
 			$this->_parent = $parentId;
 		}
 		
+		/**
+		 * Get Parent
+		 * 
+		 * Returns the id of this Operation's parent Operation
+		 * 
+		 * @return int The parent Operation's Id
+		 */
 		public function getParent(){
 			return $this->_parent;
 		}
 		
+		/**
+		 * Set Database Id
+		 * 
+		 * Get a new Operation Id from the Database and assign it to this
+		 * Operation if this Operation's id is null. Afterwards return the 
+		 * new Id
+		 * 
+		 * @return int The Id that has been assigned to this Operation 
+		 */
 		public function setDBID(){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -236,14 +372,35 @@
 			return $this->_id;
 		}
 		
+		/**
+		 * Set Id
+		 * 
+		 * Set an Id to this Operation (should only used when restoring an Operation)
+		 * 
+		 * @param int $id The OperationId to set
+		 */
 		public function setId($id){
 			$this->_id = $id;
 		}
 		
+		/**
+		 * Get ID
+		 * 
+		 * Return the Operation Id of this Operation
+		 * 
+		 * @return int The OperationId
+		 */
 		public function getId(){
 			return $this->_id;
 		}
 		
+		/**
+		 * Store to Database
+		 * 
+		 * Stores this Operation to database.
+		 * Also saves every user defined value in $_values as 
+		 * long as it is a valid type 
+		 */
 		public function store(){
 			$core  = Core::getInstance();
 			$db = $core->getDB();
@@ -266,9 +423,20 @@
 			}
 		} 
 		
+		/**
+		 * The Workload 
+		 * 
+		 * This method must be overridden by inheriting classes.
+		 * The code inside this method will be executed when the
+		 * Operation is processed by OperationManager::processNext or 
+		 * OperationManager::processChild 
+		 */
 		abstract public function doWorkload();
 	}
 	
+	/**
+	 * Abstract BaseClass for Module-Concerning Operations
+	 */
 	abstract class ModuleOperation extends Operation {
 		protected $_values = array("name"=>"",
 									"hrname"=>"",
@@ -277,6 +445,13 @@
 									"revision"=>"",
 									"md5"=>"");
 		
+		/**
+		 * Set Values from Metadata
+		 * 
+		 * Sets this ModuleOperation's values from Module-metadata
+		 * 
+		 * @param Array $module The module Metadata
+		 */
 		public function setValuesFromMeta($module){
 			$this->setValue("name", $module["name"]);
 			$this->setValue("hrname", $module["hrname"]);
@@ -287,10 +462,27 @@
 			return;
 		}
 		
+		
+		/**
+		 * Get Metadata
+		 * 
+		 * Returns this ModuleOperations Metadata
+		 * 
+		 * @deprecated Use Operation::getValues() instead
+		 * @return Array The Metadata
+		 */
 		public function getMeta(){
 			return $this->_values;
 		}
 		
+		/**
+		 * Get currently processed Modules
+		 * 
+		 * Returns an Array of ModuleOperation-Objects that are
+		 * currently listedin the queue 
+		 * 
+		 * @return Array an array of ModuleOperation-Objects
+		 */
 		public static function getCurrentlyProcessedModules(){
 			$core = Core::getInstance();
 			$opM = $core->getOperationManager();
@@ -305,10 +497,21 @@
 			return $ret;
 		}
 		
+		/**
+		 * Optimize the Queue for this module
+		 */
 		abstract public function optimizeQueue();
 	}
 	
+	/**
+	 * Operation for the Task of installing a Module
+	 */
 	class ModuleInstallOperation extends ModuleOperation {
+		/**
+		 * The Workload
+		 * 
+		 * Installs a Module defined in the user-defined values
+		 */
 		public function doWorkload(){
 			$core = Core::getInstance();
 			$moduleM = $core->getModuleManager();
@@ -322,7 +525,15 @@
 		}	
 	}
 	
+	/**
+	 * Operation for the Task of uninstalling a Module
+	 */
 	class ModuleUninstallOperation extends ModuleOperation {
+		/**
+		 * The Workload
+		 * 
+		 * Uninstalls a Module defined in the user-defined values
+		 */
 		public function doWorkload(){
 			$core = Core::getInstance();
 			$moduleM = $core->getModuleManager();
@@ -334,8 +545,19 @@
 		}	
 	}
 	
+	/**
+	 * Always Failing Operation
+	 *
+	 * Operation used for TestCases
+	 */
 	class FailOperation extends Operation{
 		public $_values = array("val"=>10,"st"=>"test","bl"=>false);
+		
+		/**
+		 * The workload
+		 * 
+		 * Throw an exception
+		 */
   		public function doWorkload(){
   			$core = Core::getInstance();
 			$core->debugGrindlog("IN WORKLOAD");
@@ -345,8 +567,19 @@
   		}
 	}
 	
+	/**
+	 * Always succeeding Operation
+	 *
+	 * Operation used for TestCases
+	 */
 	class TestOperation extends Operation{
 		public $_values = array("val"=>10,"st"=>"test","bl"=>false);
+		
+		/**
+		 * The workload
+		 * 
+		 * Do nothing
+		 */
 		public function doWorkload(){
 			$core = Core::getInstance();
 			$core->debugGrindlog("ID:  ".(string)$this->getValue("val")."\n");
