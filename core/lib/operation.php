@@ -328,7 +328,7 @@
 			$moduleM = $core->getModuleManager();
 			$moduleM->uninstallModule($this->getValue("name"));
 		}
-		$opM = $this->fixture->getOperationManager();
+		
 		public function optimizeQueue(){
 			
 		}	
