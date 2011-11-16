@@ -27,7 +27,6 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$propertyset->editValue("div","color","#fff");
 		$this->assertEquals("#fff", $propertyset->getValue("div","color"));
 		$this->assertEquals(null, $propertyset->getValue("div","notsetvalue"));
-		$this->assertEquals(array("div?color"=>"#fff"),$propertyset->getNonInherited());
 		$propertyset->store();
 		
 		$cssM = $this->fixture->getCssManager();
@@ -39,7 +38,6 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(scv\CssPropertySet::GENERAL,$fetchedset->getType());
 		$this->assertEquals("#fff", $fetchedset->getValue("div","color"));
 		$this->assertEquals(null, $fetchedset->getValue("div","notsetvalue"));
-		$this->assertEquals(array("div?color"=>"#fff"),$fetchedset->getNonInherited());
 		$fetchedset->delete();
 	}
 
@@ -56,7 +54,6 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$propertyset->editValue("div","color","#fff");
 		$this->assertEquals("#fff", $propertyset->getValue("div","color"));
 		$this->assertEquals(null, $propertyset->getValue("div","notsetvalue"));
-		$this->assertEquals(array("div?color"=>"#fff"),$propertyset->getNonInherited());
 		$propertyset->store();
 		
 		$cssM = $this->fixture->getCssManager();
@@ -68,7 +65,6 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(scv\CssPropertySet::MODULE,$fetchedset->getType());
 		$this->assertEquals("#fff", $fetchedset->getValue("div","color"));
 		$this->assertEquals(null, $fetchedset->getValue("div","notsetvalue"));
-		$this->assertEquals(array("div?color"=>"#fff"),$fetchedset->getNonInherited());
 		$fetchedset->delete();
 	}
 
