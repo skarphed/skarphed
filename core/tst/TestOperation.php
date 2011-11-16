@@ -79,7 +79,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 			$subOp->store();
 			$suboperationId = $subOp->getId();
 			if ($i == 2){
-				$i2ID = $subOperationId;
+				$i2ID = $suboperationId;
 			} 
 			for ($j = 0; $j < 3; $j++){
 				if ($i == 2){
@@ -132,10 +132,10 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 			$subOp->setParent($operationId);
 			$subOp->setValue("val",$i+100);
 			$subOp->store();
+			$suboperationId = $subOp->getId();
 			if ($i == 2){
-				$i2ID = $subOperationId;
+				$i2ID = $suboperationId;
 			} 
-			$suboperationId = $subOp->getId(); 
 			for ($j = 0; $j < 3; $j++){
 	
 				$subOp = new scv\TestOperation();
