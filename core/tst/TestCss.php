@@ -17,6 +17,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
     }
 	
 	public function testServerPropertySet(){
+		$userM= $this->fixture->getUserManager();
 		$userM->createUser("currentSessionUser","testpassword",null);
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
@@ -50,6 +51,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testModulePropertySet(){
+		$userM= $this->fixture->getUserManager();
 		$userM->createUser("currentSessionUser","testpassword",null);
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
