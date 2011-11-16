@@ -21,6 +21,7 @@ class TestOperation extends PHPUnit_Framework_TestCase {
 		while($opM->processNext()){}
 		
 		$this->assertEquals(0,count($opM->getCurrentOperationsForGUI()));
+		
     }
 	
 	public function testSingleFailOperation(){
@@ -168,7 +169,9 @@ class TestOperation extends PHPUnit_Framework_TestCase {
     }
 	
 	protected function tearDown(){
-		
+		$db = $this->fixture->getDB();
+		$db->query($core,"DELETE FROM OPERATIONS;");
+		$db->commit();
 	}
 	
 }
