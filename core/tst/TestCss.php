@@ -21,6 +21,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$userM->createUser("currentSessionUser","testpassword",null);
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
+		$_SESSION['user']->grantRight('scoville.css.edit',false);
 		
 		$propertyset = new scv\CssPropertySet();
 		$propertyset->setTypeGeneral();
@@ -51,6 +52,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$userM->createUser("currentSessionUser","testpassword",null);
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
+		$_SESSION['user']->grantRight('scoville.css.edit',false);
 		$moduleId = 1; // de.zigapeda.scoville.text
 		
 		$propertyset = new scv\CssPropertySet();
