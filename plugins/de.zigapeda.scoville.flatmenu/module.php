@@ -28,11 +28,11 @@ class de_zigapeda_scoville_flatmenu {
 		return $text . "</div>";
 	}
 	
-	public function renderJavascript($moduleId, $moduleInstanceId){
-		return "function ${moduleInstanceId}init() {
-	  }
-	  function ${moduleInstanceId}destroy() {
-	  }";
+	public function renderJavascript(){
+		return "\"init\":function() { 
+				},
+				\"destroy\":function() {
+				}";
 	}
 	
 }
