@@ -66,7 +66,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$propertyset->store();
 		
 		$cssM = $this->fixture->getCssManager();
-		$fetchedset = $cssM->getCssPropertySet();
+		$fetchedset = $cssM->getCssPropertySet($moduleId,null,null);
 		
 		$this->assertEquals($moduleId,$fetchedset->getModuleId());
 		$this->assertEquals(null,$fetchedset->getWidgetId());
