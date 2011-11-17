@@ -46,10 +46,13 @@
           $mm = $this->core->getModuleManager();
           while ($result = $this->db->fetchArray($resultset)) {
             $module = $mm->loadModule($result['MOD_NAME']);
+            $space = "s".$result["WGT_SPACE"];
+            $widget = "w".$result["WGT_ID"];
             $response['modules'][] = array('id'=>$result["WGT_ID"]
             ,'s'=>$result["WGT_SPACE"]
             ,'c'=>$module->renderHTML($result["WGT_ID"],"s".$result["WGT_SPACE"]."w".$result["WGT_ID"])
-            ,'j'=>$module->renderJavascript($result["WGT_ID"],"s".$result["WGT_SPACE"]."w".$result["WGT_ID"]));
+            ,'j'=>"var $space$widget = {\"root\":\"$space\",\"widget\":\"$widget\",\"session\":\"$space$widget\",".$module->renderJavascript()."};"
+			);
           }
           echo json_encode($response);
           break;
@@ -80,10 +83,13 @@
       $mm = $this->core->getModuleManager();
       while ($result = $this->db->fetchArray($resultset)) {
         $module = $mm->loadModule($result['MOD_NAME']);
+        $space = "s".$result["ACT_SPACE"];
+        $widget = "w".$result["WGT_ID"];
         $response['modules'][] = array('id'=>$result["WGT_ID"]
         ,'s'=>$result["ACT_SPACE"]
         ,'c'=>$module->renderHTML($result["WGT_ID"],"s".$result["ACT_SPACE"]."w".$result["WGT_ID"])
-        ,'j'=>$module->renderJavascript($result["WGT_ID"],"s".$result["ACT_SPACE"]."w".$result["WGT_ID"]));
+        ,'j'=>"var $space$widget = {\"root\":\"$space\",\"widget\":\"$widget\",\"session\":\"$space$widget\",".$module->renderJavascript()."};"
+        );
       }
       echo json_encode($response);
     }

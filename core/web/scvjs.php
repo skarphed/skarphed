@@ -10,8 +10,9 @@ function scvrendermodules(obj) {
     document.getElementById("s" + obj.modules[i].s).innerHTML = obj.modules[i].c;
     if(typeof(obj.modules[i].j) != "undefined") {
       if(typeof(scripttags[obj.modules[i].s]) == "object") {
-        eval("s" + obj.modules[i].s + "w" + scripttags[obj.modules[i].s][1].id + "destroy()");
-        document.body.removeChild(scripttags[obj.modules[i].s][0]);
+          eval("s" + obj.modules[i].s + "w" + scripttags[obj.modules[i].s][1].id + ".destroy()");
+//          eval("s" + obj.modules[i].s + "w" + scripttags[obj.modules[i].s][1].id + " = null");
+          document.body.removeChild(scripttags[obj.modules[i].s][0]);
       }
       var script = document.createElement("script");
       var type = document.createAttribute("type");
@@ -19,7 +20,7 @@ function scvrendermodules(obj) {
       script.setAttributeNode(type);
       document.body.appendChild(script);
       script.innerHTML = obj.modules[i].j;
-      jsfunclist.push("s" + obj.modules[i].s + "w" + obj.modules[i].id + "init()");
+      jsfunclist.push("s" + obj.modules[i].s + "w" + obj.modules[i].id + ".init()");
       scripttags[obj.modules[i].s] = new Array(script,obj.modules[i]);
     }
   }
