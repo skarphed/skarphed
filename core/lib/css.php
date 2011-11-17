@@ -475,7 +475,12 @@ class CssPropertySet {
 			$splittedSelector = explode('?',$selector);
 			
 			//TODO: HERE BE DRAGONS -> OBJEKTZUGRIFF mit pfeil. koennte das probleme machen?
-			$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values->v,$this->moduleId,$this->widgetId,$this->session));
+			if (is_object ($values)){
+				$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values->v,$this->moduleId,$this->widgetId,$this->session));
+			}else{
+				$db->query($core,$stmnt,array($splittedSelector[0],$splittedSelector[1],$values['v'],$this->moduleId,$this->widgetId,$this->session));
+			}
+			
 		}
 		
 		if ($this->type==CssPropertySet::SESSION){
