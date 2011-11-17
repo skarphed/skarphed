@@ -44,10 +44,6 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$this->assertEquals("#fff", $fetchedset->getValue("div","color"));
 		$this->assertEquals(null, $fetchedset->getValue("div","notsetvalue"));
 		$fetchedset->delete();
-		
-		$_SESSION['user']->delete(false);
-		unset($_SESSION['user']);		
-		unset($_SESSION['loggedin']);
 	}
 
 	public function testModulePropertySet(){
@@ -79,14 +75,17 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$this->assertEquals("#fff", $fetchedset->getValue("div","color"));
 		$this->assertEquals(null, $fetchedset->getValue("div","notsetvalue"));
 		$fetchedset->delete();
-		
-		$_SESSION['user']->delete(false);
-		unset($_SESSION['user']);		
-		unset($_SESSION['loggedin']);
 	}
 
 	protected function tearDown(){
-
+		if (isset($_SESSION['user']) and get_class($_SESSION['user']) == 'scv\User'){
+			$_SESSION['user']->delete(false);
+			unset($_SESSION['user']);
+		}
+		if (isset($_SESSION['login'])){
+			unset($_SESSION['loggedin']);
+		}
+		
 	}
 	
 }
