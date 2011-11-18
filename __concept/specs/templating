@@ -17,7 +17,9 @@ Das Templateformat ist eine gepackte Ordnerstruktur folgenden Aufbaus:
  +- site1.css
  +- [blubb.css]
  +- [warhgaarbl.css]
- +- [minimap.png]
+ +- [minimap_site1.png]
+ +- [minimap_blubb.png]
+ +- [minimap_warhgaarbl.png]
  +- general.css
  
 Dateien im Archiv:
@@ -25,7 +27,7 @@ Dateien im Archiv:
 *.png/*.jpeg/*.jpg  --> Bilder fuer das Design (alle im ordner img)
 *.html              --> Seitenlayouts
 *.css               --> Die Css-File, die Siterelevanten sachen formatiert.
-minimap.png         --> Die Minimap ist eine uebergangsloesung und optional:
+minimap_*.png       --> Die Minimap ist eine uebergangsloesung und optional:
                         Sie wird dazu verwendet, die Spaces einer Seite im 
                         Admininterface graphisch zu veranschaulichen.
                         Sie wird nur solange im Standard enthalten sein, bis
@@ -142,3 +144,31 @@ Archivs und bilder in einem Ordner namens img .
        hellgrauen Rahmen haben, sofern diese Einstellung nicht durch andere CSS-
        settings ueberschrieben wird.
     
+---------------------------------------------------------------
+ IV. Manifest.json
+---------------------------------------------------------------
+
+  Die Manifest.json ist in folgendem stil gehalten:
+  
+  {
+    "name": "Scoville Default Template",
+    "description" : "Ein knallbuntes Template zu Debuggingzwecken",
+    "author" : "Daniel 'zigapeda' Elstner",
+    
+    "sites":[
+      {
+        "name":"Hauptseite",
+        "desc":"Die Hauptseite fuer den Content",
+        "filename":"blubb.html"
+      },
+      {
+        "name":"Spezialseite",
+        "desc":"Diese Seite dient nur dazu, diesen einen Speziellen Conten dar-
+                zustellen",
+        "filename":"special.html"
+      },
+      {...}
+    ],
+    "filenames": ["blubb.html","img/bild1.jpg","img/bild2.jpg",...]
+  }
+
