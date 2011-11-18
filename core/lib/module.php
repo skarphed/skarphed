@@ -449,11 +449,13 @@ class Repository {
 	}
 	
 	public function getDependencies($modulemeta) {
-		
+		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>3,"m"=>$modulemeta))));
+		return $list->r;
 	}
 	
 	public function getDescDependencies($modulemeta) {
-		
+		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>4,"m"=>$modulemeta))));
+		return $list->r;
 	}
 	
 	public function downloadModule($modulemeta){
