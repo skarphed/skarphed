@@ -115,7 +115,7 @@ class ModuleManager extends Singleton {
 		if (is_dir("../".$modulesPath.$moduleId)){
 			throw new ModuleException("InstallationError: This Module is already installed (Directory Exists)");
 		}
-		system('mkdir ../'.$modulesPath.escapeshellarg($moduleId)." > /dev/null");
+		mkdir('../'.$modulesPath.$moduleId);
 		system('tar xfz /tmp/'.escapeshellarg($moduleId).'.tar.gz -C ../'.$modulesPath.escapeshellarg($moduleId).'/ > /dev/null');
 		
 		$manifestRaw = file_get_contents('../'.$modulesPath.$moduleId.'/manifest.json');
@@ -136,7 +136,7 @@ class ModuleManager extends Singleton {
 		ModuleManager::createRights($manifest, $moduleNumber); //TODO: Implementiere createRights
 		
 		//Cleanup
-		system('rm /tmp/'.escapeshellarg($moduleId).".tar.gz > /dev/null");
+		unlink('/tmp/'.$moduleId.".tar.gz");
 	}
 	
 	public function addRepository($ip, $port, $name = '') {
@@ -263,7 +263,7 @@ class ModuleManager extends Singleton {
 		$moduleNumber = ModuleManager::unregisterModule($manifest);
 		
 		//Delete module on file system
-		system('rm -r ../'.$modulesPath.escapeshellarg($moduleId)." > /dev/null");
+		$core->recursiveDelete('../'.$modulesPath.$moduleId);
 	}
 	
 	public function loadModule($moduleName){
@@ -449,11 +449,13 @@ class Repository {
 	}
 	
 	public function getDependencies($modulemeta) {
-		
+		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>3,"m"=>$modulemeta))));
+		return $list->r;
 	}
 	
 	public function getDescDependencies($modulemeta) {
-		
+		$list = json_decode(file_get_contents($this->getHost()."proto.php?j=".json_encode(array("c"=>4,"m"=>$modulemeta))));
+		return $list->r;
 	}
 	
 	public function downloadModule($modulemeta){
