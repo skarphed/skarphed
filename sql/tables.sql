@@ -177,8 +177,6 @@ CREATE TABLE OPERATIONS
   OPE_ACTIVE BOOL DEFAULT 0,
   CONSTRAINT PK_OPERATIONS PRIMARY KEY (OPE_ID)
 );
-GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE
- ON OPERATIONS TO  ZIGAPEDA WITH GRANT OPTION;
 
 CREATE TABLE OPERATIONDATA
 (
@@ -186,9 +184,21 @@ CREATE TABLE OPERATIONDATA
   OPD_KEY Varchar(64) NOT NULL,
   OPD_VALUE Varchar(512) NOT NULL,
   OPD_TYPE Varchar(16) NOT NULL,
-  CONSTRAINT PK_OPERATIONDATA PRIMARY KEY (OPD_OPE_ID,OPD_KEY)
+  CONSTRAINT PK_OPERATIONDATA PRIMARY KEY (OPD_OPE_ID,OPD_KEY),
+  constraint fk_operationdata_1 foreign key (opd_ope_id) references operaions (ope_id) on update cascade on delete cascade
 );
-ALTER TABLE OPERATIONDATA ADD CONSTRAINT FK_OPERATIONDATA_1
-  FOREIGN KEY (OPD_OPE_ID) REFERENCES OPERATIONS (OPE_ID) ON UPDATE CASCADE ON DELETE CASCADE;
-GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE
- ON OPERATIONDATA TO  ZIGAPEDA WITH GRANT OPTION;
+
+create table binary
+(
+  bin_id int,
+  bin_mime varchar(64),
+  bin_usr_id_owner int,
+  bin_usr_id_lastchange int,
+  bin_date_lastchange timestamp,
+  bin_rig_id int,
+  bin_data blob sub_type 0,
+  constraint bin_pk primary key (bin_id),
+  constraint bin_fk_usr_owner foreign key (bin_usr_id_owner) references users (usr_id) on update cascade on delete set null,
+  constraint bin_fk_usr_lastchange foreign key (bin_usr_id_lastchange) references users (usr_id) on update cascade on delete set null,
+  constraint bin_fk_rig foreign key (bin_rig_id) references rights (rig_id) on update cascade on delete 
+);
