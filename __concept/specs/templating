@@ -1,0 +1,144 @@
+  ======================================
+--=         Templatingsystem v1        =--
+  ======================================
+  
+Das Templateformat ist eine gepackte Ordnerstruktur folgenden Aufbaus:
+
+./
+ |
+ +- img   (Ordner fuer alle bilder)
+ |   +- bild1.png
+ |   +- bildX.png
+ |   +- adsfadfasf.png
+ |   +- adsfad.jpg
+ +- site1.html
+ +- [blubb.html]
+ +- [warhgaarbl.html]
+ +- site1.css
+ +- [blubb.css]
+ +- [warhgaarbl.css]
+ +- [minimap.png]
+ +- general.css
+ 
+Dateien im Archiv:
+
+*.png/*.jpeg/*.jpg  --> Bilder fuer das Design (alle im ordner img)
+*.html              --> Seitenlayouts
+*.css               --> Die Css-File, die Siterelevanten sachen formatiert.
+minimap.png         --> Die Minimap ist eine uebergangsloesung und optional:
+                        Sie wird dazu verwendet, die Spaces einer Seite im 
+                        Admininterface graphisch zu veranschaulichen.
+                        Sie wird nur solange im Standard enthalten sein, bis
+                        Scoville das seitenlayout selbst umreissen 
+general.css         --> Diese Datei enthaelt alle css-formatierungen, die in die
+                        Serverweite CSS-Config eingetragen werden sollen.
+ 
+Die Dateinamen sind beliebig. Hauptsache, Seiten befinden sich im root des
+Archivs und bilder in einem Ordner namens img .
+
+!!ACHTUNG!!: Die CSS-Dateien muessen die namen ihrer zugehoerigen seiten tragen!
+             Die CSS-Files uebernehmen die grundlegenden formatierungen ihrer
+             jeweiligen Seiten.
+
+---------------------------------------------------------------
+ I. Angepeilter Arbeitsablauf bei der Teplateerstellung
+---------------------------------------------------------------
+ 
+  Der Arbeitsablauf bei der Templateerstellung soll so aussehen:
+  
+  1. Der Webdesigner entwirft ein layout und haelt sich bei der erstellung
+     an die oben genannten richtlinien
+  2. Der Webdesigner fuehrt ein Script/Programm auf den ordner aus, in dem die
+     Templatedaten liegen. Dieses programm parst den Templateordner und legt
+     die manifest.json an, die alle Metainformationen zum Template enthaelt
+  3. a) Die Metadaten koennen direkt im Programm beschrieben werden
+     b) Der Webdesigner kann die manifest.json manuell umschreiben
+  4. a) Das Programm packt das fertige paket und benennt es nach dem Template-
+        namen
+     b) Der Webdesigner fuehrt das Programm mit einem Befehlszeilenparameter zum
+        packen aus.
+  
+  --> Es entsteht ein fertiges .tar.gz-file, dass von scoville gelsen werden
+      kann.
+
+---------------------------------------------------------------
+ II. HTML-Dateien in Scoville-Templates
+---------------------------------------------------------------
+  
+  HTML-Seiten sind keine vollstaendigen HTML-Dokumente, sondern eher der Inhalt
+  des Tags <body>
+  
+  Typischerweise besteht eine Scoville-Seite aus einer hierarchischen Struktur
+  von <div>-Tags, diese ist aber frei designbar.
+
+  1. Container fuer Widgets - Spaces
+  
+  Wenn ein <div> im spaeteren gebrauch einen Container fuer ein Widget dar-
+  stellen soll, bekommt er eine id bestehend aus dem zeichen "s" und einer num-
+  mer zugewiesen. Diese nummer wird als Spacenum-
+  mer bezeichnet.
+  Jedes Containerdiv muss eine eindeutige Spacenummer zugewiesen bekommen
+  
+    Beispiel fuer einen Space: <div id="s1"></div>
+  
+  2. Container fuer Spaces - Boxen
+  
+  Fuer die weitere entwicklung von Scoville muss die moeglichkeit offengehalten
+  werden, im laufenden betrieb weitere Spaces zu einer seite hinzufuegen zu 
+  koennen.
+  
+  Da sich logischerweise nicht jedes <div> dazu eignet, einen Container fuer 
+  spaces darzustellen muessen auch diese Container eindeutig ausgezeichnet wer-
+  den.
+  
+  Es wird unterschieden zwischen vertikalen und horizontalen containern. 
+  In vertikalen Containern ordnen sich die enthaltenen spaces vertikal an,
+  in horziontalen Containern ordnen sich die enthaltenen spaces horizontal an.
+  Horizontale Container erhalten eine id , die mit dem zeichen "h" beginnt,
+  Vertikale Container erhalten eine id, die mit dem zeichen "v" beginnt.
+  Auf das jeweilige Zeichen folgt eine nummer, die sogenannte Box-Nummer, die
+  ebenfalls eindeutig sein muss.
+  
+    Beispiel fuer eine Vertikale Box:    <div id="v1"></div>
+    Beispiel fuer eine Horizontale Box:  <div id="h1"></div>
+  
+  3. Elemente fuer visuelle Gestaltung
+  
+  Fuer alle HTML-Elemente, die nicht in die Kategorien 1 und 2 fallen koennen
+  zum zwecke der CSS-Formatierung (beschrieben in II) ebenfalls IDs vergeben
+  werden. Diese IDs beginnen mit dem praefix template_ um nicht mit IDs irgend-
+  welcher von Scoville-Modulen erstellten HTML-Elementen zu kollidieren.
+  
+---------------------------------------------------------------
+ II. Formatieren der Seiten mittels CSS
+---------------------------------------------------------------
+  
+  Die in einer HTML-Datei definierten HTML-Konstrukte werden in einer gleich-
+  namigen Cascading Stylesheet-file formatiert. 
+  
+  Diese Stylesheetdatei darf folgende Elemente Formatieren:
+  
+    - den <body>-tag
+    - jedes Element, dass das eine ID traegt, die mit "template_" beginnt.
+  
+  Es koennen bei der formatierung alle images aus dem img-Ordner verwendet wer-
+  den.
+  
+---------------------------------------------------------------
+ III. Die datei general.css
+---------------------------------------------------------------
+
+  Die general.css enthaelt Formatierungen fuer alle gaengigen HTML-Elemente.
+  Die Datei wird beim Import in einen Scovilleserver geparst und ihre eintraege 
+  als Serverweiter Standard verwendet.
+  
+  Beispiel:
+  
+    table {
+      border: 1px solid silver;
+    }
+    
+    -> Jede Tabelle auf einem Scovilleserver mit diesem Template wird einen
+       hellgrauen Rahmen haben, sofern diese Einstellung nicht durch andere CSS-
+       settings ueberschrieben wird.
+    
