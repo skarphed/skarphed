@@ -85,9 +85,9 @@ class TestCss extends PHPUnit_Framework_TestCase {
 						border : 1px solid silver ;}
 				  #blub { font-family: Verdana ; }";
 	    $RESULTDATA = array(
-			array("s"=>".asdf","k"=>"font-size","v"=>"1px"),
-			array("s"=>".asdf","k"=>"color","v"=>"#af0"),
-			array("s"=>".asdf","k"=>"border","v"=>"1px solid silver"),
+			array("s"=>".adsf","k"=>"font-size","v"=>"1px"),
+			array("s"=>".adsf","k"=>"color","v"=>"#af0"),
+			array("s"=>".adsf","k"=>"border","v"=>"1px solid silver"),
 			array("s"=>"#blub","k"=>"font-family","v"=>"Verdana")
 		);
 		$parser = new scv\CssParser($DATA);
