@@ -675,3 +675,55 @@ class CssPropertySet {
 		$this->properties = $set->properties;
 	}
 }
+
+class CssParser{
+	private $rawData = null;
+	private $parsedStructure = array();
+	
+    public function __construct($cssData=""){
+    	$this->rawData = $cssData;
+		$this->parse();
+	}
+	
+	public function parseData($cssData){
+		$this->rawData = $cssData;
+		$this->parse();
+	}
+	
+	private function parse(){
+		$selectorPassages = array();
+		$currentSelector = array();
+		$matchedProperties = array();
+		preg_match_all("/[#.]?[A-Za-z0-9]+\s*\{(\s*[A-Za-z\-]*\s*:\s*[A-Za-z0-9#]*\s*;\s*)*}/",$this->rawData,$selectorPassages,PREG_SET_ORDER);
+		foreach($selectorPassages as $selectorPassage){
+			preg_match("/[#.]?[A-Za-z0-9]+\s*\{/",$selectorPassage[0],$currentSelector);
+			$selector = str_replace("{","",$currentSelector[0]);
+			$selector = trim($selector);
+			preg_match_all("/(\s*[A-Za-z\-]*\s*:\s*[A-Za-z0-9#]*\s*;\s*)/",$selectorPassage[0],$matchedProperties);
+			foreach($matchedProperties as $matchedProperty){
+				$splitted = explode(":",$matchedProperty[0]);
+				$property = trim($splitted[0]);
+				$value = trim(str_replace(";","",$splitted[1]));
+				array_push($this->parsedStructure,array("s"=>$selector,"k"=>$property,"v"=>$value));
+			}
+						
+		}
+	}
+	
+	public function getValue($selector,$key){
+		$sel = trim($selector);
+		$key = trim($key);
+		foreach($this->parsedStructure as $property){
+			if ($property["s"]==$sel and $property["k"]==$key){
+				return $property["v"];
+			}else{
+				return null;
+			}	
+		}
+	}
+	
+	public function debugPrint(){
+		print_r($this->parsedStructure);
+	}
+	
+}
