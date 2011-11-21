@@ -694,7 +694,7 @@ class CssPropertySet {
  * Used to Parse generic CSS files into iterable datasets of the following style:
  * { "s":selector,"k":key (Css-tag) , "v": value}
  */
-class CssParser implements Iterator{
+class CssParser implements \Iterator{
 	private $cursor = 0;
 	private $rawData = null;
 	private $parsedStructure = array();
