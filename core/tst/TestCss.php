@@ -91,19 +91,20 @@ class TestCss extends PHPUnit_Framework_TestCase {
 			array("s"=>"#blub","k"=>"font-family","v"=>"Verdana")
 		);
 		$parser = new scv\CssParser($DATA);
-		$this->assertEquals("1px",$parser->getValue(".asdf","font-size"));
-		$this->assertEquals("#af0",$parser->getValue(".asdf","color"));
-		$this->assertEquals("1px solid silver",$parser->getValue(".asdf","border"));
+		$this->assertEquals("1px",$parser->getValue(".adsf","font-size"));
+		$this->assertEquals("#af0",$parser->getValue(".adsf","color"));
+		$this->assertEquals("1px solid silver",$parser->getValue(".adsf","border"));
 		$this->assertEquals("Verdana",$parser->getValue("#blub","font-family"));
 		$parser2 = new scv\CssParser();
 		$parser2->parseData($DATA);
-		$this->assertEquals("1px",$parser2->getValue(".asdf","font-size"));
-		$this->assertEquals("#af0",$parser2->getValue(".asdf","color"));
-		$this->assertEquals("1px solid silver",$parser2->getValue(".asdf","border"));
+		$this->assertEquals("1px",$parser2->getValue(".adsf","font-size"));
+		$this->assertEquals("#af0",$parser2->getValue(".adsf","color"));
+		$this->assertEquals("1px solid silver",$parser2->getValue(".adsf","border"));
 		$this->assertEquals("Verdana",$parser2->getValue("#blub","font-family"));
 		foreach($parser2 as $parserSet){
 			$this->assertContains($parserSet,$RESULTDATA);
 		}
+		
 	}
 	
 	protected function tearDown(){
