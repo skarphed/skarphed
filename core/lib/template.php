@@ -5,6 +5,66 @@ include_once 'core.php';
 
 class TemplateException extends \Exception{}
 
+class TemplateManager extends Singleton{
+	private static $instance = null;
+	
+	/**
+	 * Get Singleton Instance
+	 * 
+	 * Returns the singleton Instance of the Rightsmanager
+	 * 
+	 * @return RightsManager The rights manager
+	 */
+	public static function getInstance(){
+		if (TemplateManager::$instance==null){
+			TemplateManager::$instance = new TemplateManager();
+			TemplateManager::$instance->init();
+		}
+		return TemplateManager::$instance;
+	}
+	
+	protected function init(){}
+	
+	public function createFromData($data){
+		$template = new Template();
+		$filename =hash('md5',time()+session_id()).".tar.gz";
+		$template->setFilename($filename); 
+		$handle = fopen("/tmp/".$filename,"w");
+		fwrite($handle,$data);
+		fclose();
+		return $template;
+	}
+	
+	public function createFromFile($filename){
+		$template = new Template();
+		$template->setFilename($filename);
+		return $template;
+	}
+	
+	public function createFromRemote($repository,$templatename){
+		$template = $repository->downloadTemplate($templatename);
+		$data = $template->data;
+		return $this->createFromData($data);
+	}
+	
+	public function createCurrentInstalled(){
+		$template = new Template();
+		$manifestRaw = file_get_contents("../web/manifest.json");
+		if ($manifestRaw == false){
+			throw new ModuleException("InstallationError: $moduleId is not a valid Scoville Module");
+			return;
+		}
+		$manifest = json_decode($manifestRaw);
+		if ($manifest == null){
+			throw new ModuleException("InstallationError: Manifest seems to be broken. Validate!");
+			return;
+		}
+		$template->setManifest($manifest);
+		$template->setInstalled(true);
+		return $template;
+	}
+}
+
 class Template {
 	private $manifest = null;
 	private $filename = null;
@@ -200,45 +260,6 @@ class Template {
 			}
 		}
 		return true;
-	}
-	
-	public static function createFromData($data){
-		$template = new Template();
-		$filename =hash('md5',time()+session_id()).".tar.gz";
-		$template->setFilename($filename); 
-		$handle = fopen("/tmp/".$filename,"w");
-		fwrite($handle,$data);
-		fclose();
-		return $template();
-	}
-	
-	public static function createFromFile($filename){
-		$template = new Template();
-		$template->setFilename($filename);
-		return $template;
-	}
-	
-	public static function createFromRemote($repository,$templatename){
-		$template = $repository->downloadTemplate($templatename);
-		$data = $template->data;
-		return $this->createFromData($data);
-	}
-	
-	public static function createCurrentInstalled(){
-		$template = new Template();
-		$manifestRaw = file_get_contents("../web/manifest.json");
-		if ($manifestRaw == false){
-			throw new ModuleException("InstallationError: $moduleId is not a valid Scoville Module");
-			return;
-		}
-		$manifest = json_decode($manifestRaw);
-		if ($manifest == null){
-			throw new ModuleException("InstallationError: Manifest seems to be broken. Validate!");
-			return;
-		}
-		$template->setManifest($manifest);
-		$template->setInstalled(true);
-		return $template;
 	}
 }
 ?>

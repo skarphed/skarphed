@@ -15,6 +15,8 @@ include_once 'rightmanagement.php';
 include_once 'user.php';
 include_once 'css.php';
 include_once 'operation.php';
+include_once 'template.php';
+include_once 'site.php';
 
 session_start();
 
@@ -36,6 +38,8 @@ class Core extends Singleton implements IModule{
 	private $users = null;
 	private $css = null;
 	private $operations = null;
+	private $templates = null;
+	private $composite = null;
 	
 	public function getName(){
 		return 'de.masterprogs.scoville.core';
@@ -51,6 +55,8 @@ class Core extends Singleton implements IModule{
 		$this->users = UserManager::getInstance();
 		$this->css = CssManager::getInstance();
 		$this->operations = OperationManager::getInstance();
+		$this->templates = TemplateManager::getInstance();
+		$this->composite = CompositeManager::getInstance(); 
 	}
 	
 	public function getDB(){
@@ -79,6 +85,14 @@ class Core extends Singleton implements IModule{
 	
 	public function getOperationManager(){
 		return $this->operations;
+	}
+	
+	public function getTemplateManager(){
+		return $this->templates;
+	}
+	
+	public function getCompositeManager(){
+		return $this->composite;
 	}
 	
 	public function renderModule($modulename, $moduleInstanceId){
