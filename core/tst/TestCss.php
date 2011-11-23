@@ -1,6 +1,7 @@
 <?php
 require_once '/usr/share/php/PHPUnit/Framework/TestCase.php';
 require_once '../lib/core.php';
+require_once '../lib/css.php';
 
 use scv;
 
