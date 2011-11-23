@@ -10,6 +10,7 @@ abstract class Singleton {
 include_once 'configuration.php';
 include_once 'database.php';
 include_once 'htmlparser.php';
+include_once 'module.php';
 
 session_start();
 
@@ -64,7 +65,6 @@ class Core extends Singleton implements IModule{
 	
 	public function getModuleManager(){
 		if (!isset($this->modules)){
-			include_once "module.php";
 			$this->modules = ModuleManager::getInstance();
 		}
 		return $this->modules;
