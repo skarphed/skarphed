@@ -334,7 +334,7 @@ class class_scvRpc {
 	$core = scv\Core::getInstance();
 	$compositeM = $core->getCompositeManager();	
 	$site = $compositeM->getSite($siteId);
-	$widget = $compositeM->($widgetId);
+	$widget = $compositeM->getWidget($widgetId);
 	$site->assignWidget($space,$widget);
 	return;
   }
