@@ -308,5 +308,37 @@ class class_scvRpc {
 	
 	return $operations;
   }
+  
+  function method_getSites($params,$error){
+  	return json_encode(scv\Site::getSitesMeta());
+  }
+  
+  function method_getSite($params,$error){
+  	$siteId = $params[0];
+	
+	$site = scv\Site::getSite($siteId);
+	
+	return json_encode($site->getMeta());
+  }
+  
+  function assignWidgetToSpace($params,$error){
+  	$siteId = $params[0];
+	$space = $params[1];
+	$widgetId = $params[2];
+	
+	$site = scv\Site::getSite($siteId);
+	$widget = scv\Widget::getWidget($widgetId);
+	$site->assignWidget($space,$widget);
+	return;
+  }
+  
+  function removeWidgetFromSpace($params,$error){
+  	$siteId = $params[0];
+	$space = $params[1];
+	
+	$site = scv\Site::getSite($siteId);
+	$site->removeWidget($space);
+	return;
+  }
 }
 ?>

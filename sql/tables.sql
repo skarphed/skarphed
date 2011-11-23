@@ -123,7 +123,11 @@ create table actions (
 create table sites (
   sit_id int,
   sit_name nstring,
+  SIT_DESCRIPTION VARCHAR(500),
+  SIT_FILENAME VARCHAR(255),
   sit_mnu_id int,
+  SIT_SPACES INT,
+  SIT_DEFAULT INT(1) NOT NULL DEFAULT 0,
   sit_html blob sub_type text,
   constraint sit_pk primary key (sit_id),
   constraint sit_uni_name unique (sit_name),
