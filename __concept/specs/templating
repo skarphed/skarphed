@@ -80,6 +80,9 @@ Archivs und bilder in einem Ordner namens img .
   mer zugewiesen. Diese nummer wird als Spacenum-
   mer bezeichnet.
   Jedes Containerdiv muss eine eindeutige Spacenummer zugewiesen bekommen
+  Die Spaces muessen bei 1 anfangen und durchgehend inkrementell numeriert wer-
+  den. ( 1,2,3,4,5 -> 5 spaces werden erkannt || 1,2,3,6,7 -> 3 spaces werden
+  erkannt)
   
     Beispiel fuer einen Space: <div id="s1"></div>
   
@@ -122,6 +125,7 @@ Archivs und bilder in einem Ordner namens img .
   
     - den <body>-tag
     - jedes Element, dass das eine ID traegt, die mit "template_" beginnt.
+    - jede Box
   
   Es koennen bei der formatierung alle images aus dem img-Ordner verwendet wer-
   den.
@@ -159,7 +163,8 @@ Archivs und bilder in einem Ordner namens img .
       {
         "name":"Hauptseite",
         "desc":"Die Hauptseite fuer den Content",
-        "filename":"blubb.html"
+        "filename":"blubb.html",
+        "default":true
       },
       {
         "name":"Spezialseite",
