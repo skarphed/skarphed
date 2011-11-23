@@ -9,14 +9,7 @@ abstract class Singleton {
 
 include_once 'configuration.php';
 include_once 'database.php';
-include_once 'module.php';
 include_once 'htmlparser.php';
-include_once 'rightmanagement.php';
-include_once 'user.php';
-include_once 'css.php';
-include_once 'operation.php';
-include_once 'template.php';
-include_once 'site.php';
 
 session_start();
 
@@ -34,6 +27,7 @@ class Core extends Singleton implements IModule{
 	private $config = null;
 	private $database = null;
 	private $htmlparser = null;
+	private $modules = null;
 	private $rights = null;
 	private $users = null;
 	private $css = null;
@@ -50,13 +44,6 @@ class Core extends Singleton implements IModule{
 		$this->config = new Config();
 		$this->database = new Database();
 		$this->config->initFromDb($this->database);
-		$this->rights = RightsManager::getInstance();
-		$this->modules = ModuleManager::getInstance();
-		$this->users = UserManager::getInstance();
-		$this->css = CssManager::getInstance();
-		$this->operations = OperationManager::getInstance();
-		$this->templates = TemplateManager::getInstance();
-		$this->composite = CompositeManager::getInstance(); 
 	}
 	
 	public function getDB(){
@@ -68,30 +55,58 @@ class Core extends Singleton implements IModule{
 	}
 	
 	public function getRightsManager(){
+		if (!isset($this->rights)){
+			include_once "rightmanagement.php";
+			$this->rights = RightsManager::getInstance();
+		}
 		return $this->rights;
 	}
 	
 	public function getModuleManager(){
+		if (!isset($this->modules)){
+			include_once "module.php";
+			$this->modules = ModuleManager::getInstance();
+		}
 		return $this->modules;
 	}
 	
 	public function getUserManager(){
+		if (!isset($this->users)){
+			include_once "user.php";
+			$this->users = UserManager::getInstance();
+		}
 		return $this->users;
 	}
 	
 	public function getCssManager(){
+		if (!isset($this->css)){
+			include_once "css.php";
+			$this->css = CssManager::getInstance();
+		}
 		return $this->css;
 	}
 	
 	public function getOperationManager(){
+		if (!isset($this->operations)){
+			include_once "operation.php";
+			$this->operations = OperationManager::getInstance();
+		}
 		return $this->operations;
 	}
 	
 	public function getTemplateManager(){
+		if (!isset($this->templates)){
+			include_once "template.php";
+			$this->templates = TemplateManager::getInstance();
+		}
 		return $this->templates;
 	}
 	
 	public function getCompositeManager(){
+		if (!isset($this->composite)){
+			include_once "site.php";
+			$this->composite = CompositeManager::getInstance();
+		}
 		return $this->composite;
 	}
 	
