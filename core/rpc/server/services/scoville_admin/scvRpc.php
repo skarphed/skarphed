@@ -310,13 +310,18 @@ class class_scvRpc {
   }
   
   function method_getSites($params,$error){
-  	return json_encode(scv\Site::getSitesMeta());
+  	$core = scv\Core::getInstance();
+  	$compositeM = $core->getCompositeManager();	
+	
+  	return json_encode($compositeM->getSitesMeta());
   }
   
   function method_getSite($params,$error){
   	$siteId = $params[0];
 	
-	$site = scv\Site::getSite($siteId);
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();	
+	$site = $compositeM->getSite($siteId);
 	
 	return json_encode($site->getMeta());
   }
@@ -326,8 +331,10 @@ class class_scvRpc {
 	$space = $params[1];
 	$widgetId = $params[2];
 	
-	$site = scv\Site::getSite($siteId);
-	$widget = scv\Widget::getWidget($widgetId);
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();	
+	$site = $compositeM->getSite($siteId);
+	$widget = $compositeM->($widgetId);
 	$site->assignWidget($space,$widget);
 	return;
   }
@@ -336,7 +343,9 @@ class class_scvRpc {
   	$siteId = $params[0];
 	$space = $params[1];
 	
-	$site = scv\Site::getSite($siteId);
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();
+	$site = $compositeM->getSite($siteId);
 	$site->removeWidget($space);
 	return;
   }
