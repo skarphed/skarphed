@@ -2,8 +2,6 @@
 namespace scv;
 
 include_once "core.php";
-include_once "operation.php";
-
 class ModuleException extends \Exception{}
 
 interface IModule{

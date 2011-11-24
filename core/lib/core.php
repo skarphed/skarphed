@@ -11,6 +11,12 @@ include_once 'configuration.php';
 include_once 'database.php';
 include_once 'htmlparser.php';
 include_once 'module.php';
+include_once "user.php";
+include_once "css.php";
+include_once "operation.php";
+include_once "template.php";
+include_once "site.php";
+include_once "rightmanagement.php";
 
 session_start();
 
@@ -57,7 +63,7 @@ class Core extends Singleton implements IModule{
 	
 	public function getRightsManager(){
 		if (!isset($this->rights)){
-			include_once "rightmanagement.php";
+
 			$this->rights = RightsManager::getInstance();
 		}
 		return $this->rights;
@@ -72,7 +78,7 @@ class Core extends Singleton implements IModule{
 	
 	public function getUserManager(){
 		if (!isset($this->users)){
-			include_once "user.php";
+
 			$this->users = UserManager::getInstance();
 		}
 		return $this->users;
@@ -80,7 +86,7 @@ class Core extends Singleton implements IModule{
 	
 	public function getCssManager(){
 		if (!isset($this->css)){
-			include_once "css.php";
+
 			$this->css = CssManager::getInstance();
 		}
 		return $this->css;
@@ -88,7 +94,7 @@ class Core extends Singleton implements IModule{
 	
 	public function getOperationManager(){
 		if (!isset($this->operations)){
-			include_once "operation.php";
+
 			$this->operations = OperationManager::getInstance();
 		}
 		return $this->operations;
@@ -96,7 +102,7 @@ class Core extends Singleton implements IModule{
 	
 	public function getTemplateManager(){
 		if (!isset($this->templates)){
-			include_once "template.php";
+
 			$this->templates = TemplateManager::getInstance();
 		}
 		return $this->templates;
@@ -104,7 +110,7 @@ class Core extends Singleton implements IModule{
 	
 	public function getCompositeManager(){
 		if (!isset($this->composite)){
-			include_once "site.php";
+
 			$this->composite = CompositeManager::getInstance();
 		}
 		return $this->composite;
