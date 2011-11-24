@@ -6,6 +6,7 @@ qx.Class.define("scoville_admin.Template",{
 		
 		this.setIcon("scoville_admin/template.png");
 		this.setLabel("Template");
+		this.addListener("dblclick",this.openTemplatePage);
 	},
 	
 	members: {

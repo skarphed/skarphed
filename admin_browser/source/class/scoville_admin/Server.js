@@ -160,6 +160,11 @@ qx.Class.define("scoville_admin.Server",
 					    ||me.rightsForSession.indexOf('scoville.modules.uninstall')!=-1){
 							me.app.createRPCObject(me.ip).callAsync(me.createGetRepositoryHandler(me),"getRepository");
 						}
+						
+						if (true){
+							me.templates = new scoville_admin.Template(me.app);
+							me.add(me.templates);
+						}
 					    
 						
 					}else{

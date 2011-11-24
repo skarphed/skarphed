@@ -54,17 +54,22 @@
     // project; make sure to adapt the path to the Manifest.json; if you are
     // using a contrib: library, it will be downloaded into the path specified
     // by the 'cache/downloads' config key
-    /*
+    
     "libraries" : 
     {
       "library" :
-      [
+      [ /*
         {
           "manifest" : "contrib://SkeletonApplication/trunk/Manifest.json"
+        },
+        */
+        {
+          "manifest" : "contrib://UploadWidget/trunk/Manifest.json"
+          
         }
       ]
     }
-    */
+    
 
     // If you want to tweak a job setting, see the following sample where
     // the "format" feature of the "build-script" job is overridden.

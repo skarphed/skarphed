@@ -1,4 +1,4 @@
-qx.Class.define("scoville_admin.ServerPage",{
+qx.Class.define("scoville_admin.TemplatePage",{
 	extend: qx.ui.tabview.Page,
 	
 	construct : function(app, template){
@@ -24,6 +24,7 @@ qx.Class.define("scoville_admin.ServerPage",{
 		infolabel:null,
 		heading:null,
 		toolbarExtension:[],
+		uploadRunning:false,
 		
 		buildGui : function(){
 			this.setLayout(new qx.ui.layout.VBox());
@@ -46,14 +47,17 @@ qx.Class.define("scoville_admin.ServerPage",{
 			
 			
 			this.uploadBox = new qx.ui.groupbox.GroupBox("Upload new Template", "scoville_admin/template.png");
-			this.uploadBox.setLayout(new qx.ui.layout.Basic());
-			this.uploadForm = new uploadwidget.UploadForm('uploadfrm',this.template.getServer().getIp+"/rpc/upload.php");
+			this.uploadBox.setLayout(new qx.ui.layout.VBox());
+			this.uploadForm = new uploadwidget.UploadForm('uploadfrm',"http://"+this.template.getServer().getIp()+"/rpc/upload.php");
+			this.uploadForm.setLayout(new qx.ui.layout.Basic());
 			this.uploadForm.setParameter('rm','upload');
-			this.uploadButton = new uploadwidget.UploadButton();
+			this.uploadButton = new uploadwidget.UploadButton('uploadfile','Choose Template-Archive',"scoville_admin/template.png");
 			this.uploadForm.add(this.uploadButton);
-			//TODO: COMPLETEDLISTENER
+			this.uploadForm.addListener("completed",this.uploadListener(this));
+			this.uploadSubmit = new qx.ui.form.Button("Upload and Install");
+			this.uploadSubmit.addListener("execute",this.sendListener(this));
 			this.uploadBox.add(this.uploadForm);
-			
+			this.uploadBox.add(this.uploadSubmit);			
 			
 			this.repoBox = new qx.ui.groupbox.GroupBox("Search in Repository", "scoville_admin/repo.png");
 			this.repoInfoBox = new qx.ui.groupbox.GroupBox("Template-Info", "scoville_admin/template.png");
@@ -84,6 +88,21 @@ qx.Class.define("scoville_admin.ServerPage",{
 			this.add(this.currentBox);
 			this.add(this.uploadBox);
 			this.add(this.repoBox);
+		},
+		
+		sendListener : function(me){
+			return function(e){
+				me.uploadForm.send();
+			}
+		},
+		
+		uploadListener : function(me){
+			return function(e){
+				alert("KOMPLETTT!");
+				me.uploadForm.clear();
+				var response = me.uploadForm.getIframeTextContent();
+				alert("RESPONSE: "+response);
+			}
 		},
 		
 		buildToolbar : function () {
