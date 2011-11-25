@@ -48,6 +48,7 @@ class TemplateManager extends Singleton{
 	}
 	
 	public function createCurrentInstalled(){
+		$core = Core::getInstance();
 		$template = new Template();
 		$manifestRaw = file_get_contents("../web/manifest.json");
 		if ($manifestRaw == false){
@@ -211,6 +212,10 @@ class Template {
 		}
 	}
 	
+	public function getManifest(){
+		return $this->manifest;
+	}
+	
 	public function setFilename($filename){
 		$this->filename = $filename;
 	}
@@ -251,11 +256,11 @@ class Template {
 		       or !isset($manifest->sites) or !isset($manifest->filenames)){
        		return false;
 		}
-		if (count($manifest->sites < 1)){
+		if (count($manifest->sites) < 1){
 			return false;
 		}
 		foreach ($manifest->sites as $site){
-			if (!isset($site->name) or !isset($manifest->desc) or !isset($site->filename)){
+			if (!isset($site->name) or !isset($site->desc) or !isset($site->filename)){
 				return false;
 			}
 		}

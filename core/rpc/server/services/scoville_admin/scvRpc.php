@@ -326,7 +326,7 @@ class class_scvRpc {
 	return json_encode($site->getMeta());
   }
   
-  function assignWidgetToSpace($params,$error){
+  function method_assignWidgetToSpace($params,$error){
   	$siteId = $params[0];
 	$space = $params[1];
 	$widgetId = $params[2];
@@ -339,7 +339,7 @@ class class_scvRpc {
 	return;
   }
   
-  function removeWidgetFromSpace($params,$error){
+  function method_removeWidgetFromSpace($params,$error){
   	$siteId = $params[0];
 	$space = $params[1];
 	
@@ -347,6 +347,33 @@ class class_scvRpc {
 	$compositeM = $core->getCompositeManager();
 	$site = $compositeM->getSite($siteId);
 	$site->removeWidget($space);
+	return;
+  }
+  
+  function method_getCurrentTemplate($params,$error){
+  	$core = scv\Core::getInstance();
+	$templateM = $core->getTemplateManager();
+	$currentTemplate = $templateM->createCurrentInstalled();
+	return $currentTemplate->getManifest();
+  }
+  
+  function method_createWidget($params,$error){
+  	$moduleId = $params[0];
+	$name = $params[1];
+	
+  	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();
+	return $compositeM->createWidget($moduleId,$name);
+	
+  }
+  
+  function method_deleteWidget($params,$error){
+  	$widgetId = $params[0];
+	
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();
+	$widget = $compositeM->getWidget($widgetId);
+	$widget->delete();
 	return;
   }
 }

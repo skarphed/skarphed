@@ -13,13 +13,14 @@ class HtmlParser {
     $core = Core::getInstance();
 	$cssM = $core->getCssManager();
     $db = $core->getDB();
-    $resultset = $db->query($core, "select first 1 sit_html from sites order by sit_id;");
+    $resultset = $db->query($core, "select first 1 sit_html, sit_filename from sites order by sit_id;");
     $result = $db->fetchArray($resultset);
+	$cssName = str_replace(".html", ".css", $result['SIT_FILENAME']);
     echo "<!DOCTYPE HTML>
           <html>
             <head>
               <link type='text/css' href='".$cssM->getCssFile()."' rel='stylesheet'>
-              <link type='text/css' href='style.php' rel='stylesheet'>
+              <link type='text/css' href='".$cssName."' rel='stylesheet'>
             </head>
             <body>
               <div id='site'>";

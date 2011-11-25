@@ -81,6 +81,14 @@ class CompositeManager extends Singleton{
 		}
 	}
 	
+	public function createWidget($moduleId,$name){
+		$widget = new Widget();
+		$widget->setName($name);
+		$widget->setModuleId($moduleId);
+		$widget->store();
+		return $widget->getId();
+	}
+	
 	public function getWidgetsForSiteMeta($site){
 		$core = Core::getInstance();
 		$db = $core->getDB();
@@ -210,6 +218,36 @@ class Widget {
 	
 	public function setSpace($space){
 		$this->space = (int)$space;
+	}
+	
+	public function store($checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		if ($this->id == null){
+			$this->id = $db->getSeqNext('WGT_GEN');
+		}
+		
+		if ($this->moduleId == null){
+			throw new WidgetException("Store: Cannot store a Widget that is not linked to a Module (\$moduleId)");
+		}
+		
+		$stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_SPACE)
+					VALUES (?,?,?,?,?) MATCHING (WGT_ID) ;";
+	    $db->query($core,$stmnt,array($this->id,$this->name,$this->siteId,$this->moduleId,$this->space));
+	    return;
+	}
+	
+	public function delete($checkRight=true){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		if($this->id == null){
+			throw new WidgetException("Delete: Cannot delete a Widget that does not exist in database");
+		}
+		
+		$stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;";
+		$db->query($core,$stmnt,array($this->id));
 	}
 }
 	
