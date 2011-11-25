@@ -52,7 +52,7 @@ class TemplateManager extends Singleton{
 		$template = new Template();
 		$manifestRaw = file_get_contents("../web/manifest.json");
 		if ($manifestRaw == false){
-			throw new ModuleException("InstallationError: $moduleId is not a valid Scoville Module");
+			throw new ModuleException("InstallationError: The manifest is not a valid Scoville Template");
 			return;
 		}
 		$manifest = json_decode($manifestRaw);
@@ -85,8 +85,8 @@ class Template {
 		$sitesToSelect = array();
 		
 		foreach ($this->manifest->sites as $site){
-			if (preg_match("/^[\w_-]*.html$/",$site->filename)){
-				$siteString[] = $site->filename;
+			if (preg_match('/^[\w_-]*.html$/',$site->filename)){
+				$sitesToSelect[] = $site->filename;
 			}else{
 				error_log("TemplateSystem//Warning: Site has been ignored due to suspicious filename: ".$site->filename);
 			}
@@ -99,15 +99,16 @@ class Template {
 		while($set = $db->fetchArray($res)){
 			$siteIds[] = $set['SIT_ID'];
 		}
-		
-		if (!$tryToMap){
-			$stmnt = "UPDATE WIDGETS SET WGT_SPACE = NULL WHERE WGT_SIT_ID IN (".join(",",$siteIds).") ;";
+		if (count($siteIds)>0){
+			if (!$tryToMap){
+				$stmnt = "UPDATE WIDGETS SET WGT_SPACE = NULL WHERE WGT_SIT_ID IN (".join(",",$siteIds).") ;";
+				$db->query($core,$stmnt);
+			}
+			$stmnt = "DELETE FROM SITES WHERE SIT_ID IN (".join(",",$siteIds).") ;";
+			$db->query($core,$stmnt);
+			$stmnt = "UPDATE WIDGETS SET WGT_SIT_ID = NULL WHERE WGT_SIT_ID IN (".join(",",$siteIds).") ;";
 			$db->query($core,$stmnt);
 		}
-		$stmnt = "DELETE FROM SITES WHERE SIT_ID IN (".join(",",$siteIds).") ;";
-		$db->query($core,$stmnt);
-		$stmnt = "UPDATE WIDGETS SET WGT_SIT_ID = NULL WHERE WGT_SIT_ID IN (".join(",",$siteIds).") ;";
-		$db->query($core,$stmnt);
 		unlink("../web/manifest.json");
 	}
 	
@@ -153,7 +154,7 @@ class Template {
 	public function getSiteSpaces($sitedata){
 		$spaceId = 1;
 		while(true){
-			if (1 == preg_match('<\s*div[^>]*id\s*=\s*"s'.$spaceId.'"[^>]*>',$sitedata)) {
+			if (1 == preg_match('/<\s*div[^>]*id\s*=\s*"s'.$spaceId.'"[^>]*>/',$sitedata)) {
 				$spaceId++;
 			}else{
 				break;
@@ -166,7 +167,10 @@ class Template {
 		if ($this->installed){
 			throw new TemplateException("Installation: This template is already installed!");
 		}
-		$currentTemplate = $this->createCurrentInstalled();
+		
+		$core = Core::getInstance();
+		$templateM = $core->getTemplateManager();
+		$currentTemplate = $templateM->createCurrentInstalled();
 		$currentTemplate->uninstall($tryToMap, $checkRight);
 		
 		$this->temporaryUnpack();
@@ -203,6 +207,7 @@ class Template {
 			$htmlBlob = $db->createBlob($sitedata);
 			$db->query($core,$stmnt,array($site->name, $site->desc, $site->filename, $htmlBlob, $spaces, isset($site->default)?1:0));
 		}
+		copy("/tmp/".$this->getTemporaryFolder()."/manifest.json", "../web/manifest.json");
 		return;
 	}
 	
