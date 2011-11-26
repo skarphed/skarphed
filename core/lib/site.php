@@ -31,7 +31,7 @@ class CompositeManager extends Singleton{
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
-		$stmnt = "SELECT SIT_ID, SIT_NAME, SIT_DESCRIPTION, SIT_SPACES, SIT_FILENAME ;";
+		$stmnt = "SELECT SIT_ID, SIT_NAME, SIT_DESCRIPTION, SIT_SPACES, SIT_FILENAME FROM SITES WHERE SIT_ID = ? ;";
 		$res=$db->query($core,$stmnt,array($siteId));
 		if($set = $db->fetchArray($res)){
 			$site = new Site();
@@ -81,7 +81,18 @@ class CompositeManager extends Singleton{
 		}
 	}
 	
-	public function createWidget($moduleId,$name){
+	public function createWidget($moduleName,$name){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		$stmnt = "SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ";
+		$res = $db->query($core,$stmnt, array($moduleName));
+		if ($set = $db->fetchArray($res)){
+			$moduleId = $set['MOD_ID'];
+		}else{
+			throw new WidgetException("GetWidgetsOfModule: This module is not installed or does not exist");
+		}
+		
 		$widget = new Widget();
 		$widget->setName($name);
 		$widget->setModuleId($moduleId);
@@ -105,6 +116,28 @@ class CompositeManager extends Singleton{
 		}
 		return $ret;
 	} 
+	
+	public function getWidgetsOfModule($moduleName){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		$stmnt = "SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ";
+		$res = $db->query($core,$stmnt, array($moduleName));
+		if ($set = $db->fetchArray($res)){
+			$moduleId = $set['MOD_ID'];
+		}else{
+			throw new WidgetException("GetWidgetsOfModule: This module is not installed or does not exist");
+		}
+		
+		$ret = array();
+		$stmnt = "SELECT WGT_ID, WGT_NAME, WGT_MOD_ID, WGT_SPACE FROM WIDGETS WHERE WGT_MOD_ID = ? ;";
+		$res = $db->query($core,$stmnt,array($moduleId));
+		while($set = $db->fetchArray($res)){
+			$ret[] = array("id"=>$set['WGT_ID'],"name"=>$set['WGT_NAME'],"mouledId"=>$moduleId, 
+											"space"=>$set['WGT_SPACE'], "siteId"=>$set['WGT_SIT_ID']);
+		}
+		return $ret;
+	}
 }
 
 class Site {
@@ -175,11 +208,14 @@ class Site {
 	}
 	
 	public function getMeta($withMinimap=true){
+		$core = Core::getInstance();
+		$compositeM = $core->getCompositeManager();
+		
 		$ret=array();
 		$ret["id"]=$this->id;
 		$ret["name"]=$this->name;
 		$ret["description"]=$this->description;
-		$ret["spaces"]=Widget::getWidgetsForSiteMeta($this);
+		$ret["spaces"]=$compositeM->getWidgetsForSiteMeta($this);
 		$minimapfile = "minimap_".str_replace(".html", "", $this->filename).".png";
 		$ret["minimap"] = base64_encode(file_get_contents("../web/".$minimapfile));
 		return $ret;

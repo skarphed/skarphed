@@ -117,6 +117,24 @@ qx.Class.define("scoville_admin.Server",
 			}
 		},
 		
+		createGetSitesHandler: function(me){
+			return function(result,exc){
+				if (exc == null){
+					if (result === false){
+						return;
+					}
+					me.sites = new scoville_admin.Sites(me.app);
+					me.add(me.sites);
+					for (var i = 0; i < result.length; i++ ){
+						var site = new scoville_admin.Site(me.app, result[i])
+						me.sites.add(site);
+					}
+				}else{
+					alert(exc);
+				}
+			}
+		},
+		
 		createAuthenticationHandler : function(me){
 			var f = function(result,exc){
 				if (exc == null){
@@ -164,6 +182,10 @@ qx.Class.define("scoville_admin.Server",
 						if (true){
 							me.templates = new scoville_admin.Template(me.app);
 							me.add(me.templates);
+						}
+						
+						if (true){
+							me.app.createRPCObject(me.ip).callAsync(me.createGetSitesHandler(me),"getSites");
 						}
 					    
 						

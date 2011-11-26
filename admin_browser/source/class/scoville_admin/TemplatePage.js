@@ -48,7 +48,7 @@ qx.Class.define("scoville_admin.TemplatePage",{
 			
 			this.uploadBox = new qx.ui.groupbox.GroupBox("Upload new Template", "scoville_admin/template.png");
 			this.uploadBox.setLayout(new qx.ui.layout.VBox());
-			this.uploadForm = new uploadwidget.UploadForm('uploadfrm',"http://"+this.template.getServer().getIp()+"/rpc/upload.php");
+			this.uploadForm = new uploadwidget.UploadForm('uploadfrm',"http://"+this.template.getServer().getIp()+"/rpc/post.php?a=template");
 			this.uploadForm.setLayout(new qx.ui.layout.Basic());
 			this.uploadForm.setParameter('rm','upload');
 			this.uploadButton = new uploadwidget.UploadButton('uploadfile','Choose Template-Archive',"scoville_admin/template.png");
@@ -88,6 +88,21 @@ qx.Class.define("scoville_admin.TemplatePage",{
 			this.add(this.currentBox);
 			this.add(this.uploadBox);
 			this.add(this.repoBox);
+			
+			this.app.createRPCObject(this.template.getServer().getIp()).callAsync(this.getCurrentTemplateCallback(this),"getCurrentTemplate");
+			
+		},
+		
+		getCurrentTemplateCallback:function(me){
+			return function(result,exc){
+				if (exc == null){
+					me.currentNameDisplay.setValue(result.name);
+					me.currentDescriptionDisplay.setValue(result.description);
+					me.currentAuthorDisplay.setValue(result.author);
+				}else{
+					alert(exc);
+				}
+			}
 		},
 		
 		sendListener : function(me){
@@ -98,10 +113,8 @@ qx.Class.define("scoville_admin.TemplatePage",{
 		
 		uploadListener : function(me){
 			return function(e){
-				alert("KOMPLETTT!");
 				me.uploadForm.clear();
-				var response = me.uploadForm.getIframeTextContent();
-				alert("RESPONSE: "+response);
+				me.app.createRPCObject(me.template.getServer().getIp()).callAsync(me.getCurrentTemplateCallback(me),"getCurrentTemplate");
 			}
 		},
 		
