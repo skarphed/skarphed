@@ -8,6 +8,7 @@ qx.Class.define("scoville_admin.Site",{
 		this.setIcon("scoville_admin/site.png");
 		this.setLabel(this.data.name);
 		this.addListener('dblclick',this.openSitePage(this))
+		
 	},
 	
 	members: {

@@ -157,11 +157,6 @@ qx.Class.define("scoville_admin.Server",
 						me.modules.setIcon('scoville_admin/module.png');
 						me.roles.setIcon('scoville_admin/role.png');
 						
-						
-						me.add(me.sites);
-						
-						
-						
 						if (me.rightsForSession.indexOf('scoville.users.view')!=-1){
 					        me.app.createRPCObject(me.ip).callAsync(me.createGetUsersHandler(me),"getUsers");
 					    }
