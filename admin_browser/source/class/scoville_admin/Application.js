@@ -95,6 +95,26 @@ qx.Class.define("scoville_admin.Application",
     	}
     },
     
+    dragStartHandler : function(me){
+    	return function(evt){
+    		if (me.tree.getSelection()[0].classname == "scoville_admin.Widget"){
+    			evt.addType("widget");
+	    		evt.addAction("copy");
+				evt.addAction("move");
+				evt.addAction("alias");
+    		}
+    	}
+    },
+    
+    dropRequest : function(me){
+		return function(evt){
+			if (evt.getCurrentType("widget")){
+				evt.addData("widget", me.tree.getSelection()[0]);
+			}
+			return null;
+		} 
+	},
+    
     main : function()
     {
       // Call super class
@@ -128,7 +148,9 @@ qx.Class.define("scoville_admin.Application",
       this.testimg = new qx.ui.basic.Image("scoville_admin/config_header.png");
       
       this.tree = new qx.ui.tree.Tree();
-      
+      this.tree.addListener("dragstart", this.dragStartHandler(this));
+      this.tree.addListener("droprequest", this.dropRequest(this));
+      this.tree.setDraggable(true);
       
       
       // Document is the application root

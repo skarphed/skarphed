@@ -49,11 +49,20 @@ qx.Class.define("scoville_admin.SitePage",{
 			this.compBox.setLayout(new qx.ui.layout.Basic());
 			this.compLabel = new qx.ui.basic.Label("Please Drag a Widget into one of the empty Space-Slots to attach it to the Site");
 			this.compList = new qx.ui.tree.Tree();
+			this.compListRoot = new qx.ui.tree.TreeFolder();
+			this.compList.setRoot(this.compListRoot);
 			this.compList.setWidth(215);
 			this.compList.setHeight(300);
+			this.compList.setHideRoot(true);
+			this.compListRoot.setOpen(true);
 			this.compMinimap = new qx.ui.basic.Image();
-			this.compBox.add(this.compList,{top:10, left:10});
-			this.compBox.add(this.compMinimap,{top:10,left:235});
+			this.compBox.add(this.compLabel,{top:10, left:10});
+			this.compBox.add(this.compList,{top:30, left:10});
+			this.compBox.add(this.compMinimap,{top:30,left:235});
+				
+			for (element in this.site.data.spaces){
+				this.compListRoot.add(new scoville_admin.SpaceWidgetWrap(this.app,element,this.site.data.spaces[element],this.compList, this.site));
+			}
 				
 			this.add(this.heading);
 			this.add(this.infoBox);

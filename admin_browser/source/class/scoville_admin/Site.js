@@ -14,6 +14,9 @@ qx.Class.define("scoville_admin.Site",{
 	members: {
 		app:null,
 		
+		getServer: function(){
+			return this.getParent().getParent();
+		},
 		
 		openSitePage: function (me){
 			return function(e){
