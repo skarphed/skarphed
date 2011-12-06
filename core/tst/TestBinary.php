@@ -4,7 +4,7 @@ require_once '../lib/core.php';
 
 use scv;
 
-class TestOperation extends PHPUnit_Framework_TestCase {
+class TestBinary extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
     protected function setUp() {
