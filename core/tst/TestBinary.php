@@ -11,7 +11,7 @@ class TestBinary extends PHPUnit_Framework_TestCase {
         $this->fixture = scv\Core::getInstance(); 
     }
     
-    protected function testCreateBinary() {
+    public function testCreateBinary() {
     	$bm = $this->fixture->getBinaryManager();
     	$bin = $bm->create('binary',"wertfuyhiertfvygbuhrtfvygbuhdcrtfvygbuhrtfvygbuhndcrfygbuhnjidcrfvuhndcrtfgvybuhnjitfvygbuhnjimcfyguhjifgvhnjtfvygbuhnjmictfvygbuhn",null);
     	$this->assertEquals(null,$bin->getId());
