@@ -12,6 +12,11 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     }
     
     public function testCreateBinary() {
+    	$userM= $this->fixture->getUserManager();
+    	$userM->createUser("currentSessionUser","testpassword",null);
+    	$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+    	$_SESSION['loggedin'] = "true";
+    	
     	$bm = $this->fixture->getBinaryManager();
     	$bin = $bm->create('binary',"wertfuyhiertfvygbuhrtfvygbuhdcrtfvygbuhrtfvygbuhndcrfygbuhnjidcrfvuhndcrtfgvybuhnjitfvygbuhnjimcfyguhjifgvhnjtfvygbuhnjmictfvygbuhn",null);
     	$this->assertEquals(null,$bin->getId());
@@ -20,12 +25,34 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     	$temp = $bin->getId();
     	$bin = $bm->load($temp);
     	$this->assertEquals("wertfuyhiertfvygbuhrtfvygbuhdcrtfvygbuhrtfvygbuhndcrfygbuhnjidcrfvuhndcrtfgvybuhnjitfvygbuhnjimcfyguhjifgvhnjtfvygbuhnjmictfvygbuhn",$bin->getData());
+    	
+    	$_SESSION['user']->delete(false);
+    	unset($_SESSION['user']);
+    	unset($_SESSION['loggedin']);
     }
 	
 	protected function tearDown(){
 		$db = $this->fixture->getDB();
 		$db->query($this->fixture,"DELETE FROM binarys;");
 		$db->commit();
+		try{
+			if (isset($_SESSION['user']) and $_SESSION['user'] != null and get_class($_SESSION['user']) == 'scv\User'){
+				$_SESSION['user']->delete(false);
+			}
+		}catch(Exception $e){
+		}
+		try{
+			if (isset($_SESSION['user'])){
+				unset($_SESSION['user']);
+			}
+		}catch(Exception $e){
+		}
+		try{
+			if (isset($_SESSION['loggedin'])){
+				unset($_SESSION['loggedin']);
+			}
+		}catch(Exception $e){
+		}
 	}
 	
 }
