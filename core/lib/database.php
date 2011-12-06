@@ -46,13 +46,6 @@ class Database {
 		$this->password = $pw; 
 	}
 	
-	public function createBlob($data) {
-		$blh = ibase_blob_create($this->connection);
-		ibase_blob_add($blh, $data);
-		$blobid = ibase_blob_close($blh);
-		return $blobid;
-	}
-	
 	public function connect() {
 		if ($this->user == null or $this->ip == null or $this->dbname == null or $this->password == null){
 			throw new DatabaseException ('The Parameters for Connection have not been set');
