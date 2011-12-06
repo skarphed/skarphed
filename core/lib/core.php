@@ -118,7 +118,7 @@ class Core extends Singleton implements IModule{
 		return $this->composite;
 	}
 	
-	public function getBinary() {
+	public function getBinaryManager() {
 		if(!isset($this->binary)) {
 			$this->binary = BinaryManager::getInstance();
 		}
