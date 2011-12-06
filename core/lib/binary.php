@@ -10,7 +10,7 @@ class BinaryManager extends Singleton {
 	
 	public static function getInstance(){
 		if (BinaryManager::$instance==null){
-			BinaryManager::$instance = new ModuleManager();
+			BinaryManager::$instance = new BinaryManager();
 			BinaryManager::$instance->init();
 		}
 		return BinaryManager::$instance;
