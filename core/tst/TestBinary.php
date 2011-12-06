@@ -30,6 +30,32 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     	unset($_SESSION['user']);
     	unset($_SESSION['loggedin']);
     }
+    
+    public function testChangeBinary() {
+    	$userM= $this->fixture->getUserManager();
+    	$userM->createUser("currentSessionUser","testpassword",null);
+    	$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+    	$_SESSION['loggedin'] = "true";
+    	 
+    	$bm = $this->fixture->getBinaryManager();
+    	$bin = $bm->create('binary',"wertfuyhiertfvygbuhrtfvygbuhdcrtfvygbuhrtfvygbuhndcrfygbuhnjidcrfvuhndcrtfgvybuhnjitfvygbuhnjimcfyguhjifgvhnjtfvygbuhnjmictfvygbuhn",null);
+    	$this->assertEquals(null,$bin->getId());
+    	$bin->store();
+    	$this->assertNotEquals(null,$bin->getId());
+    	$temp = $bin->getId();
+    	$bin = $bm->load($temp);
+    	$this->assertEquals("wertfuyhiertfvygbuhrtfvygbuhdcrtfvygbuhrtfvygbuhndcrfygbuhnjidcrfvuhndcrtfgvybuhnjitfvygbuhnjimcfyguhjifgvhnjtfvygbuhnjmictfvygbuhn",$bin->getData());
+    	$bin->setMime("text");
+    	$bin->setData("bla bla bla text");
+    	$bin->store();
+    	$bin = $bm->load($temp);
+    	$this->assertEquals("text",$bin->getMime());
+    	$this->assertEquals("bla bla bla text",$bin->getData());
+    	 
+    	$_SESSION['user']->delete(false);
+    	unset($_SESSION['user']);
+    	unset($_SESSION['loggedin']);
+    }
 	
 	protected function tearDown(){
 		$db = $this->fixture->getDB();
