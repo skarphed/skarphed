@@ -133,7 +133,7 @@ class Image extends Binary {
 		}
 }
 
-$binaryobject = BinaryManager::loadmd5($_GET['hs']);
-header("Content-type: $binaryobject->getMime()");
-echo $binaryobject->getData();
+// $binaryobject = BinaryManager::loadmd5($_GET['hs']);
+// header("Content-type: $binaryobject->getMime()");
+// echo $binaryobject->getData();
 ?>
