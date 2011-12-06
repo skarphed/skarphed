@@ -102,7 +102,7 @@ class Binary {
 			$userid = $core->getUserManager()->getSessionUserId();
 			$md5 = md5($this->data);
 			$dataid = $con->createBlob($this->data);
-			$con->query($core, "insert into binarys (bin_id, bin_mime, bin_usr_id_owner, bin_usr_id_lastchange, bin_date, bin_rig_id, bin_md5, bin_data)
+			$con->query($core, "insert into binarys (bin_id, bin_mime, bin_usr_id_owner, bin_usr_id_lastchange, bin_date_lastchange, bin_rig_id, bin_md5, bin_data)
 											values (?, ?, ?, ?, current_timestamp, ?, ?, ?);", array($this->id, $this->mime, $userid, $userid, $this->right, $md5, $dataid));
 		} else {
 			$md5 = md5($this->data);
