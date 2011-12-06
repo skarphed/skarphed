@@ -188,7 +188,7 @@ CREATE TABLE OPERATIONDATA
   constraint fk_operationdata_1 foreign key (opd_ope_id) references operaions (ope_id) on update cascade on delete cascade
 );
 
-create table binary
+create table binarys
 (
   bin_id int,
   bin_mime varchar(64),
@@ -196,9 +196,14 @@ create table binary
   bin_usr_id_lastchange int,
   bin_date_lastchange timestamp,
   bin_rig_id int,
+  bin_md5 varchar(32),
   bin_data blob sub_type 0,
   constraint bin_pk primary key (bin_id),
   constraint bin_fk_usr_owner foreign key (bin_usr_id_owner) references users (usr_id) on update cascade on delete set null,
   constraint bin_fk_usr_lastchange foreign key (bin_usr_id_lastchange) references users (usr_id) on update cascade on delete set null,
-  constraint bin_fk_rig foreign key (bin_rig_id) references rights (rig_id) on update cascade on delete 
+  constraint bin_fk_rig foreign key (bin_rig_id) references rights (rig_id) on update cascade on delete cascade
+);
+
+create table dual (
+    d varchar(1)
 );

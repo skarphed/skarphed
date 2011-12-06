@@ -238,6 +238,20 @@ class Database {
 		$row = ibase_fetch_row($cursor);
 		return $row[0];
 	}
+	
+	/**
+	 * 
+	 * Create blob handler from $data for use with insert and update statements
+	 * @param binary $data
+	 * @return blobid
+	 */
+	
+	public function createBlob($data) {
+		$blh = ibase_blob_create($this->connection);
+		ibase_blob_add($blh, $data);
+		$blobid = ibase_blob_close($blh);
+		return $blobid;
+	}
 		
 	//DEBUG: Method for database-configurationinfo
 	public function getInfo(){

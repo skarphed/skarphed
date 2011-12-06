@@ -11,7 +11,6 @@ function scvrendermodules(obj) {
     if(typeof(obj.modules[i].j) != "undefined") {
       if(typeof(scripttags[obj.modules[i].s]) == "object") {
           eval("s" + obj.modules[i].s + "w" + scripttags[obj.modules[i].s][1].id + ".destroy()");
-//          eval("s" + obj.modules[i].s + "w" + scripttags[obj.modules[i].s][1].id + " = null");
           document.body.removeChild(scripttags[obj.modules[i].s][0]);
       }
       var script = document.createElement("script");
@@ -65,7 +64,6 @@ function scvajax() {
   this.get = function(me) {
     return function(){
       if(me.request.readyState == 4) {
-//        alert(me.request.responseText);
         var obj = JSON.parse(me.request.responseText);
         switch(obj.t) {
           case "m":
