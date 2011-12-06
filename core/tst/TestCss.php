@@ -1,6 +1,7 @@
 <?php
 require_once '/usr/share/php/PHPUnit/Framework/TestCase.php';
 require_once '../lib/core.php';
+require_once '../lib/css.php';
 
 use scv;
 
@@ -78,7 +79,35 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(null, $fetchedset->getValue("div","notsetvalue"));
 		$fetchedset->delete();
 	}
-
+	
+	public function testCssParser(){
+		$DATA = " .adsf { font-size:1px;\r\n
+						color:#af0;
+						border : 1px solid silver ;}
+				  #blub { font-family: Verdana ; }";
+	    $RESULTDATA = array(
+			array("s"=>".adsf","k"=>"font-size","v"=>"1px"),
+			array("s"=>".adsf","k"=>"color","v"=>"#af0"),
+			array("s"=>".adsf","k"=>"border","v"=>"1px solid silver"),
+			array("s"=>"#blub","k"=>"font-family","v"=>"Verdana")
+		);
+		$parser = new scv\CssParser($DATA);
+		$this->assertEquals("1px",$parser->getValue(".adsf","font-size"));
+		$this->assertEquals("#af0",$parser->getValue(".adsf","color"));
+		$this->assertEquals("1px solid silver",$parser->getValue(".adsf","border"));
+		$this->assertEquals("Verdana",$parser->getValue("#blub","font-family"));
+		$parser2 = new scv\CssParser();
+		$parser2->parseData($DATA);
+		$this->assertEquals("1px",$parser2->getValue(".adsf","font-size"));
+		$this->assertEquals("#af0",$parser2->getValue(".adsf","color"));
+		$this->assertEquals("1px solid silver",$parser2->getValue(".adsf","border"));
+		$this->assertEquals("Verdana",$parser2->getValue("#blub","font-family"));
+		foreach($parser2 as $parserSet){
+			$this->assertContains($parserSet,$RESULTDATA);
+		}
+		
+	}
+	
 	protected function tearDown(){
 		if (isset($_SESSION['user']) and get_class($_SESSION['user']) == 'scv\User'){
 			$_SESSION['user']->delete(false);

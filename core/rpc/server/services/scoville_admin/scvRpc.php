@@ -308,5 +308,81 @@ class class_scvRpc {
 	
 	return $operations;
   }
+  
+  function method_getSites($params,$error){
+  	$core = scv\Core::getInstance();
+  	$compositeM = $core->getCompositeManager();	
+	
+  	return $compositeM->getSitesMeta();
+  }
+  
+  function method_getSite($params,$error){
+  	$siteId = $params[0];
+	
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();	
+	$site = $compositeM->getSite($siteId);
+	
+	return $site->getMeta();
+  }
+  
+  function method_assignWidgetToSpace($params,$error){
+  	$siteId = $params[0];
+	$space = $params[1];
+	$widgetId = $params[2];
+	
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();	
+	$site = $compositeM->getSite($siteId);
+	$widget = $compositeM->getWidget($widgetId);
+	$site->assignWidget($space,$widget);
+	return;
+  }
+  
+  function method_removeWidgetFromSpace($params,$error){
+  	$siteId = $params[0];
+	$space = $params[1];
+	
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();
+	$site = $compositeM->getSite($siteId);
+	$site->removeWidget($space);
+	return;
+  }
+  
+  function method_getCurrentTemplate($params,$error){
+  	$core = scv\Core::getInstance();
+	$templateM = $core->getTemplateManager();
+	$currentTemplate = $templateM->createCurrentInstalled();
+	return $currentTemplate->getManifest();
+  }
+  
+  function method_createWidget($params,$error){
+  	$moduleName = $params[0];
+	$name = $params[1];
+	
+  	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();
+	return $compositeM->createWidget($moduleName,$name);
+	
+  }
+  
+  function method_deleteWidget($params,$error){
+  	$widgetId = $params[0];
+	
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();
+	$widget = $compositeM->getWidget($widgetId);
+	$widget->delete();
+	return;
+  }
+  
+  function method_getWidgetsOfModule($params,$error){
+  	$moduleName = $params[0];
+	
+	$core = scv\Core::getInstance();
+	$compositeM = $core->getCompositeManager();
+	return $compositeM->getWidgetsOfModule($moduleName);	
+  }
 }
 ?>

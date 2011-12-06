@@ -2,7 +2,6 @@
 namespace scv;
 
 include_once "core.php";
-
 class ModuleException extends \Exception{}
 
 interface IModule{
@@ -131,9 +130,9 @@ class ModuleManager extends Singleton {
 			return;
 		}
 				
-		$moduleNumber = ModuleManager::registerModule($manifest);
-		ModuleManager::createDatabaseTables($manifest->tables, $moduleNumber);
-		ModuleManager::createRights($manifest, $moduleNumber); //TODO: Implementiere createRights
+		$moduleNumber = $this->registerModule($manifest);
+		$this->createDatabaseTables($manifest->tables, $moduleNumber);
+		$this->createRights($manifest, $moduleNumber); //TODO: Implementiere createRights
 		
 		//Cleanup
 		unlink('/tmp/'.$moduleId.".tar.gz");
@@ -258,9 +257,9 @@ class ModuleManager extends Singleton {
 			return;
 		}
 				
-		ModuleManager::removeDatabaseTables($manifest->tables, $moduleNumber);
-		ModuleManager::removeRights($manifest, $moduleNumber); //TODO: Implementiere createRights
-		$moduleNumber = ModuleManager::unregisterModule($manifest);
+		$this->removeDatabaseTables($manifest->tables, $moduleNumber);
+		$this->removeRights($manifest, $moduleNumber); //TODO: Implementiere createRights
+		$moduleNumber = $this->unregisterModule($manifest);
 		
 		//Delete module on file system
 		$core->recursiveDelete('../'.$modulesPath.$moduleId);

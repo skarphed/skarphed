@@ -50,6 +50,18 @@ qx.Class.define("scoville_admin.TreeContextMenu",{
 			}
 		},
 		
+		createWidget: function(module){
+			return function(e){
+				module.createWidget();
+			}
+		},
+		
+		deleteWidget: function(widget){
+			return function(e){
+				widget.del();
+			}
+		},
+		
 		createAppearListener: function(me){
 			return function(){
 				var treeobject = me.getOpener().getSelection()[0];
@@ -63,7 +75,19 @@ qx.Class.define("scoville_admin.TreeContextMenu",{
 					    button.addListener('execute',this.serverRemove(treeobject));
 						this.add(button);
 						break;
+					
+					case "scoville_admin.Module":
+						button = new qx.ui.menu.Button('Create Widget',"scoville_admin/add.png");
+						button.addListener('execute',this.createWidget(treeobject));
+						this.add(button);
+						break;
 						
+					case "scoville_admin.Widget":
+						button = new qx.ui.menu.Button('Delete Widget',"scoville_admin/add.png");
+						button.addListener('execute',this.deleteWidget(treeobject));
+						this.add(button);
+						break;
+					
 				    case "scoville_admin.User":
 				    	button = new qx.ui.menu.Button('Remove User',"scoville_admin/delete.png");
 				    	button.addListener('execute',this.userRemove(treeobject));

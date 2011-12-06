@@ -674,4 +674,122 @@ class CssPropertySet {
 		$this->type = $set->type;
 		$this->properties = $set->properties;
 	}
+    
+	/**
+	 * Set Values from Parser
+	 * 
+	 * Iterates through the Datasets of a CssParser and ads it's values to 
+	 * this CssPropertySet. If values exist, they will be overridden
+	 */
+	public function setFromParser($cssParser){
+		foreach($cssParser as $parsedSet){
+			$this->editValue($parsedSet["s"], $parsedSet["k"], $parsedSet["v"]);
+		}
+	}
 }
+
+/**
+ * The CSS Parser
+ * 
+ * Used to Parse generic CSS files into iterable datasets of the following style:
+ * { "s":selector,"k":key (Css-tag) , "v": value}
+ */
+class CssParser implements \Iterator{
+	private $cursor = 0;
+	private $rawData = null;
+	private $parsedStructure = array();
+	
+	/**
+	 * Constructor
+	 * 
+	 * Optionally takes CssData (may be directly read from file)
+	 * 
+	 * @param string $cssData="" The CSS-Data to parse
+	 */
+    public function __construct($cssData=""){
+    	$this->rawData = $cssData;
+		$this->parse();
+		$this->cursor = 0;
+	}
+	
+	/**
+	 * Parse Data
+	 * 
+	 * Loads the CssParser with data parsed from the given CSS-String
+	 * 
+	 * @param string $cssData The CSS-Data to parse
+	 */
+	public function parseData($cssData){
+		$this->rawData = $cssData;
+		$this->parse();
+	}
+	
+	/**
+	 * Parse
+	 * 
+	 * Actually parses the data (internal)
+	 */
+	private function parse(){
+		$selectorPassages = array();
+		$currentSelector = array();
+		$matchedProperties = array();
+		preg_match_all("/[#.]?[\w]+\s*\{(\s*[A-Za-z\-]*\s*:\s*[\s\w#]*\s*;\s*)*}/",$this->rawData,$selectorPassages,PREG_SET_ORDER);
+		foreach($selectorPassages as $selectorPassage){
+			preg_match("/[#.]?[\w]+\s*\{/",$selectorPassage[0],$currentSelector);
+			$selector = str_replace("{","",$currentSelector[0]);
+			$selector = trim($selector);
+			preg_match_all("/\s*[A-Za-z\-]*\s*:\s*[\s\w#]*\s*;\s*/m",$selectorPassage[0],$matchedProperties);
+			foreach($matchedProperties as $matchedProperty){
+				foreach($matchedProperty as $singleProperty){
+					$splitted = explode(":",$singleProperty);
+					$property = trim($splitted[0]);
+					$value = trim(str_replace(";","",$splitted[1]));
+					array_push($this->parsedStructure,array("s"=>$selector,"k"=>$property,"v"=>$value));
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Get Value
+	 * 
+	 * Return a single value of the parsed CSS-Sets.
+	 * The set is determined by giving the Selector and The Csstag
+	 * 
+	 * @param string $selector The Selector to search for
+	 * @param string $key The CSS-Tag to search for inside the Selector
+	 * @return string The CSS-Value
+	 */
+	public function getValue($selector,$key){
+		$sel = trim($selector);
+		$key = trim($key);
+		foreach($this->parsedStructure as $property){
+			if ($property["s"]==$sel and $property["k"]==$key){
+				return $property["v"];
+			}	
+		}
+		return null;
+	}
+	
+	public function rewind(){
+		$this->cursor = 0;
+	}
+	
+	public function current(){
+		return $this->parsedStructure[$this->cursor];
+	}
+	
+	public function key(){
+		return $this->cursor;
+	}
+	
+	public function next(){
+		++$this->cursor;
+	}
+	
+	public function valid(){
+		return isset($this->parsedStructure[$this->cursor]);
+	}
+}
+	
+
