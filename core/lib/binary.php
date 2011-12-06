@@ -112,7 +112,8 @@ class Binary {
 				$resultset = $con->query($core, "select 1 from binarys where bin_md5 = ? and bin_mime = ? and bin_rig_id = ?", array($md5, $this->mime, $this->right));
 			}
 			if(!$con->fetchArray($resultset)) {
-				$con->query($core, "update binarys set bin_md5 = ?, bin_mime = ?, bin_rig_id = ? where bin_id = ?", array($md5, $this->mime, $this->right, $this->id));
+				$dataid = $con->createBlob($this->data);
+				$con->query($core, "update binarys set bin_md5 = ?, bin_mime = ?, bin_rig_id = ?, bin_data = ? where bin_id = ?", array($md5, $this->mime, $this->right, $dataid, $this->id));
 			}
 		}
 	}
