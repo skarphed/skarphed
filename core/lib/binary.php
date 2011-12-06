@@ -51,7 +51,7 @@ class Binary {
 	private $data = null;
 	private $right = null;
 	
-	public function __construct($id, $mime, $data, $right) {
+	public function __construct($id, $mime, $data, $right = null) {
 		$this->id = $id;
 		$this->mime = $mime;
 		$this->data = $data;
