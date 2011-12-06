@@ -56,6 +56,48 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     	unset($_SESSION['user']);
     	unset($_SESSION['loggedin']);
     }
+    
+    public function testBinaryMeta() {
+    	$userM= $this->fixture->getUserManager();
+    	$userM->createUser("currentSessionUser","testpassword",null);
+    	$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+    	$_SESSION['loggedin'] = "true";
+    	 
+    	$bm = $this->fixture->getBinaryManager();
+    	$bin = $bm->create("binary","abc",null);
+    	$this->assertEquals(null,$bin->getId());
+    	$bin->store();
+    	$this->assertNotEquals(null,$bin->getId());
+    	$temp = $bin->getId();
+    	$bin = $bm->load($temp);
+    	$this->assertEquals("abc",$bin->getData());
+    	$this->assertEquals(3,$bin->getSize());
+    	$this->assertEquals(null,$bin->getRight());
+    	$this->assertEquals($temp,$bin->getId());
+    	 
+    	$_SESSION['user']->delete(false);
+    	unset($_SESSION['user']);
+    	unset($_SESSION['loggedin']);
+    }
+    
+    public function testLoadMD5() {
+    	$userM= $this->fixture->getUserManager();
+    	$userM->createUser("currentSessionUser","testpassword",null);
+    	$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+    	$_SESSION['loggedin'] = "true";
+    	 
+    	$bm = $this->fixture->getBinaryManager();
+    	$bin = $bm->create("binary","abc",null);
+    	$this->assertEquals(null,$bin->getId());
+    	$bin->store();
+    	
+    	$bin = $bm->loadmd5("900150983cd24fb0d6963f7d28e17f72");
+    	$this->assertEquals("abc",$bin->getData());
+    	 
+    	$_SESSION['user']->delete(false);
+    	unset($_SESSION['user']);
+    	unset($_SESSION['loggedin']);
+    }
 	
 	protected function tearDown(){
 		$db = $this->fixture->getDB();
