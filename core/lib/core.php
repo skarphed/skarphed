@@ -17,6 +17,7 @@ include_once "operation.php";
 include_once "template.php";
 include_once "site.php";
 include_once "rightmanagement.php";
+include_once "binary.php";
 
 session_start();
 
