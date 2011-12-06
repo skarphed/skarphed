@@ -41,6 +41,7 @@ class Core extends Singleton implements IModule{
 	private $operations = null;
 	private $templates = null;
 	private $composite = null;
+	private $binary = null;
 	
 	public function getName(){
 		return 'de.masterprogs.scoville.core';
@@ -114,6 +115,13 @@ class Core extends Singleton implements IModule{
 			$this->composite = CompositeManager::getInstance();
 		}
 		return $this->composite;
+	}
+	
+	public function getBinary() {
+		if(!isset($this->binary)) {
+			$this->binary = BinaryManager::getInstance();
+		}
+		return $this->binary;
 	}
 	
 	public function renderModule($modulename, $moduleInstanceId){

@@ -5,16 +5,57 @@ include_once "core.php";
 
 class BinaryException extends \Exception {}
 
+class BinaryManager extends Singleton {
+	private static $instance = null;
+	
+	public static function getInstance(){
+		if (BinaryManager::$instance==null){
+			BinaryManager::$instance = new ModuleManager();
+			BinaryManager::$instance->init();
+		}
+		return BinaryManager::$instance;
+	}
+	
+	protected function init(){}
+	
+	public function create($mime, $data, $right) {
+		return new Binary(null, $mime, $data, $right);
+	}
+	
+	public function load($id) {
+		$core =  Core::getInstance();
+		$con = $core->getDB();
+		$resultset = $con->query($core, "select bin_mime, bin_data from binarys where bin_id = ?", array($id));
+		if($result = $con->fetchArray($resultset)) {
+			return new Binary($id, $result['BIN_MIME'], $result['BIN_DATA']);
+		} else {
+			throw new BinaryException("Data ID not found!");
+		}
+	}
+		
+	public function loadmd5($md5) {
+		$core =  Core::getInstance();
+		$con = $core->getDB();
+		$resultset = $con->query($core, "select bin_id, bin_mime, bin_data from binarys where bin_md5 = ?", array($md5));
+		if($result = $con->fetchArray($resultset)) {
+			return new Binary($result['BIN_ID'], $result['BIN_MIME'], $result['BIN_DATA']);
+		} else {
+				throw new BinaryException("Data ID not found!");
+		}
+	}
+}
+
 class Binary {
 	private $id = null;
 	private $mime = null;
 	private $data = null;
 	private $right = null;
 	
-	public function __construct($id, $mime, $data) {
+	public function __construct($id, $mime, $data, $right) {
 		$this->id = $id;
 		$this->mime = $mime;
 		$this->data = $data;
+		$this->right = $right;
 	}
 	
 	public function getId() {
@@ -75,28 +116,6 @@ class Binary {
 			}
 		}
 	}
-	
-	public static function load($id) {
-		$core =  Core::getInstance();
-		$con = $core->getDB();
-		$resultset = $con->query($core, "select bin_mime, bin_data from binarys where bin_id = ?", array($id));
-		if($result = $con->fetchArray($resultset)) {
-			return new Binary($id, $result['BIN_MIME'], $result['BIN_DATA']);
-		} else {
-			throw new BinaryException("Data ID not found!");
-		}
-	}
-	
-	public static function loadmd5($md5) {
-		$core =  Core::getInstance();
-		$con = $core->getDB();
-		$resultset = $con->query($core, "select bin_id, bin_mime, bin_data from binarys where bin_md5 = ?", array($md5));
-		if($result = $con->fetchArray($resultset)) {
-			return new Binary($result['BIN_ID'], $result['BIN_MIME'], $result['BIN_DATA']);
-		} else {
-			throw new BinaryException("Data ID not found!");
-		}
-	}
 }
 	
 class Image extends Binary {
@@ -114,8 +133,7 @@ class Image extends Binary {
 		}
 }
 
-// $binaryobject = Binary::loadmd5($_GET['hs']);
-// header("Content-type: $binaryobject->getMime()");
-// echo $binaryobject->getData();
-Binary::test();
+$binaryobject = Binary::loadmd5($_GET['hs']);
+header("Content-type: $binaryobject->getMime()");
+echo $binaryobject->getData();
 ?>
