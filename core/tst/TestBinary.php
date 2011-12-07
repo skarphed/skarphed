@@ -98,6 +98,18 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     	unset($_SESSION['user']);
     	unset($_SESSION['loggedin']);
     }
+    
+    public function testFailLoad() {
+    	$this->setExpectedException('scv\BinaryException','Data ID not found!');
+    	$bm = $this->fixture->getBinarymanager();
+    	$bin = $bm->load(123);
+    }
+    
+    public function testFailLoadMD5() {
+    	$this->setExpectedException('scv\BinaryException','Data ID not found!');
+    	$bm = $this->fixture->getBinarymanager();
+    	$bin = $bm->loadmd5("abcabcabcabcabcabcabcabcabcabcab");
+    }
 	
 	protected function tearDown(){
 		$db = $this->fixture->getDB();
