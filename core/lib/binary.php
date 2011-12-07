@@ -25,9 +25,9 @@ class BinaryManager extends Singleton {
 	public function load($id) {
 		$core =  Core::getInstance();
 		$con = $core->getDB();
-		$resultset = $con->query($core, "select bin_mime, bin_data from binarys where bin_id = ?", array($id));
+		$resultset = $con->query($core, "select bin_mime, bin_rig_id, bin_data from binarys where bin_id = ?", array($id));
 		if($result = $con->fetchArray($resultset)) {
-			return new Binary($id, $result['BIN_MIME'], $result['BIN_DATA']);
+			return new Binary($id, $result['BIN_MIME'], $result['BIN_DATA'], $result['BIN_RIG_ID']);
 		} else {
 			throw new BinaryException("Data ID not found!");
 		}
