@@ -214,6 +214,8 @@ class Template {
 	public function setManifest($manifest){
 		if (is_object($manifest) and $this->validateManifest($manifest)){
 			$this->manifest = $manifest;
+		}else{
+			throw new TemplateException("Set Manifest: The manifest does not match specification!");
 		}
 	}
 	
