@@ -52,6 +52,8 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     	$bin = $bm->load($temp);
     	$this->assertEquals("text",$bin->getMime());
     	$this->assertEquals("bla bla bla text",$bin->getData());
+    	$bin->store();
+    	$bin = $bm->load($temp);
     	$bin->setRight(1);
     	$bin->store();
     	$bin = $bm->load($temp);
