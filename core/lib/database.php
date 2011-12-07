@@ -46,13 +46,6 @@ class Database {
 		$this->password = $pw; 
 	}
 	
-	public function createBlob($data) {
-		$blh = ibase_blob_create($this->connection);
-		ibase_blob_add($blh, $data);
-		$blobid = ibase_blob_close($blh);
-		return $blobid;
-	}
-	
 	public function connect() {
 		if ($this->user == null or $this->ip == null or $this->dbname == null or $this->password == null){
 			throw new DatabaseException ('The Parameters for Connection have not been set');
@@ -249,6 +242,20 @@ class Database {
 		$cursor = ibase_query($statement);
 		$row = ibase_fetch_row($cursor);
 		return $row[0];
+	}
+	
+	/**
+	 * 
+	 * Create blob handler from $data for use with insert and update statements
+	 * @param binary $data
+	 * @return blobid
+	 */
+	
+	public function createBlob($data) {
+		$blh = ibase_blob_create($this->connection);
+		ibase_blob_add($blh, $data);
+		$blobid = ibase_blob_close($blh);
+		return $blobid;
 	}
 		
 	//DEBUG: Method for database-configurationinfo
