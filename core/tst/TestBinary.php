@@ -38,24 +38,25 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     	$_SESSION['loggedin'] = "true";
     	 
     	$bm = $this->fixture->getBinaryManager();
-    	$bin = $bm->create('binary',"wertfuyhiertfvygbuhrtfvygbuhdcrtfvygbuhrtfvygbuhndcrfygbuhnjidcrfvuhndcrtfgvybuhnjitfvygbuhnjimcfyguhjifgvhnjtfvygbuhnjmictfvygbuhn",1);
+    	$bin = $bm->create('binary',"wertfuyhiertfvygbuhrtfvygbuhdcrtfvygbuhrtfvygbuhndcrfygbuhnjidcrfvuhndcrtfgvybuhnjitfvygbuhnjimcfyguhjifgvhnjtfvygbuhnjmictfvygbuhn",null);
     	$this->assertEquals(null,$bin->getId());
     	$bin->store();
     	$this->assertNotEquals(null,$bin->getId());
     	$temp = $bin->getId();
     	$bin = $bm->load($temp);
     	$this->assertEquals("wertfuyhiertfvygbuhrtfvygbuhdcrtfvygbuhrtfvygbuhndcrfygbuhnjidcrfvuhndcrtfgvybuhnjitfvygbuhnjimcfyguhjifgvhnjtfvygbuhnjmictfvygbuhn",$bin->getData());
-    	$this->assertEquals(1,$bin->getRight());
+    	$this->assertEquals(null,$bin->getRight());
     	$bin->setMime("text");
     	$bin->setData("bla bla bla text");
     	$bin->store();
     	$bin = $bm->load($temp);
     	$this->assertEquals("text",$bin->getMime());
     	$this->assertEquals("bla bla bla text",$bin->getData());
-    	$bin->setRight(2);
+    	$bin->setRight(1);
     	$bin->store();
     	$bin = $bm->load($temp);
-    	$this->assertEquals(2,$bin->getRight());
+    	$this->assertEquals(1,$bin->getRight());
+    	$this->setRight(2);
     	$bin->store();
     	 
     	$_SESSION['user']->delete(false);
