@@ -3,6 +3,8 @@
 import gui
 import data.Profile
 
+class ApplicationException(Exception): pass
+
 class Application:
     STATE_LOGGEDIN = 1
     STATE_LOGGEDOUT = 0
@@ -16,21 +18,26 @@ class Application:
         gui.run()
     
     def logout(self):
-        self.activeProfile.save()
-        del(self.activeProfile)
-        self.state = self.STATE_LOGGEDOUT
+        if self.state == self.STATE_LOGGEDIN:
+            self.activeProfile.save()
+            del(self.activeProfile)
+            self.state = self.STATE_LOGGEDOUT
+        else:
+            raise ApplicationException("Already loggedout")
     
     def doLoginTry(self,username,password):
-        profile = data.Profile.Profile(username,password)
-        profile.load()
-        self.state = self.STATE_LOGGEDIN
-        self.activeProfile = profile
+        if self.state == self.STATE_LOGGEDOUT:
+            profile = data.Profile.Profile(username,password)
+            profile.load()
+            self.state = self.STATE_LOGGEDIN
+            self.activeProfile = profile
             
     def createProfile(self,username,password):
-        profile = data.Profile.Profile(username,password)
-        profile.create()
-        self.state = self.STATE_LOGGEDIN
-        self.activeProfile = profile
+        if self.state == self.STATE_LOGGEDOUT:
+            profile = data.Profile.Profile(username,password)
+            profile.create()
+            self.state = self.STATE_LOGGEDIN
+            self.activeProfile = profile
         
  
 application = Application()

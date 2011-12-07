@@ -45,8 +45,13 @@ class NewProfile(gtk.Fixed):
         pw2 = self.e_password_r.get_text()
         if (pw1==pw2):
             username = self.e_user.get_text()
-            self.getApplication().createProfile(username,pw1)
-        
+            try:
+                self.getApplication().createProfile(username,pw1)
+            except Exception,e :
+                raise e
+            else:
+                self.getPar().destroy()
+            
 
 class UseProfile(gtk.Fixed):
     def __init__(self,parent):
@@ -79,7 +84,12 @@ class UseProfile(gtk.Fixed):
     def cb_OK(self,widget=None,date=None):
         username=self.e_user.get_text()
         password=self.e_password.get_text()
-        self.getApplication().doLoginTry(username,password)
+        try:
+            self.getApplication().doLoginTry(username,password)
+        except Exception,e :
+            pass
+        else:
+            self.getPar().destroy()
 
 class LoginWindow(gtk.Window):
     def __init__(self,parent):

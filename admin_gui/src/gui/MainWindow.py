@@ -27,7 +27,7 @@ class MainWindow(gtk.Window):
         self.pane = gtk.HPaned()
         self.status = gtk.Statusbar()
         
-        
+        #testkrempel
         self.label1 = gtk.Label("Test1")
         self.label2 = gtk.Label("Test2")
         self.testmenu = gtk.MenuItem("Server")
@@ -38,6 +38,11 @@ class MainWindow(gtk.Window):
         self.pane.add1(self.label1)
         self.pane.add2(self.label2)
         
+        #Toolbar:
+        self.logoutbutton=gtk.ToolButton()
+        self.logoutbutton.set_stock_id(gtk.STOCK_QUIT)
+        self.logoutbutton.connect("clicked", self.cb_LogoutButton)
+        self.tool.add(self.logoutbutton)
         
         self.headerbox.pack_start(self.header, False)
         self.table.attach(self.headerbox,0,1,0,1,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
@@ -50,6 +55,14 @@ class MainWindow(gtk.Window):
         self.loginwindow = LoginWindow(self)
         
         self.show_all()
+        
+    def cb_LogoutButton(self,widget=None,data=None):
+        try:
+            self.getApplication().logout()
+        except Exception, e:
+            pass
+        else:
+            self.loginwindow = LoginWindow(self)
         
     def getApplication(self):
         return self.app
