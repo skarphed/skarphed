@@ -2,7 +2,7 @@
 require_once '/usr/share/php/PHPUnit/Framework/TestCase.php';
 require_once '../lib/core.php';
 
-class TestCss extends PHPUnit_Framework_TestCase {
+class TestTemplate extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
     protected function setUp() {
