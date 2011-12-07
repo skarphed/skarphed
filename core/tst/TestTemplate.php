@@ -10,7 +10,7 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
     }
 	
 	public function testInstallTemplate(){
-		$templateM = $this->fixture->getTempateManager();
+		$templateM = $this->fixture->getTemplateManager();
 		system("cp /var/lib/jenkins/jobs/Scoville\ -\ Core/scv_template.tar.gz /tmp/");
 		$template = $templateM->createFromFile('scv_template.tar.gz');
 		$template->install();
@@ -20,7 +20,7 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testOverInstallTemplate(){
-		$templateM = $this->fixture->getTempateManager();
+		$templateM = $this->fixture->getTemplateManager();
 		system("cp /var/lib/jenkins/jobs/Scoville\ -\ Core/scv_template.tar.gz /tmp/");
 		$template = $templateM->createFromFile('scv_template.tar.gz');
 		$template->install();
