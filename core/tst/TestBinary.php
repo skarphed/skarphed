@@ -58,7 +58,7 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     	$bin->store();
     	$bin = $bm->load($temp);
     	$this->assertEquals(1,$bin->getRight());
-    	$this->setRight(2);
+    	$bin->setRight(2);
     	$bin->store();
     	 
     	$_SESSION['user']->delete(false);
