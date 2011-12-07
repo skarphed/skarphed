@@ -21,7 +21,7 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
 		$template->install();
 		$templateRes = $templateM->createCurrentInstalled();
 		$manifest = $templateRes->getManifest();
-		$this->assertEquals("Scoville Showcase",$manifest['name']);
+		$this->assertEquals("Scoville Showcase",$manifest->name);
 	}
 	
 	public function testOverInstallTemplate(){
@@ -36,13 +36,13 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
 		$template->install();
 		$templateRes = $templateM->createCurrentInstalled();
 		$manifest = $templateRes->getManifest();
-		$this->assertEquals("Scoville Showcase",$manifest['name']);
+		$this->assertEquals("Scoville Showcase",$manifest->name);
 		system("cp /var/lib/jenkins/jobs/Scoville\ -\ Core/scv_template2.tar.gz /tmp/");
 		$template2 = $templateM->createFromFile('scv_template2.tar.gz');
 		$template2->install();
 		$templateRes = $templateM->createCurrentInstalled();
 		$manifest = $templateRes->getManifest();
-		$this->assertEquals("Scoville Zwei",$manifest['name']);
+		$this->assertEquals("Scoville Zwei",$manifest->name);
 	}
 	
 	protected function tearDown(){
