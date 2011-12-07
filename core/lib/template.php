@@ -160,7 +160,7 @@ class Template {
 				break;
 			}
 		}
-		return $spaceId;
+		return $spaceId-1;
 	}
 	
 	public function install($tryToMap=false, $checkRight=true){

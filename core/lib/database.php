@@ -95,12 +95,17 @@ class Database {
 	
 	private function replaceModuleTables($module, $statement){
         //Vorhandene Tabellennamen bestimmen und aus der Datenbank holen
-		$tagpattern = "/\$\{[A-Za-z}]{1,}\}/g";
-		$matches = null;
+		$tagpattern = '/\$\{[A-Za-z]+\}/';
+		$matches = array();
+		$matchesRaw = array();
 		$tablenames = array();
 		preg_match_all($tagpattern,$statement,$matches);
-		$matches = array_unique($matches);
-		foreach($matches as $match){
+		
+		foreach ($matches[0] as $match){
+			$matchesRaw[] = $match;
+		}
+		$matchesRaw = array_unique($matchesRaw);
+		foreach($matchesRaw as $match){
 			$tablename = substr($match,2,strlen($match)-3); 
 			$tablenames[] = $tablename;
 		}
@@ -108,16 +113,16 @@ class Database {
 		//TODO: Verhalten implementieren, wenn Tabellen von anderen Modulen mit angesprochen werden.
 		$tableqry = "SELECT MDT_ID, MDT_NAME 
 		             FROM MODULETABLES 
-		              INNER JOIN MODULE ON (MDT_MOD_ID = MOD_ID )
+		              INNER JOIN MODULES ON (MDT_MOD_ID = MOD_ID )
 		             WHERE MOD_NAME = ? 
 		              AND MDT_NAME IN (?) ;";
         $prepared = ibase_prepare($tableqry);
-		$cursor = ibase_execute($prepared,array($module->getName(),"'".join("','",$tablenames)."'"));
+		$cursor = ibase_execute($prepared,$module->getName(),"'".join("','",$tablenames)."'");
 		
 		//Tabellennamen ersetzen
 		$replacementsDone = array();
 		while($nameset = ibase_fetch_object($cursor)){
-			$pattern = "/\$\{".$nameset->MDT_NAME."\}/g";
+			$pattern = '/\$\{'.$nameset->MDT_NAME.'\}/';
 			$tableId = (string)$nameset->MDT_ID;
 			$tableId = "TAB_".$this->generateZeros(6-strlen($tableId)).$tableId; // Entfernen von ${}
 			preg_replace($pattern, $tableId, $statement);
@@ -125,7 +130,7 @@ class Database {
 		}
 		
 		//Errorhandling falls Replacement nicht geklappt hat
-		if (count($replacementsDone) != count($matches)){
+		if (count($replacementsDone) != count($matchesRaw)){
 			$errorResult = array();
 			foreach($matches as $match){
 				if (!in_array($match,$replacementsDone)){
