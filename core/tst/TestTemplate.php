@@ -10,6 +10,11 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
     }
 	
 	public function testInstallTemplate(){
+		$userM= $this->fixture->getUserManager();
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
 		$templateM = $this->fixture->getTemplateManager();
 		system("cp /var/lib/jenkins/jobs/Scoville\ -\ Core/scv_template.tar.gz /tmp/");
 		$template = $templateM->createFromFile('scv_template.tar.gz');
@@ -20,6 +25,11 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testOverInstallTemplate(){
+		$userM= $this->fixture->getUserManager();
+		$userM->createUser("currentSessionUser","testpassword",null);
+		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
+		$_SESSION['loggedin'] = "true";
+		
 		$templateM = $this->fixture->getTemplateManager();
 		system("cp /var/lib/jenkins/jobs/Scoville\ -\ Core/scv_template.tar.gz /tmp/");
 		$template = $templateM->createFromFile('scv_template.tar.gz');
@@ -36,6 +46,13 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
 	}
 	
 	protected function tearDown(){
+		if (isset($_SESSION['user']) and get_class($_SESSION['user']) == 'scv\User'){
+			$_SESSION['user']->delete(false);
+			unset($_SESSION['user']);
+		}
+		if (isset($_SESSION['login'])){
+			unset($_SESSION['loggedin']);
+		}
 		
 	}
 	
