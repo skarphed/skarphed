@@ -80,7 +80,7 @@ qx.Class.define("scoville_admin.CssEditorPage",{
 				
 			    //var senddata = qx.lang.Json.stringify(me.data)
 				
-				me.app.createRPCObject(me.server.getIp()).callAsync(me.saveDone(me),"setCssPropertySet",me.data)
+				me.app.createRPCObject(me.server.getIp()).callAsync(me.saveDone(me),"setCssPropertySet",me.data);
 			}
 			
 		},

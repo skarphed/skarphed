@@ -15,7 +15,7 @@ qx.Class.define("scoville_admin.SpaceWidget",{
 		this.add(this.label);
 		
 		this.list = new qx.ui.tree.Tree();
-		this.list.setHeight(20);
+		this.list.setHeight(35);
 		this.add(this.list);
 		
 		this.removeButton = new qx.ui.form.Button("Remove Widget","scoville_admin/delete.png");
