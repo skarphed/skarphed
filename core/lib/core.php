@@ -9,7 +9,6 @@ abstract class Singleton {
 
 include_once 'configuration.php';
 include_once 'database.php';
-include_once 'htmlparser.php';
 include_once 'module.php';
 include_once "user.php";
 include_once "css.php";
@@ -17,6 +16,7 @@ include_once "operation.php";
 include_once "template.php";
 include_once "site.php";
 include_once "rightmanagement.php";
+include_once "binary.php";
 
 session_start();
 
@@ -33,7 +33,6 @@ class Core extends Singleton implements IModule{
 	
 	private $config = null;
 	private $database = null;
-	private $htmlparser = null;
 	private $modules = null;
 	private $rights = null;
 	private $users = null;
@@ -41,6 +40,7 @@ class Core extends Singleton implements IModule{
 	private $operations = null;
 	private $templates = null;
 	private $composite = null;
+	private $binary = null;
 	
 	public function getName(){
 		return 'de.masterprogs.scoville.core';
@@ -116,16 +116,16 @@ class Core extends Singleton implements IModule{
 		return $this->composite;
 	}
 	
+	public function getBinaryManager() {
+		if(!isset($this->binary)) {
+			$this->binary = BinaryManager::getInstance();
+		}
+		return $this->binary;
+	}
+	
 	public function renderModule($modulename, $moduleInstanceId){
 		$module = new Module($modulename);
 		return $module->render($moduleInstanceId);
-	}
-	
-	public function getHtmlParser() {
-	  if($this->htmlparser == null) {
-	    $this->htmlparser = new HtmlParser();
-	  }
-	  return $this->htmlparser;
 	}
 	
 	public function renderHTML($moduleInstanceId){

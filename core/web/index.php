@@ -8,7 +8,10 @@
   
   $moduleM = $core->getModuleManager();
   
-  $parser = $core->getHtmlParser();
-  $parser->parseHtml();
+  $cm = $core->getCompositeManager();
+  $site = $cm->getFirstSite();
+  echo $site->getHTML();
+//   $parser = $core->getHtmlParser();
+//   $parser->parseHtml();
 
 ?>
