@@ -27,11 +27,30 @@ class CompositeManager extends Singleton{
 	protected function init(){}
 	
 	
+	public function getFirstSite(){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		
+		$stmnt = "SELECT FIRST 1 SIT_ID, SIT_NAME, SIT_DESCRIPTION, SIT_SPACES, SIT_FILENAME FROM SITES ORDER BY SIT_ID;";
+		$res=$db->query($core,$stmnt);
+		if($set = $db->fetchArray($res)){
+			$site = new Site();
+			$site->setId($set['SIT_ID']);
+			$site->setName($set['SIT_NAME']);
+			$site->setDescription($set['SIT_DESCRIPTION']);
+			$site->setFilename($set['SIT_FILENAME']);
+			$site->setSpaces($set['SIT_SPACES']);
+			return $site;
+		}else{
+			throw SiteException("GetFirstSite: There is no existing Site in the Database!");
+		}
+	}
+	
 	public function getSite($siteId){
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
-		$stmnt = "SELECT SIT_ID, SIT_NAME, SIT_DESCRIPTION, SIT_SPACES, SIT_FILENAME FROM SITES WHERE SIT_ID = ? ;";
+		$stmnt = "SELECT SIT_NAME, SIT_DESCRIPTION, SIT_SPACES, SIT_FILENAME FROM SITES WHERE SIT_ID = ? ;";
 		$res=$db->query($core,$stmnt,array($siteId));
 		if($set = $db->fetchArray($res)){
 			$site = new Site();
@@ -197,7 +216,28 @@ class Site {
 	}
 	
 	private function loadHTML(){
-		
+		$core = Core::getInstance();
+		$cssM = $core->getCssManager();
+		$db = $core->getDB();
+		$resultset = $db->query($core, "select sit_html from sites where sit_id = ?", array($this->id));
+		if($result = $db->fetchArray($resultset)) {
+			$cssName = str_replace(".html", ".css", $this->filename);
+			$this->html = "<!DOCTYPE HTML>
+			          <html>
+			            <head>
+			              <link type='text/css' href='".$cssM->getCssFile()."' rel='stylesheet'>
+			              <link type='text/css' href='".$cssName."' rel='stylesheet'>
+			            </head>
+			            <body>
+			              <div id='site'>";
+			$this->html = $this->html.$result["SIT_HTML"];
+			$this->html = $this->html."    </div>
+			            </body>
+			            <script type='text/javascript' src='scvjs.php'></script>
+			          </html>";
+		} else {
+			throw new SiteException("loadHTML: Can't load html from database!");
+		}
 	}
 	
 	public function getHTML(){
