@@ -1,8 +1,9 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
+from Generic import GenericScovilleObject
 
-class Server(object):
+class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
     STATE_ONLINE = 1
     
@@ -18,12 +19,15 @@ class Server(object):
     
      
     def __init__(self):
+        GenericScovilleObject.__init__(self)
         self.state = self.STATE_OFFLINE
         self.load = self.LOADED_NONE
         self.data = {}
         
         self.ip = ""
+        self.username = ""
         self.password = ""
+        self.ssh_username = ""
         self.ssh_password = ""
         
             
