@@ -7,6 +7,7 @@
       <file>./TestOperation.php</file>
       <file>./TestCss.php</file>
       <file>./TestBinary.php</file>
+      <file>./TestTemplate.php</file>
     </testsuite>
   </testsuites>
 </phpunit>
