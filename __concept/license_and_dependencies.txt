@@ -6,6 +6,7 @@ Schriftart  "IDM"  ::  Public Domain -> ueberpruefen!!!
 Abhaengigkeiten: 
 
 Qooxdoo :: LGPL
+Qooxdoo-Contrib Uploadwidget :: LGPL
 
 
 Load-Image im Adminmodul ist momentan irgendeine ausm internet
@@ -13,7 +14,8 @@ Load-Image im Adminmodul ist momentan irgendeine ausm internet
 
 
 PHP-Dependencies (apt-get paketnamen):
-	
+
+
 
 
 Functoins parseArrayToObject parseObjectToArray sind aus http://www.wozia.pt/blog/php-convert-array-to-object-and-vice-versa/
