@@ -2,6 +2,7 @@
 
 import gui
 import data.Profile
+import data.Server
 
 class ApplicationException(Exception): pass
 
@@ -38,8 +39,15 @@ class Application:
             profile.create()
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
+            
+    ########################################
+    #        EXPERIMENTELLER KREMPEL!
+    ########################################
+    def createTestserver(self):
+        server = data.Server.Server()
+        server.ip = "192.168.0.110"
+        return server
         
- 
 application = Application()
 application.run()
 

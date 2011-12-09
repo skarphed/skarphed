@@ -29,6 +29,14 @@ class Server(GenericScovilleObject):
         self.password = ""
         self.ssh_username = ""
         self.ssh_password = ""
+    
+    def getName(self):
+        if self.load == self.LOADED_SERVERDATA:
+            return self.data['name']+" [ "+self.ip+" ]"
+        elif self.load == self.LOADED_PROFILE:
+            return " [ "+self.ip+" ]"
+        else:
+            return "Unknown ScovilleServer"
         
             
     def loadProfileInfo(self,profileInfo):

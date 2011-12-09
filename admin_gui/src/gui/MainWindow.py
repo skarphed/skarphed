@@ -8,6 +8,7 @@ import sys
 
 from LoginWindow import LoginWindow
 from Tree import Tree
+from Tabs import Tabs
 
 class GetParentException(Exception):pass
 
@@ -27,6 +28,7 @@ class MainWindow(gtk.Window):
         self.tool = gtk.Toolbar()
         self.pane = gtk.HPaned()
         self.tree = Tree(self)
+        self.tabs = Tabs(self)
         self.status = gtk.Statusbar()
         
         #testkrempel
@@ -37,8 +39,8 @@ class MainWindow(gtk.Window):
         self.testtoolbutton.set_stock_id(gtk.STOCK_ABOUT)
         self.menu.add(self.testmenu)
         self.tool.add(self.testtoolbutton)
-        self.pane.add1(self.tree)
-        self.pane.add2(self.label2)
+        self.pane.add(self.tree)
+        self.pane.add(self.tabs)
         
         #Toolbar:
         self.logoutbutton=gtk.ToolButton()
@@ -57,6 +59,17 @@ class MainWindow(gtk.Window):
         self.loginwindow = LoginWindow(self)
         
         self.show_all()
+        
+        srv = self.getApplication().createTestserver()
+        srv2 = self.getApplication().createTestserver()
+        srv3 = self.getApplication().createTestserver()
+        srv4 = self.getApplication().createTestserver()
+        srv4.setPar(srv3)
+        self.tabs.openPage(srv4)
+        srv.load = srv.LOADED_PROFILE
+        self.tabs.openPage(srv)
+        self.tabs.openPage(srv)
+        self.tabs.openPage(srv2)
         
     def cb_LogoutButton(self,widget=None,data=None):
         try:

@@ -31,3 +31,13 @@ TEMPLATE            = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/t
 USER                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/user.png",16,16)
 WEB                 = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/web.png",16,16)
 WIDGET              = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/widget.png",16,16)
+
+icon_object_map = {
+                   "Server" : SERVER
+                   }
+
+def getAppropriateIcon(object):
+    if icon_object_map.has_key(object.__class__.__name__):
+        return icon_object_map[object.__class__.__name__]
+    else:
+        return SCOVILLE
