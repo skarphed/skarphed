@@ -17,7 +17,7 @@ class Store(gtk.TreeStore):
         #self.append(root,(IconStock.SCOVILLE,'Scoville Infrastructure',-2))
   
     def getPar(self):
-        return self.par
+        return self.par 
 
     def getApplication(self):
         return self.par.getApplication()
