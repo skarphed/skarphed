@@ -7,6 +7,7 @@ import gtk
 import sys
 
 from LoginWindow import LoginWindow
+from Tree import Tree
 
 class GetParentException(Exception):pass
 
@@ -25,6 +26,7 @@ class MainWindow(gtk.Window):
         self.menu = gtk.MenuBar()
         self.tool = gtk.Toolbar()
         self.pane = gtk.HPaned()
+        self.tree = Tree(self)
         self.status = gtk.Statusbar()
         
         #testkrempel
@@ -35,7 +37,7 @@ class MainWindow(gtk.Window):
         self.testtoolbutton.set_stock_id(gtk.STOCK_ABOUT)
         self.menu.add(self.testmenu)
         self.tool.add(self.testtoolbutton)
-        self.pane.add1(self.label1)
+        self.pane.add1(self.tree)
         self.pane.add2(self.label2)
         
         #Toolbar:
