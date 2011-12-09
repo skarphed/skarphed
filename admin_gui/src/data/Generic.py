@@ -2,7 +2,6 @@
 #-*- coding: utf-8 -*-
 
 
-
 class GenericObjectStoreException(Exception): pass
 
 class GenericScovilleObject(object):
@@ -13,6 +12,8 @@ class GenericScovilleObject(object):
         self.localId = GenericScovilleObject.localIDcounter
         self.localObjects[self.localId] = self
         self.par = None
+        self.updateCallbacks = []
+        
         
         self.name = "GenericObject"
         
@@ -27,6 +28,14 @@ class GenericScovilleObject(object):
     
     def setPar(self,parent):
         self.par = parent
+    
+    def addCallback(self, callback):
+        if callback not in self.updateCallbacks:
+            self.updateCallbacks.append(callback)
+    
+    def updated(self):
+        for cb in self.updateCallbacks:
+            cb()
     
     def getName(self):
         return self.name

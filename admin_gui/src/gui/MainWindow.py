@@ -67,9 +67,15 @@ class MainWindow(gtk.Window):
         srv4.setPar(srv3)
         self.tabs.openPage(srv4)
         srv.load = srv.LOADED_PROFILE
+        srv4.load = srv.LOADED_PROFILE
+        srv3.load = srv.LOADED_PROFILE
         self.tabs.openPage(srv)
         self.tabs.openPage(srv)
         self.tabs.openPage(srv2)
+        
+        
+        srv4.setIp("10.8.0.58")
+        srv3.setIp("172.16.10.10")
         
     def cb_LogoutButton(self,widget=None,data=None):
         try:

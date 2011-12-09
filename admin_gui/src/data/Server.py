@@ -30,6 +30,10 @@ class Server(GenericScovilleObject):
         self.ssh_username = ""
         self.ssh_password = ""
     
+    def setIp(self,ip):
+        self.ip= ip
+        self.updated()
+    
     def getName(self):
         if self.load == self.LOADED_SERVERDATA:
             return self.data['name']+" [ "+self.ip+" ]"

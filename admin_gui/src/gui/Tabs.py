@@ -46,6 +46,7 @@ class TabLabel(gtk.HBox):
         self.pack_end(self.close,False)
         self.show_all()
         self.render()
+        self.object.addCallback(self.render)
         
     def render(self):
         self.icon.set_from_pixbuf(IconStock.getAppropriateIcon(self.object))
@@ -73,6 +74,7 @@ class TabPage(gtk.VBox):
         self.pack_start(self.body,True)
         self.show_all()
         self.render()
+        self.object.addCallback(self.render)
         
     def render(self):
         self.breadcrumbs.render()
@@ -93,13 +95,15 @@ class BreadCrumbs(gtk.Label):
         gtk.Label.__init__(self)
         self.par = parent
         self.render()
-        
+        self.par.getObject().addCallback(self.render)
+    
     def render(self):
         object = self.par.getObject()
         crumbstring = object.getName()
         while True:
             try:
                 object = object.getPar()
+                object.addCallback(self.render)
                 crumbstring= object.getName()+ " > "+crumbstring
             except Exception,e:
                 crumbstring = "# "+crumbstring
