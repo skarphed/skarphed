@@ -87,5 +87,5 @@ function action(actionlistid) {
 
 var request = new scvajax();
 request.init();
-request.send({"t":"i","part":"site","id":1});
+request.send({"t":"i","part":"site","id":sitid});
 
