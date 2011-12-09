@@ -15,16 +15,16 @@ class Tabs(gtk.Notebook):
         self.pagestore = {}
         
     def openPage(self,object):
-        if self.pagestore.has_key(object.getLocalId()):
-            self.set_current_page(self.page_num(self.pagestore[object.getLocalId()]))
-        else:
+        if not self.pagestore.has_key(object.getLocalId()):
             self.pagestore[object.getLocalId()] = TabPage(self,object)
             self.append_page(self.pagestore[object.getLocalId()],TabLabel(self,object))
             self.set_tab_reorderable(self.pagestore[object.getLocalId()],True)
-    
+        self.set_current_page(self.page_num(self.pagestore[object.getLocalId()]))
+        
     def closePage(self,object):
         if self.pagestore.has_key(object.getLocalId()):
             self.remove_page(self.page_num(self.pagestore[object.getLocalId()]))
+            del(self.pagestore[object.getLocalId()])
             
     def getPar(self):
         return self.par
@@ -67,7 +67,7 @@ class TabPage(gtk.VBox):
         self.par = parent
         self.object = object
         self.brotkasten = gtk.HBox()
-        self.breadcrumbs = BreadCrumbs(self)
+        self.breadcrumbs = ButtonBreadCrumbs(self)
         self.body = obj_pages.generatePageForObject(self,object)
         self.brotkasten.pack_start(self.breadcrumbs,False)
         self.pack_start(self.brotkasten,False)
@@ -89,7 +89,66 @@ class TabPage(gtk.VBox):
 
     def getApplication(self):
         return self.par.getApplication()
-    
+
+class ButtonBreadCrumb(gtk.Button):
+    def __init__(self,parent,object):
+        self.object = object
+        gtk.Button.__init__(self,object.getName())
+        self.par = parent
+        self.image = gtk.Image()
+        self.image.set_from_pixbuf(IconStock.getAppropriateIcon(object))
+        self.set_image(self.image)
+        self.connect("clicked",self.cb_Click)
+        
+    def cb_Click(self,widget=None,data=None):
+        self.getApplication()
+
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication().mainwin.tabs.openPage(self.object)
+
+class ButtonBreadCrumbs(gtk.HBox):
+    def __init__(self,parent):
+        gtk.HBox.__init__(self)
+        self.par = parent
+        self.crumbs = []
+        self.par.getObject().addCallback(self.render)
+        
+    def render(self):
+        while len(self.crumbs) != 0:
+            widget =self.crumbs.pop()
+            self.remove(widget) 
+            widget.destroy()
+        object = self.par.getObject()
+        self.crumbs.append(gtk.Label(object.getName()))
+        while True:
+            try:
+                object = object.getPar()
+                object.addCallback(self.render)
+                button = ButtonBreadCrumb(self,object)
+                self.crumbs.insert(0,button)
+            except Exception,e:
+                print e
+                break
+        separators = []
+        for index,crumb in enumerate(self.crumbs,1):
+            self.pack_start(crumb,True)
+            if index != len(self.crumbs):
+                sep = gtk.Label(" > ")
+                separators.append(sep)
+                self.pack_start(sep,False)
+        self.crumbs.extend(separators)
+        self.show_all()
+        
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
+
+
 class BreadCrumbs(gtk.Label):
     def __init__(self,parent):
         gtk.Label.__init__(self)

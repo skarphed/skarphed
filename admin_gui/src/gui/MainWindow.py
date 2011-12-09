@@ -48,6 +48,8 @@ class MainWindow(gtk.Window):
         self.logoutbutton.connect("clicked", self.cb_LogoutButton)
         self.tool.add(self.logoutbutton)
         
+        self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"))
+        
         self.headerbox.pack_start(self.header, False)
         self.table.attach(self.headerbox,0,1,0,1,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.table.attach(self.menu,0,1,1,2,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
@@ -58,20 +60,23 @@ class MainWindow(gtk.Window):
         
         self.loginwindow = LoginWindow(self)
         
+        self.connect("delete_event",self.cb_Close)
+        
         self.show_all()
         
-        srv = self.getApplication().createTestserver()
-        srv2 = self.getApplication().createTestserver()
+        #srv = self.getApplication().createTestserver()
+        #srv2 = self.getApplication().createTestserver()
         srv3 = self.getApplication().createTestserver()
         srv4 = self.getApplication().createTestserver()
         srv4.setPar(srv3)
         self.tabs.openPage(srv4)
-        srv.load = srv.LOADED_PROFILE
-        srv4.load = srv.LOADED_PROFILE
-        srv3.load = srv.LOADED_PROFILE
-        self.tabs.openPage(srv)
-        self.tabs.openPage(srv)
-        self.tabs.openPage(srv2)
+        #srv.load = srv.LOADED_PROFILE
+        srv4.load = srv3.LOADED_PROFILE
+        srv3.load = srv3.LOADED_PROFILE
+        
+        #self.tabs.openPage(srv)
+        #self.tabs.openPage(srv)
+        #self.tabs.openPage(srv2)
         
         
         srv4.setIp("10.8.0.58")
@@ -84,7 +89,11 @@ class MainWindow(gtk.Window):
             pass
         else:
             self.loginwindow = LoginWindow(self)
-        
+    
+    def cb_Close(self, widget=None, data=None):
+        gtk.main_quit()
+        sys.exit(0)
+     
     def getApplication(self):
         return self.app
     
