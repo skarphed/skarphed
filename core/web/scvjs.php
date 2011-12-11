@@ -1,5 +1,6 @@
 <?php
   header('Content-type: text/javascript');
+  $id = $_GET['id'];
 ?>
 
 var scripttags = new Array();
@@ -87,5 +88,5 @@ function action(actionlistid) {
 
 var request = new scvajax();
 request.init();
-request.send({"t":"i","part":"site","id":sitid});
+request.send({"t":"i","part":"site","id":<?php echo $id; ?>});
 

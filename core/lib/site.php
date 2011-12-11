@@ -233,8 +233,7 @@ class Site {
 			$this->html = $this->html.$result["SIT_HTML"];
 			$this->html = $this->html."    </div>
 			            </body>
-			            <script type='text/javascript'>var sitid = ".$this->id."</script>
-			            <script type='text/javascript' src='scvjs.php'></script>
+			            <script type='text/javascript' src='scvjs.php?id=".$this->id."'></script>
 			          </html>";
 		} else {
 			throw new SiteException("loadHTML: Can't load html from database!");
