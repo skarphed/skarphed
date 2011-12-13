@@ -39,8 +39,8 @@ qx.Class.define("scoville_admin.Application",
      */
     
     createRPCObject : function(ip){
-    	var rpc = new qx.io.remote.Rpc("http://"+ip+"/rpc/","scoville_admin.scvRpc");
-        rpc.setCrossDomain(true);
+    	var srv = document.getElementById('srvip');
+    	var rpc = new qx.io.remote.Rpc("http://"+srv.value+"/rpc/","scoville_admin.scvRpc");
         return rpc;
     },
     
@@ -171,12 +171,11 @@ qx.Class.define("scoville_admin.Application",
       //Menu
       this.men_server = new qx.ui.menu.Menu();
       this.but_server = new qx.ui.menubar.Button('Server',null,this.men_server);
-      this.but_server_register_new = new qx.ui.menu.Button('Server Eintragen');
+
       
-      this.men_server.add(this.but_server_register_new);
       this.menu.add(this.but_server);
       
-      this.but_server_register_new.addListener("execute", this.createNewServerCallback(this));
+      
       
       this.mainpane.add(this.tree, 1);
       this.mainpane.add(this.tabview, 4);
@@ -185,33 +184,13 @@ qx.Class.define("scoville_admin.Application",
       this.vcontainer.add(this.tool);
       this.vcontainer.add(this.mainpane,{flex:1});
       doc.add(this.vcontainer, {width:'100%',height:'100%'});
+	
+	  var srv = document.getElementById('srvip');
+      this.loadServer(srv.value,'','');
       
+	  treeroot.setOpen(true);    
+    }
 
-      this.button1.addListener("execute", function(e) {
-        alert("Hello World!");
-      });
-      
-      
-      try{
-      	var cookieServers = qx.bom.Cookie.get("scv_admin");
-      	this.serverList = qx.lang.Json.parse(cookieServers);
-      }catch(e){
-      	this.serverList = [];
-      };
-      
-      for (var i = 0; i < this.serverList.length; i++){
-      	this.loadServer(this.serverList[i],'','');
-      }
-      
-	  treeroot.setOpen(true);
-      
-    },
-
-    createNewServerCallback: function (app){
-		var f = function(e){
-			new scoville_admin.NewServerPage(app);
-		};
-		return f;
-	}
+    
   }
 });
