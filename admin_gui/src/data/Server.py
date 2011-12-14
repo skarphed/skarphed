@@ -34,6 +34,9 @@ class Server(GenericScovilleObject):
         self.ip= ip
         self.updated()
     
+    def getIp(self):
+        return self.ip
+    
     def getName(self):
         if self.load == self.LOADED_SERVERDATA:
             return self.data['name']+" [ "+self.ip+" ]"
