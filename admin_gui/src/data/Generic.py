@@ -2,12 +2,24 @@
 #-*- coding: utf-8 -*-
 
 
+def setApplicationReference(app):
+    global APPLICATION
+    APPLICATION = app
+
+APPLICATION = None
+    
+
 class GenericObjectStoreException(Exception): pass
 
 class GenericScovilleObject(object):
     localObjects = {}
     localIDcounter = 0
+    
+    
+    
+    
     def __init__(self):
+        assert APPLICATION is not None, "Initialize Applicationreference for Datalayer first!"
         GenericScovilleObject.localIDcounter+=1 
         self.localId = GenericScovilleObject.localIDcounter
         self.localObjects[self.localId] = self
@@ -18,7 +30,8 @@ class GenericScovilleObject(object):
         self.name = "GenericObject"
         
     def __del__(self):
-        del (self.localObjects[self.localId])
+        if hasattr(self, 'localId'):
+            del (self.localObjects[self.localId])
     
     def getPar(self):
         if self.par is None:

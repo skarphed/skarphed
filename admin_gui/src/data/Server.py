@@ -29,13 +29,19 @@ class Server(GenericScovilleObject):
         self.password = ""
         self.ssh_username = ""
         self.ssh_password = ""
-    
+        
     def setIp(self,ip):
         self.ip= ip
         self.updated()
     
     def getIp(self):
         return self.ip
+    
+    def getServerInfoCallback(self, json):
+        print json
+    
+    def getServerInfo(self):
+        self.application.doRPCCall(self,self.getServerInfoCallback, "getServerInfo")
     
     def getName(self):
         if self.load == self.LOADED_SERVERDATA:

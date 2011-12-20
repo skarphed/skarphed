@@ -6,6 +6,7 @@ pygtk.require("2.0")
 import gtk
 import sys
 
+from ServerPropertyWindow import ServerPropertyWindow
 from LoginWindow import LoginWindow
 from Tree import Tree
 from Tabs import Tabs
@@ -35,10 +36,7 @@ class MainWindow(gtk.Window):
         self.label1 = gtk.Label("Test1")
         self.label2 = gtk.Label("Test2")
         self.testmenu = gtk.MenuItem("Server")
-        self.testtoolbutton = gtk.ToolButton()
-        self.testtoolbutton.set_stock_id(gtk.STOCK_ABOUT)
         self.menu.add(self.testmenu)
-        self.tool.add(self.testtoolbutton)
         self.pane.add(self.tree)
         self.pane.add(self.tabs)
         
@@ -46,7 +44,12 @@ class MainWindow(gtk.Window):
         self.logoutbutton=gtk.ToolButton()
         self.logoutbutton.set_stock_id(gtk.STOCK_QUIT)
         self.logoutbutton.connect("clicked", self.cb_LogoutButton)
+        self.addserverbutton=gtk.ToolButton()
+        self.addserverbutton.set_stock_id(gtk.STOCK_ADD)
+        self.addserverbutton.connect("clicked", self.cb_AddServerButton)
+        
         self.tool.add(self.logoutbutton)
+        self.tool.add(self.addserverbutton)
         
         self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"))
         
@@ -89,6 +92,9 @@ class MainWindow(gtk.Window):
             pass
         else:
             self.loginwindow = LoginWindow(self)
+    
+    def cb_AddServerButton(self,widget=None,data=None):
+        ServerPropertyWindow(self)
     
     def cb_Close(self, widget=None, data=None):
         gtk.main_quit()

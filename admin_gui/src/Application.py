@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
 import gui
+import data.Generic
 import data.Profile
 import data.Server
+import net.HTTPRpc
 
 class ApplicationException(Exception): pass
 
@@ -11,6 +13,7 @@ class Application:
     STATE_LOGGEDOUT = 0
     
     def __init__(self):
+        data.Generic.setApplicationReference(self)
         self.mainwin= gui.MainWindow(self)
         self.state = self.STATE_LOGGEDOUT
         self.activeProfile=None
@@ -39,7 +42,13 @@ class Application:
             profile.create()
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
-            
+    
+    def doRPCCall(self, server, callback, method, params):
+        call = net.HTTPRpc.ScovilleRPC(server,callback, method, params)
+        call.start()
+    
+    def getLocalObjectById(self,id):
+        return data.Generic.GenericScovilleObject.getLocalObjectById(id)
     ########################################
     #        EXPERIMENTELLER KREMPEL!
     ########################################

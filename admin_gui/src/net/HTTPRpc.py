@@ -3,10 +3,11 @@
 
 import pycurl
 import StringIO
+import threading
 import time
 import json
 
-class ScovilleRPC(object):
+class ScovilleRPC(threading.Thread):
     HEADERS = ['Accept-Language: en-us,en;q=0.5',
                     #'Accept-Encoding: gzip,deflate', 
                     'Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7', 
@@ -16,34 +17,36 @@ class ScovilleRPC(object):
                     'Cache-Control: no-cache, no-cache',
                     'Connection: Keep-Alive']
     USER_AGENT = 'ScovilleAdmin'    
-    def __init__(self,server):
+    def __init__(self,server,callback, method, params=[]):
+        threading.Thread.__init__(self)
         self.server = server
+        self.callback = callback
         #TODO: Server Muss online sein! Check!
-        
         self.curl = pycurlConnect = pycurl.Curl()
         
-        LOGIN_URL = 'http://'+server.getIp()+'/rpc/?nocache='+ str(int (time.time()*1000))
+        json_enc = json.JSONEncoder()
         
+        LOGIN_URL = 'http://'+server.getIp()+'/rpc/?nocache='+ str(int (time.time()*1000))
+        POST_DATA = '{"service":"scoville_admin.scvRpc","method":"'+method+'","id":1,"params":'+json_enc.encode(params)+'}'
         pycurlConnect = pycurl.Curl()
         pycurlConnect.setopt(pycurl.URL, LOGIN_URL)
         pycurlConnect.setopt(pycurl.HTTPHEADER, HEADERS)
         pycurlConnect.setopt(pycurl.COOKIEFILE, 'cookies.txt')
+        pycurlConnect.setopt(pycurl.POSTFIELDS, POST_DATA)
+        pycurlConnect.setopt(pycurl.POST, 1)
         
-    def call(self, method, params=[], callback=None):
+    def run(self):
         assert method is not None and method!="", "method is not valid" 
         
         answer = StringIO.StringIO()
         
-        POST_DATA = '{"service":"scoville_admin.scvRpc","method":"'+method+'","id":1,"params":'+json.JSONEncoder.encode(params)+'}'
-        pycurlConnect.setopt(pycurl.POSTFIELDS, POST_DATA)
-        pycurlConnect.setopt(pycurl.WRITEFUNCTION, dev_null.write)
-        pycurlConnect.setopt(pycurl.POST, 1)
+        json_dec = json.JSONDecoder()
+        
+        pycurlConnect.setopt(pycurl.WRITEFUNCTION, answer.write)
         pycurlConnect.perform()
         
-        # Close connections
-        print dev_null.getvalue()
-        dev_null.close()
+        self.callback(json_dec.decode(answer.getvalue()))
+        answer.close()
         pycurlConnect.close()
-        
         
         
