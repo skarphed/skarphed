@@ -13,13 +13,15 @@ class ServerPropertyWindow(gtk.Window):
     def __init__(self,parent, server=None):
         gtk.Window.__init__(self)
         self.par = parent
-        
+        self.server = None
         if server is None:
             if ServerPropertyWindow.addWindowOpen:
                 self.destroy()
                 return
             self.set_title("Scoville Admin Pro :: New Server")
+            ServerPropertyWindow.addWindowOpen = True
         else:
+            self.server = server
             self.set_title("Scoville Admin Pro :: Server Properties of "+server.getIp())
             
         self.vbox = gtk.VBox()
@@ -114,6 +116,9 @@ class ServerPropertyWindow(gtk.Window):
         server.load = server.LOADED_PROFILE
         self.getPar().getTreeStore().addObject(server)
         server.getServerInfo()
+        
+        if self.server is None:
+            ServerPropertyWindow.addWindowOpen = False
         
         self.destroy()
     

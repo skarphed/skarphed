@@ -68,3 +68,11 @@ def getLocalObjectById(id):
         return GenericScovilleObject.localObjects[id]
     except Exception ,e :
         raise GenericObjectStoreException("Object does not exist")
+
+def getChildrenOf(obj):
+    res = []
+    for element in GenericScovilleObject.localObjects.values():
+        if element.getLocalId() == obj.getLocalId():
+            result.append(element)
+    return res
+    

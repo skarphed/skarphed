@@ -18,10 +18,11 @@ class ScovilleRPC(threading.Thread):
                     'Cache-Control: no-cache, no-cache',
                     'Connection: Keep-Alive']
     USER_AGENT = 'ScovilleAdmin'    
-    def __init__(self,server,callback, method, params=[]):
+    def __init__(self,server,callback, method, params=[], errorcallback = None):
         threading.Thread.__init__(self)
         self.server = server
         self.callback = callback
+        self.errorcallback = errorcallback
         #TODO: Server Muss online sein! Check!
         self.curl = pycurlConnect = pycurl.Curl()
         
@@ -44,7 +45,15 @@ class ScovilleRPC(threading.Thread):
         self.pycurlConnect.setopt(pycurl.WRITEFUNCTION, answer.write)
         self.pycurlConnect.perform()
         
-        gobject.idle_add(self.callback,json_dec.decode(answer.getvalue()))
+        result = json_dec.decode(answer.getvalue())
+        
+        if hasattr(result,'error'):
+            if self.errorcallback is None:
+                print result['error']
+            else:
+                gobject.idle_add(self.errorcallback,result)
+        else:
+            gobject.idle_add(self.callback,result)
         #self.callback(json_dec.decode(answer.getvalue()))
         answer.close()
         self.pycurlConnect.close()

@@ -4,7 +4,7 @@
 import Crypto.Cipher.AES
 import json
 import os
-
+import Server
 
 class ProfileException(Exception):pass
 
@@ -50,6 +50,14 @@ class Profile(object):
              self.data = js.decode(clear[4:])
              self.state = self.STATE_LOADED
              file.close()
+             for server in self.data['server']:
+                 srv = Server.createServer()
+                 srv.setIp(server['ip'])
+                 srv.setScvName(server['username'])
+                 srv.setScvPass(server['password'])
+                 srv.setSSHName(server['ssh_username'])
+                 srv.setSSHPass(server['ssh_password'])
+                 
         else:
             file.close()
             raise ProfileException("Could not Decode")
@@ -68,7 +76,11 @@ class Profile(object):
         for storedServer in self.data['server']:
             if storedServer['ip'] == server.ip:
                 return
-        self.data['server'].append({'ip':server.ip,'password':server.password})
+        self.data['server'].append({'ip':server.ip,
+                                    'username':server.username,
+                                    'password':server.password,
+                                    'ssh_username':server.ssh_username,
+                                    'ssh_password':server.ssh_password})
         self.save()    
             
         

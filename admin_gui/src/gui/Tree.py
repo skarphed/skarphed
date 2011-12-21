@@ -40,11 +40,23 @@ class Tree(gtk.TreeView):
         self.set_search_column(1)
         self.set_rules_hint(True)
         
-        #self.connect("row-activated",self.cb_RowActivated)
+        self.connect("row-activated",self.cb_RowActivated)
         #self.connect("row-expanded",self.cb_RowExpanded)
         #self.connect("button_press_event",self.cb_ButtonPressed)
         
     
+    def cb_RowActivated(self,treeview,iter,path,wdata=None): 
+        '''This callbackmethod defines behaviour after doubleclicking a row. It is calling open match
+           if the currently selected treeelement is representing a match'''
+        selection = self.get_selection()
+        iter = selection.get_selected()[1]
+        id = self.store.get_value(iter,2)
+        if id >= 0:
+            object = self.getApplication().getLocalObjectById(id)
+            self.getPar().getTabs().openPage(object)
+        
+        
+        
     def getPar(self):
         return self.par
 

@@ -102,7 +102,10 @@ class MainWindow(gtk.Window):
         
     def getTreeStore(self):
         return self.tree.get_model()
-     
+    
+    def getTabs(self):
+        return self.tabs
+    
     def getApplication(self):
         return self.app
     

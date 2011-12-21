@@ -4,6 +4,7 @@
 import pygtk
 pygtk.require("2.0")
 import gtk
+import hashlib
 
 class NewProfile(gtk.Fixed):
     def __init__(self,parent):
@@ -46,7 +47,9 @@ class NewProfile(gtk.Fixed):
         if (pw1==pw2):
             username = self.e_user.get_text()
             try:
-                self.getApplication().createProfile(username,pw1)
+                hash = hashlib.md5()
+                hash.update(pw1)
+                self.getApplication().createProfile(username,hash.hexdigest())
             except Exception,e :
                 raise e
             else:

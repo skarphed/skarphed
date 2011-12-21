@@ -28,7 +28,7 @@ class Application:
             del(self.activeProfile)
             self.state = self.STATE_LOGGEDOUT
         else:
-            raise ApplicationException("Already loggedout")
+            raise ApplicationException("Already logged out")
     
     def doLoginTry(self,username,password):
         if self.state == self.STATE_LOGGEDOUT:
