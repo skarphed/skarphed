@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import gui
+import data
 import data.Generic
 import data.Profile
 import data.Server
@@ -43,12 +44,15 @@ class Application:
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
     
-    def doRPCCall(self, server, callback, method, params):
+    def doRPCCall(self, server, callback, method, params=[]):
         call = net.HTTPRpc.ScovilleRPC(server,callback, method, params)
         call.start()
     
+    def getData(self):
+        return data
+    
     def getLocalObjectById(self,id):
-        return data.Generic.GenericScovilleObject.getLocalObjectById(id)
+        return data.Generic.getLocalObjectById(id)
     ########################################
     #        EXPERIMENTELLER KREMPEL!
     ########################################

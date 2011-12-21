@@ -105,7 +105,17 @@ class ServerPropertyWindow(gtk.Window):
         return self.par.getApplication()
     
     def cb_OK(self,widget=None,data=None):
-        pass
+        server = self.getApplication().getData().createServer()
+        server.setIp(self.ipFrame_IPEntry.get_text())
+        server.setScvName(self.scvFrame_NameEntry.get_text())
+        server.setScvPass(self.scvFrame_PassEntry.get_text())
+        server.setSSHName(self.sshFrame_NameEntry.get_text())
+        server.setSSHPass(self.sshFrame_PassEntry.get_text())
+        server.load = server.LOADED_PROFILE
+        self.getPar().getTreeStore().addObject(server)
+        server.getServerInfo()
+        
+        self.destroy()
     
     def cb_Cancel(self,widget=None,data=None):
         pass

@@ -45,28 +45,30 @@ class Store(gtk.TreeStore):
         else:
             raise StoreException("store is busy")
         
-    
-    def addServer(self,server):
-        root = self.getIterById(-2)
-        ip = server.getIp()
-        if server.data.has_key('name'):
-            name = server.data['name']
-        else:
-            name = "< adsfadsf >"
-        self.append(root,(IconStock.SERVER, name+" [ "+ip+" ] ",server.getLocalId()))
-        server.addCallback(self.render)
-    
+    def addObject(self,obj):
+        try:
+            parentIter = self.getIterById(obj.getPar().getLocalId())
+            self.append(parentIter,(IconStock.SERVER, obj.getName(),obj.getLocalId()))
+        except:
+            root = self.getIterById(-2)
+            self.append(root,(IconStock.SERVER, obj.getName(),obj.getLocalId()))
+        obj.addCallback(self.render)
+        
+
     def render(self):
         def search(model, path, iter):
             app = self.getApplication()
-            try:
-                obj = app.getLocalObjectById(model.get_value(iter,2))
-            except data.Generic.GenericObjectStoreException,e:
-                model.remove(iter)
-                return
-            if obj.hasAttribute('data') and type(obj.data) == 'dict' \
-            and obj.data.has_key('name') and type(obj.data['name']) == 'str':
-                model.set_value(iter,1,obj.data['name']) 
-            
+            id = model.get_value(iter,2)
+            if id >= 0:
+                try:
+                    obj = app.getLocalObjectById(model.get_value(iter,2))
+                #except data.Generic.GenericObjectStoreException,e:
+                except Exception,e:
+                    model.remove(iter)
+                    return
+                if hasattr(obj,'data') and type(obj.data) == dict \
+                and obj.data.has_key('name') and type(obj.data['name']) == unicode:
+                    model.set_value(iter,1,obj.data['name']) 
+                
         self.foreach(search)
         

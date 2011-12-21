@@ -4,6 +4,7 @@
 import pygtk
 pygtk.require("2.0")
 import gtk
+gtk.gdk.threads_init()
 
 import MainWindow as MainWindow_
 

@@ -99,6 +99,9 @@ class MainWindow(gtk.Window):
     def cb_Close(self, widget=None, data=None):
         gtk.main_quit()
         sys.exit(0)
+        
+    def getTreeStore(self):
+        return self.tree.get_model()
      
     def getApplication(self):
         return self.app

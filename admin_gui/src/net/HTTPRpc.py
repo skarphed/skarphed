@@ -6,6 +6,7 @@ import StringIO
 import threading
 import time
 import json
+import gobject
 
 class ScovilleRPC(threading.Thread):
     HEADERS = ['Accept-Language: en-us,en;q=0.5',
@@ -28,25 +29,24 @@ class ScovilleRPC(threading.Thread):
         
         LOGIN_URL = 'http://'+server.getIp()+'/rpc/?nocache='+ str(int (time.time()*1000))
         POST_DATA = '{"service":"scoville_admin.scvRpc","method":"'+method+'","id":1,"params":'+json_enc.encode(params)+'}'
-        pycurlConnect = pycurl.Curl()
-        pycurlConnect.setopt(pycurl.URL, LOGIN_URL)
-        pycurlConnect.setopt(pycurl.HTTPHEADER, HEADERS)
-        pycurlConnect.setopt(pycurl.COOKIEFILE, 'cookies.txt')
-        pycurlConnect.setopt(pycurl.POSTFIELDS, POST_DATA)
-        pycurlConnect.setopt(pycurl.POST, 1)
+        self.pycurlConnect = pycurl.Curl()
+        self.pycurlConnect.setopt(pycurl.URL, LOGIN_URL)
+        self.pycurlConnect.setopt(pycurl.HTTPHEADER, self.HEADERS)
+        self.pycurlConnect.setopt(pycurl.COOKIEFILE, 'cookies.txt')
+        self.pycurlConnect.setopt(pycurl.POSTFIELDS, POST_DATA)
+        self.pycurlConnect.setopt(pycurl.POST, 1)
         
-    def run(self):
-        assert method is not None and method!="", "method is not valid" 
-        
+    def run(self):        
         answer = StringIO.StringIO()
         
         json_dec = json.JSONDecoder()
         
-        pycurlConnect.setopt(pycurl.WRITEFUNCTION, answer.write)
-        pycurlConnect.perform()
+        self.pycurlConnect.setopt(pycurl.WRITEFUNCTION, answer.write)
+        self.pycurlConnect.perform()
         
-        self.callback(json_dec.decode(answer.getvalue()))
+        gobject.idle_add(self.callback,json_dec.decode(answer.getvalue()))
+        #self.callback(json_dec.decode(answer.getvalue()))
         answer.close()
-        pycurlConnect.close()
+        self.pycurlConnect.close()
         
         

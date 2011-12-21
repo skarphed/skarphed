@@ -20,6 +20,7 @@ class GenericScovilleObject(object):
     
     def __init__(self):
         assert APPLICATION is not None, "Initialize Applicationreference for Datalayer first!"
+        self.app = APPLICATION
         GenericScovilleObject.localIDcounter+=1 
         self.localId = GenericScovilleObject.localIDcounter
         self.localObjects[self.localId] = self
@@ -38,6 +39,9 @@ class GenericScovilleObject(object):
             raise GenericObjectStoreException("This object has no parent")
         else:
             return self.par
+    
+    def getApplication (self):
+        return self.app
     
     def setPar(self,parent):
         self.par = parent
@@ -59,8 +63,8 @@ class GenericScovilleObject(object):
     def getLocalId(self):
         return self.localId
     
-    def getLocalObjectById(id):
-        try:
-            return GenericScovilleObject.localObjects[id]
-        except Exception ,e :
-            raise GenericObjectStoreException("Object does not exist")
+def getLocalObjectById(id):
+    try:
+        return GenericScovilleObject.localObjects[id]
+    except Exception ,e :
+        raise GenericObjectStoreException("Object does not exist")
