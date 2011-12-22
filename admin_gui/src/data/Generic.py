@@ -11,19 +11,38 @@ APPLICATION = None
 
 class GenericObjectStoreException(Exception): pass
 
-class GenericScovilleObject(object):
+class ObjectStore(object):
     localObjects = {}
     localIDcounter = 0
+    callbacks = []
     
     
+    def getLocalObjectById(self,id):
+        try:
+            return ObjectStore.localObjects[id]
+        except Exception ,e :
+            raise GenericObjectStoreException("Object does not exist")
     
+    def getChildrenOf(self,obj):
+        res = []
+        for element in ObjectStore.localObjects.values():
+            if element.getLocalId() == obj.getLocalId():
+                result.append(element)
+        return res
+    def addCallBack(self, cb):
+        ObjectStore.callbacks.append(cb)
     
+    def updated(self):
+        for cb in ObjectStore.callbacks:
+            cb()
+    
+class GenericScovilleObject(object):  
     def __init__(self):
         assert APPLICATION is not None, "Initialize Applicationreference for Datalayer first!"
         self.app = APPLICATION
-        GenericScovilleObject.localIDcounter+=1 
-        self.localId = GenericScovilleObject.localIDcounter
-        self.localObjects[self.localId] = self
+        ObjectStore.localIDcounter+=1 
+        self.localId = ObjectStore.localIDcounter
+        ObjectStore.localObjects[self.localId] = self
         self.par = None
         self.updateCallbacks = []
         
@@ -32,7 +51,7 @@ class GenericScovilleObject(object):
         
     def __del__(self):
         if hasattr(self, 'localId'):
-            del (self.localObjects[self.localId])
+            del (ObjectStore.localObjects[self.localId])
     
     def getPar(self):
         if self.par is None:
@@ -53,6 +72,7 @@ class GenericScovilleObject(object):
     def updated(self):
         for cb in self.updateCallbacks:
             cb()
+        ObjectStore().updated()
     
     def getName(self):
         return self.name
@@ -63,16 +83,5 @@ class GenericScovilleObject(object):
     def getLocalId(self):
         return self.localId
     
-def getLocalObjectById(id):
-    try:
-        return GenericScovilleObject.localObjects[id]
-    except Exception ,e :
-        raise GenericObjectStoreException("Object does not exist")
 
-def getChildrenOf(obj):
-    res = []
-    for element in GenericScovilleObject.localObjects.values():
-        if element.getLocalId() == obj.getLocalId():
-            result.append(element)
-    return res
     

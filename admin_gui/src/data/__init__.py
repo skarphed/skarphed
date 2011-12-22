@@ -4,5 +4,7 @@
 import data.Generic
 import data.Server
 
-getObjectById = data.Generic.getLocalObjectById
 createServer = data.Server.createServer
+
+def getObjectStore():
+    return data.Generic.ObjectStore()

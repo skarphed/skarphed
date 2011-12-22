@@ -48,11 +48,14 @@ class Application:
         call = net.HTTPRpc.ScovilleRPC(server,callback, method, params)
         call.start()
     
+    def getObjectStore(self):
+        return data.getObjectStore()
+    
     def getData(self):
         return data
     
     def getLocalObjectById(self,id):
-        return data.Generic.getLocalObjectById(id)
+        return self.getObjectStore().getLocalObjectById(id)
     ########################################
     #        EXPERIMENTELLER KREMPEL!
     ########################################

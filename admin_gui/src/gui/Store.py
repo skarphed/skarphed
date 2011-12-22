@@ -13,8 +13,11 @@ class Store(gtk.TreeStore):
     '''The Matchstore class is holding and managing the Data for the MatchTree. It communicates with the database'''
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
+        assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
         gtk.TreeStore.__init__(self,*args)
         self.par = kwargs['parent']
+        self.objectStore  = kwargs['objectStore']
+        self.objectStore.addCallback(self.render)
         self.busy = False # Prevent threadcollisions 
         root = self.append(None,(IconStock.SCOVILLE,"Scoville Infrastructure",-2))
         #self.append(root,(IconStock.SCOVILLE,'Scoville Infrastructure',-2))

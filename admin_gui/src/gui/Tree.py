@@ -15,7 +15,7 @@ class Tree(gtk.TreeView):
         
         #self.context = MatchTreeContextMenu(self.app,self)
         
-        self.store = Store(gtk.gdk.Pixbuf, str,int ,parent=self.par) #Icon, Name, ID, type
+        self.store = Store(gtk.gdk.Pixbuf, str,int ,parent=self.par, objectStore=self.getApplication().getObjectStore()) #Icon, Name, ID, type
         self.set_model(self.store)
         
         self.col_id = gtk.TreeViewColumn('')
