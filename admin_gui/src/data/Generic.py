@@ -27,15 +27,28 @@ class ObjectStore(object):
         res = []
         for element in ObjectStore.localObjects.values():
             if element.getLocalId() == obj.getLocalId():
-                result.append(element)
+                res.append(element)
         return res
-    def addCallBack(self, cb):
+    def addCallback(self, cb):
         ObjectStore.callbacks.append(cb)
     
     def updated(self):
         for cb in ObjectStore.callbacks:
             cb()
     
+    def getServers(self):
+        res = []
+        for element in ObjectStore.localObjects.values():
+            if element.__class__.__name__ == 'Server':
+                res.append(element)
+        return res
+    
+    def clear(self):
+        for element in ObjectStore.localObjects.keys():
+            ObjectStore.localObjects[element].destroy()
+        ObjectStore.localIDcounter = 0
+        self.updated()
+        
 class GenericScovilleObject(object):  
     def __init__(self):
         assert APPLICATION is not None, "Initialize Applicationreference for Datalayer first!"
@@ -48,6 +61,9 @@ class GenericScovilleObject(object):
         
         
         self.name = "GenericObject"
+        
+    def destroy(self):
+        self.__del__()
         
     def __del__(self):
         if hasattr(self, 'localId'):

@@ -114,7 +114,6 @@ class ServerPropertyWindow(gtk.Window):
         server.setSSHName(self.sshFrame_NameEntry.get_text())
         server.setSSHPass(self.sshFrame_PassEntry.get_text())
         server.load = server.LOADED_PROFILE
-        self.getPar().getTreeStore().addObject(server)
         server.getServerInfo()
         
         if self.server is None:

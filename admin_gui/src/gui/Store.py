@@ -47,31 +47,53 @@ class Store(gtk.TreeStore):
                 return None
         else:
             raise StoreException("store is busy")
-        
-    def addObject(self,obj):
+
+    def addObject(self,obj,addToRootIfNoParent=True):
+        obj = self.objectStore.getLocalObjectById(obj)
         try:
             parentIter = self.getIterById(obj.getPar().getLocalId())
             self.append(parentIter,(IconStock.SERVER, obj.getName(),obj.getLocalId()))
+            return True
         except:
-            root = self.getIterById(-2)
-            self.append(root,(IconStock.SERVER, obj.getName(),obj.getLocalId()))
-        obj.addCallback(self.render)
+            if addToRootIfNoParent or obj.par is None: 
+                root = self.getIterById(-2)
+                self.append(root,(IconStock.SERVER, obj.getName(),obj.getLocalId()))
+                return True
+            return False
         
 
     def render(self):
         def search(model, path, iter):
-            app = self.getApplication()
             id = model.get_value(iter,2)
+            print id
             if id >= 0:
                 try:
-                    obj = app.getLocalObjectById(model.get_value(iter,2))
+                    obj = self.objectStore.getLocalObjectById(model.get_value(iter,2))
                 #except data.Generic.GenericObjectStoreException,e:
                 except Exception,e:
-                    model.remove(iter)
-                    return
-                if hasattr(obj,'data') and type(obj.data) == dict \
-                and obj.data.has_key('name') and type(obj.data['name']) == unicode:
-                    model.set_value(iter,1,obj.data['name']) 
+                    self.itersToRemove.append(iter)
+                else:
+                    if hasattr(obj,'data') and type(obj.data) == dict \
+                    and obj.data.has_key('name') and type(obj.data['name']) == unicode:
+                        model.set_value(iter,1,obj.data['name']) 
+                    self.objectsToAllocate.remove(id)
                 
+        objectsAllocated = 1
+        self.objectsToAllocate = self.objectStore.localObjects.keys()    
+        self.itersToRemove= []
         self.foreach(search)
+        
+        for iter in self.itersToRemove:
+            self.remove(iter)
+        
+        while objectsAllocated > 0:
+            objectsAllocated = 0
+            for id in self.objectsToAllocate:
+                if self.addObject(id, False):
+                    self.objectsToAllocate.remove(id)
+                    objectsAllocated+=1
+        
+        for id in self.objectsToAllocate:
+            self.addObject(id, True)
+        
         

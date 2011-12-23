@@ -76,6 +76,8 @@ class UseProfile(gtk.Fixed):
         self.put(self.e_password,110,35)
         self.put(self.ok,110,60)
         
+        self.e_user.grab_focus()
+        
         self.ok.connect("clicked", self.cb_OK)
         
     def getPar(self):
@@ -88,7 +90,9 @@ class UseProfile(gtk.Fixed):
         username=self.e_user.get_text()
         password=self.e_password.get_text()
         try:
-            self.getApplication().doLoginTry(username,password)
+            hash = hashlib.md5()
+            hash.update(password)
+            self.getApplication().doLoginTry(username,hash.hexdigest())
         except Exception,e :
             pass
         else:

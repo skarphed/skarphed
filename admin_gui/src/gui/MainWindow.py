@@ -28,6 +28,8 @@ class MainWindow(gtk.Window):
         self.menu = gtk.MenuBar()
         self.tool = gtk.Toolbar()
         self.pane = gtk.HPaned()
+        self.treescroll = gtk.ScrolledWindow()
+        self.treescroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.tree = Tree(self)
         self.tabs = Tabs(self)
         self.status = gtk.Statusbar()
@@ -37,7 +39,9 @@ class MainWindow(gtk.Window):
         self.label2 = gtk.Label("Test2")
         self.testmenu = gtk.MenuItem("Server")
         self.menu.add(self.testmenu)
-        self.pane.add(self.tree)
+        self.treescroll.add(self.tree)
+        self.treescroll.set_size_request(250,0)
+        self.pane.add(self.treescroll)
         self.pane.add(self.tabs)
         
         #Toolbar:
@@ -67,24 +71,6 @@ class MainWindow(gtk.Window):
         
         self.show_all()
         
-        #srv = self.getApplication().createTestserver()
-        #srv2 = self.getApplication().createTestserver()
-        srv3 = self.getApplication().createTestserver()
-        srv4 = self.getApplication().createTestserver()
-        srv4.setPar(srv3)
-        self.tabs.openPage(srv4)
-        #srv.load = srv.LOADED_PROFILE
-        srv4.load = srv3.LOADED_PROFILE
-        srv3.load = srv3.LOADED_PROFILE
-        
-        #self.tabs.openPage(srv)
-        #self.tabs.openPage(srv)
-        #self.tabs.openPage(srv2)
-        
-        
-        srv4.setIp("10.8.0.58")
-        srv3.setIp("172.16.10.10")
-        
     def cb_LogoutButton(self,widget=None,data=None):
         try:
             self.getApplication().logout()
@@ -97,6 +83,10 @@ class MainWindow(gtk.Window):
         ServerPropertyWindow(self)
     
     def cb_Close(self, widget=None, data=None):
+        try:
+            self.getApplication().logout()
+        except Exception, e:
+            pass
         gtk.main_quit()
         sys.exit(0)
         

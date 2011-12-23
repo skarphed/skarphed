@@ -25,6 +25,7 @@ class Application:
     def logout(self):
         if self.state == self.STATE_LOGGEDIN:
             self.activeProfile.save()
+            data.Generic.ObjectStore().clear()
             del(self.activeProfile)
             self.state = self.STATE_LOGGEDOUT
         else:
@@ -56,13 +57,7 @@ class Application:
     
     def getLocalObjectById(self,id):
         return self.getObjectStore().getLocalObjectById(id)
-    ########################################
-    #        EXPERIMENTELLER KREMPEL!
-    ########################################
-    def createTestserver(self):
-        server = data.Server.Server()
-        server.ip = "192.168.0.110"
-        return server
+    
         
 application = Application()
 application.run()

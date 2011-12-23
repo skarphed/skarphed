@@ -57,6 +57,7 @@ class Profile(object):
                  srv.setScvPass(server['password'])
                  srv.setSSHName(server['ssh_username'])
                  srv.setSSHPass(server['ssh_password'])
+                 #srv.getServerInfo()
                  
         else:
             file.close()
@@ -64,6 +65,7 @@ class Profile(object):
     
     def save(self):
         if self.state == self.STATE_LOADED:
+            self.updateProfile()
             file = open(os.path.expanduser('~/.scovilleadmin/'+self.username),'w')
             aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
             js = json.encoder.JSONEncoder()
@@ -72,15 +74,14 @@ class Profile(object):
             file.write(aes.encrypt(clear+padding))
             file.close()
     
-    def storeServer(self,server):
-        for storedServer in self.data['server']:
-            if storedServer['ip'] == server.ip:
-                return
-        self.data['server'].append({'ip':server.ip,
+    def updateProfile(self):
+        self.data['server'] = []
+        for server in Server.getServers():
+            self.data['server'].append({'ip':server.ip,
                                     'username':server.username,
                                     'password':server.password,
                                     'ssh_username':server.ssh_username,
                                     'ssh_password':server.ssh_password})
-        self.save()    
+          
             
         

@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 
 from Generic import GenericScovilleObject
+from Generic import ObjectStore
 
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
@@ -67,6 +68,9 @@ class Server(GenericScovilleObject):
             
     def loadProfileInfo(self,profileInfo):
         pass
-    
+
+def getServers():
+    return ObjectStore().getServers()
+
 def createServer():
     return Server()
