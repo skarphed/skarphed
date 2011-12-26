@@ -6,6 +6,7 @@ import data.Generic
 import data.Profile
 import data.Server
 import net.HTTPRpc
+import net.Tracker
 
 class ApplicationException(Exception): pass
 
@@ -16,6 +17,9 @@ class Application:
     def __init__(self):
         data.Generic.setApplicationReference(self)
         self.mainwin= gui.MainWindow(self)
+        self.quitrequest = False
+        self.tracker = net.Tracker.Tracker(self)
+        self.tracker.start()
         self.state = self.STATE_LOGGEDOUT
         self.activeProfile=None
     
@@ -44,6 +48,9 @@ class Application:
             profile.create()
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
+    
+    def setQuitRequest(self,val):
+        self.quitrequest = val
     
     def doRPCCall(self, server, callback, method, params=[]):
         call = net.HTTPRpc.ScovilleRPC(server,callback, method, params)

@@ -7,6 +7,7 @@ import threading
 import time
 import json
 import gobject
+from Tracker import Tracker
 
 class ScovilleRPC(threading.Thread):
     HEADERS = ['Accept-Language: en-us,en;q=0.5',
@@ -28,7 +29,7 @@ class ScovilleRPC(threading.Thread):
         
         json_enc = json.JSONEncoder()
         
-        LOGIN_URL = 'http://'+server.getIp()+'/rpc/?nocache='+ str(int (time.time()*1000))
+        LOGIN_URL = str('http://'+server.getIp()+'/rpc/?nocache='+ str(int (time.time()*1000)))
         POST_DATA = '{"service":"scoville_admin.scvRpc","method":"'+method+'","id":1,"params":'+json_enc.encode(params)+'}'
         self.pycurlConnect = pycurl.Curl()
         self.pycurlConnect.setopt(pycurl.URL, LOGIN_URL)
@@ -36,6 +37,8 @@ class ScovilleRPC(threading.Thread):
         self.pycurlConnect.setopt(pycurl.COOKIEFILE, 'cookies.txt')
         self.pycurlConnect.setopt(pycurl.POSTFIELDS, POST_DATA)
         self.pycurlConnect.setopt(pycurl.POST, 1)
+        self.pycurlConnect.setopt(pycurl.CONNECTTIMEOUT, 20)
+        Tracker().addProcess()
         
     def run(self):        
         answer = StringIO.StringIO()
@@ -43,18 +46,26 @@ class ScovilleRPC(threading.Thread):
         json_dec = json.JSONDecoder()
         
         self.pycurlConnect.setopt(pycurl.WRITEFUNCTION, answer.write)
-        self.pycurlConnect.perform()
+        try:
+            self.pycurlConnect.perform()
+            result = json_dec.decode(answer.getvalue())
+        except:
+            result = {'error':'HTTP-ERROR'}
         
-        result = json_dec.decode(answer.getvalue())
         
+        
+        Tracker().removeProcess()
         if hasattr(result,'error'):
             if self.errorcallback is None:
                 print result['error']
             else:
                 gobject.idle_add(self.errorcallback,result)
         else:
-            gobject.idle_add(self.callback,result)
-        #self.callback(json_dec.decode(answer.getvalue()))
+            if hasattr(result,'result'):
+                gobject.idle_add(self.callback,result['result'])
+            else:
+                print "ERROR: No Result in result: "+str(result)
+        
         answer.close()
         self.pycurlConnect.close()
         

@@ -6,6 +6,7 @@ pygtk.require("2.0")
 import gtk
 
 from Store import Store
+from TreeContextMenu import TreeContextMenu
 
 class Tree(gtk.TreeView):
     def __init__(self, parent):
@@ -16,6 +17,7 @@ class Tree(gtk.TreeView):
         #self.context = MatchTreeContextMenu(self.app,self)
         
         self.store = Store(gtk.gdk.Pixbuf, str,int ,parent=self.par, objectStore=self.getApplication().getObjectStore()) #Icon, Name, ID, type
+        self.context = TreeContextMenu(self)
         self.set_model(self.store)
         
         self.col_id = gtk.TreeViewColumn('')
@@ -42,8 +44,24 @@ class Tree(gtk.TreeView):
         
         self.connect("row-activated",self.cb_RowActivated)
         #self.connect("row-expanded",self.cb_RowExpanded)
-        #self.connect("button_press_event",self.cb_ButtonPressed)
-        
+        self.connect("button_press_event",self.cb_ButtonPressed)
+  
+    def cb_ButtonPressed(self, widget = None, event = None, data = None):
+        if event.button==3:
+            x = int(event.x)
+            y = int(event.y)
+            pathinfo = self.get_path_at_pos(x,y)
+            if pathinfo is not None:
+                try:
+                    self.grab_focus()
+                    self.set_cursor(pathinfo[0],pathinfo[1],0) 
+                    selection = self.get_selection()
+                    iter = selection.get_selected()[1]
+                    id = self.store.get_value(iter,2)
+                    obj = self.store.objectStore.getLocalObjectById(id)
+                    self.context.popup(obj,event.button,event.get_time())
+                except:
+                    pass
     
     def cb_RowActivated(self,treeview,iter,path,wdata=None): 
         '''This callbackmethod defines behaviour after doubleclicking a row. It is calling open match

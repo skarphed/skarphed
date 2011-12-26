@@ -68,6 +68,7 @@ class GenericScovilleObject(object):
     def __del__(self):
         if hasattr(self, 'localId'):
             del (ObjectStore.localObjects[self.localId])
+        self.updated()
     
     def getPar(self):
         if self.par is None:

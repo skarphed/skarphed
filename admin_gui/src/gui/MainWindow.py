@@ -33,7 +33,10 @@ class MainWindow(gtk.Window):
         self.tree = Tree(self)
         self.tabs = Tabs(self)
         self.status = gtk.Statusbar()
-        
+        self.progress = gtk.ProgressBar()
+        self.progress.set_text("No Processes")
+        self.progress.set_pulse_step(0.01)
+                
         #testkrempel
         self.label1 = gtk.Label("Test1")
         self.label2 = gtk.Label("Test2")
@@ -55,7 +58,8 @@ class MainWindow(gtk.Window):
         self.tool.add(self.logoutbutton)
         self.tool.add(self.addserverbutton)
         
-        self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"))
+        self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"),False)
+        self.status.pack_end(self.progress,False)
         
         self.headerbox.pack_start(self.header, False)
         self.table.attach(self.headerbox,0,1,0,1,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
@@ -87,6 +91,7 @@ class MainWindow(gtk.Window):
             self.getApplication().logout()
         except Exception, e:
             pass
+        self.getApplication().setQuitRequest(True)
         gtk.main_quit()
         sys.exit(0)
         
@@ -101,3 +106,14 @@ class MainWindow(gtk.Window):
     
     def getPar(self):
         raise GetParentException()
+    
+    def pulseProgress(self,count):
+        if count == 0:
+            self.progress.set_text("No Processes")
+            self.progress.set_fraction(0)
+        elif count == 1:
+            self.progress.set_text("1 Process")
+            self.progress.pulse()
+        else:
+            self.progress.set_text(str(count)+" Processes")
+            self.progress.pulse()

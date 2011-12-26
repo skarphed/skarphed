@@ -60,7 +60,7 @@ class Store(gtk.TreeStore):
                 self.append(root,(IconStock.SERVER, obj.getName(),obj.getLocalId()))
                 return True
             return False
-        
+    
 
     def render(self):
         def search(model, path, iter):
@@ -73,6 +73,8 @@ class Store(gtk.TreeStore):
                 except Exception,e:
                     self.itersToRemove.append(iter)
                 else:
+                    if obj.__class__.__name__ == "Server":
+                        model.set_value(iter,0,IconStock.getServerIcon(obj))
                     if hasattr(obj,'data') and type(obj.data) == dict \
                     and obj.data.has_key('name') and type(obj.data['name']) == unicode:
                         model.set_value(iter,1,obj.data['name']) 

@@ -13,6 +13,7 @@ class Tabs(gtk.Notebook):
         gtk.Notebook.__init__(self)
         self.par = parent
         self.pagestore = {}
+        self.set_scrollable(True)
         
     def openPage(self,object):
         if not self.pagestore.has_key(object.getLocalId()):
@@ -77,8 +78,15 @@ class TabPage(gtk.VBox):
         self.object.addCallback(self.render)
         
     def render(self):
-        self.breadcrumbs.render()
-        self.body.render()
+        try:
+            self.getApplication().getObjectStore().getLocalObjectById(self.object.getLocalId())
+        except:
+            self.breadcrumbs.destroy()
+            self.body.destroy()
+            self.destroy()
+        else:
+            self.breadcrumbs.render()
+            self.body.render()
         #TODO: Implement
         
     def getObject(self):

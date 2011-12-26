@@ -21,6 +21,8 @@ class Server(GenericScovilleObject):
     def __init__(self):
         GenericScovilleObject.__init__(self)
         self.state = self.STATE_OFFLINE
+        self.scv_loggedin = self.SCV_LOCKED
+        self.ssh_loggedin = self.SSH_LOCKED
         self.load = self.LOADED_NONE
         self.data = {}
         
@@ -49,13 +51,33 @@ class Server(GenericScovilleObject):
     def setSSHPass(self, password):
         self.ssh_password = password
     
-    def getServerInfoCallback(self, json):
-        self.data['name'] = json['result']
+    def getSSHName(self):
+        return self.ssh_username
+
+    def getSSHPass(self):
+        return self.ssh_password
+    
+    def getServerInfoCallback(self, result):
+        self.data['name'] = result
         self.load = self.LOADED_SERVERDATA
+        self.state = self.STATE_ONLINE
         self.updated()
     
     def getServerInfo(self):
         self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getServerInfo")
+        
+    def authenticateCallback(self, result):
+        if result == False:
+            self.scv_loggedin = self.SCV_LOCKED
+            self.serverRights = []
+        else:
+            self.scv_loggedin = self.SCV_UNLOCKED
+            self.serverRights = result
+            print self.serverRights
+        self.updated()
+        
+    def authenticate(self):
+        self.getApplication().doRPCCall(self,self.authenticateCallback, "authenticateUser", [self.username,self.password])
     
     def getName(self):
         if self.load == self.LOADED_SERVERDATA:
@@ -68,7 +90,16 @@ class Server(GenericScovilleObject):
             
     def loadProfileInfo(self,profileInfo):
         pass
-
+    
+    def getSSHState(self):
+        return self.ssh_loggedin
+    
+    def getSCVState(self):
+        return self.scv_loggedin
+    
+    def isOnline(self):
+        return self.state==self.STATE_ONLINE
+    
 def getServers():
     return ObjectStore().getServers()
 
