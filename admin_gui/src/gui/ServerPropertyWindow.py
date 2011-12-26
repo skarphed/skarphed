@@ -93,10 +93,10 @@ class ServerPropertyWindow(gtk.Window):
         
         if server is not None:
             self.ipFrame_IPEntry.set_text(server.getIp())
-            self.scvFrame_NameEntry.set_text("SCVUSER")
-            self.scvFrame_PassEntry.set_text("SCVPASS")
-            self.sshFrame_NameEntry.set_text("SSHUSER")
-            self.sshFrame_PassEntry.set_text("SSHPASS")
+            self.scvFrame_NameEntry.set_text(server.getScvName())
+            self.scvFrame_PassEntry.set_text(server.getScvPass())
+            self.sshFrame_NameEntry.set_text(server.getSSHName())
+            self.sshFrame_PassEntry.set_text(server.getSSHPass())
         
         self.show_all()
         
@@ -107,14 +107,17 @@ class ServerPropertyWindow(gtk.Window):
         return self.par.getApplication()
     
     def cb_OK(self,widget=None,data=None):
-        server = self.getApplication().getData().createServer()
+        if self.server is None:
+            server = self.getApplication().getData().createServer()
+        else:
+            server = self.server
         server.setIp(self.ipFrame_IPEntry.get_text())
         server.setScvName(self.scvFrame_NameEntry.get_text())
         server.setScvPass(self.scvFrame_PassEntry.get_text())
         server.setSSHName(self.sshFrame_NameEntry.get_text())
         server.setSSHPass(self.sshFrame_PassEntry.get_text())
         server.load = server.LOADED_PROFILE
-        server.getServerInfo()
+        server.establishConnections()
         
         if self.server is None:
             ServerPropertyWindow.addWindowOpen = False

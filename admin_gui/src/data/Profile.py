@@ -57,8 +57,8 @@ class Profile(object):
                  srv.setScvPass(server['password'])
                  srv.setSSHName(server['ssh_username'])
                  srv.setSSHPass(server['ssh_password'])
-                 srv.getServerInfo()
-                 srv.authenticate()
+                 srv.establishConnections()
+                 
         else:
             file.close()
             raise ProfileException("Could not Decode")

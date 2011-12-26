@@ -44,6 +44,12 @@ class Server(GenericScovilleObject):
         
     def setScvPass(self, password):
         self.password = password
+    
+    def getScvName(self):
+        return self.username
+        
+    def getScvPass(self):
+        return self.password
         
     def setSSHName(self, name):
         self.ssh_username = name
@@ -56,6 +62,9 @@ class Server(GenericScovilleObject):
 
     def getSSHPass(self):
         return self.ssh_password
+    
+    def setSSHState(self,state):
+        self.ssh_loggedin = state
     
     def getServerInfoCallback(self, result):
         self.data['name'] = result
@@ -78,6 +87,15 @@ class Server(GenericScovilleObject):
         
     def authenticate(self):
         self.getApplication().doRPCCall(self,self.authenticateCallback, "authenticateUser", [self.username,self.password])
+    
+    def connectSSH(self):
+        self.getApplication().getSSHConnection(self)
+        self.updated()
+    
+    def establishConnections(self):
+        self.getServerInfo()
+        self.authenticate()
+        self.connectSSH()
     
     def getName(self):
         if self.load == self.LOADED_SERVERDATA:

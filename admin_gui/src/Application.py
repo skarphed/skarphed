@@ -7,6 +7,7 @@ import data.Profile
 import data.Server
 import net.HTTPRpc
 import net.Tracker
+import net.SSH
 
 class ApplicationException(Exception): pass
 
@@ -55,6 +56,9 @@ class Application:
     def doRPCCall(self, server, callback, method, params=[]):
         call = net.HTTPRpc.ScovilleRPC(server,callback, method, params)
         call.start()
+    
+    def getSSHConnection(self,server):
+        return net.SSH.SSHConnection(server)
     
     def getObjectStore(self):
         return data.getObjectStore()

@@ -55,16 +55,15 @@ class ScovilleRPC(threading.Thread):
         
         
         Tracker().removeProcess()
-        if hasattr(result,'error'):
+        if result.has_key('error'):
             if self.errorcallback is None:
                 print result['error']
             else:
                 gobject.idle_add(self.errorcallback,result)
         else:
-            if hasattr(result,'result'):
-                gobject.idle_add(self.callback,result['result'])
-            else:
-                print "ERROR: No Result in result: "+str(result)
+            print result
+            gobject.idle_add(self.callback,result['result'])
+        #self.callback(json_dec.decode(answer.getvalue()))
         
         answer.close()
         self.pycurlConnect.close()
