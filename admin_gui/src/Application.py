@@ -1,8 +1,11 @@
 #!/usr/bin/python
 
 import gui
+import data
+import data.Generic
 import data.Profile
 import data.Server
+import net.HTTPRpc
 
 class ApplicationException(Exception): pass
 
@@ -11,6 +14,7 @@ class Application:
     STATE_LOGGEDOUT = 0
     
     def __init__(self):
+        data.Generic.setApplicationReference(self)
         self.mainwin= gui.MainWindow(self)
         self.state = self.STATE_LOGGEDOUT
         self.activeProfile=None
@@ -21,10 +25,11 @@ class Application:
     def logout(self):
         if self.state == self.STATE_LOGGEDIN:
             self.activeProfile.save()
+            data.Generic.ObjectStore().clear()
             del(self.activeProfile)
             self.state = self.STATE_LOGGEDOUT
         else:
-            raise ApplicationException("Already loggedout")
+            raise ApplicationException("Already logged out")
     
     def doLoginTry(self,username,password):
         if self.state == self.STATE_LOGGEDOUT:
@@ -39,14 +44,20 @@ class Application:
             profile.create()
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
-            
-    ########################################
-    #        EXPERIMENTELLER KREMPEL!
-    ########################################
-    def createTestserver(self):
-        server = data.Server.Server()
-        server.ip = "192.168.0.110"
-        return server
+    
+    def doRPCCall(self, server, callback, method, params=[]):
+        call = net.HTTPRpc.ScovilleRPC(server,callback, method, params)
+        call.start()
+    
+    def getObjectStore(self):
+        return data.getObjectStore()
+    
+    def getData(self):
+        return data
+    
+    def getLocalObjectById(self,id):
+        return self.getObjectStore().getLocalObjectById(id)
+    
         
 application = Application()
 application.run()

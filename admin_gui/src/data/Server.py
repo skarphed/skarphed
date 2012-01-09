@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 
 from Generic import GenericScovilleObject
+from Generic import ObjectStore
 
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
@@ -16,7 +17,6 @@ class Server(GenericScovilleObject):
     LOADED_NONE = 0
     LOADED_PROFILE = 1
     LOADED_SERVERDATA = 2
-    
      
     def __init__(self):
         GenericScovilleObject.__init__(self)
@@ -29,10 +29,33 @@ class Server(GenericScovilleObject):
         self.password = ""
         self.ssh_username = ""
         self.ssh_password = ""
-    
+        
     def setIp(self,ip):
         self.ip= ip
         self.updated()
+    
+    def getIp(self):
+        return self.ip
+    
+    def setScvName(self,name):
+        self.username = name
+        
+    def setScvPass(self, password):
+        self.password = password
+        
+    def setSSHName(self, name):
+        self.ssh_username = name
+        
+    def setSSHPass(self, password):
+        self.ssh_password = password
+    
+    def getServerInfoCallback(self, json):
+        self.data['name'] = json['result']
+        self.load = self.LOADED_SERVERDATA
+        self.updated()
+    
+    def getServerInfo(self):
+        self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getServerInfo")
     
     def getName(self):
         if self.load == self.LOADED_SERVERDATA:
@@ -45,5 +68,9 @@ class Server(GenericScovilleObject):
             
     def loadProfileInfo(self,profileInfo):
         pass
-    
-    
+
+def getServers():
+    return ObjectStore().getServers()
+
+def createServer():
+    return Server()
