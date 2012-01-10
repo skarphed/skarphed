@@ -41,7 +41,9 @@ icon_object_map = {
                    "Users"  : USER,
                    "User"   : USER,
                    "Modules": MODULE,
-                   "Module" : MODULE
+                   "Module" : MODULE,
+                   "Roles"  : ROLE,
+                   "Role"   : ROLE
                    }
 
 def getServerIcon(server):
