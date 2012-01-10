@@ -52,12 +52,12 @@ class Store(gtk.TreeStore):
         obj = self.objectStore.getLocalObjectById(obj)
         try:
             parentIter = self.getIterById(obj.getPar().getLocalId())
-            self.append(parentIter,(IconStock.SERVER, obj.getName(),obj.getLocalId()))
+            self.append(parentIter,(IconStock.getAppropriateIcon(obj), obj.getName(),obj.getLocalId()))
             return True
         except:
             if addToRootIfNoParent or obj.par is None: 
                 root = self.getIterById(-2)
-                self.append(root,(IconStock.SERVER, obj.getName(),obj.getLocalId()))
+                self.append(root,(IconStock.getAppropriateIcon(obj), obj.getName(),obj.getLocalId()))
                 return True
             return False
     

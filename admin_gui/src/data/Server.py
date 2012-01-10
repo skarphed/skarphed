@@ -4,6 +4,9 @@
 from Generic import GenericScovilleObject
 from Generic import ObjectStore
 
+from Users import Users
+
+
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
     STATE_ONLINE = 1
@@ -31,6 +34,13 @@ class Server(GenericScovilleObject):
         self.password = ""
         self.ssh_username = ""
         self.ssh_password = ""
+        
+        self.users = None
+        self.templates = None
+        self.roles = None
+        self.modules = None
+        self.sites = None
+        self.repo = None
         
     def setIp(self,ip):
         self.ip= ip
@@ -74,7 +84,12 @@ class Server(GenericScovilleObject):
     
     def getServerInfo(self):
         self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getServerInfo")
-        
+    
+    def loadScovilleChildren(self):
+        if 'scoville.users.view' in self.serverRights:
+            self.users = Users(self)
+        #TODO: restliche implementieren
+    
     def authenticateCallback(self, result):
         if result == False:
             self.scv_loggedin = self.SCV_LOCKED
@@ -84,6 +99,7 @@ class Server(GenericScovilleObject):
             self.serverRights = result
             print self.serverRights
         self.updated()
+        self.loadScovilleChildren()
         
     def authenticate(self):
         self.getApplication().doRPCCall(self,self.authenticateCallback, "authenticateUser", [self.username,self.password])
