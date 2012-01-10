@@ -7,7 +7,7 @@ from Generic import ObjectStore
 from Users import Users
 from Modules import Modules
 from Roles import Roles
-
+from Sites import Sites
 
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
@@ -94,6 +94,8 @@ class Server(GenericScovilleObject):
             self.modules = Modules(self)
         if 'scoville.roles.view' in self.serverRights:
             self.roles = Roles(self)
+        if True: #'scoville.sites.view' in self.serverRights
+            self.sites = Sites(self)
         #TODO: restliche implementieren
     
     def authenticateCallback(self, result):

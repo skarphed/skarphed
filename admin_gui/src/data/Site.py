@@ -3,7 +3,7 @@
 
 from Generic import GenericScovilleObject
 
-class Role(GenericScovilleObject):
+class Site(GenericScovilleObject):
     def __init__(self,parent, data = {}):
         GenericScovilleObject.__init__(self)
         self.par = parent
@@ -14,7 +14,7 @@ class Role(GenericScovilleObject):
         if self.data.has_key('name'):
             return self.data['name']
         else:
-            return "Unknown Role"
+            return "Unknown Site"
     
     def getId(self):
         if self.data.has_key('id'):
