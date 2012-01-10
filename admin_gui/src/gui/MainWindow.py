@@ -38,9 +38,10 @@ class MainWindow(gtk.Window):
         self.progress.set_pulse_step(0.01)
                 
         #testkrempel
-        self.label1 = gtk.Label("Test1")
-        self.label2 = gtk.Label("Test2")
         self.testmenu = gtk.MenuItem("Server")
+        self.testmenu.connect("activate", self.cb_ServerClicked)
+        
+        
         self.menu.add(self.testmenu)
         self.treescroll.add(self.tree)
         self.treescroll.set_size_request(250,0)
@@ -74,7 +75,11 @@ class MainWindow(gtk.Window):
         self.connect("delete_event",self.cb_Close)
         
         self.show_all()
-        
+    
+    def cb_ServerClicked(self,widget=None,data=None):        
+        raise Exception("LOLOLOL")
+    
+    
     def cb_LogoutButton(self,widget=None,data=None):
         try:
             self.getApplication().logout()

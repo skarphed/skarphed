@@ -6,7 +6,9 @@ pygtk.require("2.0")
 import gtk
 gtk.gdk.threads_init()
 
+import ExceptHook
 import MainWindow as MainWindow_
+
 
 MainWindow = MainWindow_.MainWindow
 

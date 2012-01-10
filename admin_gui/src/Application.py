@@ -8,14 +8,17 @@ import data.Server
 import net.HTTPRpc
 import net.Tracker
 import net.SSH
+import gobject
+import os
 
 class ApplicationException(Exception): pass
 
-class Application:
+class Application(object):
     STATE_LOGGEDIN = 1
     STATE_LOGGEDOUT = 0
     
     def __init__(self):
+        os.environ['PYGTK_FATAL_EXCEPTIONS'] = '1'
         data.Generic.setApplicationReference(self)
         self.mainwin= gui.MainWindow(self)
         self.quitrequest = False
@@ -26,7 +29,7 @@ class Application:
     
     def run(self):
         gui.run()
-    
+        
     def logout(self):
         if self.state == self.STATE_LOGGEDIN:
             self.activeProfile.save()
