@@ -39,7 +39,9 @@ WIDGET                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 icon_object_map = {
                    "Server" : SERVER,
                    "Users"  : USER,
-                   "User"   : USER
+                   "User"   : USER,
+                   "Modules": MODULE,
+                   "Module" : MODULE
                    }
 
 def getServerIcon(server):

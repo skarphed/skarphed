@@ -5,7 +5,7 @@ from Generic import GenericScovilleObject
 from Generic import ObjectStore
 
 from Users import Users
-
+from Modules import Modules
 
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
@@ -88,6 +88,8 @@ class Server(GenericScovilleObject):
     def loadScovilleChildren(self):
         if 'scoville.users.view' in self.serverRights:
             self.users = Users(self)
+        if 'scoville.modules.install' in self.serverRights or 'scoville.modules.uninstall' in self.serverRights:
+            self.modules = Modules(self)
         #TODO: restliche implementieren
     
     def authenticateCallback(self, result):
