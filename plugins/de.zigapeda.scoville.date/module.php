@@ -19,7 +19,7 @@ class de_zigapeda_scoville_date {
 				\"timer\":function() {
 					var date = new Date();
 					var day = date.getDate();
-					var mon = date.getMonth();
+					var mon = date.getMonth() + 1;
 					var year = date.getFullYear();
 				    date = ((day < 10) ? '0' : '') + day;
 				    date += ((mon < 10) ? '.0' : '.') + mon;
