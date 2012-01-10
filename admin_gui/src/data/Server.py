@@ -90,7 +90,6 @@ class Server(GenericScovilleObject):
     
     def connectSSH(self):
         self.getApplication().getSSHConnection(self)
-        self.updated()
     
     def establishConnections(self):
         self.getServerInfo()
