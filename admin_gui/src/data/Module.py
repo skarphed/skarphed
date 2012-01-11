@@ -11,10 +11,13 @@ class Module(GenericScovilleObject):
         self.updated()
     
     def getName(self):
-        if self.data.has_key('name'):
-            return self.data['name']
+        if self.data.has_key('hrname'):
+            return self.data['hrname']+" ["+self.getPrintableVersion()+"]"
         else:
-            return "Unknown User"
+            return "Unknown Module"
+    
+    def getPrintableVersion(self):
+        return str(self.data['version_major'])+"."+str(self.data['version_minor'])+"."+str(self.data['revision'])
     
     def getModuleName(self):
         if self.data.has_key('name'):

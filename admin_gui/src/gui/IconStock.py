@@ -37,15 +37,17 @@ WEB                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 WIDGET                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/widget.png",16,16)
 
 icon_object_map = {
-                   "Server" : SERVER,
-                   "Users"  : USER,
-                   "User"   : USER,
-                   "Modules": MODULE,
-                   "Module" : MODULE,
-                   "Roles"  : ROLE,
-                   "Role"   : ROLE,
-                   "Sites"  : SITE,
-                   "Site"   : SITE
+                   "Server"     : SERVER,
+                   "Users"      : USER,
+                   "User"       : USER,
+                   "Modules"    : MODULE,
+                   "Module"     : MODULE,
+                   "Roles"      : ROLE,
+                   "Role"       : ROLE,
+                   "Sites"      : SITE,
+                   "Site"       : SITE,
+                   "Repository" : REPO,
+                   "Template"   : TEMPLATE
                    }
 
 def getServerIcon(server):

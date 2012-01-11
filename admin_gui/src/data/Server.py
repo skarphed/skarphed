@@ -8,6 +8,8 @@ from Users import Users
 from Modules import Modules
 from Roles import Roles
 from Sites import Sites
+from Repository import Repository
+from Template import Template
 
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
@@ -96,6 +98,11 @@ class Server(GenericScovilleObject):
             self.roles = Roles(self)
         if True: #'scoville.sites.view' in self.serverRights
             self.sites = Sites(self)
+        if 'scoville.modules.install' in self.serverRights or 'scoville.modules.uninstall' in self.serverRights:
+            self.repo = Repository(self)
+        if True: #'scoville.template.modify' in self.serverRights
+            self.templates = Template(self)
+        
         #TODO: restliche implementieren
     
     def authenticateCallback(self, result):
