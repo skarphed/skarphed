@@ -42,7 +42,17 @@ class MainWindow(gtk.Window):
         self.testmenu.connect("activate", self.cb_ServerClicked)
         
         
+        #menue
+        self.menu_help_ = gtk.Menu()
+        self.menu_help = gtk.MenuItem("Help")
+        self.menu_help.set_submenu(self.menu_help_)
+        self.menu_help_about = gtk.MenuItem("About...")
+        self.menu_help_about.connect("activate", self.cb_AboutClicked)
+        self.menu_help_.add(self.menu_help_about)
+        
+        
         self.menu.add(self.testmenu)
+        self.menu.add(self.menu_help)
         self.treescroll.add(self.tree)
         self.treescroll.set_size_request(250,0)
         self.pane.add(self.treescroll)
@@ -78,6 +88,9 @@ class MainWindow(gtk.Window):
     
     def cb_ServerClicked(self,widget=None,data=None):        
         raise Exception("LOLOLOL")
+    
+    def cb_AboutClicked(self,widget=None,data=None):
+        print "about anzeigen"
     
     
     def cb_LogoutButton(self,widget=None,data=None):
