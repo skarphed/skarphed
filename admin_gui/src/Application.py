@@ -61,7 +61,7 @@ class Application(object):
         call.start()
     
     def getSSHConnection(self,server):
-        net.SSH.SSHConnector(server).run()
+        net.SSH.SSHConnector(server).start()
     
     def getObjectStore(self):
         return data.getObjectStore()

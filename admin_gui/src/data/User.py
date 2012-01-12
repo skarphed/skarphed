@@ -57,6 +57,7 @@ class User(GenericScovilleObject):
                                       )
     
     def assignRoleCallback(self,data):
+        self.fetchRightsData()
         self.fetchRoleData()
     
     def assignRole(self,role):
@@ -67,6 +68,7 @@ class User(GenericScovilleObject):
                                       )
     
     def removeRoleCallback(self,data):
+        self.fetchRightsData()
         self.fetchRoleData()
     
     def removeRole(self,role):
