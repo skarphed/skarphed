@@ -92,16 +92,22 @@ class Server(GenericScovilleObject):
     def loadScovilleChildren(self):
         if 'scoville.users.view' in self.serverRights:
             self.users = Users(self)
+            self.addChild(self.users)
         if 'scoville.modules.install' in self.serverRights or 'scoville.modules.uninstall' in self.serverRights:
             self.modules = Modules(self)
+            self.addChild(self.modules)
         if 'scoville.roles.view' in self.serverRights:
             self.roles = Roles(self)
+            self.addChild(self.roles)
         if True: #'scoville.sites.view' in self.serverRights
             self.sites = Sites(self)
+            self.addChild(self.sites)
         if 'scoville.modules.install' in self.serverRights or 'scoville.modules.uninstall' in self.serverRights:
             self.repo = Repository(self)
+            self.addChild(self.repo)
         if True: #'scoville.template.modify' in self.serverRights
             self.templates = Template(self)
+            self.addChild(self.templates)
         
         #TODO: restliche implementieren
     

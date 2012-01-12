@@ -8,21 +8,20 @@ from User import User
 class Users(GenericScovilleObject):
     def __init__(self,parent):
         GenericScovilleObject.__init__(self)
-        self.users = []
         self.par = parent
         self.updated()
         self.refresh()
     
     def refreshCallback(self,data):
-        userIds = [u.getUserId() for u in self.users]
+        userIds = [u.getUserId() for u in self.children]
         for user in data:
             if user['id'] not in userIds:
-                self.users.append(User(self,user))
+                self.addChild(User(self,user))
             else:
                 self.getUserById(user['id']).refresh(user)
                 
     def getUserById(self,id):
-        for u in self.users:
+        for u in self.children:
             if u.getUserId() == id:
                 return u
         return None

@@ -58,7 +58,7 @@ class GenericScovilleObject(object):
         ObjectStore.localObjects[self.localId] = self
         self.par = None
         self.updateCallbacks = []
-        
+        self.children = []
         
         self.name = "GenericObject"
         
@@ -66,9 +66,15 @@ class GenericScovilleObject(object):
         self.__del__()
         
     def __del__(self):
+        for child in self.children:
+            child.destroy()
         if hasattr(self, 'localId'):
             del (ObjectStore.localObjects[self.localId])
         self.updated()
+    
+    def addChild(self,child):
+        if child not in self.children:
+            self.children.append(child)
     
     def getPar(self):
         if self.par is None:

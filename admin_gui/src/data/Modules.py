@@ -10,7 +10,6 @@ import json
 class Modules(GenericScovilleObject):
     def __init__(self,parent):
         GenericScovilleObject.__init__(self)
-        self.modules = []
         self.par = parent
         self.updated()
         self.refresh()
@@ -18,16 +17,16 @@ class Modules(GenericScovilleObject):
     def refreshCallback(self,data):
         #HERE BE DRAGONS!
         data = json.JSONDecoder().decode(data)
-        modulenames = [m.getModuleName() for m in self.modules]
+        modulenames = [m.getModuleName() for m in self.children]
         for module in data:
             if module['name'] not in modulenames:
-                self.modules.append(Module(self,module))
+                self.addChild(Module(self,module))
             else:
                 self.getUserByName(module['name']).refresh(module)
                 
     
     def getModuleByName(self,name):
-        for module in self.modules:
+        for module in self.children:
             if module.getModuleName() == name:
                 return module
         return None
