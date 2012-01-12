@@ -69,7 +69,7 @@ class TabPage(gtk.VBox):
         self.object = object
         self.brotkasten = gtk.HBox()
         self.breadcrumbs = ButtonBreadCrumbs(self)
-        self.body = obj_pages.generatePageForObject(self,object)
+        self.body = obj_pages.generatePageForObject(self,object, IconStock)
         self.brotkasten.pack_start(self.breadcrumbs,False)
         self.pack_start(self.brotkasten,False)
         self.pack_start(self.body,True)
