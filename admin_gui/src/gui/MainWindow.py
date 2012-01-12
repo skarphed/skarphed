@@ -90,7 +90,15 @@ class MainWindow(gtk.Window):
         raise Exception("LOLOLOL")
     
     def cb_AboutClicked(self,widget=None,data=None):
-        print "about anzeigen"
+        about = gtk.AboutDialog()
+        about.set_program_name("Scoville Admin PRO")
+        about.set_version("0.1")
+        about.set_copyright("(c) Masterprogs")
+        about.set_comments("Scoville Admin PRO is a professional tool to manage your Scoville installations")
+        about.set_website("http://www.masterprogs.de")
+        about.set_logo(gtk.gdk.pixbuf_new_from_file(sys.path[0]+"/../data/login.png"))
+        about.run()
+        about.destroy()
     
     
     def cb_LogoutButton(self,widget=None,data=None):
