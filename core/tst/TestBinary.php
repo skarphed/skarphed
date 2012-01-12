@@ -11,10 +11,6 @@ class TestBinary extends PHPUnit_Framework_TestCase {
         $this->fixture = scv\Core::getInstance(); 
     }
     
-	public function testBenisLOLOLOL(){
-		$this->asserEquals(1,2);
-	}
-	
     public function testCreateBinary() {
     	$userM= $this->fixture->getUserManager();
     	$userM->createUser("currentSessionUser","testpassword",null);
