@@ -3,10 +3,13 @@
 
 from Generic import GenericScovilleObject
 
+import json
+
 class Role(GenericScovilleObject):
     def __init__(self,parent, data = {}):
         GenericScovilleObject.__init__(self)
         self.par = parent
+        self.permissiondata = None
         self.data = data
         self.updated()
     
@@ -22,6 +25,27 @@ class Role(GenericScovilleObject):
         else:
             return None
     
+    def fetchPermissionsCallback(self,data):
+        #dragons
+        data = json.JSONDecoder().decode(data)
+        self.permissiondata=data
+        self.updated()
+    
+    def fetchPermissions(self):
+        self.getApplication().doRPCCall(self.getRoles().getServer(),self.fetchPermissionsCallback, "getRightsForRolePage", [self.getId()])
+    
+    def assignPermissionCallback(self,data):
+        self.fetchPermissions()
+    
+    def assignPermission(self,perm):
+        self.getApplication().doRPCCall(self.getRoles().getServer(),self.assignPermissionCallback, "grantRightToRole", [self.getId(),perm])
+    
+    def removePermissionCallback(self,data):
+        self.fetchPermissions()
+    
+    def removePermission(self,perm):
+        self.getApplication().doRPCCall(self.getRoles().getServer(),self.removePermissionCallback, "revokeRightFromRole", [self.getId(),perm])
+    
     def refresh(self,data):
         self.data = data
         self.updated()
@@ -29,5 +53,5 @@ class Role(GenericScovilleObject):
     def getPar(self):
         return self.par
     
-    def getUsers(self):
+    def getRoles(self):
         return self.getPar()
