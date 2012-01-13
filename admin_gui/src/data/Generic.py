@@ -45,7 +45,8 @@ class ObjectStore(object):
     
     def clear(self):
         for element in ObjectStore.localObjects.keys():
-            ObjectStore.localObjects[element].destroy()
+            if self.localObjects.has_key(element):
+                ObjectStore.localObjects[element].destroy()
         ObjectStore.localIDcounter = 0
         self.updated()
         
@@ -68,7 +69,7 @@ class GenericScovilleObject(object):
     def __del__(self):
         for child in self.children:
             child.destroy()
-        if hasattr(self, 'localId'):
+        if hasattr(self, 'localId') and ObjectStore.localObjects.has_key(self.localId):
             del (ObjectStore.localObjects[self.localId])
         self.updated()
     

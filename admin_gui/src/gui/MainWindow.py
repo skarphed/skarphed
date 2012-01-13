@@ -102,12 +102,12 @@ class MainWindow(gtk.Window):
     
     
     def cb_LogoutButton(self,widget=None,data=None):
-        try:
-            self.getApplication().logout()
-        except Exception, e:
-            pass
-        else:
-            self.loginwindow = LoginWindow(self)
+        #try:
+        self.getApplication().logout()
+        #except Exception, e:
+            #raise e
+        #else:
+        self.loginwindow = LoginWindow(self)
     
     def cb_AddServerButton(self,widget=None,data=None):
         ServerPropertyWindow(self)
