@@ -11,6 +11,8 @@ from Sites import Sites
 from Repository import Repository
 from Template import Template
 
+import json as jayson #HERE BE DRAGONS
+
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
     STATE_ONLINE = 1
@@ -45,6 +47,8 @@ class Server(GenericScovilleObject):
         self.modules = None
         self.sites = None
         self.repo = None
+        
+        self.cssPropertySet = None
         
     def setIp(self,ip):
         self.ip= ip
@@ -153,6 +157,22 @@ class Server(GenericScovilleObject):
     
     def isOnline(self):
         return self.state==self.STATE_ONLINE
+    
+    def loadCssPropertySetCallback(self,json):
+        self.cssPropertySet = jayson.JSONDecoder().decode(json)
+        self.updated()
+    
+    def loadCssPropertySet(self):
+        self.getApplication().doRPCCall(self,self.loadCssPropertySetCallback, "getCssPropertySet", [None,None,None])
+    
+    def getCssPropertySet(self):
+        return self.cssPropertySet
+    
+    def setCssPropertySet(self,cssPropertySet):
+        self.cssPropertySet = cssPropertySet
+    
+    def saveCssPropertySet(self):
+        self.getApplication().doRPCCall(self,self.loadCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
     
 def getServers():
     return ObjectStore().getServers()
