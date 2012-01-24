@@ -51,6 +51,11 @@ class TreeContextMenu(gtk.Menu):
         
         self.show_all()
         
+    def hide_buttons(self):
+        a = self.get_children()
+        for element in self.get_children():
+            element.set_visible(False)
+        
     def cb_removeServer(self,data=None):
         self.currentObject.destroy()
   
@@ -68,8 +73,17 @@ class TreeContextMenu(gtk.Menu):
             
         
     def popup(self,obj,button,time):
+        self.hide_buttons()
         if obj.__class__.__name__ == "Server":
+            self.removeServer.set_visible(True)
+            self.connectServer.set_visible(True)
+            self.properties.set_visible(True)
+            self.cssEditor.set_visible(True)
             self.connectServer.set_sensitive(not obj.isOnline())
+        elif obj.__class__.__name__ == "Module":
+            self.cssEditor.set_visible(True)
+        elif obj.__class__.__name__ == "Widget":
+            self.cssEditor.set_visible(True)
         elif obj.__class__.__name__ == "GenericScovilleObject":
             pass
         else: 
