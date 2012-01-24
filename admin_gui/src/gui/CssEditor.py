@@ -15,6 +15,7 @@ class CssEditor(gtk.Window):
         
         self.set_title("Scoville Admin PRO :: CssEditor :: "+self.obj.getName())
         self.set_icon(CSS)
+        self.set_size_request(600,500)
         
         self.set_border_width(10)
         self.cssframe = PageFrame(self,"Css-Properties",CSS)
@@ -22,28 +23,61 @@ class CssEditor(gtk.Window):
         self.store = CssStore(str, str, str, bool, bool, parent=self)
         self.listview = CssView(self)
         self.listview.set_model(self.store)
+        self.listviewscroll = gtk.ScrolledWindow()
+        self.listviewscroll.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
         self.vbox = gtk.VBox()
         self.framevbox = gtk.VBox()
         
         self.toolbar = gtk.Toolbar()
         self.tool_add=gtk.ToolButton()
         self.tool_add.set_stock_id(gtk.STOCK_ADD)
+        self.tool_add.connect("clicked",self.addCallback)
         self.toolbar.add(self.tool_add)
         self.tool_save = gtk.ToolButton()
         self.tool_save.set_stock_id(gtk.STOCK_SAVE)
+        self.tool_save.connect("clicked",self.saveCallback)
         self.toolbar.add(self.tool_save)
         self.vbox.pack_start(self.toolbar,False)
+        self.tool_refresh = gtk.ToolButton()
+        self.tool_refresh.set_stock_id(gtk.STOCK_REFRESH)
+        self.tool_refresh.connect("clicked",self.refreshCallback)
+        self.toolbar.add(self.tool_refresh)
         
+        self.listviewscroll.add(self.listview)
         self.framevbox.pack_start(self.label,False)
-        self.framevbox.pack_start(self.listview,True)
+        self.framevbox.pack_start(self.listviewscroll,True)
         self.cssframe.add(self.framevbox)
         
         self.vbox.pack_start(self.cssframe,True)
         self.add(self.vbox)
         
+        self.connect("delete-event",self.closeCallback)
+        
         self.show_all()
         
         self.obj.addCallback(self.render)
+        self.obj.loadCssPropertySet()
+    
+    def closeCallback(self,widget=None,data=None):
+        self.getPar().closeCssEditor(self.obj)
+    
+    def saveCallback(self,widget=None,data=None):
+        def loop(model,path,iter):
+            if model.get_value(iter,4) == 0:
+                selector = model.get_value(iter,0)
+                property = model.get_value(iter,1)
+                value = model.get_value(iter,2)
+                inherited = model.get_value(iter,3)
+                model.newPropertySet[selector+"?"+property] = {'v':value,'i':inherited}
+        self.store.newPropertySet = {}
+        self.store.foreach(loop)
+        self.obj.setCssPropertySet(self.store.newPropertySet)
+        self.obj.saveCssPropertySet()
+    
+    def addCallback(self,widget=None,data=None):
+        self.store.append(('','','',False,False))
+    
+    def refreshCallback(self,widget=None,data=None):
         self.obj.loadCssPropertySet()
         
     def render(self):
@@ -111,8 +145,8 @@ class CssView(gtk.TreeView):
         self.renderer_inherited = gtk.CellRendererToggle()
         self.renderer_delete = gtk.CellRendererToggle()
         
-        self.col_selector.pack_start(self.renderer_selector,True)
-        self.col_property.pack_start(self.renderer_property,True)
+        self.col_selector.pack_start(self.renderer_selector,False)
+        self.col_property.pack_start(self.renderer_property,False)
         self.col_value.pack_start(self.renderer_value,True)
         self.col_inherited.pack_start(self.renderer_inherited,False)
         self.col_delete.pack_start(self.renderer_delete,False)
@@ -141,12 +175,56 @@ class CssView(gtk.TreeView):
         self.col_inherited.set_resizable(True)
         self.col_delete.set_resizable(True)
         
-        
+        self.renderer_selector.connect("changed", self.changedSelectorCallback)
+        self.renderer_property.connect("changed", self.changedPropertyCallback)
+        self.renderer_value.connect("changed", self.changedValueCallback)
+        self.renderer_selector.connect("edited", self.editedSelectorCallback)
+        self.renderer_property.connect("edited", self.editedPropertyCallback)
+        self.renderer_value.connect("edited", self.editedValueCallback)
+        self.renderer_delete.connect("toggled",self.toggledDeleteCallback)
         
         self.col_selector.set_sort_column_id(1)
         self.set_search_column(1)
         self.set_rules_hint(True)
         self.show_all()
+        
+    def toggledDeleteCallback(self,render=None,path=None):
+        iter = self.get_model().get_iter(path)
+        val = 1-self.get_model().get_value(iter,4)
+        self.get_model().set_value(iter,4,val)
+        
+    def editedSelectorCallback(self, renderer, path, value):
+        liststore = self.get_model()
+        iter = liststore.get_iter(path)
+        liststore.set_value(iter,0,value)
+        
+    def changedSelectorCallback(self, combo, path, comboiter):
+        combomodel = combo.get_property('model')
+        liststore = self.get_model()
+        iter = liststore.get_iter(path)
+        liststore.set_value(iter,0,combomodel.get_value(comboiter,0))
+    
+    def editedPropertyCallback(self, renderer, path, value):
+        liststore = self.get_model()
+        iter = liststore.get_iter(path)
+        liststore.set_value(iter,1,value)
+    
+    def changedPropertyCallback(self, combo, path, comboiter):
+        combomodel = combo.get_property('model')
+        liststore = self.get_model()
+        iter = liststore.get_iter(path)
+        liststore.set_value(iter,1,combomodel.get_value(comboiter,0))
+    
+    def editedValueCallback(self, renderer, path, value):
+        liststore = self.get_model()
+        iter = liststore.get_iter(path)
+        liststore.set_value(iter,2,value)
+        
+    def changedValueCallback(self, combo, path, comboiter):
+        combomodel = combo.get_property('model')
+        liststore = self.get_model()
+        iter = liststore.get_iter(path)
+        liststore.set_value(iter,2,combomodel.get_value(comboiter,0))
 
 class CssStore(gtk.ListStore):
     def __init__(self,*args,**kwargs):

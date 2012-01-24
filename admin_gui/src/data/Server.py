@@ -169,10 +169,13 @@ class Server(GenericScovilleObject):
         return self.cssPropertySet
     
     def setCssPropertySet(self,cssPropertySet):
-        self.cssPropertySet = cssPropertySet
+        self.cssPropertySet['properties'] = cssPropertySet
+    
+    def saveCssPropertySetCallback(self,json):
+        self.loadCssPropertySet()
     
     def saveCssPropertySet(self):
-        self.getApplication().doRPCCall(self,self.loadCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.getApplication().doRPCCall(self,self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
     
 def getServers():
     return ObjectStore().getServers()
