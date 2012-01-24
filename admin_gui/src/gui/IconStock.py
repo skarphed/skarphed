@@ -51,7 +51,8 @@ icon_object_map = {
                    "Sites"      : SITE,
                    "Site"       : SITE,
                    "Repository" : REPO,
-                   "Template"   : TEMPLATE
+                   "Template"   : TEMPLATE,
+                   "Widget"     : WIDGET
                    }
 
 def getServerIcon(server):

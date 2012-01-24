@@ -22,7 +22,7 @@ class Modules(GenericScovilleObject):
             if module['name'] not in modulenames:
                 self.addChild(Module(self,module))
             else:
-                self.getUserByName(module['name']).refresh(module)
+                self.getModuleByName(module['name']).refresh(module)
                 
     
     def getModuleByName(self,name):
@@ -32,7 +32,7 @@ class Modules(GenericScovilleObject):
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getModules")
+        self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getModules",[True])
     
     def getName(self):
         return "Modules"
