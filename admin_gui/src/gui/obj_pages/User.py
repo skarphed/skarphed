@@ -9,29 +9,31 @@ from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
 
+import gui.IconStock
+
 class UserPage(GenericObjectPage):
-    def __init__(self,parent,object,IconStock):
+    def __init__(self,parent,obj):
         GenericObjectPage.__init__(self,parent,object)
-        self.user = object
+        self.user = obj
         self.user.fetchRightsData()
         self.user.fetchRoleData()
         
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
         
-        self.info = PageFrame(self,"Information", IconStock.USER)
+        self.info = PageFrame(self,"Information", gui.IconStock.USER)
         self.infobox = gtk.VBox()
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.perm = PageFrame(self,"Permissions / Roles", IconStock.ROLE)
+        self.perm = PageFrame(self,"Permissions / Roles", gui.IconStock.ROLE)
         self.permbox = gtk.Table(2,2,False)
         self.permbox.set_row_spacings(10)
         self.permbox.set_col_spacings(10)
         self.permbox.set_border_width(10)
         
-        self.perm_permlabel = FrameLabel(self,"Please choose the Permissions you want to assign to the user here:",IconStock.PERMISSION)
-        self.perm_rolelabel = FrameLabel(self,"Please choose the Rights you want to assign to the user here:",IconStock.ROLE)
+        self.perm_permlabel = FrameLabel(self,"Please choose the Permissions you want to assign to the user here:",gui.IconStock.PERMISSION)
+        self.perm_rolelabel = FrameLabel(self,"Please choose the Rights you want to assign to the user here:",gui.IconStock.ROLE)
         
         self.perm_permlistview = gtk.TreeView()
         self.perm_permlist = gtk.ListStore(int, str,str)
@@ -88,7 +90,7 @@ class UserPage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        object.addCallback(self.render)
+        obj.addCallback(self.render)
         
     def render(self):
         self.headline.set_markup("<b>Settings for User: "+self.user.getName()+"</b>")
