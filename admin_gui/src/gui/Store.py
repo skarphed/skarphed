@@ -11,6 +11,7 @@ class StoreException(Exception):pass
 
 class Store(gtk.TreeStore):
     '''The Matchstore class is holding and managing the Data for the MatchTree. It communicates with the database'''
+    EXCLUDED_CLASSES = ("Operation",)
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
         assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
@@ -50,6 +51,8 @@ class Store(gtk.TreeStore):
 
     def addObject(self,obj,addToRootIfNoParent=True):
         obj = self.objectStore.getLocalObjectById(obj)
+        if obj.__class__.__name__ in self.EXCLUDED_CLASSES:
+            return True
         try:
             parentIter = self.getIterById(obj.getPar().getLocalId())
             self.append(parentIter,(IconStock.getAppropriateIcon(obj), obj.getName(),obj.getLocalId()))

@@ -10,6 +10,7 @@ from Roles import Roles
 from Sites import Sites
 from Repository import Repository
 from Template import Template
+from Operation import OperationManager
 
 import json as jayson #HERE BE DRAGONS
 
@@ -47,6 +48,7 @@ class Server(GenericScovilleObject):
         self.modules = None
         self.sites = None
         self.repo = None
+        self.operationManager = None
         
         self.cssPropertySet = None
         
@@ -112,6 +114,8 @@ class Server(GenericScovilleObject):
         if True: #'scoville.template.modify' in self.serverRights
             self.templates = Template(self)
             self.addChild(self.templates)
+        #if True: #'scoville.operation.modify' in self.serverRights
+        #    self.operationManager = OperationManager(self)
         
         #TODO: restliche implementieren
     
@@ -176,6 +180,9 @@ class Server(GenericScovilleObject):
     
     def saveCssPropertySet(self):
         self.getApplication().doRPCCall(self,self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+    
+    def getOperationManager(self):
+        return self.operationManager
     
 def getServers():
     return ObjectStore().getServers()
