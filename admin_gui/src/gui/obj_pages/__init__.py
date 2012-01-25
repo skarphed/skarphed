@@ -4,6 +4,7 @@
 from GenericObject import GenericObjectPage
 from User import UserPage
 from Role import RolePage
+from Repository import RepositoryPage
 
 class PageException(Exception):pass
 
@@ -21,7 +22,7 @@ def generatePageForObject(parent,obj):
     elif obj.__class__.__name__ == "Site":
         return  GenericObjectPage(parent,obj)
     elif obj.__class__.__name__ == "Repository":
-        return  GenericObjectPage(parent,obj)
+        return  RepositoryPage(parent,obj)
     elif obj.__class__.__name__ == "Template":
         return  GenericObjectPage(parent,obj)
     elif obj.__class__.__name__ == "Widget":

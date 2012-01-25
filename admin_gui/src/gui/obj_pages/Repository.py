@@ -11,12 +11,10 @@ from GenericObject import FrameLabel
 
 import gui.IconStock
 
-class UserPage(GenericObjectPage):
-    def __init__(self,parent,object):
+class RepositoryPage(GenericObjectPage):
+    def __init__(self,parent,obj):
         GenericObjectPage.__init__(self,parent,object)
-        self.user = object
-        self.user.fetchRightsData()
-        self.user.fetchRoleData()
+        self.repo = obj
         
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
@@ -29,8 +27,8 @@ class UserPage(GenericObjectPage):
         self.info_displayName = gtk.Label()
         self.info_displayHost = gtk.Label()
         self.info_table.attach(self.info_labelName,0,1,0,1)
-        self.info_table.attach(self.info_displayName,0,1,1,2)
-        self.info_table.attach(self.info_labelHost,1,2,0,1)
+        self.info_table.attach(self.info_displayName,1,2,0,1)
+        self.info_table.attach(self.info_labelHost,0,1,1,2)
         self.info_table.attach(self.info_displayHost,1,2,1,2)
         self.infobox.pack_start(self.info_table,False)
         self.info.add(self.infobox)
@@ -42,7 +40,7 @@ class UserPage(GenericObjectPage):
         self.modbox.set_col_spacings(10)
         self.modbox.set_border_width(10)
         
-        self.mod_label = gtk.Label("please drag a module into the opposing list to install/uninstall it\n:")
+        self.mod_label = gtk.Label("please drag a module into the opposing list to install/uninstall it:\n")
         self.mod_labelInstalled = gtk.Label("installed modules")
         self.mod_labelAvailable = gtk.Label("available modules")
         self.mod_labelProcessed = gtk.Label("currently processed modules")
@@ -72,7 +70,13 @@ class UserPage(GenericObjectPage):
         self.mod_AList_col_module.add_attribute(self.mod_AList_ren_name,'text',1)
         
         
-        
+        self.modbox.attach(self.mod_label,0,2,0,1)
+        self.modbox.attach(self.mod_labelInstalled,0,1,1,2)
+        self.modbox.attach(self.mod_labelAvailable,1,2,1,2)
+        self.modbox.attach(self.mod_IList,0,1,2,3)
+        self.modbox.attach(self.mod_AList,1,2,2,3)
+        self.modbox.attach(self.mod_labelProcessed,0,2,3,4)
+        self.modbox.attach(gtk.Label("KOMMT HIER HIN OPERATIONVIEW. ALTER!"),0,2,4,5)
         
         
         self.mod.add(self.modbox)
@@ -81,19 +85,11 @@ class UserPage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        object.addCallback(self.render)
+        obj.addCallback(self.render)
         
     def render(self):
-        self.headline.set_markup("<b>Settings for User: "+self.user.getName()+"</b>")
+        self.headline.set_markup("<b>Repository: "+self.repo.getName()+"</b>")
         
-        if self.user.permissiondata is not None:
-            self.perm_permlist.clear()
-            for permission in self.user.permissiondata:
-                self.perm_permlist.append((int(permission['granted']),str(permission['right']),''))
         
-        if self.user.roledata is not None:
-            self.perm_rolelist.clear()
-            for role in self.user.roledata:
-                self.perm_rolelist.append((int(role['granted']), str(role['name']), '', role['id']))
     
     
