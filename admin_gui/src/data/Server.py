@@ -10,6 +10,9 @@ from Roles import Roles
 from Sites import Sites
 from Repository import Repository
 from Template import Template
+from Operation import OperationManager
+
+import json as jayson #HERE BE DRAGONS
 
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
@@ -45,6 +48,9 @@ class Server(GenericScovilleObject):
         self.modules = None
         self.sites = None
         self.repo = None
+        self.operationManager = None
+        
+        self.cssPropertySet = None
         
     def setIp(self,ip):
         self.ip= ip
@@ -108,6 +114,8 @@ class Server(GenericScovilleObject):
         if True: #'scoville.template.modify' in self.serverRights
             self.templates = Template(self)
             self.addChild(self.templates)
+        #if True: #'scoville.operation.modify' in self.serverRights
+        #    self.operationManager = OperationManager(self)
         
         #TODO: restliche implementieren
     
@@ -153,6 +161,28 @@ class Server(GenericScovilleObject):
     
     def isOnline(self):
         return self.state==self.STATE_ONLINE
+    
+    def loadCssPropertySetCallback(self,json):
+        self.cssPropertySet = jayson.JSONDecoder().decode(json)
+        self.updated()
+    
+    def loadCssPropertySet(self):
+        self.getApplication().doRPCCall(self,self.loadCssPropertySetCallback, "getCssPropertySet", [None,None,None])
+    
+    def getCssPropertySet(self):
+        return self.cssPropertySet
+    
+    def setCssPropertySet(self,cssPropertySet):
+        self.cssPropertySet['properties'] = cssPropertySet
+    
+    def saveCssPropertySetCallback(self,json):
+        self.loadCssPropertySet()
+    
+    def saveCssPropertySet(self):
+        self.getApplication().doRPCCall(self,self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+    
+    def getOperationManager(self):
+        return self.operationManager
     
 def getServers():
     return ObjectStore().getServers()

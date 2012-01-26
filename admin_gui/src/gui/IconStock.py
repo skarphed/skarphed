@@ -9,6 +9,9 @@ import sys
 
 PATH = sys.path[0]
 print PATH
+
+#LOGO                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/mp_logo.png",16,16)
+
 ADD                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/add.png",16,16)
 CREDENTIAL              = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/credential.png",16,16)
 CSS                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/css.png",16,16)
@@ -36,6 +39,7 @@ USER                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 WEB                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/web.png",16,16)
 WIDGET                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/widget.png",16,16)
 
+
 icon_object_map = {
                    "Server"     : SERVER,
                    "Users"      : USER,
@@ -47,7 +51,8 @@ icon_object_map = {
                    "Sites"      : SITE,
                    "Site"       : SITE,
                    "Repository" : REPO,
-                   "Template"   : TEMPLATE
+                   "Template"   : TEMPLATE,
+                   "Widget"     : WIDGET
                    }
 
 def getServerIcon(server):

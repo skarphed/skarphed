@@ -48,7 +48,8 @@ class ScovilleRPC(threading.Thread):
         
         try:
             answer = urllib2.urlopen(self.request)
-            result = json_dec.decode(answer.read())
+            plaintext = answer.read() #Line is obviously unnescessary, but a good debugging point :)
+            result = json_dec.decode(plaintext)
         except urllib2.URLError, e:
             result = {'error':'HTTP-ERROR'}
     

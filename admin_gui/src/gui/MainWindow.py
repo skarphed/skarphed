@@ -10,6 +10,8 @@ from ServerPropertyWindow import ServerPropertyWindow
 from LoginWindow import LoginWindow
 from Tree import Tree
 from Tabs import Tabs
+from CssEditor import CssEditor
+#from IconStock import LOGO
 
 class GetParentException(Exception):pass
 
@@ -18,8 +20,10 @@ class MainWindow(gtk.Window):
         gtk.Window.__init__(self)
         
         self.app = app
+        self.openCssEditors = {}
         
         self.set_title("Scoville Admin PRO")
+       #self.set_icon(LOGO)
         self.maximize()
         
         self.table = gtk.Table(5,1,False)
@@ -126,6 +130,18 @@ class MainWindow(gtk.Window):
     
     def getTabs(self):
         return self.tabs
+    
+    def openCssEditor(self,obj):
+        id = obj.getLocalId()
+        if self.openCssEditors.has_key(id):
+            self.openCssEditors[id].grab_focus()
+        else:
+            self.openCssEditors[id] = CssEditor(self,obj)
+        
+    def closeCssEditor(self,obj):
+        id = obj.getLocalId()
+        if self.openCssEditors.has_key(id):
+            del(self.openCssEditors[id])
     
     def getApplication(self):
         return self.app

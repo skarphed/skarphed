@@ -8,9 +8,10 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
+import gui.IconStock
 
 class RolePage(GenericObjectPage):
-    def __init__(self,parent,object,IconStock):
+    def __init__(self,parent,object):
         GenericObjectPage.__init__(self,parent,object)
         self.role = object
         
@@ -19,18 +20,18 @@ class RolePage(GenericObjectPage):
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
         
-        self.info = PageFrame(self,"Information", IconStock.ROLE)
+        self.info = PageFrame(self,"Information", gui.IconStock.ROLE)
         self.infobox = gtk.VBox()
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.perm = PageFrame(self,"Permissions", IconStock.PERMISSION)
+        self.perm = PageFrame(self,"Permissions", gui.IconStock.PERMISSION)
         self.permbox = gtk.Table(1,2,False)
         self.permbox.set_row_spacings(10)
         self.permbox.set_col_spacings(10)
         self.permbox.set_border_width(10)
         
-        self.perm_permlabel = FrameLabel(self,"Please choose the Permissions you want to assign to the user here:",IconStock.PERMISSION)
+        self.perm_permlabel = FrameLabel(self,"Please choose the Permissions you want to assign to the user here:", gui.IconStock.PERMISSION)
         
         self.perm_permlistview = gtk.TreeView()
         self.perm_permlist = gtk.ListStore(int, str,str)
