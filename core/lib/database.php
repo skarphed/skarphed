@@ -188,25 +188,88 @@ class Database {
 	
 	public function createTableForModule($tables, $modId){
 		//TODO: Implement Sequence
-		foreach ($tables as $table){
+		foreach ($tables as $table) {
 			$newTableId = $this->getSeqNext("MDT_GEN"); // Generiere TabellenId
 			$newTableString = $this->generateZeros(6-strlen((string)$newTableId)).(string)$newTableId; //Mache string im stile '001234'
 			$statement = "CREATE TABLE TAB_$newTableString ( MOD_INSTANCE_ID INT ";
-			$first = false;
-			foreach($table->columns as $column){				
+			$autoincrement = null;
+			foreach($table->columns as $column){
 				$statement.=", $column->name $column->type ";
+				if(isset($column->primary)) {
+					if($column->primary == true) {
+						$statement.="primary key ";
+					} else {
+						if(isset($column->unique)) {
+							if($column->unique == true) {
+								$statement.="unique ";
+							}
+						}
+					}
+				} else {
+					if(isset($column->unique)) {
+						if($column->unique == true) {
+							$statement.="unique ";
+						}
+					}
+				}
+				if(isset($column->notnull)) {
+					if($column->notnull == true) {
+						$statement.="not null ";
+					}
+				}
+				if(isset($column->autoincrement)) {
+					if($column->autoincrement == true) {
+						if($autoincrement == null) {
+							$autoincrement = $column->name;
+						}
+					}
+				}
 			}
 			$statement.=");";
 			$updateModuleTables = ibase_prepare("INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?);");
 			ibase_execute($updateModuleTables, $newTableId, $table->name, $modId);
 			ibase_query($statement);
+			if($autoincrement != null) {
+				$statement = "CREATE SEQUENCE SEQ_$newTableString;";
+				ibase_query($statement);
+				$statement = "SET TERM ^ ;
+				CREATE TRIGGER TRG_AUTO_$newTableString FOR TAB_$newTableString
+				ACTIVE BEFORE INSERT POSITION 0
+				AS
+					DECLARE VARIABLE tmp DECIMAL(18,0);
+				BEGIN
+					IF (NEW.$autoincrement IS NULL) THEN
+						NEW.$autoincrement = GEN_ID(, 1);
+					ELSE BEGIN
+						tmp = GEN_ID(SEQ_$newTableString, 0);
+						IF (tmp < new.$autoincrement) THEN
+							tmp = GEN_ID(SEQ_$newTableString, new.$autoincrement - tmp);
+					END
+				END^
+				SET TERM ; ^";
+				ibase_query($statement);
+			}
 		}
+		
+// 		foreach ($tables as $table){
+// 			$newTableId = $this->getSeqNext("MDT_GEN"); // Generiere TabellenId
+// 			$newTableString = $this->generateZeros(6-strlen((string)$newTableId)).(string)$newTableId; //Mache string im stile '001234'
+// 			$statement = "CREATE TABLE TAB_$newTableString ( MOD_INSTANCE_ID INT ";
+// 			$first = false;
+// 			foreach($table->columns as $column){				
+// 				$statement.=", $column->name $column->type ";
+// 			}
+// 			$statement.=");";
+// 			$updateModuleTables = ibase_prepare("INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?);");
+// 			ibase_execute($updateModuleTables, $newTableId, $table->name, $modId);
+// 			ibase_query($statement);
+// 		}
 	}
+	
 	
 	/**
 	 * This function removes tables for a specific module
 	 */
-	
 	
 	public function removeTableForModule($tables, $modId){
 		$gettableIds = "SELECT MDT_ID 
