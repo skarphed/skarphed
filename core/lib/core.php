@@ -138,8 +138,9 @@ class Core extends Singleton implements IModule{
 	//EIGENER LOG FUER DEBUGGING
 	// ACHTUNG!!1!! ESCAPESHELLARG ENTFERNT ANFUEHRuNGSZEICHEN! 
 	public function debugGrindlog($message){
-		system("echo '[LEN ".strlen($message)."] ".escapeshellarg($message)."' >> /tmp/Grindlog.log");
-		//system("echo '[LEN ".strlen($message)."] ".$message."' >> /tmp/Grindlog.log");
+		$grindLog = fopen('/tmp/Grindlog.log','a+');
+		fwrite($grindLog, "[LEN ".strlen($message)."] ".$message."\n");
+		fclose($grindLog);
 	}
 	
 	public function parseArrayToObject($array) {
