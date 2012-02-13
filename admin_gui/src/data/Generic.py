@@ -50,6 +50,12 @@ class ObjectStore(object):
         ObjectStore.localIDcounter = 0
         self.updated()
         
+    def getAllOperations(self):
+        ret = []
+        for element in ObjectStore.localObjects.values():
+            if element.__class__.__name__ == 'OperationManager':
+                ret.extend(element.getOperationsRecursive)
+        
 class GenericScovilleObject(object):  
     def __init__(self):
         assert APPLICATION is not None, "Initialize Applicationreference for Datalayer first!"

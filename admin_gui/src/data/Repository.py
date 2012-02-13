@@ -24,5 +24,5 @@ class Repository(GenericScovilleObject):
     def getPar(self):
         return self.par
     
-    def getUsers(self):
+    def getServer(self):
         return self.getPar()

@@ -114,8 +114,8 @@ class Server(GenericScovilleObject):
         if True: #'scoville.template.modify' in self.serverRights
             self.templates = Template(self)
             self.addChild(self.templates)
-        #if True: #'scoville.operation.modify' in self.serverRights
-        #    self.operationManager = OperationManager(self)
+        if True: #'scoville.operation.modify' in self.serverRights
+            self.operationManager = OperationManager(self)
         
         #TODO: restliche implementieren
     

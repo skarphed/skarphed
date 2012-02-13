@@ -9,6 +9,7 @@ from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
 
+from gui.OperationTree import OperationTree
 import gui.IconStock
 
 class RepositoryPage(GenericObjectPage):
@@ -69,6 +70,7 @@ class RepositoryPage(GenericObjectPage):
         self.mod_AList_col_module.add_attribute(self.mod_AList_ren_icon,'pixbuf',0)
         self.mod_AList_col_module.add_attribute(self.mod_AList_ren_name,'text',1)
         
+        self.mod_CList = OperationTree(self,self.repo.getServer())
         
         self.modbox.attach(self.mod_label,0,2,0,1)
         self.modbox.attach(self.mod_labelInstalled,0,1,1,2)
@@ -76,7 +78,7 @@ class RepositoryPage(GenericObjectPage):
         self.modbox.attach(self.mod_IList,0,1,2,3)
         self.modbox.attach(self.mod_AList,1,2,2,3)
         self.modbox.attach(self.mod_labelProcessed,0,2,3,4)
-        self.modbox.attach(gtk.Label("KOMMT HIER HIN OPERATIONVIEW. ALTER!"),0,2,4,5)
+        self.modbox.attach(self.mod_CList,0,2,4,5)
         
         
         self.mod.add(self.modbox)

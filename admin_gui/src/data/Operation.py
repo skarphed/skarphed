@@ -3,21 +3,40 @@
 
 from Generic import GenericScovilleObject
 
-import json
+#import json
 
 class OperationManager(GenericScovilleObject):
     def __init__(self, parent):
         GenericScovilleObject.__init__(self)
         self.par = parent
+        self.refresh()
+        
+    def getOperationsRecursive(self):
+        ret = []
+        for op in self.children:
+            if op.__class__.__name__ == 'Operation':
+                ret.extend(op.getChildOperations())
+                ret.append(op)
+        return ret
     
     def refreshCallback(self,json):
         ids = [o.getId() for o in self.children]
-        for operation in json:
+        for operation in json.values():
             if operation['id'] not in ids:
-                self.addChild(Operation(self,operation))
+                if operation['parent'] is not None:
+                    parent = self.getOperationById(operation['parent'])
+                    parent.addChild(Operation(parent,operation))
+                else:
+                    self.addChild(Operation(self,operation))
             else:
                 self.getOperationById(operation['id']).update(operation)
-        
+                
+    def getOperationById(self, operationId):
+        for operation in self.children:
+            if operation.data['id'] == operationId:
+                return operation
+        return None    
+                
     def refresh(self):
         self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getOperations")
     
@@ -43,6 +62,14 @@ class Operation(GenericScovilleObject):
             return self.data['id']
         else:
             return None
+    
+    def getChildOperations(self):
+        ret = []
+        for op in self.children:
+            if op.__class__.__name__ == 'Operation':
+                ret.extend(op.getChildOperations())
+                ret.append(op)
+        return ret
     
     def operationCommandCallback(self,json):
         self.updated()

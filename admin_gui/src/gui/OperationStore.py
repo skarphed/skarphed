@@ -9,18 +9,23 @@ import IconStock
 
 class StoreException(Exception):pass
 
-class Store(gtk.TreeStore):
+class OperationStore(gtk.TreeStore):
     '''The Matchstore class is holding and managing the Data for the MatchTree. It communicates with the database'''
-    EXCLUDED_CLASSES = ("Operation","OperationManager")
+    WHITELISTED_CLASSES = ("Operation",)
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
         assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
         gtk.TreeStore.__init__(self,*args)
+        
+        if kwargs['server'] is not None:
+            self.server = kwargs['server']
+        else:
+            self.server = None
         self.par = kwargs['parent']
         self.objectStore  = kwargs['objectStore']
         self.objectStore.addCallback(self.render)
         self.busy = False # Prevent threadcollisions 
-        root = self.append(None,(IconStock.SCOVILLE,"Scoville Infrastructure",-2))
+        root = self.append(None,(IconStock.ERROR,IconStock.OPERATION,"Operationtree","",-2))
         #self.append(root,(IconStock.SCOVILLE,'Scoville Infrastructure',-2))
   
     def getPar(self):
@@ -31,7 +36,8 @@ class Store(gtk.TreeStore):
     
     def getIterById(self, id):
         def search(model, path, iter, id):
-                if model.get_value(iter,2) == id:
+                val = model.get_value(iter,4)
+                if val == id:
                     model.tempiter = iter
             
         if not self.busy:
@@ -50,41 +56,47 @@ class Store(gtk.TreeStore):
             raise StoreException("store is busy")
 
     def addObject(self,obj,addToRootIfNoParent=True):
-        obj = self.objectStore.getLocalObjectById(obj)
-        if obj.__class__.__name__ in self.EXCLUDED_CLASSES:
+        if obj.__class__.__name__ not in self.WHITELISTED_CLASSES:
             return True
         try:
-            parentIter = self.getIterById(obj.getPar().getLocalId())
-            self.append(parentIter,(IconStock.getAppropriateIcon(obj), obj.getName(),obj.getLocalId()))
-            return True
+            parent = obj.getPar()
+            if parent.__class__.__name__ == "Operation":
+                parentIter = self.getIterById(parent.getLocalId())
+                self.append(parentIter,(IconStock.ERROR,IconStock.OPERATION, obj.getName(), obj.data['invoked'],obj.getLocalId()))
+                return True
+            else:
+                raise Exception()
         except:
-            if addToRootIfNoParent or obj.par is None: 
+            if addToRootIfNoParent or obj.data['parent'] is None: 
                 root = self.getIterById(-2)
-                self.append(root,(IconStock.getAppropriateIcon(obj), obj.getName(),obj.getLocalId()))
+                self.append(root,(IconStock.ERROR,IconStock.OPERATION, obj.getName(), obj.data['invoked'],obj.getLocalId()))
                 return True
             return False
     
 
     def render(self):
         def search(model, path, iter):
-            id = model.get_value(iter,2)
+            id = model.get_value(iter,4)
             #print id
             if id >= 0:
                 try:
-                    obj = self.objectStore.getLocalObjectById(model.get_value(iter,2))
+                    obj = self.objectStore.getLocalObjectById(id)
                 #except data.Generic.GenericObjectStoreException,e:
                 except Exception,e:
                     self.itersToRemove.append(iter)
                 else:
-                    if obj.__class__.__name__ == "Server":
-                        model.set_value(iter,0,IconStock.getServerIcon(obj))
-                    if hasattr(obj,'data') and type(obj.data) == dict \
-                    and obj.data.has_key('name') and type(obj.data['name']) == unicode:
-                        model.set_value(iter,1,obj.data['name']) 
-                    self.objectsToAllocate.remove(id)
+                    model.set_value(iter,0,obj.data['status'] == 1)
+                    model.set_value(iter,1,IconStock.OPERATION)
+                    model.set_value(iter,2,obj.getName())
+                    model.set_value(iter,3,obj.data['invoked'])
+                    model.set_value(iter,4,id)
+                    self.objectsToAllocate.remove(obj)
                 
         objectsAllocated = 1
-        self.objectsToAllocate = self.objectStore.localObjects.keys()    
+        if self.server is not None:
+            self.objectsToAllocate = self.server.getOperationManager().getOperationsRecursive()
+        else:
+            self.objectsToAllocate = self.objectStore.getAllOperations()
         self.itersToRemove= []
         self.foreach(search)
         
@@ -93,12 +105,12 @@ class Store(gtk.TreeStore):
         
         while objectsAllocated > 0:
             objectsAllocated = 0
-            for id in self.objectsToAllocate:
-                if self.addObject(id, False):
-                    self.objectsToAllocate.remove(id)
+            for obj in self.objectsToAllocate:
+                if self.addObject(obj, False):
+                    self.objectsToAllocate.remove(obj)
                     objectsAllocated+=1
         
-        for id in self.objectsToAllocate:
-            self.addObject(id, True)
+        for obj in self.objectsToAllocate:
+            self.addObject(obj, True)
         
         
