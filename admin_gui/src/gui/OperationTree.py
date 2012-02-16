@@ -54,7 +54,7 @@ class OperationTree(gtk.TreeView):
         self.set_rules_hint(True)
         
         
-        self.connect("row-activated",self.cb_RowActivated)
+        #self.connect("row-activated",self.cb_RowActivated)
         #self.connect("row-expanded",self.cb_RowExpanded)
         self.connect("button_press_event",self.cb_ButtonPressed)
   
@@ -74,18 +74,18 @@ class OperationTree(gtk.TreeView):
                     self.context.popup(obj,event.button,event.get_time())
                 except:
                     pass
-    
-    def cb_RowActivated(self,treeview,iter,path,wdata=None): 
-        '''This callbackmethod defines behaviour after doubleclicking a row. It is calling open match
-           if the currently selected treeelement is representing a match'''
+        
+    def getCurrentOperation(self):
         selection = self.get_selection()
-        iter = selection.get_selected()[1]
-        id = self.store.get_value(iter,4)
-        if id >= 0:
-            object = self.getApplication().getLocalObjectById(id)
-            self.getPar().getTabs().openPage(object)
-        
-        
+        rowiter = selection.get_selected()[1]
+        if rowiter is None:
+            return None
+        opId = self.store.get_value(rowiter,4)
+        if opId >= 0:
+            obj = self.getApplication().getLocalObjectById(opId)
+            return obj
+        else:
+            return None
         
     def getPar(self):
         return self.par

@@ -184,6 +184,9 @@ class Server(GenericScovilleObject):
     def getOperationManager(self):
         return self.operationManager
     
+    def getModules(self):
+        return self.modules
+    
 def getServers():
     return ObjectStore().getServers()
 

@@ -53,6 +53,8 @@ class Store(gtk.TreeStore):
         obj = self.objectStore.getLocalObjectById(obj)
         if obj.__class__.__name__ in self.EXCLUDED_CLASSES:
             return True
+        if obj.__class__.__name__ == "Module" and (not obj.data.has_key('installed') or obj.data['installed'] == False):
+            return True
         try:
             parentIter = self.getIterById(obj.getPar().getLocalId())
             self.append(parentIter,(IconStock.getAppropriateIcon(obj), obj.getName(),obj.getLocalId()))

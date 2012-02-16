@@ -82,3 +82,4 @@ class Module(GenericScovilleObject):
     
     def getModules(self):
         return self.getPar()
+    

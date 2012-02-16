@@ -23,7 +23,7 @@ class Modules(GenericScovilleObject):
                 self.addChild(Module(self,module))
             else:
                 self.getModuleByName(module['name']).refresh(module)
-                
+        self.updated()       
     
     def getModuleByName(self,name):
         for module in self.children:
@@ -32,10 +32,24 @@ class Modules(GenericScovilleObject):
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getModules",[True])
+        self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getModules",[False])
     
     def getName(self):
         return "Modules"
+    
+    def getAllModules(self):
+        return self.children
+    
+    def moduleOperationCallback(self,json=None):
+        self.updated()
+        self.refresh()
+        self.getServer().getOperationManager().refresh()
+    
+    def installModule(self, module):
+        self.getApplication().doRPCCall(self.getServer(),self.moduleOperationCallback, "installModule",[module.data,0])       
+    
+    def uninstallModule(self, module):
+        self.getApplication().doRPCCall(self.getServer(),self.moduleOperationCallback, "uninstallModule",[module.data,0])
     
     def getPar(self):
         return self.par

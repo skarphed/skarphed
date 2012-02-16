@@ -103,6 +103,7 @@ class LoginWindow(gtk.Window):
         gtk.Window.__init__(self)
         self.par = parent
         self.set_title("Scoville Admin Pro :: Login")
+        self.set_icon_from_file("../data/icon/mp_logo.png")
         
         self.vbox = gtk.VBox()
         self.image = gtk.image_new_from_file("../data/login.png")

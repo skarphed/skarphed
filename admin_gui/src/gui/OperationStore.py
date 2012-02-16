@@ -16,16 +16,18 @@ class OperationStore(gtk.TreeStore):
         '''Constructor --'''
         assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
         gtk.TreeStore.__init__(self,*args)
+        self.par = kwargs['parent']
+        self.objectStore  = kwargs['objectStore']
         
         if kwargs['server'] is not None:
             self.server = kwargs['server']
+            self.server.getOperationManager().addCallback(self.render)
         else:
             self.server = None
-        self.par = kwargs['parent']
-        self.objectStore  = kwargs['objectStore']
-        self.objectStore.addCallback(self.render)
+            self.objectStore.addCallback(self.render)
+                
         self.busy = False # Prevent threadcollisions 
-        root = self.append(None,(IconStock.ERROR,IconStock.OPERATION,"Operationtree","",-2))
+        self.root = self.append(None,(IconStock.ERROR,IconStock.OPERATION,"Operationtree","",-2))
         #self.append(root,(IconStock.SCOVILLE,'Scoville Infrastructure',-2))
   
     def getPar(self):
@@ -85,9 +87,9 @@ class OperationStore(gtk.TreeStore):
                 except Exception,e:
                     self.itersToRemove.append(iter)
                 else:
-                    model.set_value(iter,0,obj.data['status'] == 1)
+                    model.set_value(iter,0,IconStock.ERROR)
                     model.set_value(iter,1,IconStock.OPERATION)
-                    model.set_value(iter,2,obj.getName())
+                    model.set_value(iter,2,obj.data['type'])
                     model.set_value(iter,3,obj.data['invoked'])
                     model.set_value(iter,4,id)
                     self.objectsToAllocate.remove(obj)

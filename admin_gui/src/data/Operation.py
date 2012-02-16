@@ -3,13 +3,32 @@
 
 from Generic import GenericScovilleObject
 
-#import json
+import gobject
+from threading import Thread
+from time import sleep
 
 class OperationManager(GenericScovilleObject):
+    class RefreshThread(Thread):
+        def __init__(self, operationManager):
+            Thread.__init__(self)
+            self.opm = operationManager
+            
+        def run(self):
+            while True:
+                sleep(0.5)
+                if self.opm.periodicRefresh:
+                    self.opm.refresh()
+                if self.opm.getApplication().quitrequest:
+                    break
+            
     def __init__(self, parent):
         GenericScovilleObject.__init__(self)
         self.par = parent
         self.refresh()
+        self.periodicRefresh = False
+        self.refreshThread = self.RefreshThread(self)
+        self.refreshThread.start()
+        
         
     def getOperationsRecursive(self):
         ret = []
@@ -21,6 +40,9 @@ class OperationManager(GenericScovilleObject):
     
     def refreshCallback(self,json):
         ids = [o.getId() for o in self.children]
+        if type(json) == list:
+            json = {}
+        processedOperations = []
         for operation in json.values():
             if operation['id'] not in ids:
                 if operation['parent'] is not None:
@@ -30,6 +52,20 @@ class OperationManager(GenericScovilleObject):
                     self.addChild(Operation(self,operation))
             else:
                 self.getOperationById(operation['id']).update(operation)
+            processedOperations.append(operation['id'])
+        for operation in self.children:
+            if operation.getId() not in processedOperations:
+                typ = operation.data['type']
+                if typ == 'ModuleInstallOperation' or typ == 'ModuleUninstallOperation':
+                    operation.getOperationManager().getServer().getModules().refresh()
+                self.children.remove(operation)
+                operation.destroy()
+        self.updated()
+        
+        if len(self.children) > 0:
+            self.periodicRefresh = True
+        else:
+            self.periodicRefresh = False
                 
     def getOperationById(self, operationId):
         for operation in self.children:
@@ -47,6 +83,9 @@ class OperationManager(GenericScovilleObject):
         return self.getPar()
     
 class Operation(GenericScovilleObject):
+    PENDING = 0
+    ACTIVE = 1
+    FAILED = 2
     def __init__(self,parent,data):
         GenericScovilleObject.__init__(self)
         self.par = parent
@@ -90,4 +129,8 @@ class Operation(GenericScovilleObject):
         return self.par
     
     def getOperationManager(self):
-        return self.getPar()
+        par = self.getPar()
+        if par.__class__.__name__ == "Operation":
+            return par.getOperationManager()
+        else: # OperationManager
+            return par

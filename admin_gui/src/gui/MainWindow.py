@@ -11,7 +11,7 @@ from LoginWindow import LoginWindow
 from Tree import Tree
 from Tabs import Tabs
 from CssEditor import CssEditor
-#from IconStock import LOGO
+
 
 class GetParentException(Exception):pass
 
@@ -23,7 +23,7 @@ class MainWindow(gtk.Window):
         self.openCssEditors = {}
         
         self.set_title("Scoville Admin PRO")
-       #self.set_icon(LOGO)
+        self.set_icon_from_file("../data/icon/mp_logo.png")
         self.maximize()
         
         self.table = gtk.Table(5,1,False)
