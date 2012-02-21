@@ -582,6 +582,7 @@
 		 */
 		public function doWorkload(){
 			$core = Core::getInstance();
+			throw new \Exception("I failed so fuckin hard!");
 			$core->debugGrindlog("ID:  ".(string)$this->getValue("val")."\n");
 		}
 	}
