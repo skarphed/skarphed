@@ -2,7 +2,6 @@
 #-*- coding: utf-8 -*-
 
 import urllib2, cookielib
-import StringIO
 import threading
 import time
 import json
@@ -50,7 +49,7 @@ class ScovilleRPC(threading.Thread):
             answer = urllib2.urlopen(self.request)
             plaintext = answer.read() #Line is obviously unnescessary, but a good debugging point :)
             result = json_dec.decode(plaintext)
-        except urllib2.URLError, e:
+        except urllib2.URLError:
             result = {'error':'HTTP-ERROR'}
     
         Tracker().removeProcess()

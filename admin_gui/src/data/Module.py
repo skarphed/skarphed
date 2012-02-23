@@ -44,9 +44,9 @@ class Module(GenericScovilleObject):
         self.updated()
     
     def loadCssPropertySet(self):
-        id = self.getId()
-        if id is not None:
-            self.getApplication().doRPCCall(self.getModules().getServer(),self.loadCssPropertySetCallback, "getCssPropertySet", [id,None,None])
+        obj_id = self.getId()
+        if obj_id is not None:
+            self.getApplication().doRPCCall(self.getModules().getServer(),self.loadCssPropertySetCallback, "getCssPropertySet", [obj_id,None,None])
     
     def getCssPropertySet(self):
         return self.cssPropertySet
@@ -71,9 +71,9 @@ class Module(GenericScovilleObject):
     def loadWidgets(self):
         self.getApplication().doRPCCall(self.getModules().getServer(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getModuleName()])
     
-    def getWidgetById(self,id):
+    def getWidgetById(self,obj_id):
         for widget in self.children:
-            if widget.getId() == id:
+            if widget.getId() == obj_id:
                 return widget
         return None
     

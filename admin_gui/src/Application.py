@@ -1,14 +1,11 @@
 #!/usr/bin/python
 
 import gui
-import data
 import data.Generic
 import data.Profile
-import data.Server
 import net.HTTPRpc
 import net.Tracker
 import net.SSH
-import gobject
 import os
 
 class ApplicationException(Exception): pass
@@ -69,8 +66,8 @@ class Application(object):
     def getData(self):
         return data
     
-    def getLocalObjectById(self,id):
-        return self.getObjectStore().getLocalObjectById(id)
+    def getLocalObjectById(self,obj_id):
+        return self.getObjectStore().getLocalObjectById(obj_id)
     
         
 application = Application()

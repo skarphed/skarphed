@@ -171,7 +171,6 @@ class RepositoryPage(GenericObjectPage):
                     else:
                         self.mod_IListStore.append((gui.IconStock.MODULE, module.getName(), module.getLocalId() ))
                 else:
-                    print "GEFUNDEN"
                     if module.data.has_key('toUpdate') and module.data['toUpdate'] == True:
                         self.mod_IListStore.set_value(rowiter,0,gui.IconStock.MODULE_UPDATEABLE)
                     else:

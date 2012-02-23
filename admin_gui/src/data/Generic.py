@@ -17,10 +17,10 @@ class ObjectStore(object):
     callbacks = []
     
     
-    def getLocalObjectById(self,id):
+    def getLocalObjectById(self,obj_id):
         try:
-            return ObjectStore.localObjects[id]
-        except Exception ,e :
+            return ObjectStore.localObjects[obj_id]
+        except Exception:
             raise GenericObjectStoreException("Object does not exist")
     
     def getChildrenOf(self,obj):

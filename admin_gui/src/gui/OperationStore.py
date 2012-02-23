@@ -36,11 +36,11 @@ class OperationStore(gtk.TreeStore):
     def getApplication(self):
         return self.par.getApplication()
     
-    def getIterById(self, id):
-        def search(model, path, iter, id):
-                val = model.get_value(iter,4)
+    def getIterById(self, obj_id):
+        def search(model, path, rowiter, obj_id):
+                val = model.get_value(rowiter,4)
                 if val == id:
-                    model.tempiter = iter
+                    model.tempiter = rowiter
             
         if not self.busy:
             self.busy = True
@@ -48,10 +48,10 @@ class OperationStore(gtk.TreeStore):
             self.tempiter = None
             self.foreach(search, id)
             
-            iter=self.tempiter
+            rowiter=self.tempiter
             self.busy = False
-            if iter is not None:
-                return iter
+            if rowiter is not None:
+                return rowiter
             else:
                 return None
         else:
@@ -77,21 +77,20 @@ class OperationStore(gtk.TreeStore):
     
 
     def render(self):
-        def search(model, path, iter):
-            id = model.get_value(iter,4)
-            #print id
-            if id >= 0:
+        def search(model, path, rowiter):
+            obj_id = model.get_value(rowiter,4)
+            if obj_id >= 0:
                 try:
-                    obj = self.objectStore.getLocalObjectById(id)
+                    obj = self.objectStore.getLocalObjectById(obj_id)
                 #except data.Generic.GenericObjectStoreException,e:
-                except Exception,e:
-                    self.itersToRemove.append(iter)
+                except Exception:
+                    self.itersToRemove.append(rowiter)
                 else:
-                    model.set_value(iter,0,IconStock.ERROR)
-                    model.set_value(iter,1,IconStock.OPERATION)
-                    model.set_value(iter,2,obj.data['type'])
-                    model.set_value(iter,3,obj.data['invoked'])
-                    model.set_value(iter,4,id)
+                    model.set_value(rowiter,0,IconStock.ERROR)
+                    model.set_value(rowiter,1,IconStock.OPERATION)
+                    model.set_value(rowiter,2,obj.data['type'])
+                    model.set_value(rowiter,3,obj.data['invoked'])
+                    model.set_value(rowiter,4,obj_id)
                     self.objectsToAllocate.remove(obj)
                 
         objectsAllocated = 1
@@ -102,9 +101,9 @@ class OperationStore(gtk.TreeStore):
         self.itersToRemove= []
         self.foreach(search)
         
-        for iter in self.itersToRemove:
-            self.remove(iter)
-        
+        for rowiter in self.itersToRemove:
+            self.remove(rowiter)
+
         while objectsAllocated > 0:
             objectsAllocated = 0
             for obj in self.objectsToAllocate:
