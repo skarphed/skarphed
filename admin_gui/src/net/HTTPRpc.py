@@ -34,7 +34,7 @@ class ScovilleRPC(threading.Thread):
         
         json_enc = json.JSONEncoder()
         
-        url = str('http://'+server.getIp()+'/rpc/?nocache='+ str(int (time.time()*1000)))
+        url = str(server.getUrl()+'/rpc/?nocache='+ str(int (time.time()*1000)))
         post = '{"service":"scoville_admin.scvRpc","method":"'+method+'","id":1,"params":'+json_enc.encode(params)+'}'
         
         self.request = urllib2.Request(url,post,self.HEADERS)

@@ -63,7 +63,8 @@ class GenericScovilleObject(object):
         ObjectStore.localIDcounter+=1 
         self.localId = ObjectStore.localIDcounter
         ObjectStore.localObjects[self.localId] = self
-        self.par = None
+        if not hasattr(self, 'par'):
+            self.par = None
         self.updateCallbacks = []
         self.children = []
         

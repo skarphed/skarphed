@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 
 class Repository(GenericScovilleObject):
     def __init__(self,parent, data = {}):
@@ -24,5 +24,8 @@ class Repository(GenericScovilleObject):
     def getPar(self):
         return self.par
     
-    def getServer(self):
+    def getScoville(self):
         return self.getPar()
+    
+    def getServer(self):
+        return self.getPar().getServer()

@@ -1,4 +1,8 @@
-from Generic import GenericScovilleObject
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+
+
+from data.Generic import GenericScovilleObject
 
 import json as jayson
 
@@ -32,7 +36,7 @@ class Widget(GenericScovilleObject):
     def loadCssPropertySet(self):
         id = self.getId()
         if id is not None:
-            self.getApplication().doRPCCall(self.getModule().getModules().getServer(),self.loadCssPropertySetCallback, "getCssPropertySet", [None,id,None])
+            self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.loadCssPropertySetCallback, "getCssPropertySet", [None,id,None])
     
     def getCssPropertySet(self):
         return self.cssPropertySet
@@ -44,7 +48,7 @@ class Widget(GenericScovilleObject):
         self.loadCssPropertySet()
     
     def saveCssPropertySet(self):
-        self.getApplication().doRPCCall(self.getModule().getModules().getServer(),self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
     
     
     def getPar(self):

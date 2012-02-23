@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 from Widget import Widget
 
 import json as jayson
@@ -46,7 +46,7 @@ class Module(GenericScovilleObject):
     def loadCssPropertySet(self):
         obj_id = self.getId()
         if obj_id is not None:
-            self.getApplication().doRPCCall(self.getModules().getServer(),self.loadCssPropertySetCallback, "getCssPropertySet", [obj_id,None,None])
+            self.getApplication().doRPCCall(self.getModules().getScoville(),self.loadCssPropertySetCallback, "getCssPropertySet", [obj_id,None,None])
     
     def getCssPropertySet(self):
         return self.cssPropertySet
@@ -58,7 +58,7 @@ class Module(GenericScovilleObject):
         self.loadCssPropertySet()
     
     def saveCssPropertySet(self):
-        self.getApplication().doRPCCall(self.getModules().getServer(),self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.getApplication().doRPCCall(self.getModules().getScoville(),self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
     
     def loadWidgetsCallback(self,data):
         widgetIds = [w.getId() for w in self.children]
@@ -69,7 +69,7 @@ class Module(GenericScovilleObject):
                 self.getWidgetById(widget['id']).refresh(widget)
     
     def loadWidgets(self):
-        self.getApplication().doRPCCall(self.getModules().getServer(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getModuleName()])
+        self.getApplication().doRPCCall(self.getModules().getScoville(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getModuleName()])
     
     def getWidgetById(self,obj_id):
         for widget in self.children:

@@ -1,9 +1,9 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 
-class Template(GenericScovilleObject):
+class Site(GenericScovilleObject):
     def __init__(self,parent, data = {}):
         GenericScovilleObject.__init__(self)
         self.par = parent
@@ -11,7 +11,16 @@ class Template(GenericScovilleObject):
         self.updated()
     
     def getName(self):
-        return "Templates"
+        if self.data.has_key('name'):
+            return self.data['name']
+        else:
+            return "Unknown Site"
+    
+    def getId(self):
+        if self.data.has_key('id'):
+            return self.data['id']
+        else:
+            return None
     
     def refresh(self,data):
         self.data = data

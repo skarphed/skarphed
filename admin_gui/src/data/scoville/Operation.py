@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 
 import gobject
 from threading import Thread
@@ -57,7 +57,7 @@ class OperationManager(GenericScovilleObject):
             if operation.getId() not in processedOperations:
                 typ = operation.data['type']
                 if typ == 'ModuleInstallOperation' or typ == 'ModuleUninstallOperation':
-                    operation.getOperationManager().getServer().getModules().refresh()
+                    operation.getOperationManager().getScoville().getModules().refresh()
                 self.children.remove(operation)
                 operation.destroy()
         self.updated()
@@ -74,12 +74,12 @@ class OperationManager(GenericScovilleObject):
         return None    
                 
     def refresh(self):
-        self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getOperations")
+        self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getOperations")
     
     def getPar(self):
         return self.par
     
-    def getServer(self):
+    def getScoville(self):
         return self.getPar()
     
 class Operation(GenericScovilleObject):
@@ -114,13 +114,13 @@ class Operation(GenericScovilleObject):
         self.updated()
     
     def cancel(self):
-        self.getApplication().doRPCCall(self.getOperationManager().getServer(),self.operationCommandCallback, "cancelOperation",[self.getId()])
+        self.getApplication().doRPCCall(self.getOperationManager().getScoville(),self.operationCommandCallback, "cancelOperation",[self.getId()])
     
     def drop(self):
-        self.getApplication().doRPCCall(self.getOperationManager().getServer(),self.operationCommandCallback, "dropOperation",[self.getId()])
+        self.getApplication().doRPCCall(self.getOperationManager().getScoville(),self.operationCommandCallback, "dropOperation",[self.getId()])
     
     def retry(self):
-        self.getApplication().doRPCCall(self.getOperationManager().getServer(),self.operationCommandCallback, "retryOperation",[self.getId()])
+        self.getApplication().doRPCCall(self.getOperationManager().getScoville(),self.operationCommandCallback, "retryOperation",[self.getId()])
     
     def getName(self):
         return "Operation"

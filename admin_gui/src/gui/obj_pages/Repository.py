@@ -81,7 +81,7 @@ class RepositoryPage(GenericObjectPage):
         self.mod_AList_col_module.set_sort_column_id(1)
         self.mod_AListScroll.add(self.mod_AList)
         
-        self.mod_CList = OperationTool(self,self.repo.getServer())
+        self.mod_CList = OperationTool(self,self.repo.getScoville())
         
         self.modbox.attach(self.mod_label,0,2,0,1)
         self.modbox.attach(self.mod_labelInstalled,0,1,1,2)
@@ -110,7 +110,7 @@ class RepositoryPage(GenericObjectPage):
         
         self.render()
         obj.addCallback(self.render)
-        self.repo.getServer().getOperationManager().addCallback(self.render)
+        self.repo.getScoville().getOperationManager().addCallback(self.render)
         self.getApplication().getObjectStore().addCallback(self.render)
     
     def iListGetDataCallback(self, treeview, context, selection, info, timestamp):
@@ -129,13 +129,13 @@ class RepositoryPage(GenericObjectPage):
         if context.get_source_widget().get_name() != "AList":
             return
         module = self.getApplication().getLocalObjectById(int(selection.data))
-        self.repo.getServer().getModules().installModule(module)
+        self.repo.getScoville().getModules().installModule(module)
     
     def aListReceiveCallback(self, treeview, context, x, y, selection, info , timestamp):
         if context.get_source_widget().get_name() != "IList":
             return
         module = self.getApplication().getLocalObjectById(int(selection.data))
-        self.repo.getServer().getModules().uninstallModule(module)    
+        self.repo.getScoville().getModules().uninstallModule(module)    
     
     def getModuleIterById(self, moduleList, moduleId):
         def search(model, path, rowiter, moduleId):
@@ -162,7 +162,7 @@ class RepositoryPage(GenericObjectPage):
         self.processedIListIds = []
         self.processedAListIds = []
         
-        for module in self.repo.getServer().getModules().getAllModules():
+        for module in self.repo.getScoville().getModules().getAllModules():
             if module.data.has_key('installed') and module.data['installed'] == True:
                 rowiter = self.getModuleIterById(self.mod_IListStore,module.getLocalId())
                 if rowiter is None:

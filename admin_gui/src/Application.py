@@ -23,6 +23,9 @@ class Application(object):
         self.tracker.start()
         self.state = self.STATE_LOGGEDOUT
         self.activeProfile=None
+        self.instanceTypes = []
+        
+        from data import scoville
     
     def run(self):
         gui.run()
@@ -69,7 +72,15 @@ class Application(object):
     def getLocalObjectById(self,obj_id):
         return self.getObjectStore().getLocalObjectById(obj_id)
     
+    def registerInstanceType(self, instancetype):
+        self.instanceTypes.append(instancetype)
         
+    def getInstanceTypes(self):
+        return self.instanceTypes
+    
+    def createServerFromInstanceUrl(self, instanceurl):
+        return data.createServerFromInstanceUrl(instanceurl)
+    
 application = Application()
 application.run()
 

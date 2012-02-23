@@ -1,10 +1,11 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-import data.Generic
-import data.Server
+import Generic
+import Server 
 
-createServer = data.Server.createServer
+createServer = Server.createServer
+createServerFromInstanceUrl = Server.createServerFromInstanceUrl
 
 def getObjectStore():
-    return data.Generic.ObjectStore()
+    return Generic.ObjectStore()

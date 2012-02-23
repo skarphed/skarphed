@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 
 import json
 
@@ -37,7 +37,7 @@ class User(GenericScovilleObject):
         self.updated()
     
     def fetchRightsData(self):
-        self.getApplication().doRPCCall(self.getUsers().getServer(),
+        self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.fetchRightsDataCallback,
                                       "getRightsForUserPage",
                                       [self.getName()]
@@ -50,7 +50,7 @@ class User(GenericScovilleObject):
         self.updated()
     
     def fetchRoleData(self):
-        self.getApplication().doRPCCall(self.getUsers().getServer(),
+        self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.fetchRoleDataCallback,
                                       "getRolesForUserPage",
                                       [self.getName()]
@@ -61,7 +61,7 @@ class User(GenericScovilleObject):
         self.fetchRoleData()
     
     def assignRole(self,role):
-        self.getApplication().doRPCCall(self.getUsers().getServer(),
+        self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.assignRoleCallback,
                                       "assignRoleToUser",
                                       [self.getName(),role]
@@ -72,7 +72,7 @@ class User(GenericScovilleObject):
         self.fetchRoleData()
     
     def removeRole(self,role):
-        self.getApplication().doRPCCall(self.getUsers().getServer(),
+        self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.removeRoleCallback,
                                       "revokeRoleFromUser",
                                       [self.getName(),role]
@@ -82,7 +82,7 @@ class User(GenericScovilleObject):
         self.fetchRightsData()
     
     def assignPermission(self,right):
-        self.getApplication().doRPCCall(self.getUsers().getServer(),
+        self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.assignPermissionCallback,
                                       "grantRightToUser",
                                       [self.getName(),right]
@@ -92,7 +92,7 @@ class User(GenericScovilleObject):
         self.fetchRightsData()
     
     def removePermission(self,role):
-        self.getApplication().doRPCCall(self.getUsers().getServer(),
+        self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.removePermissionCallback,
                                       "revokeRightFromUser",
                                       [self.getName(),role]

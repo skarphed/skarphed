@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 
 from Role import Role
 import json
@@ -31,7 +31,7 @@ class Roles(GenericScovilleObject):
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getRoles")
+        self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getRoles")
     
     def getName(self):
         return "Roles"
@@ -39,5 +39,8 @@ class Roles(GenericScovilleObject):
     def getPar(self):
         return self.par
     
-    def getServer(self):
+    def getScoville(self):
         return self.getPar()
+    
+    def getServer(self):
+        return self.getPar().getServer()

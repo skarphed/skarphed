@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 
 from Module import Module
 import json
@@ -32,7 +32,7 @@ class Modules(GenericScovilleObject):
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getModules",[False])
+        self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getModules",[False])
     
     def getName(self):
         return "Modules"
@@ -43,16 +43,19 @@ class Modules(GenericScovilleObject):
     def moduleOperationCallback(self,json=None):
         self.updated()
         self.refresh()
-        self.getServer().getOperationManager().refresh()
+        self.getScoville().getOperationManager().refresh()
     
     def installModule(self, module):
-        self.getApplication().doRPCCall(self.getServer(),self.moduleOperationCallback, "installModule",[module.data,0])       
+        self.getApplication().doRPCCall(self.getScoville(),self.moduleOperationCallback, "installModule",[module.data,0])       
     
     def uninstallModule(self, module):
-        self.getApplication().doRPCCall(self.getServer(),self.moduleOperationCallback, "uninstallModule",[module.data,0])
+        self.getApplication().doRPCCall(self.getScoville(),self.moduleOperationCallback, "uninstallModule",[module.data,0])
     
     def getPar(self):
         return self.par
     
-    def getServer(self):
+    def getScoville(self):
         return self.getPar()
+    
+    def getServer(self):
+        return self.getPar().getServer()

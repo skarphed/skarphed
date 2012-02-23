@@ -1,18 +1,11 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
+import socket
+import re
+
 from Generic import GenericScovilleObject
 from Generic import ObjectStore
-
-from Users import Users
-from Modules import Modules
-from Roles import Roles
-from Sites import Sites
-from Repository import Repository
-from Template import Template
-from Operation import OperationManager
-
-import json as jayson #HERE BE DRAGONS
 
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
@@ -21,9 +14,6 @@ class Server(GenericScovilleObject):
     SSH_LOCKED = 0
     SSH_UNLOCKED = 1
     
-    SCV_LOCKED = 0
-    SCV_UNLOCKED = 1
-    
     LOADED_NONE = 0
     LOADED_PROFILE = 1
     LOADED_SERVERDATA = 2
@@ -31,45 +21,23 @@ class Server(GenericScovilleObject):
     def __init__(self):
         GenericScovilleObject.__init__(self)
         self.state = self.STATE_OFFLINE
-        self.scv_loggedin = self.SCV_LOCKED
         self.ssh_loggedin = self.SSH_LOCKED
         self.load = self.LOADED_NONE
         self.data = {}
         
         self.ip = ""
-        self.username = ""
-        self.password = ""
         self.ssh_username = ""
         self.ssh_password = ""
-        
-        self.users = None
-        self.templates = None
-        self.roles = None
-        self.modules = None
-        self.sites = None
-        self.repo = None
-        self.operationManager = None
-        
-        self.cssPropertySet = None
-        
+
+    def setName(self,name):
+        self.name = name
+
     def setIp(self,ip):
         self.ip= ip
         self.updated()
     
     def getIp(self):
         return self.ip
-    
-    def setScvName(self,name):
-        self.username = name
-        
-    def setScvPass(self, password):
-        self.password = password
-    
-    def getScvName(self):
-        return self.username
-        
-    def getScvPass(self):
-        return self.password
         
     def setSSHName(self, name):
         self.ssh_username = name
@@ -91,54 +59,11 @@ class Server(GenericScovilleObject):
         self.load = self.LOADED_SERVERDATA
         self.state = self.STATE_ONLINE
         self.updated()
-    
-    def getServerInfo(self):
-        self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getServerInfo")
-    
-    def loadScovilleChildren(self):
-        if 'scoville.users.view' in self.serverRights:
-            self.users = Users(self)
-            self.addChild(self.users)
-        if 'scoville.modules.install' in self.serverRights or 'scoville.modules.uninstall' in self.serverRights:
-            self.modules = Modules(self)
-            self.addChild(self.modules)
-        if 'scoville.roles.view' in self.serverRights:
-            self.roles = Roles(self)
-            self.addChild(self.roles)
-        if True: #'scoville.sites.view' in self.serverRights
-            self.sites = Sites(self)
-            self.addChild(self.sites)
-        if 'scoville.modules.install' in self.serverRights or 'scoville.modules.uninstall' in self.serverRights:
-            self.repo = Repository(self)
-            self.addChild(self.repo)
-        if True: #'scoville.template.modify' in self.serverRights
-            self.templates = Template(self)
-            self.addChild(self.templates)
-        if True: #'scoville.operation.modify' in self.serverRights
-            self.operationManager = OperationManager(self)
-        
-        #TODO: restliche implementieren
-    
-    def authenticateCallback(self, result):
-        if result == False:
-            self.scv_loggedin = self.SCV_LOCKED
-            self.serverRights = []
-        else:
-            self.scv_loggedin = self.SCV_UNLOCKED
-            self.serverRights = result
-            print self.serverRights
-        self.updated()
-        self.loadScovilleChildren()
-        
-    def authenticate(self):
-        self.getApplication().doRPCCall(self,self.authenticateCallback, "authenticateUser", [self.username,self.password])
-    
+
     def connectSSH(self):
         self.getApplication().getSSHConnection(self)
     
     def establishConnections(self):
-        self.getServerInfo()
-        self.authenticate()
         self.connectSSH()
     
     def getName(self):
@@ -147,7 +72,7 @@ class Server(GenericScovilleObject):
         elif self.load == self.LOADED_PROFILE:
             return " [ "+self.ip+" ]"
         else:
-            return "Unknown ScovilleServer"
+            return "Unknown Server"
         
             
     def loadProfileInfo(self,profileInfo):
@@ -156,39 +81,49 @@ class Server(GenericScovilleObject):
     def getSSHState(self):
         return self.ssh_loggedin
     
-    def getSCVState(self):
-        return self.scv_loggedin
-    
     def isOnline(self):
         return self.state==self.STATE_ONLINE
     
-    def loadCssPropertySetCallback(self,json):
-        self.cssPropertySet = jayson.JSONDecoder().decode(json)
+    def getServer(self):
+        return self
+    
+    def createInstance(self,instanceType, url, username, password):
+        instance = None
+        exec "from "+instanceType.instanceTypeName+"."+instanceType.instanceTypeName.capitalize()+\
+             " import "+instanceType.instanceTypeName.capitalize()
+        exec "instance = "+instanceType.instanceTypeName.capitalize()+"(self, url, username, password)"
+        self.addChild(instance)
         self.updated()
+        instance.establishConnections()
     
-    def loadCssPropertySet(self):
-        self.getApplication().doRPCCall(self,self.loadCssPropertySetCallback, "getCssPropertySet", [None,None,None])
-    
-    def getCssPropertySet(self):
-        return self.cssPropertySet
-    
-    def setCssPropertySet(self,cssPropertySet):
-        self.cssPropertySet['properties'] = cssPropertySet
-    
-    def saveCssPropertySetCallback(self,json):
-        self.loadCssPropertySet()
-    
-    def saveCssPropertySet(self):
-        self.getApplication().doRPCCall(self,self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
-    
-    def getOperationManager(self):
-        return self.operationManager
-    
-    def getModules(self):
-        return self.modules
-    
+    def getInstances(self):
+        return self.children
+
+class DNSError(Exception):
+    pass
+
 def getServers():
     return ObjectStore().getServers()
 
 def createServer():
     return Server()
+
+def createServerFromInstanceUrl(instanceurl):
+    instanceurl = re.sub(r'^[A-Za-z]+:\//','',instanceurl)
+    instanceurl = re.sub(r'/.+$','',instanceurl)
+    instanceurl = re.sub(r':\d{1,5}$','',instanceurl)
+    
+    if not re.match(r'\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b',instanceurl):
+        try:
+            ip = socket.gethostbyaddr(instanceurl)
+        except socket.gaierror:
+            raise DNSError("Couldn't resolve")
+    else:
+        ip = instanceurl
+    for server in getServers():
+        if ip == server.getIp():
+            return server
+    server = Server()
+    server.setIp(ip)
+    server.setName("Neuer Server")
+    return server

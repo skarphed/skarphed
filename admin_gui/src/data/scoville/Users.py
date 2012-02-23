@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 
 from User import User
 
@@ -20,14 +20,14 @@ class Users(GenericScovilleObject):
             else:
                 self.getUserById(user['id']).refresh(user)
                 
-    def getUserById(self,id):
+    def getUserById(self,userId):
         for u in self.children:
-            if u.getUserId() == id:
+            if u.getUserId() == userId:
                 return u
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getServer(),self.refreshCallback, "getUsers")
+        self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getUsers")
     
     def getName(self):
         return "Users"
@@ -35,5 +35,8 @@ class Users(GenericScovilleObject):
     def getPar(self):
         return self.par
     
-    def getServer(self):
+    def getScoville(self):
         return self.getPar()
+    
+    def getServer(self):
+        return self.getPar().getServer()

@@ -5,8 +5,10 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from ViewPasswordButton import ViewPasswordButton
 
+from IconStock import SCOVILLE
+from ViewPasswordButton import ViewPasswordButton
+from InstanceWindow import InstanceWindow
 
 class ServerPropertyWindow(gtk.Window):
     addWindowOpen=False
@@ -37,22 +39,7 @@ class ServerPropertyWindow(gtk.Window):
         self.ipFrameT.attach(self.ipFrame_IPEntry, 1,2,0,1)
         self.ipFrame.add(self.ipFrameT)
         self.vbox.pack_start(self.ipFrame,False)
-        
-        self.scvFrame = gtk.Frame("Scoville")
-        self.scvFrameT = gtk.Table(2,2,False)
-        self.scvFrame_NameLabel = gtk.Label("Username:")
-        self.scvFrame_NameEntry = gtk.Entry()
-        self.scvFrame_PassLabel = gtk.Label("Password:")
-        self.scvFrame_PassEntry = gtk.Entry()
-        self.scvFrame_PassEntry.set_visibility(False)
-        self.scvFrame_PassEntry.set_invisible_char("●")
-        self.scvFrameT.attach(self.scvFrame_NameLabel, 0,1,0,1)
-        self.scvFrameT.attach(self.scvFrame_NameEntry, 1,2,0,1)
-        self.scvFrameT.attach(self.scvFrame_PassLabel, 0,1,1,2)
-        self.scvFrameT.attach(self.scvFrame_PassEntry, 1,2,1,2)
-        self.scvFrame.add(self.scvFrameT)
-        self.vbox.pack_start(self.scvFrame,False)
-        
+                
         self.sshFrame = gtk.Frame("SSH")
         self.sshFrameT = gtk.Table(2,2,False)
         self.sshFrame_NameLabel = gtk.Label("Username:")
@@ -68,6 +55,25 @@ class ServerPropertyWindow(gtk.Window):
         self.sshFrame.add(self.sshFrameT)
         self.vbox.pack_start(self.sshFrame,False)
         
+        if server is not None:
+            self.instFrame = gtk.Frame("Instances")
+            self.instFrameT = gtk.Table(2,4,False)
+            self.instList = gtk.TreeView()
+            self.instStore = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
+            self.instList.set_model(self.instStore)
+            self.instAdd = gtk.Button(stock=gtk.STOCK_ADD)
+            self.instRemove = gtk.Button(stock=gtk.STOCK_REMOVE)
+            self.instEdit = gtk.Button(stock=gtk.STOCK_EDIT)
+            self.instFrameT.attach(self.instList,0,1,0,4)
+            self.instFrameT.attach(self.instAdd,1,2,0,1)
+            self.instFrameT.attach(self.instRemove,1,2,1,2)
+            self.instFrameT.attach(self.instEdit,1,2,2,3)
+            self.instAdd.connect("clicked",self.cb_Add)
+            self.instRemove.connect("clicked",self.cb_Remove)
+            self.instEdit.connect("clicked",self.cb_Edit)
+            self.instFrame.add(self.instFrameT)
+            self.vbox.pack_start(self.instFrame,False)
+        
         self.fill = gtk.Label("")
         self.vbox.pack_start(self.fill,True)
         
@@ -75,7 +81,6 @@ class ServerPropertyWindow(gtk.Window):
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
         self.cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
         self.viewpass = ViewPasswordButton()
-        self.viewpass.addEntry(self.scvFrame_PassEntry)
         self.viewpass.addEntry(self.sshFrame_PassEntry)
         self.ok.connect("clicked", self.cb_OK)
         self.cancel.connect("clicked", self.cb_Cancel)
@@ -93,12 +98,17 @@ class ServerPropertyWindow(gtk.Window):
         
         if server is not None:
             self.ipFrame_IPEntry.set_text(server.getIp())
-            self.scvFrame_NameEntry.set_text(server.getScvName())
-            self.scvFrame_PassEntry.set_text(server.getScvPass())
             self.sshFrame_NameEntry.set_text(server.getSSHName())
             self.sshFrame_PassEntry.set_text(server.getSSHPass())
-        
+            server.addCallback(self.render)
         self.show_all()
+        
+    
+    def render(self):
+        self.instStore.clear()
+        for instance in self.server.getInstances():
+            icon = SCOVILLE #TODO: Implement Icon
+            self.instStore.append((icon,instance.getName(),instance.getLocalId()))
         
     def getPar(self):
         return self.par
@@ -106,14 +116,35 @@ class ServerPropertyWindow(gtk.Window):
     def getApplication(self):
         return self.par.getApplication()
     
+    def cb_Add(self,widget=None,data=None):
+        InstanceWindow(self)
+    
+    def cb_Remove(self,widget=None,data=None):
+        instance = self.getCurrentInstance()
+        if instance is None:
+            return
+        self.server.removeInstance(instance)
+    
+    def cb_Edit(self,widget=None,data=None):
+        instance = self.getCurrentInstance()
+        if instance is None:
+            return
+        InstanceWindow(self,instance)
+    
+    def getCurrentInstance(self, onlyId):
+        if self.server is None:
+            return None
+        selection = self.instList.get_selection()
+        rowiter = selection.get_selected()[1]
+        return self.getApplication().getLocalObjectById(self.instStore.get_value(rowiter,2))
+         
+    
     def cb_OK(self,widget=None,data=None):
         if self.server is None:
             server = self.getApplication().getData().createServer()
         else:
             server = self.server
         server.setIp(self.ipFrame_IPEntry.get_text())
-        server.setScvName(self.scvFrame_NameEntry.get_text())
-        server.setScvPass(self.scvFrame_PassEntry.get_text())
         server.setSSHName(self.sshFrame_NameEntry.get_text())
         server.setSSHPass(self.sshFrame_PassEntry.get_text())
         server.load = server.LOADED_PROFILE
@@ -125,5 +156,7 @@ class ServerPropertyWindow(gtk.Window):
         self.destroy()
     
     def cb_Cancel(self,widget=None,data=None):
-        pass
+        if self.server is None:
+            ServerPropertyWindow.addWindowOpen = False
+        self.destroy()
         

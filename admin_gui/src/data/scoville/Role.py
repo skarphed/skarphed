@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from Generic import GenericScovilleObject
+from data.Generic import GenericScovilleObject
 
 import json
 
@@ -32,19 +32,19 @@ class Role(GenericScovilleObject):
         self.updated()
     
     def fetchPermissions(self):
-        self.getApplication().doRPCCall(self.getRoles().getServer(),self.fetchPermissionsCallback, "getRightsForRolePage", [self.getId()])
+        self.getApplication().doRPCCall(self.getRoles().getScoville(),self.fetchPermissionsCallback, "getRightsForRolePage", [self.getId()])
     
     def assignPermissionCallback(self,data):
         self.fetchPermissions()
     
     def assignPermission(self,perm):
-        self.getApplication().doRPCCall(self.getRoles().getServer(),self.assignPermissionCallback, "grantRightToRole", [self.getId(),perm])
+        self.getApplication().doRPCCall(self.getRoles().getScoville(),self.assignPermissionCallback, "grantRightToRole", [self.getId(),perm])
     
     def removePermissionCallback(self,data):
         self.fetchPermissions()
     
     def removePermission(self,perm):
-        self.getApplication().doRPCCall(self.getRoles().getServer(),self.removePermissionCallback, "revokeRightFromRole", [self.getId(),perm])
+        self.getApplication().doRPCCall(self.getRoles().getScoville(),self.removePermissionCallback, "revokeRightFromRole", [self.getId(),perm])
     
     def refresh(self,data):
         self.data = data
