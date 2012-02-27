@@ -37,8 +37,10 @@ class InstanceWindow(gtk.Window):
         self.typeCombo.add_attribute(self.typeRenderer, 'text', 0)  
         for instanceType in self.instanceTypes:
             self.typeStore.append((instanceType.displayName,))
+        self.typeCombo.set_active(0)
         self.urlLabel = gtk.Label("URL:")
         self.urlEntry = gtk.Entry()
+        self.urlEntry.set_text("http://")
         self.userLabel = gtk.Label("Username:")
         self.userEntry = gtk.Entry()
         self.passLabel = gtk.Label("Password:")
