@@ -27,6 +27,8 @@ class Scoville(Instance):
      
     def __init__(self, server, url="", username="", password=""):
         Instance.__init__(self,server)
+        self.instanceTypeName = "scoville"
+        self.displayName = "Scoville"
         self.state = self.STATE_OFFLINE
         self.scv_loggedin = self.SCV_LOCKED
         self.load = self.LOADED_NONE
@@ -64,7 +66,13 @@ class Scoville(Instance):
         
     def getScvPass(self):
         return self.password
-        
+    
+    def getUsername(self):
+        return self.getScvName()
+    
+    def getPassword(self):
+        return self.getScvPass()
+    
     def getServerInfoCallback(self, result):
         self.data['name'] = result
         self.load = self.LOADED_SERVERDATA

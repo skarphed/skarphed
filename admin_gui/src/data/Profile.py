@@ -5,6 +5,7 @@ import Crypto.Cipher.AES
 import json
 import os
 import data.Server
+from Instance import InstanceType
 
 class ProfileException(Exception):pass
 
@@ -56,6 +57,9 @@ class Profile(object):
                 srv.setSSHName(server['ssh_username'])
                 srv.setSSHPass(server['ssh_password'])
                 srv.establishConnections()
+                for instance in server['instances']:
+                    instanceType = InstanceType(instance['typename'],instance['typedisp'])
+                    srv.createInstance(instanceType,instance['url'],instance['username'],instance['password'])
                  
         else:
             profilefile.close()
@@ -75,11 +79,19 @@ class Profile(object):
     def updateProfile(self):
         self.data['server'] = []
         for server in data.Server.getServers():
+            instances = []
+            for instance in server.getInstances():
+                instances.append({'typename':instance.instanceTypeName,
+                            'typedisp':instance.displayName,
+                            'url':instance.getUrl(),
+                            'username':instance.getUsername(),
+                            'password':instance.getPassword()})
             self.data['server'].append({'ip':server.ip,
-                                    'username':server.username,
-                                    'password':server.password,
                                     'ssh_username':server.ssh_username,
-                                    'ssh_password':server.ssh_password})
+                                    'ssh_password':server.ssh_password,
+                                    'instances':instances})
+            
+                
           
             
         

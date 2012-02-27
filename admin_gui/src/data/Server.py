@@ -53,12 +53,6 @@ class Server(GenericScovilleObject):
     
     def setSSHState(self,state):
         self.ssh_loggedin = state
-    
-    def getServerInfoCallback(self, result):
-        self.data['name'] = result
-        self.load = self.LOADED_SERVERDATA
-        self.state = self.STATE_ONLINE
-        self.updated()
 
     def connectSSH(self):
         self.getApplication().getSSHConnection(self)
@@ -67,13 +61,12 @@ class Server(GenericScovilleObject):
         self.connectSSH()
     
     def getName(self):
-        if self.load == self.LOADED_SERVERDATA:
-            return self.data['name']+" [ "+self.ip+" ]"
-        elif self.load == self.LOADED_PROFILE:
-            return " [ "+self.ip+" ]"
+        if self.ip is not None:
+            if self.name is not None:
+                return self.ip+" [ "+self.name+" ]"
+            return self.ip
         else:
             return "Unknown Server"
-        
             
     def loadProfileInfo(self,profileInfo):
         pass
