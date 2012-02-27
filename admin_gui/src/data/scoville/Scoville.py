@@ -35,6 +35,9 @@ from Template import Template
 from Operation import OperationManager
 
 import json as jayson #HERE BE DRAGONS
+import os.path
+from net.MultiPartForm import MultiPartForm
+from net.ScovilleUpload import ScovilleUpload
 
 class Scoville(Instance):
     STATE_OFFLINE = 0
@@ -61,7 +64,7 @@ class Scoville(Instance):
         self.password = password
         
         self.users = None
-        self.templates = None
+        self.template = None
         self.roles = None
         self.modules = None
         self.sites = None
@@ -121,8 +124,7 @@ class Scoville(Instance):
             self.repo = Repository(self)
             self.addChild(self.repo)
         if True: #'scoville.template.modify' in self.serverRights
-            self.templates = Template(self)
-            self.addChild(self.templates)
+            self.loadTemplate()
         if True: #'scoville.operation.modify' in self.serverRights
             self.operationManager = OperationManager(self)
         
@@ -153,8 +155,30 @@ class Scoville(Instance):
             return " [ "+self.url+" ]"
         else:
             return "Unknown ScovilleServer"
+    
+    def loadTemplateCallback(self,json):
+        if self.template is None:
+            self.template = Template(self,json)
+        else:
+            self.template.refresh(json)
+    
+    
+    def loadTemplate(self):
+        self.getApplication().doRPCCall(self,self.loadTemplateCallback, "getCurrentTemplate")
+    
+    def uploadTemplateCallback(self,res):
+        if res != ScovilleUpload.RESULT_ERROR:
+            self.loadTemplate()
+    
+    def uploadTemplate(self, filepath):
+        form = MultiPartForm()
+        templateHandle = open(filepath,'r')
+        filename = os.path.basename(filepath)
+        form.add_file('uploadfile',filename,templateHandle,'application/x-gzip')
+        upload = ScovilleUpload(self, ScovilleUpload.TYPE_TEMPLATE, form, self.uploadTemplateCallback)
+        upload.start()
+        templateHandle.close()
         
-            
     def loadProfileInfo(self,profileInfo):
         pass
     
