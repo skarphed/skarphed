@@ -296,6 +296,15 @@ class class_scvRpc {
 	$opM->cancelOperation($operationId);
   }
   
+  function method_deleteUser($params,$error){
+  	$userId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$userM = $core->getUserManager();
+	$user = $userM->getUserById($userId);
+	$user->delete();
+  }
+  
   function method_getOperations($params,$error){
   	$operationtypes = null;
   	if (isset($params[0])){

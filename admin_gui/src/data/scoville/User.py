@@ -119,7 +119,15 @@ class User(GenericScovilleObject):
                                       "revokeRightFromUser",
                                       [self.getName(),role]
                                       )
+    def deleteCallback(self,json):
+        self.destroy()
     
+    def delete(self):
+        self.getApplication().doRPCCall(self.getUsers().getScoville(),
+                                      self.deleteCallback,
+                                      "deleteUser",
+                                      [self.getId()]
+                                      )
     
     def getPar(self):
         return self.par
