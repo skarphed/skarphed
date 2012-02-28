@@ -6,5 +6,5 @@
   <link rel="shortcut icon" href="resource/scoville_admin/scoville.png" type="image/png" />
   <script type="text/javascript" src="script/scoville_admin.js"></script>
 </head>
-<body></body>
+<body><input type="hidden" id="srvip" value="<?php echo($_SERVER['SERVER_ADDR']);?>"></body>
 </html>
