@@ -82,6 +82,16 @@ class ServerPropertyWindow(gtk.Window):
             self.instList = gtk.TreeView()
             self.instStore = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
             self.instList.set_model(self.instStore)
+            self.instCol_Icon = gtk.TreeViewColumn()
+            self.instCol_Name = gtk.TreeViewColumn('Instance')
+            self.instRen_Icon = gtk.CellRendererPixbuf()
+            self.instRen_Name = gtk.CellRendererText()
+            self.instCol_Icon.pack_start(self.instRen_Icon,False)
+            self.instCol_Name.pack_start(self.instRen_Name,True)            
+            self.instCol_Icon.add_attribute(self.instRen_Icon,'pixbuf',0)
+            self.instCol_Name.add_attribute(self.instRen_Name,'text',1)
+            self.instList.append_column(self.instCol_Icon)
+            self.instList.append_column(self.instCol_Name)
             self.instAdd = gtk.Button(stock=gtk.STOCK_ADD)
             self.instRemove = gtk.Button(stock=gtk.STOCK_REMOVE)
             self.instEdit = gtk.Button(stock=gtk.STOCK_EDIT)
@@ -123,13 +133,14 @@ class ServerPropertyWindow(gtk.Window):
             self.sshFrame_PassEntry.set_text(server.getSSHPass())
             server.addCallback(self.render)
         self.show_all()
-        
+        self.render()
     
     def render(self):
-        self.instStore.clear()
-        for instance in self.server.getInstances():
-            icon = SCOVILLE #TODO: Implement Icon
-            self.instStore.append((icon,instance.getName(),instance.getLocalId()))
+        if self.server is not None:
+            self.instStore.clear()
+            for instance in self.server.getInstances():
+                icon = SCOVILLE #TODO: Implement Icon
+                self.instStore.append((icon,instance.getName(),instance.getLocalId()))
         
     def getPar(self):
         return self.par
@@ -152,7 +163,7 @@ class ServerPropertyWindow(gtk.Window):
             return
         InstanceWindow(self,instance)
     
-    def getCurrentInstance(self, onlyId):
+    def getCurrentInstance(self, onlyId=True):
         if self.server is None:
             return None
         selection = self.instList.get_selection()

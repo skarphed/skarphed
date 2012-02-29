@@ -159,6 +159,7 @@ class Scoville(Instance):
     def loadTemplateCallback(self,json):
         if self.template is None:
             self.template = Template(self,json)
+            self.children.append(self.template)
         else:
             self.template.refresh(json)
     

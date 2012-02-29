@@ -79,10 +79,18 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.deleteUser)
         self.deleteUser.connect("activate", self.cb_deleteUser)
         
+        removeInstanceI = gtk.Image()
+        removeInstanceI.set_from_pixbuf(IconStock.DELETE)
+        self.removeInstance = gtk.ImageMenuItem()
+        self.removeInstance.set_image(removeInstanceI)
+        gtk.MenuItem.__init__(self.removeInstance,"Remove Instance")
+        self.append(self.removeInstance)
+        self.removeInstance.connect("activate",self.cb_removeInstance)
+        
+        
         self.show_all()
         
     def hide_buttons(self):
-        a = self.get_children()
         for element in self.get_children():
             element.set_visible(False)
         
@@ -95,6 +103,9 @@ class TreeContextMenu(gtk.Menu):
     def cb_Properties(self,data=None):
         if self.currentObject.__class__.__name__ == "Server":
             ServerPropertyWindow(self.getPar().getPar(),server=self.currentObject)
+    
+    def cb_removeInstance(self,data=None):
+        self.currentObject.getServer().removeInstance(self.currentObject)
     
     def cb_cssEditor(self,data=None):
         cn = self.currentObject.__class__.__name__
@@ -120,6 +131,8 @@ class TreeContextMenu(gtk.Menu):
             pass
         elif obj.__class__.__name__ == "User":
             self.deleteUser.set_visible(True)
+        elif obj.__class__.__name__ == "Scoville": # HERE BE DRAGONS
+            self.removeInstance.set_visible(True)
         else: 
             return
         self.currentObject = obj

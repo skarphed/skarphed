@@ -110,6 +110,12 @@ class Server(GenericScovilleObject):
         self.addChild(instance)
         self.updated()
         instance.establishConnections()
+        
+    def removeInstance(self, instance):
+        if instance in self.children:
+            self.children.remove(instance)
+            instance.destroy()
+            self.getApplication().activeProfile.updateProfile()
     
     def getInstances(self):
         return self.children
@@ -125,7 +131,7 @@ def createServer():
 
 def createServerFromInstanceUrl(instanceurl):
     instanceurl = re.sub(r'^[A-Za-z]+:\//','',instanceurl)
-    instanceurl = re.sub(r'/.+$','',instanceurl)
+    instanceurl = re.sub(r'/.+$|/$','',instanceurl)
     instanceurl = re.sub(r':\d{1,5}$','',instanceurl)
     
     if not re.match(r'\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b',instanceurl):
