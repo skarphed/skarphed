@@ -151,7 +151,7 @@ class CompositeManager extends Singleton{
 		$stmnt = "SELECT WGT_ID, WGT_NAME, WGT_MOD_ID, WGT_SPACE FROM WIDGETS WHERE WGT_SIT_ID = ? ;";
 		$res = $db->query($core,$stmnt,array($site->getId()));
 		while($set = $db->fetchArray($res)){
-			$ret[$set['WGT_SPACE']] = array("id"=>$set['WGT_ID'],"name"=>$set['WGT_NAME'],"mouledId"=>$set['WGT_MOD_ID']);
+			$ret[$set['WGT_SPACE']] = array("id"=>$set['WGT_ID'],"name"=>$set['WGT_NAME'],"moduleId"=>$set['WGT_MOD_ID']);
 		}
 		return $ret;
 	} 
