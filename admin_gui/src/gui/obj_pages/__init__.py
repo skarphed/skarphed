@@ -28,6 +28,7 @@ from User import UserPage
 from Role import RolePage
 from Template import TemplatePage
 from Repository import RepositoryPage
+from Site import SitePage
 
 class PageException(Exception):pass
 
@@ -43,7 +44,7 @@ def generatePageForObject(parent,obj):
     elif obj.__class__.__name__ == "Role":
         return  RolePage(parent,obj)
     elif obj.__class__.__name__ == "Site":
-        return  GenericObjectPage(parent,obj)
+        return  SitePage(parent,obj)
     elif obj.__class__.__name__ == "Repository":
         return  RepositoryPage(parent,obj)
     elif obj.__class__.__name__ == "Template":

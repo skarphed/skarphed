@@ -53,6 +53,13 @@ class Modules(GenericScovilleObject):
                 return module
         return None
     
+    def getModuleById(self,moduleId):
+        for module in self.children:
+            if module.getId() == moduleId:
+                return module
+        return None
+    
+    
     def refresh(self):
         self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getModules",[False])
     
@@ -61,6 +68,12 @@ class Modules(GenericScovilleObject):
     
     def getAllModules(self):
         return self.children
+    
+    def getAllWidgets(self):
+        ret = []
+        for module in self.getAllModules():
+            ret.extend(module.getAllWidgets())
+        return ret
     
     def moduleOperationCallback(self,json=None):
         self.updated()

@@ -122,6 +122,10 @@ class GenericScovilleObject(object):
         if callback not in self.updateCallbacks:
             self.updateCallbacks.append(callback)
     
+    def removeCallback(self, callback):
+        if callback in self.updateCallbacks:
+            self.updateCallbacks.remove(callback)
+    
     def updated(self):
         for cb in self.updateCallbacks:
             cb()

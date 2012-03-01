@@ -106,4 +106,11 @@ class RolePage(GenericObjectPage):
             self.role.assignPermission(perm)
         else:
             self.role.removePermission(perm)  
+    
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
+
         

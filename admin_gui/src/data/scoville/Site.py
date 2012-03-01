@@ -24,6 +24,10 @@
 
 from data.Generic import GenericScovilleObject
 
+import hashlib
+import base64
+import os
+
 class Site(GenericScovilleObject):
     def __init__(self,parent, data = {}):
         GenericScovilleObject.__init__(self)
@@ -43,12 +47,77 @@ class Site(GenericScovilleObject):
         else:
             return None
     
+    def getDescription(self):
+        if self.data.has_key('description'):
+            return self.data['description']
+        else:
+            return ""
+    
     def refresh(self,data):
         self.data = data
         self.updated()
     
+    def update(self):
+        self.getApplication().doRPCCall(self.getScoville(),self.refresh,"getSite",[self.getId()])
+    
+    def getWidgetInSpace(self, spaceId):
+        if self.data['spaces'][str(spaceId)] == 0:
+            return None
+        else:
+            modules = self.getSites().getScoville().modules.getModuleById(self.data['spaces'][str(spaceId)]['moduleId'])
+            return modules.getWidgetById(self.data['spaces'][str(spaceId)]['id'])
+                
+    
+    def removeWidgetFromSpaceCallback(self, json):
+        self.update()
+    
+    def removeWidgetFromSpace(self, spaceId):
+        self.getApplication().doRPCCall(self.getScoville(),self.removeWidgetFromSpaceCallback, "removeWidgetFromSpace", [self.getId(), spaceId])
+    
+    def addWidgetToSpaceCallback(self,json):
+        self.getSites().refresh()
+    
+    def addWidgetToSpace(self,spaceId, widget):
+        self.getApplication().doRPCCall(self.getScoville(),self.addWidgetToSpaceCallback , "assignWidgetToSpace", [self.getId(), spaceId, widget.getId()])
+        
+    def getUsedWidgetIds(self):
+        ret = []
+        if not self.data.has_key('spaces'):
+            return ret
+        for space in self.data['spaces'].values():
+            if space != 0:
+                ret.append(space['id'])
+        return ret
+    
+    def getSpaceCount(self):
+        return len(self.data['spaces'])
+    
+    def getMinimap(self):
+        if self.data.has_key('minimap'):
+            md5 = hashlib.md5()
+            raw = base64.decodestring(self.data['minimap'])
+            md5.update(raw)
+            tempfilename = md5.hexdigest()
+            try:
+                open('/tmp/scoville/'+tempfilename,'r')
+            except:
+                pass
+            else:
+                return '/tmp/scoville'+tempfilename
+            try:
+                os.mkdir('/tmp/scoville/')
+            except:
+                pass
+            tempfile = open('/tmp/scoville/'+tempfilename,'w')
+            tempfile.write(raw)
+            tempfile.close()
+            return '/tmp/scoville/'+tempfilename
+               
     def getPar(self):
         return self.par
     
-    def getUsers(self):
+    def getSites(self):
         return self.getPar()
+    
+    def getScoville(self):
+        return self.getPar().getScoville()

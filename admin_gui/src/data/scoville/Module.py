@@ -99,6 +99,9 @@ class Module(GenericScovilleObject):
                 return widget
         return None
     
+    def getAllWidgets(self):
+        return self.children
+    
     def getPar(self):
         return self.par
     
