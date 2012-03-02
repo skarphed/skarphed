@@ -45,6 +45,8 @@ class Profile(object):
         self.data = {}
         
     def create(self):
+        if not os.path.exists(os.path.expanduser('~/.scovilleadmin/')):
+            os.mkdir('~/.scovilleadmin')
         if os.path.exists(os.path.expanduser('~/.scovilleadmin/'+self.username)):
             raise ProfileException("Profile exists")
         assert len(self.password)%16 == 0 , "Password not divisible by 16"
