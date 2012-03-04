@@ -96,6 +96,14 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.createWidget)
         self.createWidget.connect("activate",self.cb_createWidget)
         
+        deleteWidgetI = gtk.Image()
+        deleteWidgetI.set_from_pixbuf(IconStock.WIDGET)
+        self.deleteWidget = gtk.ImageMenuItem()
+        self.deleteWidget.set_image(deleteWidgetI)
+        gtk.MenuItem.__init__(self.deleteWidget,"Delete Widget")
+        self.append(self.deleteWidget)
+        self.deleteWidget.connect("activate",self.cb_deleteWidget)
+        
         
         self.show_all()
         
@@ -127,6 +135,9 @@ class TreeContextMenu(gtk.Menu):
     def cb_createWidget(self,data=None):
         InputBox(self,"what should be the name of the new Widget?", self.currentObject.createWidget)
     
+    def cb_deleteWidget(self, data=None):
+        self.currentObject.delete()
+    
     def popup(self,obj,button,time):
         self.hide_buttons()
         if obj.__class__.__name__ == "Server":
@@ -140,6 +151,7 @@ class TreeContextMenu(gtk.Menu):
             self.createWidget.set_visible(True)
         elif obj.__class__.__name__ == "Widget":
             self.cssEditor.set_visible(True)
+            self.deleteWidget.set_visible(True)
         elif obj.__class__.__name__ == "GenericScovilleObject":
             pass
         elif obj.__class__.__name__ == "User":

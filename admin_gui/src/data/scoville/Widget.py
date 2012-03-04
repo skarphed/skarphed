@@ -71,6 +71,11 @@ class Widget(GenericScovilleObject):
     def saveCssPropertySet(self):
         self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
     
+    def deleteCallback(self):
+        self.destroy()
+    
+    def delete(self):
+        self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.deleteCallback, "deleteWidget", [self.getId()])
     
     def getPar(self):
         return self.par
