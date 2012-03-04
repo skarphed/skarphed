@@ -30,6 +30,7 @@ import gtk
 import IconStock
 
 from ServerPropertyWindow import ServerPropertyWindow
+from InputBox import InputBox
 
 class TreeContextMenu(gtk.Menu):
     def __init__(self,parent):
@@ -87,6 +88,14 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.removeInstance)
         self.removeInstance.connect("activate",self.cb_removeInstance)
         
+        createWidgetI = gtk.Image()
+        createWidgetI.set_from_pixbuf(IconStock.WIDGET)
+        self.createWidget = gtk.ImageMenuItem()
+        self.createWidget.set_image(createWidgetI)
+        gtk.MenuItem.__init__(self.createWidget,"Create Widget")
+        self.append(self.createWidget)
+        self.createWidget.connect("activate",self.cb_createWidget)
+        
         
         self.show_all()
         
@@ -115,6 +124,9 @@ class TreeContextMenu(gtk.Menu):
     def cb_deleteUser(self,data=None):
         self.currentObject.delete()        
     
+    def cb_createWidget(self,data=None):
+        InputBox(self,"what should be the name of the new Widget?", self.currentObject.createWidget)
+    
     def popup(self,obj,button,time):
         self.hide_buttons()
         if obj.__class__.__name__ == "Server":
@@ -125,6 +137,7 @@ class TreeContextMenu(gtk.Menu):
             self.connectServer.set_sensitive(not obj.isOnline())
         elif obj.__class__.__name__ == "Module":
             self.cssEditor.set_visible(True)
+            self.createWidget.set_visible(True)
         elif obj.__class__.__name__ == "Widget":
             self.cssEditor.set_visible(True)
         elif obj.__class__.__name__ == "GenericScovilleObject":
