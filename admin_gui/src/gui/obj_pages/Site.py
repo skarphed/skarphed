@@ -52,14 +52,13 @@ class WidgetContainer(gtk.HBox):
         self.col_wdg.add_attribute(self.ren_icon,'pixbuf',0)
         self.col_wdg.add_attribute(self.ren_name,'text',1)
         
+        self.view.set_name("siteWidget_"+str(self.site.getLocalId())+"_"+str(self.spaceId))
         self.view.enable_model_drag_dest([('text/plain',0,0)], gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
+        self.view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, [('text/plain',0,0)], gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
         self.view.connect("drag-data-received", self.dragReceiveWidget)
-        
-        self.deleteButton = gtk.Button(gtk.STOCK_DELETE)
-        self.deleteButton.connect("clicked", self.removeWidget)
+        self.view.connect("drag-data-get", self.dragGetWidget)
         
         self.pack_start(self.view,True)
-        self.pack_start(self.deleteButton,False)
         self.set_size_request(300,45)
         self.show_all()
         
@@ -83,16 +82,28 @@ class WidgetContainer(gtk.HBox):
                 self.store.append((IconStock.WIDGET, self.widget.getName(), self.widget.getLocalId()))
                 self.col_wdg.set_title("Space "+str(self.spaceId)+": Occupied")
         
-    def removeWidget(self,widget=None,data=None):
-        if self.widget is not None:
-            self.widget.removeCallback(self.render)
-            self.site.removeWidgetFromSpace(self.spaceId)    
-    
     def dragReceiveWidget(self, view, context, x, y, selection, info, timestamp):
-        if context.get_source_widget().get_name() != "siteWidgetList"+str(self.site.getLocalId()):
+        validDrop=False
+        move = False
+        sourceName = context.get_source_widget().get_name()
+        if sourceName  == "siteWidgetList"+str(self.site.getLocalId()):
+            validDrop = True
+        if sourceName.startswith("siteWidget_"+str(self.site.getLocalId())) and sourceName[-1:] != str(self.spaceId):
+            validDrop = True
+            move = True
+        if not validDrop:
             return
+        
+        if move:
+            self.site.removeWidgetFromSpace(sourceName[-1:])
         widget = self.getApplication().getLocalObjectById(int(selection.data))
         self.site.addWidgetToSpace(self.spaceId, widget)
+        
+    def dragGetWidget(self, view, context, selection, info, timestamp):
+        treeselection = view.get_selection()
+        model, rowiter = treeselection.get_selected()
+        value = model.get_value(rowiter,2)
+        selection.set('text/plain',8,str(value))
         
     def getPar(self):
         return self.par
@@ -145,6 +156,7 @@ class SitePage(GenericObjectPage):
         self.wdg_view.append_column(self.wdg_col)
         self.wdg_view.set_name("siteWidgetList"+str(self.site.getLocalId()))
         self.wdg_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, [('text/plain',0,0)], gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
+        self.wdg_view.enable_model_drag_dest([('text/plain',0,0)], gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
         self.wdg_view.connect("drag-data-get", self.getDragDataCallback)
         
         self.wdg_spacescroll = gtk.ScrolledWindow()
@@ -193,6 +205,12 @@ class SitePage(GenericObjectPage):
         model, rowiter = treeselection.get_selected()
         value = model.get_value(rowiter,2)
         selection.set('text/plain',8,str(value))
+    
+    def dragReceiveWidget(self, view, context, x, y, selection, info, timestamp):
+        if not context.get_source_widget().get_name().startswith("siteWidget_"+str(self.site.getLocalId())):
+            return
+        spaceId = int(context.get_source_widget().get_name()[-1:])
+        self.site.removeWidgetFromSpace(spaceId)
     
     def getPar(self):
         return self.par
