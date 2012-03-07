@@ -98,6 +98,12 @@ class Scoville(Instance):
     def getPassword(self):
         return self.getScvPass()
     
+    def setUsername(self,username):
+        return self.setScvName(username)
+    
+    def setPassword(self,password):
+        return self.setScvPass(password)
+    
     def getServerInfoCallback(self, result):
         self.data['name'] = result
         self.load = self.LOADED_SERVERDATA

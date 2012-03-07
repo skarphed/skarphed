@@ -37,6 +37,10 @@ class Instance(GenericScovilleObject):
         pass
     def getUrl(self):
         pass
+    def setUsername(self,username):
+        pass
+    def setPassword(self,password):
+        pass
     
 class InstanceType():
     def __init__(self, typename, displayname):

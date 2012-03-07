@@ -159,9 +159,9 @@ class ServerPropertyWindow(gtk.Window):
     
     def cb_Edit(self,widget=None,data=None):
         instance = self.getCurrentInstance()
-        if instance is None:
+        if instance is None or self.server is None:
             return
-        InstanceWindow(self,instance)
+        InstanceWindow(self,self.server,instance)
     
     def getCurrentInstance(self, onlyId=True):
         if self.server is None:

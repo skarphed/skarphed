@@ -94,6 +94,15 @@ class InstanceWindow(gtk.Window):
         
         self.add(self.vbox)
         self.show_all()
+        if self.instance is not None:
+            self.urlEntry.set_sensitive(False)
+            self.render()
+    
+    def render(self):
+        if self.instance is not None:
+            self.urlEntry.set_text(self.instance.getUrl())
+            self.userEntry.set_text(self.instance.getUsername())
+            self.passEntry.set_text(self.instance.getPassword())
     
     def getInstanceType(self,text):
         for instanceType in self.instanceTypes:
@@ -114,23 +123,28 @@ class InstanceWindow(gtk.Window):
             dia.run()
             dia.destroy()
         
-        url = self.urlEntry.get_text()
-        if self.server is None:
+        if self.instance is not None:
+            self.instance.setUsername(self.userEntry.get_text())
+            self.instance.setPassword(self.passEntry.get_text())
+            self.instance.establishConnections()
+        else:
+            url = self.urlEntry.get_text()
+            if self.server is None:
+                try:
+                    self.server = self.getApplication().createServerFromInstanceUrl(url)
+                except DNSError:
+                    errorMessage(0)
+                    return
+            
+            selection = self.typeStore[self.typeCombo.get_active()][0]  
+            instanceType = self.getInstanceType(selection)
+            
+            username = self.userEntry.get_text()
+            password = self.passEntry.get_text()
             try:
-                self.server = self.getApplication().createServerFromInstanceUrl(url)
-            except DNSError:
-                errorMessage(0)
+                self.server.createInstance(instanceType, url, username, password)
+            except None:
                 return
-        
-        selection = self.typeStore[self.typeCombo.get_active()][0]  
-        instanceType = self.getInstanceType(selection)
-        
-        username = self.userEntry.get_text()
-        password = self.passEntry.get_text()
-        try:
-            self.server.createInstance(instanceType, url, username, password)
-        except None:
-            return
         self.destroy()
 
         
