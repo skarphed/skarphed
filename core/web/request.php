@@ -66,6 +66,7 @@
           $mm = $this->core->getModuleManager();
           while ($result = $this->db->fetchArray($resultset)) {
             $module = $mm->loadModule($result['MOD_NAME']);
+			$module->setWidgetId($result['WGT_ID']);
             $space = "s".$result["WGT_SPACE"];
             $widget = "w".$result["WGT_ID"];
             $response['modules'][] = array('id'=>$result["WGT_ID"]
@@ -103,6 +104,7 @@
       $mm = $this->core->getModuleManager();
       while ($result = $this->db->fetchArray($resultset)) {
         $module = $mm->loadModule($result['MOD_NAME']);
+		$module->setWidgetId($result['WGT_ID']);
         $space = "s".$result["ACT_SPACE"];
         $widget = "w".$result["WGT_ID"];
         $response['modules'][] = array('id'=>$result["WGT_ID"]
