@@ -42,7 +42,6 @@
 					echo "    <p>Name: ".$manifest->name."</p>";
 					echo "    <p>HR Name: ".$manifest->hrname."</p>";
 					echo "    <p>Version: ".$manifest->version_major.".".$manifest->version_minor.".".$manifest->revision."</p>";
-					echo "    <p>MD5: ".$manifest->md5."</p>";
 					$con = new repo_database();
 					$con->set_all("zigapeda","10.8.0.58","scvrepo.gdb","test");
 					$con->connect();
@@ -54,6 +53,7 @@
 					$con->query("insert into modules (mod_id, mod_name, mod_displayname, mod_versionmajor, mod_versionminor, mod_versionrev, mod_md5, mod_data) 
 					                          values (?, ?, ?, ?, ?, ?, ?, ?)",
 					                          array($mod_id, $manifest->name, $manifest->hrname, $manifest->version_major, $manifest->version_minor, $manifest->revision, $md5, $blobid));
+					echo "    <p>MD%: ".$md5."</p>";
 				}
 			}
 			echo "    <a href='index.php'>Zurueck zum Uploaddialog</a>";
