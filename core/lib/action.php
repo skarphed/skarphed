@@ -46,15 +46,39 @@
 		private $currentParent = null;
 
 		public function createAction(){
-			
+			//TODO: Implement
 		}
 		
-		public function getActionById(){
-			
+		public function createActionList(){
+			//TODO: Implement
+		}
+		
+		public function createMenuItem(){
+			//TODO: Implement
+		}
+		
+		public function createMenu(){
+			//TODO: Implement
+		}
+		
+		
+		
+		public function getActionById($actionId){
+			//TODO: Implement	
 		}	
+		
+		public function getActionListById($actionListId){
+			//TODO: Implement
+		}
+		
+		public function getMenuItemById($menuItemId){
+			//TODO: Implement
+		}
+		
+		public function getMenuById($menuId){
+			//TODO: Implement
+		}
 	}
-
-	
 	
 	/**
 	 * Action
@@ -64,11 +88,148 @@
 	 */
 	class Action  {
 		function __const(){
+			$this->widgetId = null;
+			$this->spaceId =null;
 			
+			$this->siteId = null;
+			$this->url = null;
+		}
+		
+		public function setUrl($url){
+			$this->url = $url;
+			//TODO: Implement SQL-shit
+		}
+		
+		public function delete(){
+			//TODO: Implement
+		}
+		
+		public function setWidgetSpaceConstellation($widgetId, $spaceId){
+			if (isset($widgetId) and isset($spaceId)){
+				$core = Core::getInstance();
+				//if ($core->getCompositeManager()->getWidget($widgetId) and
+				//	)
+				//TODO: Ueberpreufung nach widget- und spaceexistenz
+				$this->widgetId = $widgetId;
+				$this->spaceId = $spaceId;
+				$this->url = null;
+				$this->siteId = null;
+			}
+			//TODO: Implement Sql-shit
+		}
+		
+		public function setSiteId($siteId){
+			$core = Core::getInstance();
+			if ($core->getCompositeManager()->getSite($siteId) != null){
+				$this->siteId = $siteId;
+				$this->widgetId = null;
+				$this->spaceId = null;
+				$this->url = null;	
+			}
+			//TODO: Implement
+		}
+		
+		public function unsetLinks(){
+			//TODO: Implement
+		}
+
+	}
+
+	/**
+	 * ActionList
+	 * 
+	 * An action represents anything that can happen when
+	 * using Hyperlinks inside scoville. 
+	 */
+	class ActionList  {
+		function __const(){
+			//TODO: Implement
+			$children = array();
+		}
+		
+		public function delete(){
+			//TODO: Implement
+		}
+		
+		public function addAction($action){
+			if (is_int($action)){
+				$core = Core::getInstance();
+				$action = $core->getActionManager()->getActionById($action);
+			}
+			$this->children[] = $action;
+			//TODO SQL-Krempel	
+		}
+		
+		public function removeAction($action){
+			//TODO: Implement
+		}
+		
+		public function getActions($action){
+			//TODO: Implement
+		}
+		
+		public function getActionById($actionId){
+			//TODO: Implement
+		}
+
+	}
+	
+	/**
+	 * MenuItem
+	 * 
+	 * An action represents anything that can happen when
+	 * using Hyperlinks inside scoville. 
+	 */
+	class MenuItem  {
+		function __const(){
+			//TODO: Implement
 		}
 		
 		public function render(){
-			
+			//TODO: Implement
+		}
+		
+		public function delete(){
+			//TODO: Implement
+		}
+		
+		public function setActionList($actionList){
+			//TODO: Implement
+		}
+		
+		public function getActionList(){
+			//TODO: Implement
+		}
+		
+		public function addMenuItem(){
+			//TODO: Implement
+		}
+		
+
+	}
+	
+	/**
+	 * Menu
+	 * 
+	 * An action represents anything that can happen when
+	 * using Hyperlinks inside scoville. 
+	 */
+	class Menu  {
+		function __const(){
+			//TODO: Implement
+		}
+		
+		
+		public function addMenuItem($menuItem){
+			//TODO: Implement
+		}
+		
+		public function getMenuItemById($menuItemId){
+			//TODO: Implement
+		}
+		
+		public function getMenuItems(){
+			//TODO: Implement
 		}
 
 	}
