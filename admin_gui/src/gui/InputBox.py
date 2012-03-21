@@ -52,7 +52,7 @@ class InputBox(gtk.Window):
         self.vbox.pack_start(self.hbox,False)
         
         self.ok.connect("clicked", self.okCallback)
-        self.cb = callback()
+        self.cb = callback
         self.typeWanted = typeWanted
         
         self.add(self.vbox)

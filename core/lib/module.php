@@ -46,6 +46,15 @@ class Module implements IModule {
 		
 	}
 	
+	/**
+	 * Set the widgetId
+	 * 
+	 * Set the id of the widget the module has to operate on
+	 */
+	public function setWidgetId($widgetId){
+		
+	}
+	
 	public function getName(){
 		return $this->name;
 	}
