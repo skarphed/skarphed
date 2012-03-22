@@ -285,11 +285,21 @@
 		
 		public function setUrl($url){
 			$this->url = $url;
-			//TODO: Implement SQL-shit
+			$this->widgetId = null;
+			$this->spaceId = null;
+			$this->siteId = null;
+			
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE ACTIONS SET ACT_URL = ?, ACT_SIT_ID = NULL, 
+							   ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ?;",
+							   array($this->getUrl(),$this->getId()));
 		}
 		
 		public function delete(){
-			//TODO: Implement
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core,"DELETE FROM ACTIONS WHERE ACT_ID = ?;",array($this->getId()));
 		}
 		
 		public function setWidgetSpaceConstellation($widgetId, $spaceId){
@@ -303,7 +313,12 @@
 				$this->url = null;
 				$this->siteId = null;
 			}
-			//TODO: Implement Sql-shit
+			
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = NULL,
+							   ACT_WGT_ID = ?, ACT_SPACE = ? WHERE ACT_ID = ?",
+							   array($this->getWidgetId(),$this->getSpace(),$this->getId()));
 		}
 		
 		public function setSiteId($siteId){
@@ -314,7 +329,12 @@
 				$this->spaceId = null;
 				$this->url = null;	
 			}
-			//TODO: Implement
+			
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = ?, 
+							   ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ?;",
+							   array($this->getSiteId(),$this->getId()));
 		}
 		
 		public function unsetLinks(){
@@ -350,14 +370,15 @@
 	 */
 	class ActionList  {
 		function __const(){
-			//TODO: Implement
 			$this->children = array();
 			$this->id = null;
 			$this->name = null;
 		}
 		
 		public function delete(){
-			//TODO: Implement
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "DELETE FROM ACTIONLISTS WHERE ATL_ID = ?;", array($this->getId()));
 		}
 		
 		public function setName($name){
@@ -377,20 +398,40 @@
 		}
 		
 		public function addAction($action){
+			$core = Core::getInstance();
 			if (is_int($action)){
-				$core = Core::getInstance();
 				$action = $core->getActionManager()->getActionById($action);
 			}
 			//TODO: Klasse pruefen
 			if (!in_array($action,$this->children)){
 				$this->children[] = $action;	
-				//TODO SQL-Krempel	
+				$db = $core->getDB();
+				$db->query($core,"UPDATE ACTIONS SET ACT_ATL_ID = ? WHERE ACT_ID = ?;",
+						   array($this->getId(),$action->getId()));
 			}
 		}
 		
+		public function hasAction($action){
+			foreach ($this->children as $child){
+				if ($child->getId() == $action->getId()){
+					return true;
+				}
+			}
+			return false;
+		}
+		
 		public function removeAction($action){
-			//TODO: Implement
-			
+			if ($this->hasAction($action)){
+				foreach ($this->children as $child){
+					if ($child->getId() == $action->getId()){
+						unset($child);
+					}
+				}
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core, "UPDATE ACTIONS SET ACT_ATL_ID = NULL WHERE ACT_ID = ?;",
+						   array($action->getId()));
+			}
 		}
 		
 		public function getActions(){
@@ -405,7 +446,6 @@
 			}
 			return null;
 		}
-
 	}
 	
 	/**
@@ -427,12 +467,10 @@
 			$this->order = null;
 		}
 		
-		public function render(){
-			//TODO: Implement
-		}
-		
 		public function delete(){
-			//TODO: Implement
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "DELETE FROM MENUITEMS WHERE MNI_ID = ?;", array($this->getId()));
 		}
 		
 		public function setOrder($order){
@@ -516,18 +554,46 @@
 		}
 		
 		public function assignActionList($actionList){
-			//TODO: Implement
+			$actionListId = $actionList->getId();
+			$this->setActionListId($actionListId);
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE MENUITEMS SET MNI_ATL_ID = ? WHERE MNI_ID = ?;",
+					   array($actionListId, $this->getId()));
 		}
-		
-		public function getActionList(){
-			//TODO: Implement
-		}
-		
-		public function addMenuItem(){
-			//TODO: Implement
-		}
-		
 
+		public function addMenuItem($menuItem){
+			$menuItemId = $menuItem->getId();
+			$menuItem->setParentMenuItemId($this->getId());
+			
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE MENUITEMS SET MNI_MNI_ID = ? WHERE MNI_ID = ?; ",
+					   array($this->getId(), $menuItemId));
+		}
+		
+		public function removeMenuItem($menuItem){
+			$menuItemId = $menuItem->getId();
+			$menuItem->setParentMenuItemId(null);
+			
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE MENUITEMS SET MNI_MNI_ID = NULL WHERE MNI_ID = ?; ",
+					   array($this->getId(), $menuItemId));
+		}
+		
+		public function getMenuItems(){
+			//PERFORMANCE-ENHANCE POSSIBLE BY IMPLEMENTING FETCHING IN HERE
+			$core = Core::getInstance();
+			$actionManager = $core->getActionManager();
+			$db = $core->getDB();
+			$res = $db->query($core,"SELECT MNI_ID FROM MENUITEMS WHERE MNI_MNI_ID = ?;",array($this->getId()));
+			$ret = array();
+			while($set = $db->fetchObject($res)){
+				$ret[] = $actionManager->getMenuItemById($set->MNI_ID);
+			}
+			return $ret;
+		}
 	}
 	
 	/**
@@ -579,8 +645,6 @@
 			return $this->id;
 		}
 		
-		
-		
 		public function addMenuItem($menuItem){
 			//TODO: Class must be MenuItem
 			if (!in_array($menuItem, $this->children)){
@@ -598,7 +662,25 @@
 		}
 		
 		public function getMenuItems(){
-			//TODO: Implement
+			//PERFORMANCE-ENHANCE POSSIBLE BY IMPLEMENTING FETCHING IN HERE
+			$core = Core::getInstance();
+			$actionManager = $core->getActionManager();
+			$db = $core->getDB();
+			$res = $db->query($core,"SELECT MNI_ID FROM MENUITEMS WHERE MNI_MNU_ID = ?;",array($this->getId()));
+			$ret = array();
+			while($set = $db->fetchObject($res)){
+				$ret[] = $actionManager->getMenuItemById($set->MNI_ID);
+			}
+			return $ret;
 		}
-
+		
+		public function removeMenuItem($menuItem){
+			$menuItemId = $menuItem->getId();
+			$menuItem->setParentMenuItemId(null);
+			
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE MENUITEMS SET MNI_MNU_ID = NULL WHERE MNI_ID = ?; ",
+					   array($this->getId(), $menuItemId));
+		}
 	}
