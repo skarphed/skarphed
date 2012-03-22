@@ -45,6 +45,24 @@
 
 		private $currentParent = null;
 		
+		/**
+		 * Create Action
+		 * 
+		 * This method creates a new Action and returns it.
+		 * You can create an action based on either:
+		 * 1. A Site Id 
+		 * 2. An URL
+		 * 3. A widgetId combined with a SpaceId (Both applies to the site the menu is showed in)
+		 * If the combination is not valid this function will return null and not do anything in db
+		 * The action will be inserted with the lowest order (execution priority)
+		 * 
+		 * @param ActionList $actionList = null The ActionList this action should be created in.
+		 * @param int $siteId = null The Site the Action should link to
+		 * @param string $url = null The SiteURL the Action should link to
+		 * @param int $widgetId = null The Widget that should be loaded into a specific space (only valid with $spaceId)
+		 * @param int $spaceId = null The Space id that the widget of $widgetId should be loaded into (only valid with $widgetId)
+		 * @return Action The created Action
+		 */
 		public function createAction($actionList=null,$siteId=null, $url=null, $widgetId=null, $spaceId=null){
 			if(!isset($actionList)){
 				return null;
@@ -91,15 +109,38 @@
 			return $action;
 		}
 		
-		public function createActionList($actionListName){
+		/**
+		 * Create ActionList
+		 * 
+		 * This function creates a new ActionList
+		 * 
+		 * @param string $actionListName = "new actionlist" The name of the new ActionList
+		 * @return ActionList The created ActionList
+		 */
+		public function createActionList($actionListName = "new actionlist"){
 			$actionList = new ActionList();
-			$actionList->setName($name);
+			$actionList->setName($actionListName);
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			$actionList->setId($db->getSeqNext('ATL_GEN'));
 			$db->query($core, "INSERT INTO ACTIONLISTS VALUES (?,?);",array($actionList->getId(),$actionList->getName()));
 			return $actionList;
 		}
+		
+		/**
+		 * Create MenuItem
+		 * 
+		 * This function creates a new MenuItem based on either:
+		 * 1. A parent Menu or
+		 * 2. A parent MenuItem
+		 * If none of those is set, the function will abort and return null
+		 * The MenuItem will be spawned with the lowest display order
+		 * 
+		 * @param Menu $menu = null The parent Menu 
+		 * @param MenuItem $menuItemParent = null The parent MenuItem
+		 * @param string $name = "new item" The name the MenuItem is spwaned with
+		 * @return MenuItem The created MenuItem
+		 */
 		
 		public function createMenuItem($menu=null,$menuItemParent=null, $name="new item"){
 			if (!isset($menu) and !isset($menuItemParent)){
@@ -135,7 +176,15 @@
 			return $menuItem;
 			
 		}
-		
+
+		/**
+		 * Create Menu
+		 * 
+		 * This function creates a menu.
+		 * 
+		 * @param string $name = "new menu" The name of the new menu
+		 * @return Menu The created Menu
+		 */
 		public function createMenu($name="new menu"){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -146,6 +195,16 @@
 			return $menu;
 		}
 		
+		/**
+		 * Get Action By Id
+		 * 
+		 * This function looks for an Action with the given ID in the database
+		 * and returns it
+		 * If the action does not exist this returns null 
+		 * 
+		 * @param int $actionId The ID of the Action to look for
+		 * @return Action The Action or null
+		 */
 		public function getActionById($actionId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -173,6 +232,16 @@
 			return null;	
 		}	
 		
+		/**
+		 * Get ActionList By Id
+		 * 
+		 * This function looks for an ActionList with the given ID in the database
+		 * and returns it
+		 * If the action does not exist this returns null 
+		 * 
+		 * @param int $actionListId The ID of the ActionList to look for
+		 * @return ActionList The ActionList or null
+		 */
 		public function getActionListById($actionListId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -186,6 +255,16 @@
 			return null;
 		}
 		
+		/**
+		 * Get MenuItem By Id
+		 * 
+		 * This function looks for a MenuItem with the given ID in the database
+		 * and returns it
+		 * If the MenuItem does not exist this returns null 
+		 * 
+		 * @param int $menuItemId The ID of the MenuItem to look for
+		 * @return MenuItem The MenuItem or null
+		 */
 		public function getMenuItemById($menuItemId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -208,6 +287,16 @@
 			return null;
 		}
 		
+		/**
+		 * Get Menu By Id
+		 * 
+		 * This function looks for a Menu with the given ID in the database
+		 * and returns it
+		 * If the Menu does not exist this returns null 
+		 * 
+		 * @param int $menuId The ID of the Menu to look for
+		 * @return Menu The Menu or null
+		 */
 		public function getMenuById($menuId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
@@ -225,8 +314,19 @@
 	/**
 	 * Action
 	 * 
-	 * An action represents anything that can happen when
+	 * An Action represents anything that can happen when
 	 * using Hyperlinks inside scoville. 
+	 * An Action can refer to three different things:
+	 * 1. A combination of a Space and a Widget:
+	 * 		The Widget will be load into the Space of the current site.
+	 * 2. A Site
+	 * 		The Site will be load instead of the site currently shown
+	 * 3. An URL
+	 * 		The User will leave the scoville-Site and navigate to the URL
+	 * 
+	 * An Action has an execution Order. If an ActionList contains more 
+	 * than one Action, the actions will be executed according to priority
+	 * starting by low numbers, moving to higher numbers 
 	 */
 	class Action  {
 		function __const(){
@@ -244,26 +344,89 @@
 			$this->order = null;
 		}
 		
+		/**
+		 * Set Order
+		 * 
+		 * Sets the execution order of the Action
+		 * Only for use to fetch Actions from Database
+		 * Use increaseOrder() or decreaseOrder(), 
+		 * moveToTopOrder() or moveToBottomOrder()
+		 * to modify
+		 * 
+		 * @param int $orderNumber The order number coming from database
+		 */
 		public function setOrder($orderNumber){
 			$this->order = $orderNumber;
 		}
 		
+		/**
+		 * Get Order
+		 * 
+		 * Returns the current order number of the action
+		 * 
+		 * @return int The order number
+		 */
 		public function getOrder(){
 			return $this->order;
 		}
 		
+		public function increaseOrder(){
+			//TODO: implement
+		}
+
+		public function decreaseOrder(){
+			//TODO: implement
+		}
+		
+		public function moveToTopOrder(){
+			//TODO: implement
+		}
+
+		public function moveToBottomOrder(){
+			//TODO: implement
+		}
+		
+		/**
+		 * Set ActionList Id
+		 * 
+		 * Assigns an ActionListId to the Action
+		 * Only for Internal Use while loading the Action from DB
+		 * 
+		 * @param int $actionListId The Id of the ActionList
+		 */
 		public function setActionListId($actionListId){
 			$this->actionListId =$actionListId;
 		}
 		
+		/**
+		 * Set Name
+		 *
+		 * Sets the Name of the action
+		 * 
+		 * @param string $name The new Name 
+		 */
 		public function setName($name){
-			$this->name = $name;
+			$this->name = (string)$name;
 		}
 		
+		/**
+		 * Get Name
+		 *
+		 * Returns the Name of the action
+		 * 
+		 * @return string The Name of the Action 
+		 */
 		public function getName(){
 			return $this->name;
 		}
 		
+		/**
+		 * Get ActionList
+		 * 
+		 * Returns the ActionList this Action is currently assigned To
+		 * 
+		 * @return ActionList The ActionList of the Action or null
+		 */
 		public function getActionList(){
 			$core = Core::getInstance();
 			$am = $core->getActionManager();
@@ -271,18 +434,48 @@
 			return $actionList;
 		}
 		
+		/**
+		 * Get ActionList-ID
+		 * 
+		 * Returns the ID of the ActionList this Action is currently assigned To
+		 * 
+		 * @return int The ActionListID of the Action or null
+		 */
 		public function getActionListId(){
 			return $this->actionListId;
 		}
 		
+		/**
+		 * Set ID
+		 * 
+		 * Sets the ID of this Action
+		 * Dedicated for Internal Use (ID gets set via DB-Sequence)
+		 * 
+		 * @param int $id The new ID 
+		 */
 		public function setId($id){
 			$this->id = $id;
 		}
 		
+		/**
+		 * Get ID
+		 * 
+		 * Returns the ID of the Action
+		 * 
+		 * @return int The ActionId
+		 */
 		public function getId(){
 			return $this->id;
 		}
 		
+		/**
+		 * Set URL
+		 * 
+		 * Make this Action an URL-Operation
+		 * Resets Widget/Space or Site-attributes of this Action
+		 * 
+		 * @param string $url The URL to target with this Action
+		 */
 		public function setUrl($url){
 			$this->url = $url;
 			$this->widgetId = null;
@@ -296,12 +489,28 @@
 							   array($this->getUrl(),$this->getId()));
 		}
 		
+		/**
+		 * Delete
+		 * 
+		 * Deletes this action from Database
+		 */
 		public function delete(){
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			$db->query($core,"DELETE FROM ACTIONS WHERE ACT_ID = ?;",array($this->getId()));
 		}
 		
+		/**
+		 * Set Widget Space Constellation
+		 * 
+		 * Make this Action a Widget/Space Action
+		 * The Action will load the targetted widget into the given Space when
+		 * executed.
+		 * Resets Site- and URL-Link-attributes of this Action
+		 * 
+		 * @param int $widgetId The ID of the targeted Widget
+		 * @param int $spaceId The Space that the widget should be placed into
+		 */
 		public function setWidgetSpaceConstellation($widgetId, $spaceId){
 			if (isset($widgetId) and isset($spaceId)){
 				$core = Core::getInstance();
@@ -321,6 +530,15 @@
 							   array($this->getWidgetId(),$this->getSpace(),$this->getId()));
 		}
 		
+		/**
+		 * Set Site ID
+		 * 
+		 * Make This action a Site-Link that links
+		 * to another Scoville-Site.
+		 * Resets Widget/Site- and URL-Linkattributes
+		 * 
+		 * @param int $siteId
+		 */
 		public function setSiteId($siteId){
 			$core = Core::getInstance();
 			if ($core->getCompositeManager()->getSite($siteId) != null){
@@ -337,6 +555,11 @@
 							   array($this->getSiteId(),$this->getId()));
 		}
 		
+		/**
+		 * Unset Links
+		 * 
+		 * Resets all links that are represented by this Action
+		 */
 		public function unsetLinks(){
 			$this->siteId = null;
 			$this->widgetId = null;
@@ -344,18 +567,50 @@
 			$this->url = null;
 		}
 		
+		/**
+		 * Get WidgetId
+		 * 
+		 * Returns The widgetId assigned to This Action (only set when in Widget/Space-Mode)
+		 * otherwise null
+		 * 
+		 * @return int The Widget ID
+		 */
 		public function getWidgetId(){
 			return $this->widgetId;
 		}
 		
+		/**
+		 * Get Space
+		 * 
+		 * Returns The Space assigned to this Action (only set when in Widget/Space-Mode)
+		 * otherwise null
+		 * 
+		 * @return int The Spacenumber
+		 */
 		public function getSpace(){
 			return $this->spaceId;
 		}
 		
+		/**
+		 * Get SiteID
+		 * 
+		 * Returns the Site-ID of the site assigned to this Action (only in Site-Mode)
+		 * otherwise null
+		 * 
+		 * @return int The SiteID
+		 */
 		public function getSiteId(){
 			return $this->siteId;
 		}
 		
+		/**
+		 * Get URL
+		 * 
+		 * Returns the URL assigned to this action (only in URL-Mode)
+		 * otherwise null
+		 * 
+		 * @return string The URL
+		 */
 		public function getUrl(){
 			return $this->url;
 		}
@@ -365,8 +620,12 @@
 	/**
 	 * ActionList
 	 * 
-	 * An action represents anything that can happen when
-	 * using Hyperlinks inside scoville. 
+	 * An ActionList Represents a bunch of actions That
+	 * will be executed when the ActionList is invoked
+	 * ActionLists can be assigned to MenuItems.
+	 * If an ActionList is executed, the Actions are
+	 * executed by a priority-order that can be set via
+	 * functions in the Action-Objects
 	 */
 	class ActionList  {
 		function __const(){
@@ -375,28 +634,72 @@
 			$this->name = null;
 		}
 		
+		/**
+		 * Delete
+		 * 
+		 * Deletes the ActionList from the DB
+		 */
 		public function delete(){
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			$db->query($core, "DELETE FROM ACTIONLISTS WHERE ATL_ID = ?;", array($this->getId()));
 		}
 		
+		/**
+		 * Set Name
+		 * 
+		 * Sets the Name of the actionList
+		 * 
+		 * @param string $name The new Name
+		 */
 		public function setName($name){
 			$this->name = (string)$name;
 		}
 		
+		/**
+		 * Get Name
+		 * 
+		 * Returns the current Name of the ActionList
+		 * 
+		 * @return string Name of the ActionList
+		 */
 		public function getName(){
 			return $this->name;
 		}
 		
+		/**
+		 * Set ID
+		 * 
+		 * Sets the ID of the ActionList
+		 * Internal use Only (ID gets set with DB-generator while creation)
+		 * 
+		 * @param int $id The new Id of the ActionList
+		 */
 		public function setId($id){
 			$this->id = (int)$id;
 		}
 		
+		/**
+		 * Get ID
+		 * 
+		 * Returns the ID of the ActionList
+		 * 
+		 * @return int The ID of the actionList
+		 */
 		public function getId(){
 			return $this->id;
 		}
 		
+		/**
+		 * Add Action
+		 * 
+		 * This function adds an Action to this ActionList
+		 * if $action is an integer, it will be handled as actionId
+		 * the action will only be added if it is not already a part
+		 * of this ActionList
+		 * 
+		 * @param Action $action The Action or action Id to add
+		 */
 		public function addAction($action){
 			$core = Core::getInstance();
 			if (is_int($action)){
@@ -411,6 +714,15 @@
 			}
 		}
 		
+		/**
+		 * Has Action?
+		 * 
+		 * Tests whether this ActionList has the given action by 
+		 * comparing Action-IDs. Returns true if Action is present
+		 * 
+		 * @param Action $action The Action to Test for
+		 * @return boolean The test result
+		 */
 		public function hasAction($action){
 			foreach ($this->children as $child){
 				if ($child->getId() == $action->getId()){
@@ -420,6 +732,15 @@
 			return false;
 		}
 		
+		/**
+		 * Remove Action
+		 * 
+		 * Removes the given action from the ActionList
+		 * Only does something if the given action is present in 
+		 * this ActionList
+		 * 
+		 * @param Action $action The action to remove
+		 */
 		public function removeAction($action){
 			if ($this->hasAction($action)){
 				foreach ($this->children as $child){
@@ -434,10 +755,26 @@
 			}
 		}
 		
+		/**
+		 * Get Actions
+		 * 
+		 * Returns all Actions assigned to this ActionList
+		 * 
+		 * @return array The Actions of this ActionList
+		 */
 		public function getActions(){
 			return $this->children;
 		}
 		
+		/**
+		 * Get Action By ID
+		 * 
+		 * Get a specific action of this ActionList by it's ID
+		 * Return null if action is not found
+		 * 
+		 * @param int $actionId The ID of the searched Action
+		 * @return Action The action or null if not found
+		 */
 		public function getActionById($actionId){
 			foreach ($this->children as $child){
 				if ($child->getId() == $actionId){
@@ -451,8 +788,12 @@
 	/**
 	 * MenuItem
 	 * 
-	 * An action represents anything that can happen when
-	 * using Hyperlinks inside scoville. 
+	 * A Menu Item is an item graphically displayed in a Menu
+	 * A MenuItem may contain other MenuItems as children
+	 * The order-number determines in which order the menuitems are
+	 * displayed in their parent element which may be a Menu or another
+	 * MenuItem order goes from low to higher numbers
+	 * 
 	 */
 	class MenuItem  {
 		function __const(){
@@ -467,24 +808,82 @@
 			$this->order = null;
 		}
 		
+		/**
+		 * Delete
+		 * 
+		 * Deletes this MenuItem from DB
+		 */
 		public function delete(){
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			$db->query($core, "DELETE FROM MENUITEMS WHERE MNI_ID = ?;", array($this->getId()));
 		}
 		
+		/**
+		 * Set Order
+		 * 
+		 * Sets the display-ordernumber of this MenuItem
+		 * Internal use only. 
+		 * 
+		 * Use increaseOrder() decreaseOrder(),
+		 * moveToTopOrder() or moveToBottomOrder()
+		 * to modify Order.
+		 * 
+		 * @param int $order The order number
+		 */
 		public function setOrder($order){
 			$this->order = (int)$order;
 		}
 		
+		/**
+		 * Get Order
+		 * 
+		 * Returns the current Order number of this MenuItem
+		 * 
+		 * @return int The Order number
+		 */
 		public function getOrder(){
 			return $this->order;
 		}
+			
+		public function increaseOrder(){
+			//TODO: implement
+		}
+
+		public function decreaseOrder(){
+			//TODO: implement
+		}
 		
+		public function moveToTopOrder(){
+			//TODO: implement
+		}
+
+		public function moveToBottomOrder(){
+			//TODO: implement
+		}
+		
+		/**
+		 * Set ActionList
+		 * 
+		 * Set the ActionList assigned to this MenuItem directly
+		 * Internal Use only
+		 * 
+		 * Use assignActionList() to modify this MenuItem's actionlist
+		 * 
+		 * @param int $actionListId The ID of the ActionList to assign
+		 */
 		public function setActionListId($actionListId){
 			$this->actionListId = (int)$actionListId;
 		}
 		
+		/**
+		 * Get Action List
+		 * 
+		 * Returns the ActionList that is currently assigned to this MenuItem
+		 * if there is no Action list return null
+		 * 
+		 * @return ActionList The ActionList of this MenuItem
+		 */
 		public function getActionList(){
 			
 			if ($this->actionList == null or $this->actionList->getId() != $this->actionListId){
@@ -495,16 +894,40 @@
 			return $this->actionList;
 		}
 		
+		/**
+		 * Get ActionList-ID
+		 * 
+		 * Return the id of the ActionList that is currently assigned to this MenuItem
+		 * If there is no ActionList assigned, returns null
+		 * 
+		 * @return int The ActionList Id
+		 */
 		public function getActionListId(){
 			return $this->actionListId;
 		}
 		
+		/**
+		 * Set Menu ID
+		 * 
+		 * Assign this MenuItem to a Menu
+		 * Resets assignments to a parentMenuItem
+		 * 
+		 * @param int $menuId The menuId
+		 */
 		public function setMenuId($menuId){
 			$this->menuId = $menuId;
 			$this->parentMenuItem = null;
 			$this->parentMenuItemId = null;
 		}
 		
+		/**
+		 * Get Menu
+		 * 
+		 * Returns the Menu this MenuItem is assigned To
+		 * Returns null if not assigned to a Menu but to a submenu
+		 * 
+		 * @return int The Menu this MenuItem is Assigned to
+		 */
 		public function getMenu(){
 			if ($this->menu == null or $this->menu->getId() != $this->menuId){
 				$core = Core::getInstance();
@@ -514,16 +937,40 @@
 			return $this->menu;
 		}
 		
+		/**
+		 * Get Menu ID
+		 * 
+		 * Returns the ID of the Menu this MenuItem is assigned To
+		 * Returns null if not assigned to a Menu but to another MenuItem
+		 * 
+		 * @return int The MenuId of the Menu this MenuItem is Assigned to
+		 */
 		public function getMenuId(){
 			return $this->menuId;
 		}
 		
+		/**
+		 * Set Parent Menu Item Id
+		 * 
+		 * Assigns this MenuItem to a parent MenuItem
+		 * Resets any relations this MenuItem has to a Menu
+		 * 
+		 * @param int $parentMenuItemId The Parent MenuItem for this MenuItem
+		 */
 		public function setParentMenuItemId($parentMenuItemId){
 			$this->parentMenuItemId = $parentMenuItemId;
 			$this->menu = null;
 			$this->menuId = null;
+			//HERE BE DRAGONS: Need SQL here? oO
 		}
 		
+		/**
+		 * Get Parent Menu Item 
+		 * 
+		 * Returns the MenuItem this MenuItem is assigned to or null if not assigned
+		 * 
+		 * @return MenuItem The MenuItem this MenuItem is Assigned To
+		 */
 		public function getParentMenuItem(){
 			if ($this->parentMenuItem == null or $this->parentMenuItem->getId() != $this->parentMenuItemId){
 				$core = Core::getInstance();
@@ -533,26 +980,69 @@
 			return $this->parentMenuItem;
 		}
 		
+		/**
+		 * Get Parent Menu ItemID 
+		 * 
+		 * Returns the MenuItemID of the MenuItem this MenuItem is assigned to or null if not assigned
+		 * 
+		 * @return int The Id of the MenuItem this MenuItem is Assigned To
+		 */
 		public function getParentMenuItemId(){
 			return $this->parentMenuItemId;
 		}
 		
+		/**
+		 * Set Name
+		 * 
+		 * Sets the name of this MenuItem
+		 * 
+		 * @param string $name The name of the MenuItem
+		 */
 		public function setName($name){
 			$this->name = (string)$name;
 		}
 		
+		/**
+		 * Get Name
+		 * 
+		 * Gets the name of the MenuIem
+		 * 
+		 * @return string the Name of the MenuItem
+		 */
 		public function getName(){
 			return $this->name;
 		}
 		
+		/**
+		 * Set ID
+		 * 
+		 * Sets The id of this MenuItem
+		 * Internal use only (ID gets set via DB generator while creation)
+		 * 
+		 * @param int $id The ID to set
+		 */
 		public function setId($id){
 			$this->id = (int)$id;
 		}
 		
+		/**
+		 * Get ID
+		 * 
+		 * Returns the ID of this MenuItem
+		 * 
+		 * @return int The ID of this MenuItem
+		 */
 		public function getId($id){
 			return $this->id;
 		}
 		
+		/**
+		 * Assign an ActionList
+		 * 
+		 * Assigns an ActionList to this MenuItem
+		 * 
+		 * @param ActionList $actionList The ActionList to Assign
+		 */
 		public function assignActionList($actionList){
 			$actionListId = $actionList->getId();
 			$this->setActionListId($actionListId);
@@ -561,7 +1051,14 @@
 			$db->query($core, "UPDATE MENUITEMS SET MNI_ATL_ID = ? WHERE MNI_ID = ?;",
 					   array($actionListId, $this->getId()));
 		}
-
+		
+		/**
+		 * Add MenuItem
+		 * 
+		 * Adds a MenuItem as SubMenu-Component to this MenuItem
+		 * 
+		 * @param MenuItem $menuItem The MenuItem to add
+		 */
 		public function addMenuItem($menuItem){
 			$menuItemId = $menuItem->getId();
 			$menuItem->setParentMenuItemId($this->getId());
@@ -572,6 +1069,13 @@
 					   array($this->getId(), $menuItemId));
 		}
 		
+		/**
+		 * Remove MenuItem
+		 * 
+		 * Removes a MenuItem (SubmenuItem) assigned to this MenuItem
+		 * 
+		 * @param MenuItem $menuItem The MenuItem to remove
+		 */
 		public function removeMenuItem($menuItem){
 			$menuItemId = $menuItem->getId();
 			$menuItem->setParentMenuItemId(null);
@@ -582,6 +1086,13 @@
 					   array($this->getId(), $menuItemId));
 		}
 		
+		/**
+		 * Get MenuItems
+		 * 
+		 * Returns all (Sub-)MenuItems that are assigned to this MenuItem
+		 * 
+		 * @return array A array with all submenuItems assigned to this MenuItem
+		 */
 		public function getMenuItems(){
 			//PERFORMANCE-ENHANCE POSSIBLE BY IMPLEMENTING FETCHING IN HERE
 			$core = Core::getInstance();
@@ -599,8 +1110,8 @@
 	/**
 	 * Menu
 	 * 
-	 * An action represents anything that can happen when
-	 * using Hyperlinks inside scoville. 
+	 * A Menu represents a structure that contains MenuItems
+	 * It is the root-element of any navigation-structure
 	 */
 	class Menu  {
 		private $children = array();
@@ -612,10 +1123,24 @@
 			$this->site = null;
 		}
 		
+		/**
+		 * Set Site Id
+		 * 
+		 * Set the Id of the Site this menu belongs to
+		 * 
+		 * @param int $siteId The SiteID
+		 */
 		public function setSiteId($siteId){
 			$this->siteId = (int)$siteId;
 		}
 		
+		/**
+		 * Get Site 
+		 * 
+		 * Returns the site this Menu belongs To
+		 * 
+		 * @return Site The Site
+		 */
 		public function getSite(){
 			if ($this->site == null or $this->getSiteId() != $this->site->getId()){
 				$core = Core::getInstance();
@@ -625,26 +1150,70 @@
 			return $this->site;
 		}
 		
+		/**
+		 * Get SiteID
+		 * 
+		 * Returns The site ID of the site this menu belongs to
+		 * 
+		 * @return int The SiteID
+		 */
 		public function getSiteId(){
 			return $this->siteId;
 		}
 		
+		/**
+		 * Set Name
+		 * 
+		 * Sets the name of this menu
+		 * 
+		 * @param string $name The Name of the Menu
+		 */
 		public function setName($name){
 			$this->name = (string)$name;
 		}
 		
+		/**
+		 * Get Name
+		 * 
+		 * Returns the name of this Menu
+		 * 
+		 * @return string The name of this menu
+		 */
 		public function getName(){
 			return $this->name;
 		}
 		
+		/**
+		 * Set ID
+		 * 
+		 * Sets the id of this Menu
+		 * Internal use only (Id gets set via DB-Generator while creation)
+		 * 
+		 * @param int $id The ID to set
+		 */
 		public function setId($id){
 			$this->id  = (int)$id;
 		}
 		
+		/**
+		 * Get ID
+		 * 
+		 * Returns the id of this Menu
+		 * 
+		 * @return int The ID
+		 */
 		public function getId($id){
 			return $this->id;
 		}
 		
+		/**
+		 * Add MenuItem
+		 * 
+		 * Adds a MenuItem to this Menu
+		 * MenuItem only gets added if its not already assigned here
+		 * 
+		 * @param MenuItem $menuItem The menuItem to add
+		 */
 		public function addMenuItem($menuItem){
 			//TODO: Class must be MenuItem
 			if (!in_array($menuItem, $this->children)){
@@ -652,6 +1221,14 @@
 			}
 		}
 		
+		/**
+		 * Get Menu Item By Id
+		 * 
+		 * Returns a MenuItem assigned to this menu by a given ID
+		 * If this MenuItem does not exist, returns null
+		 * 
+		 * @return MenuItem The menuitem searched for or null
+		 */
 		public function getMenuItemById($menuItemId){
 			foreach($this->children as $item){
 				if ($item->getId() == $menuItemId){
@@ -661,6 +1238,13 @@
 			return null;
 		}
 		
+		/**
+		 * Get MenuItems
+		 * 
+		 * Returns all MenuItems assigned to this Menu
+		 * 
+		 * @return array An array of MenuItems
+		 */
 		public function getMenuItems(){
 			//PERFORMANCE-ENHANCE POSSIBLE BY IMPLEMENTING FETCHING IN HERE
 			$core = Core::getInstance();
@@ -674,6 +1258,13 @@
 			return $ret;
 		}
 		
+		/**
+		 * Remove Menu Item
+		 * 
+		 * Removes a MenuItem from this Menu
+		 * 
+		 * @param MenuItem $menuItem The MenuItem To remove
+		 */
 		public function removeMenuItem($menuItem){
 			$menuItemId = $menuItem->getId();
 			$menuItem->setParentMenuItemId(null);
