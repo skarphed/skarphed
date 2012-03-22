@@ -34,11 +34,11 @@
 		private static $instance = null;
 	
 		public static function getInstance(){
-			if (OperationManager::$instance==null){
-				OperationManager::$instance = new OperationManager();
-				OperationManager::$instance->init();
+			if (ActionManager::$instance==null){
+				ActionManager::$instance = new ActionManager();
+				ActionManager::$instance->init();
 			}
-			return OperationManager::$instance;
+			return ActionManager::$instance;
 		}
 		
 		protected function init(){}
@@ -88,11 +88,21 @@
 	 */
 	class Action  {
 		function __const(){
+			$this->id = null;
+			
 			$this->widgetId = null;
 			$this->spaceId =null;
 			
 			$this->siteId = null;
 			$this->url = null;
+		}
+		
+		public function setId($id){
+			$this->id = $id;
+		}
+		
+		public function getId(){
+			return $this->id;
 		}
 		
 		public function setUrl($url){
@@ -144,7 +154,7 @@
 	class ActionList  {
 		function __const(){
 			//TODO: Implement
-			$children = array();
+			$this->children = array();
 		}
 		
 		public function delete(){
@@ -156,20 +166,29 @@
 				$core = Core::getInstance();
 				$action = $core->getActionManager()->getActionById($action);
 			}
-			$this->children[] = $action;
-			//TODO SQL-Krempel	
+			//TODO: Klasse pruefen
+			if (!in_array($action,$this->children)){
+				$this->children[] = $action;	
+				//TODO SQL-Krempel	
+			}
 		}
 		
 		public function removeAction($action){
 			//TODO: Implement
+			
 		}
 		
-		public function getActions($action){
-			//TODO: Implement
+		public function getActions(){
+			return $this->children;
 		}
 		
 		public function getActionById($actionId){
-			//TODO: Implement
+			foreach ($this->children as $child){
+				if ($child->getId() == $actionId){
+					return $child;
+				}
+			}
+			return null;
 		}
 
 	}
@@ -215,17 +234,26 @@
 	 * using Hyperlinks inside scoville. 
 	 */
 	class Menu  {
+		private $children = array();
+		
 		function __const(){
-			//TODO: Implement
 		}
 		
 		
 		public function addMenuItem($menuItem){
-			//TODO: Implement
+			//TODO: Class must be MenuItem
+			if (!in_array($menuItem, $this->children)){
+				$this->children[] = $menuItem;
+			}
 		}
 		
 		public function getMenuItemById($menuItemId){
-			//TODO: Implement
+			foreach($this->children as $item){
+				if ($item->getId() == $menuItemId){
+					return $item;
+				}
+			}
+			return null;
 		}
 		
 		public function getMenuItems(){
