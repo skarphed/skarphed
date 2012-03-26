@@ -185,13 +185,14 @@
 		 * @param string $name = "new menu" The name of the new menu
 		 * @return Menu The created Menu
 		 */
-		public function createMenu($name="new menu"){
+		public function createMenu($site,$name="new menu"){
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			$menu = new Menu();
 			$menu->setId($db->getSeqNext('MNU_GEN'));
 			$menu->setName($name);
 			$db->query($core,"INSERT INTO MENUS VALUES (?,?) ;",array($menu->getId(), $menu->getName()));
+			$db->query($core,"UPDATE SITES SET SIT_MNU_ID = ? WHERE SIT_ID = ?;", array($menu->getId(), $site->getId()));
 			return $menu;
 		}
 		
@@ -407,6 +408,9 @@
 		 */
 		public function setName($name){
 			$this->name = (string)$name;
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core,"UPDATE ACTIONS SET ACT_NAME = ? WHERE ACT_ID = ?;",array($this->name, $this->getId()));
 		}
 		
 		/**
@@ -654,6 +658,9 @@
 		 */
 		public function setName($name){
 			$this->name = (string)$name;
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE ACTIONLISTS SET ATL_NAME = ? WHERE ATL_ID = ?;", array($this->name, $this->getId()));
 		}
 		
 		/**
@@ -980,9 +987,14 @@
 		 * @param int $menuId The menuId
 		 */
 		public function setMenuId($menuId){
-			$this->menuId = $menuId;
+			$this->menuId = (int)$menuId;
 			$this->parentMenuItem = null;
 			$this->parentMenuItemId = null;
+			$core = Core::getInstacne();
+			$db = $core->getDB();
+			$db->query($core,"UPDATE MENUITEMS SET MNI_MNU_ID = ?, MNI_MNI_ID = NULL WHERE MNI_ID = ?",
+							 array($this->menuId, $this->getId()));
+			
 		}
 		
 		/**
@@ -1065,6 +1077,9 @@
 		 */
 		public function setName($name){
 			$this->name = (string)$name;
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE MENUITEMS SET MNI_NAME = ? WHERE MNI_ID = ?;",array($this->name,$this->getId()));
 		}
 		
 		/**
@@ -1237,6 +1252,9 @@
 		 */
 		public function setName($name){
 			$this->name = (string)$name;
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "UPDATE MENUS SET MNU_NAME = ? WHERE MNU_ID = ?;", array($this->name, $this->getId()));
 		}
 		
 		/**
@@ -1269,7 +1287,7 @@
 		 * 
 		 * @return int The ID
 		 */
-		public function getId($id){
+		public function getId(){
 			return $this->id;
 		}
 		
