@@ -281,7 +281,19 @@ class Site {
 		return $ret;
 	}
 	
-	
+	public function getMenus(){
+		$core = Core::getInstance();
+		$db = $core->getDB();
+		$actionManager = $core->getActionManager();
+		
+		
+		$res = $db->query($core, "SELECT MNU_ID FROM MENUS WHERE MNU_SIT_ID = ?;",array($this->getId()));
+		$ret = array();
+		while($set = $db->fetchObject($res)){
+			$ret[] = $actionManager->getMenuById($set->MNU_ID);
+		}
+		return $ret;
+	}
 }
 
 class Widget {

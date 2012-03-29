@@ -301,7 +301,7 @@
 		public function getMenuById($menuId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
-			$res = $db->query($core,"SELECT MNU_NAME FROM MENU WHERE MNU_ID = ? ;",array($menuId));
+			$res = $db->query($core,"SELECT MNU_NAME FROM MENUS WHERE MNU_ID = ? ;",array($menuId));
 			if ($set = $db->fetchObject($res)){
 				$menu = new Menu();
 				$menu->setId($menuId);

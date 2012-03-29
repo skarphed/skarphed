@@ -28,12 +28,15 @@ import hashlib
 import base64
 import os
 
+from Menu import Menu
+
 class Site(GenericScovilleObject):
     def __init__(self,parent, data = {}):
         GenericScovilleObject.__init__(self)
         self.par = parent
         self.data = data
         self.updated()
+        self.loadMenus()
     
     def getName(self):
         if self.data.has_key('name'):
@@ -112,7 +115,26 @@ class Site(GenericScovilleObject):
             tempfile.write(raw)
             tempfile.close()
             return '/tmp/scoville/'+tempfilename
-               
+    
+    def getMenuById(self,menuId):
+        for menu in self.children:
+            if menu.getId() == menuId:
+                return menu
+        return None
+    
+    def loadMenusCallback(self,json):
+        menuIds = [m.getId() for m in self.children]
+        for menu in json:
+            if menu['id'] not in menuIds:
+                self.children.append(Menu(self,menu))
+            else:
+                self.getMenuById(menu['id']).update(menu)
+        self.updated()
+        
+    def loadMenus(self):
+        self.getApplication().doRPCCall(self.getSites().getScoville(),
+                                        self.loadMenusCallback, "getMenusOfSite", [self.getId()])
+    
     def getPar(self):
         return self.par
     

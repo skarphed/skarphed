@@ -393,5 +393,54 @@ class class_scvRpc {
 	$compositeM = $core->getCompositeManager();
 	return $compositeM->getWidgetsOfModule($moduleName);	
   }
+  
+  function method_getMenusOfSite($params,$error){
+  	$siteId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$compositeManager = $core->getCompositeManager();
+	
+	$menus = $compositeManager->getSite($siteId)->getMenus();
+	
+	$ret = array();
+	foreach($menus as $menu){
+		$ret[] = array("name"=>$menu->getName(),"id"=>$menu->getId());
+	}
+	return $ret;
+  }
+  
+  function method_getMenuItemsOfMenu($params,$error){
+  	$menuId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	
+	$menuItems = $actionManager->getMenu($menuId)->getMenuItems();
+	
+	$ret = array();
+	foreach($menuItems as $menuItem){
+		$ret[] = array("name"=>$menuItem->getName(),
+					   "id"=>$menuItem->getId(),
+					   "order"=>$menuItem->getOrder());
+	}
+	return $ret;
+  }
+  
+  function method_getMenuItemsOfMenuItem($params,$error){
+  	$menuItemId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	
+	$menuItems = $actionManager->getMenuItem($menuItemId)->getMenuItems();
+	
+	$ret = array();
+	foreach($menuItems as $menuItem){
+		$ret[] = array("name"=>$menuItem->getName(),
+					   "id"=>$menuItem->getId(),
+					   "order"=>$menuItem->getOrder());
+	}
+	return $ret;
+  }
 }
 ?>

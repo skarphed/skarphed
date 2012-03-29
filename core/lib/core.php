@@ -37,6 +37,7 @@ include_once "template.php";
 include_once "site.php";
 include_once "rightmanagement.php";
 include_once "binary.php";
+include_once "action.php";
 
 session_start();
 
@@ -61,6 +62,7 @@ class Core extends Singleton implements IModule{
 	private $templates = null;
 	private $composite = null;
 	private $binary = null;
+	private $action = null;
 	
 	public function getName(){
 		return 'de.masterprogs.scoville.core';
@@ -141,6 +143,13 @@ class Core extends Singleton implements IModule{
 			$this->binary = BinaryManager::getInstance();
 		}
 		return $this->binary;
+	}
+	
+	public function getActionManager(){
+		if(!isset($this->action)) {
+			$this->action = ActionManager::getInstance();
+		}
+		return $this->action;
 	}
 	
 	public function renderModule($modulename, $moduleInstanceId){
