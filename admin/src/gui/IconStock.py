@@ -34,11 +34,15 @@ print PATH
 
 #LOGO                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/mp_logo.png",16,16)
 
+ACTION                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/action.png",16,16)
+ACTIONLIST              = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/actionlist.png",16,16)
 ADD                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/add.png",16,16)
 CREDENTIAL              = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/credential.png",16,16)
 CSS                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/css.png",16,16)
 DELETE                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/delete.png",16,16)
 ERROR                   = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/error.png",16,16)
+MENU                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/menu.png",16,16)
+MENUITEM                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/menuitem.png",16,16)
 MODULE_UPDATEABLE       = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/module_updateable.png",16,16)
 MODULE                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/module.png",16,16)
 OPERATION               = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/operation.png",16,16)
@@ -74,19 +78,17 @@ icon_object_map = {
                    "Site"       : SITE,
                    "Repository" : REPO,
                    "Template"   : TEMPLATE,
-                   "Widget"     : WIDGET
+                   "Widget"     : WIDGET,
+                   "Action"     : ACTION,
+                   "ActionList" : ACTIONLIST,
+                   "Menu"       : MENU,
+                   "MenuItem"   : MENUITEM   
                    }
 
 def getServerIcon(server):
-    if server.isOnline():
-        if server.getSSHState() == server.SSH_UNLOCKED and server.getSCVState() == server.SCV_UNLOCKED:
-            return SERVER_ONLINE_SSH_SCV
-        elif server.getSSHState() == server.SSH_UNLOCKED:
-            return SERVER_ONLINE_SSH
-        elif server.getSCVState() == server.SCV_UNLOCKED:
-            return SERVER_ONLINE_SCV
-        else:
-            return SERVER_ONLINE
+    
+    if server.getSSHState() == server.SSH_UNLOCKED:
+        return SERVER_ONLINE
     return SERVER
 
 def getAppropriateIcon(object):
