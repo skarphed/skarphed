@@ -30,7 +30,7 @@ import gtk
 
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
-import gui.IconStock
+import gui.IconStock #HERE BE DRAGONS : double include
 
 class WidgetContainer(gtk.HBox):
     def __init__(self, par, site, spaceId, widget=None):
@@ -184,6 +184,8 @@ class SitePage(GenericObjectPage):
         
         
         self.site.addCallback(self.render)
+        for module in self.site.getScoville().modules.children:
+            module.addCallback(self.render)
         self.render()
         
     def render(self):

@@ -89,12 +89,13 @@ class Module(GenericScovilleObject):
                 self.addChild(Widget(self,widget))
             else:
                 self.getWidgetById(widget['id']).refresh(widget)
-    
+        self.updated()
+        
     def loadWidgets(self):
         self.getApplication().doRPCCall(self.getModules().getScoville(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getModuleName()])
     
     def createWidgetCallback(self, json):
-        self.updated()
+        self.loadWidgets()
     
     def createWidget(self,name):
         self.getApplication().doRPCCall(self.getModules().getScoville(),self.createWidgetCallback, "createWidget", [self.getModuleName(),name])
