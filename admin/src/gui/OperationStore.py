@@ -60,14 +60,14 @@ class OperationStore(gtk.TreeStore):
     def getIterById(self, obj_id):
         def search(model, path, rowiter, obj_id):
                 val = model.get_value(rowiter,4)
-                if val == id:
+                if val == obj_id:
                     model.tempiter = rowiter
             
         if not self.busy:
             self.busy = True
                     
             self.tempiter = None
-            self.foreach(search, id)
+            self.foreach(search, obj_id)
             
             rowiter=self.tempiter
             self.busy = False
