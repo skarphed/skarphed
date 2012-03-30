@@ -32,7 +32,11 @@ class StoreException(Exception):pass
 
 class Store(gtk.TreeStore):
     '''The Matchstore class is holding and managing the Data for the MatchTree. It communicates with the database'''
-    EXCLUDED_CLASSES = ("Operation","OperationManager")
+    EXCLUDED_CLASSES = ("Operation",
+                        "OperationManager",
+                        "Action",
+                        "ActionList",
+                        "MenuItem")
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
         assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"

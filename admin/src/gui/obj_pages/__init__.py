@@ -29,6 +29,7 @@ from Role import RolePage
 from Template import TemplatePage
 from Repository import RepositoryPage
 from Site import SitePage
+from Menu import MenuPage
 
 class PageException(Exception):pass
 
@@ -51,6 +52,8 @@ def generatePageForObject(parent,obj):
         return  TemplatePage(parent,obj)
     elif obj.__class__.__name__ == "Widget":
         return  GenericObjectPage(parent,obj)
+    elif obj.__class__.__name__ == "Menu":
+        return MenuPage(parent,obj)
     else:
         raise PageException("There is no Page for the Classtype "+obj.__class__.__name__)
    

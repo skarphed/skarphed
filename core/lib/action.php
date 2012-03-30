@@ -269,7 +269,7 @@
 		public function getMenuItemById($menuItemId){
 			$core = Core::getInstance();
 			$db = $core->getDB();
-			$res = $db->query($core, "SELECT MNI_NAME, MNI_MNU_ID, MNI_MNI_ID, MNI_ATL_ID, MNI_ORDER WHERE MNI_ID = ?;",array($menuItemId));
+			$res = $db->query($core, "SELECT MNI_NAME, MNI_MNU_ID, MNI_MNI_ID, MNI_ATL_ID, MNI_ORDER FROM MENUITEMS WHERE MNI_ID = ?;",array($menuItemId));
 			if ($set = $db->fetchObject($res)){
 				$menuItem = new MenuItem();
 				$menuItem->setId($menuItemId);
@@ -284,6 +284,7 @@
 				if (isset($set->MNI_ATL_ID)){
 					$menuItem->setActionListId($set->MNI_ATL_ID);
 				}
+				return $menuItem;
 			}				
 			return null;
 		}
@@ -990,7 +991,7 @@
 			$this->menuId = (int)$menuId;
 			$this->parentMenuItem = null;
 			$this->parentMenuItemId = null;
-			$core = Core::getInstacne();
+			$core = Core::getInstance();
 			$db = $core->getDB();
 			$db->query($core,"UPDATE MENUITEMS SET MNI_MNU_ID = ?, MNI_MNI_ID = NULL WHERE MNI_ID = ?",
 							 array($this->menuId, $this->getId()));
@@ -1112,7 +1113,7 @@
 		 * 
 		 * @return int The ID of this MenuItem
 		 */
-		public function getId($id){
+		public function getId(){
 			return $this->id;
 		}
 		

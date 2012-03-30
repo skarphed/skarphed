@@ -415,7 +415,7 @@ class class_scvRpc {
 	$core = scv\Core::getInstance();
 	$actionManager = $core->getActionManager();
 	
-	$menuItems = $actionManager->getMenu($menuId)->getMenuItems();
+	$menuItems = $actionManager->getMenuById($menuId)->getMenuItems();
 	
 	$ret = array();
 	foreach($menuItems as $menuItem){
@@ -432,7 +432,7 @@ class class_scvRpc {
 	$core = scv\Core::getInstance();
 	$actionManager = $core->getActionManager();
 	
-	$menuItems = $actionManager->getMenuItem($menuItemId)->getMenuItems();
+	$menuItems = $actionManager->getMenuItemById($menuItemId)->getMenuItems();
 	
 	$ret = array();
 	foreach($menuItems as $menuItem){

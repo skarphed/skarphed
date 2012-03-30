@@ -31,6 +31,7 @@ class Menu(GenericScovilleObject):
         self.par = par
         self.data = data
         self.updated()
+        self.loadMenuItems()
         
     def getName(self):
         if self.data.has_key('name'):
@@ -67,6 +68,12 @@ class Menu(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getSite().getSites().getScoville(),
                                         self.loadMenuItemsCallback,"getMenuItemsOfMenu",[self.getId()])
         
+    def getMenuItemsRecursive(self):
+        ret = self.children
+        for menuItem in self.children:
+            ret.extend(menuItem.getMenuItemsRecursive())
+        return ret
+        
     def getMenuItems(self):
         return self.children
         
@@ -82,7 +89,8 @@ class MenuItem(GenericScovilleObject):
         self.par = par
         self.data = data
         self.updated()
-    
+        self.loadMenuItems()
+        
     def getName(self):
         if self.data.has_key('name'):
             return self.data['name']
@@ -98,6 +106,12 @@ class MenuItem(GenericScovilleObject):
             return self.data['id']
         else:
             return None  
+    
+    def getOrder(self):
+        if self.data.has_key('order'):
+            return self.data['order']
+        else:
+            return -1  
     
     def getMenuItemById(self,menuItemId):
         for menuItem in self.children:
@@ -115,8 +129,14 @@ class MenuItem(GenericScovilleObject):
         self.updated()
         
     def loadMenuItems(self):
-        self.getApplication().doRPCCall(self.getSite().getSites().getScoville(),
+        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
                                         self.loadMenuItemsCallback,"getMenuItemsOfMenuItem",[self.getId()])
+    
+    def getMenuItemsRecursive(self):
+        ret = self.children
+        for menuItem in self.children:
+            ret.extend(menuItem.getMenuItemsRecursive())
+        return ret
     
     def getMenuItems(self):
         return self.children
