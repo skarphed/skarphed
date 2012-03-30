@@ -442,5 +442,45 @@ class class_scvRpc {
 	}
 	return $ret;
   }
+  
+  function method_increaseMenuItemOrder($params,$error){
+  	$menuItemId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menuItem = $actionManager->getMenuItemById($menuItemId);
+	$menuItem->increaseOrder();
+	return 0;
+  }
+  
+  function method_decreaseMenuItemOrder($params,$error){
+  	$menuItemId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menuItem = $actionManager->getMenuItemById($menuItemId);
+	$menuItem->increaseOrder();
+	return 0;
+  }
+  
+  function method_moveToTopMenuItemOrder($params,$error){
+  	$menuItemId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menuItem = $actionManager->getMenuItemById($menuItemId);
+	$menuItem->moveToTopOrder();
+	return 0;
+  }
+  
+  function method_moveToBottomMenuItemOrder($params,$error){
+  	$menuItemId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menuItem = $actionManager->getMenuItemById($menuItemId);
+	$menuItem->moveToBottomOrder();
+	return 0;
+  }
 }
 ?>

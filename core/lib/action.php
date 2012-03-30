@@ -859,20 +859,30 @@
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			if ($this->getMenuId()!=null){
-				$res = $db->query($core, "SELECT MIN(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNU_ID = ? AND MNI_ORDER > ? ;", 
+				$res = $db->query($core, "SELECT MIN(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNU_ID = ? AND MNI_ORDER > ? ;", 
 								  array($this->getMenuId(),$this->getOrder()));
+				if ($set = $db->fetchObject($res)){
+					if(!isset($set->NEWORDER)){
+						return;
+					}
+					$tempOrder = $this->getOrder();
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNU_ID = ?", array($tempOrder, $set->NEWORDER, $this->getMenuId()));
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+					$db->commit();
+				}
 			}else if ($this->getParentMenuItemId()!=null){
-				$res = $db->query($core, "SELECT MIN(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNI_ID = ? AND MNI_ORDER > ? ;", 
+				$res = $db->query($core, "SELECT MIN(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? AND MNI_ORDER > ? ;", 
 								  array($this->getParentMenuItemId(),$this->getOrder()));
-			}else{
-				return;
+				if ($set = $db->fetchObject($res)){
+					if(!isset($set->NEWORDER)){
+						return;
+					}
+					$tempOrder = $this->getOrder();
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNI_ID = ?", array($tempOrder, $set->NEWORDER, $this->getParentMenuItemId()));
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+					$db->commit();
+				}
 			}
-			if ($set = $db->fetchObject($res)){
-				$tempOrder = $this->getOrder();
-				$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($tempOrder, $set->MNI_ID));
-				$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
-			}
-			
 		}
 
 		public function decreaseOrder(){
@@ -880,19 +890,33 @@
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			if ($this->getMenuId()!=null){
-				$res = $db->query($core, "SELECT MAX(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNU_ID = ? AND MNI_ORDER < ? ;", 
+				$res = $db->query($core, "SELECT MAX(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNU_ID = ? AND MNI_ORDER < ? ;", 
 								  array($this->getMenuId(),$this->getOrder()));
+				if ($set = $db->fetchObject($res)){
+					if(!isset($set->NEWORDER)){
+						return;
+					}
+					$tempOrder = $this->getOrder();
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNU_ID = ?", array($tempOrder, $set->NEWORDER,$this->getMenuId()));
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+					$db->commit();
+				}
 			}else if ($this->getParentMenuItemId()!=null){
-				$res = $db->query($core, "SELECT MAX(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNI_ID = ? AND MNI_ORDER < ? ;", 
+				$res = $db->query($core, "SELECT MAX(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? AND MNI_ORDER < ? ;", 
 								  array($this->getParentMenuItemId(),$this->getOrder()));
+				if ($set = $db->fetchObject($res)){
+					if(!isset($set->NEWORDER)){
+						return;
+					}
+					$tempOrder = $this->getOrder();
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNI_ID = ?", array($tempOrder, $set->NEWORDER,$this->getParentMenuItemId()));
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+					$db->commit();
+				}
 			}else{
 				return;
 			}
-			if ($set = $db->fetchObject($res)){
-				$tempOrder = $this->getOrder();
-				$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($tempOrder, $set->MNI_ID));
-				$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
-			}
+			
 		}
 		
 		public function moveToTopOrder(){
@@ -900,18 +924,27 @@
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			if ($this->getMenuId()!=null){
-				$res = $db->query($core, "SELECT MAX(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNU_ID = ?;", 
+				$res = $db->query($core, "SELECT MAX(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNU_ID = ?;", 
 								  array($this->getMenuId()));
+				if ($set = $db->fetchObject($res)){
+					if(!isset($set->NEWORDER)){
+						return;
+					}
+					$tempOrder = $this->getOrder();
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNU_ID = ?", array($tempOrder, $set->NEWORDER, $this->getMenuId()));
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+				}
 			}else if ($this->getParentMenuItemId()!=null){
-				$res = $db->query($core, "SELECT MAX(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNI_ID = ?;", 
+				$res = $db->query($core, "SELECT MAX(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ?;", 
 								  array($this->getParentMenuItemId()));
-			}else{
-				return;
-			}
-			if ($set = $db->fetchObject($res)){
-				$tempOrder = $this->getOrder();
-				$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($tempOrder, $set->MNI_ID));
-				$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+				if ($set = $db->fetchObject($res)){
+					if(!isset($set->NEWORDER)){
+						return;
+					}
+					$tempOrder = $this->getOrder();
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNI_ID = ?", array($tempOrder, $set->NEWORDER, $this->getParentMenuItemId()));
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+				}
 			}
 		}
 
@@ -920,18 +953,27 @@
 			$core = Core::getInstance();
 			$db = $core->getDB();
 			if ($this->getMenuId()!=null){
-				$res = $db->query($core, "SELECT MIN(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNU_ID = ?;", 
+				$res = $db->query($core, "SELECT MIN(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNU_ID = ?;", 
 								  array($this->getMenuId()));
+				if ($set = $db->fetchObject($res)){
+					if(!isset($set->NEWORDER)){
+						return;
+					}
+					$tempOrder = $this->getOrder();
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNU_ID = ?", array($tempOrder, $set->NEWORDER, $this->getMenuId()));
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+				}
 			}else if ($this->getParentMenuItemId()!=null){
 				$res = $db->query($core, "SELECT MIN(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNI_ID = ?;", 
 								  array($this->getParentMenuItemId()));
-			}else{
-				return;
-			}
-			if ($set = $db->fetchObject($res)){
-				$tempOrder = $this->getOrder();
-				$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($tempOrder, $set->MNI_ID));
-				$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+				if ($set = $db->fetchObject($res)){
+					if(!isset($set->NEWORDER)){
+						return;
+					}
+					$tempOrder = $this->getOrder();
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNI_ID = ?", array($tempOrder, $set->NEWORDER, $this->getParentMenuItemId()));
+					$db->query($core, "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ?", array($set->NEWORDER, $this->getId()));
+				}
 			}
 		}
 		

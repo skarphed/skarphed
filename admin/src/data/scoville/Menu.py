@@ -76,7 +76,8 @@ class Menu(GenericScovilleObject):
         
     def getMenuItems(self):
         return self.children
-        
+    
+    
     def getPar(self):
         return self.par
     
@@ -111,7 +112,7 @@ class MenuItem(GenericScovilleObject):
         if self.data.has_key('order'):
             return self.data['order']
         else:
-            return -1  
+            return -1
     
     def getMenuItemById(self,menuItemId):
         for menuItem in self.children:
@@ -137,6 +138,25 @@ class MenuItem(GenericScovilleObject):
         for menuItem in self.children:
             ret.extend(menuItem.getMenuItemsRecursive())
         return ret
+    
+    def orderCallback(self,json):
+        self.getPar().loadMenuItems()
+    
+    def increaseOrder(self):
+        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
+                                        self.orderCallback,"increaseMenuItemOrder",[self.getId()])
+    
+    def decreaseOrder(self):
+        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
+                                        self.orderCallback,"decreaseMenuItemOrder",[self.getId()])
+    
+    def moveToTop(self):
+        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
+                                        self.orderCallback,"moveToTopMenuItemOrder",[self.getId()])
+    
+    def moveToBottom(self):
+        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
+                                        self.orderCallback,"moveToBottomMenuItemOrder",[self.getId()])
     
     def getMenuItems(self):
         return self.children

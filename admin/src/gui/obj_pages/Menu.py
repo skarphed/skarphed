@@ -40,6 +40,8 @@ class MenuPage(GenericObjectPage):
         self.infobox = gtk.HBox()
         self.info_labelName = gtk.Label("Name:")
         self.info_entryName = gtk.Entry()
+        self.infobox.pack_start(self.info_labelName,False)
+        self.infobox.pack_start(self.info_entryName,True)
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
@@ -47,6 +49,32 @@ class MenuPage(GenericObjectPage):
         self.editbox = gtk.HPaned()
         self.edit_left_box = gtk.VBox()
         self.edit_toolbar = gtk.Toolbar()
+        
+        self.addbutton=gtk.ToolButton()
+        self.addbutton.set_stock_id(gtk.STOCK_ADD)
+        self.addbutton.connect("clicked", self.cb_Add)
+        self.removebutton=gtk.ToolButton()
+        self.removebutton.set_stock_id(gtk.STOCK_REMOVE)
+        self.removebutton.connect("clicked", self.cb_Remove)
+        self.increasebutton=gtk.ToolButton()
+        self.increasebutton.set_stock_id(gtk.STOCK_GO_UP)
+        self.increasebutton.connect("clicked", self.cb_Increase)
+        self.decreasebutton=gtk.ToolButton()
+        self.decreasebutton.set_stock_id(gtk.STOCK_GO_DOWN)
+        self.decreasebutton.connect("clicked", self.cb_Decrease)
+        self.topbutton=gtk.ToolButton()
+        self.topbutton.set_stock_id(gtk.STOCK_GOTO_TOP)
+        self.topbutton.connect("clicked", self.cb_Top)
+        self.bottombutton=gtk.ToolButton()
+        self.bottombutton.set_stock_id(gtk.STOCK_GOTO_BOTTOM)
+        self.bottombutton.connect("clicked", self.cb_Bottom)
+        self.edit_toolbar.add(self.addbutton)
+        self.edit_toolbar.add(self.removebutton)
+        self.edit_toolbar.add(self.increasebutton)
+        self.edit_toolbar.add(self.decreasebutton)
+        self.edit_toolbar.add(self.topbutton)
+        self.edit_toolbar.add(self.bottombutton)
+        
         self.edit_menutree = MenuItemTree(self,menu)
         self.edit_right_box = gtk.Frame("ACTIONS")
         self.edit_left_box.pack_start(self.edit_toolbar,False)
@@ -62,6 +90,25 @@ class MenuPage(GenericObjectPage):
     
     def render(self):
         self.info_labelName.set_text(self.menu.getName())
+    
+    def cb_Add(self,widget=None,data=None):
+        pass
+    
+    def cb_Remove(self,widget=None,data=None):
+        pass
+    
+    def cb_Increase(self,widget=None,data=None):
+        self.edit_menutree.getSelectedMenuItem().increaseOrder()
+        
+    def cb_Decrease(self,widget=None,data=None):
+        self.edit_menutree.getSelectedMenuItem().decreaseOrder()
+    
+    def cb_Top(self,widget=None,data=None):
+        self.edit_menutree.getSelectedMenuItem().moveToTop()
+        
+    def cb_Bottom(self,widget=None,data=None):
+        self.edit_menutree.getSelectedMenuItem().moveToBottom()
+    
     
     def getPar(self):
         return self.par
@@ -100,6 +147,12 @@ class MenuItemTree(gtk.TreeView):
         
         self.set_search_column(1)
         
+    def getSelectedMenuItem(self):
+        selection = self.get_selection()
+        rowiter = selection.get_selected()[1]
+        obj_id = self.store.get_value(rowiter,2)
+        obj = self.getApplication().getLocalObjectById(obj_id)
+        return obj
         
         
     def getPar(self):
