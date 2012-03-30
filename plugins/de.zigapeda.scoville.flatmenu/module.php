@@ -30,7 +30,7 @@ class de_zigapeda_scoville_flatmenu {
 	                                       ,mni_atl_id
 	                                 from widgets
 	                                 join sites on sit_id = wgt_sit_id
-	                                 join menus on mnu_id = sit_mnu_id
+	                                 join menus on sit_id = mnu_sit_id
 	                                 join menuitems on mni_mnu_id = mnu_id
 	                                 where wgt_id = $this->widgetId 
 	                                 order by mni_order");
