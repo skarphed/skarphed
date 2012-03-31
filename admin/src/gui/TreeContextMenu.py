@@ -104,6 +104,22 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.deleteWidget)
         self.deleteWidget.connect("activate",self.cb_deleteWidget)
         
+        createMenuI = gtk.Image()
+        createMenuI.set_from_pixbuf(IconStock.MENU)
+        self.createMenu = gtk.ImageMenuItem()
+        self.createMenu.set_image(createMenuI)
+        gtk.MenuItem.__init__(self.createMenu,"Create Menu")
+        self.append(self.createMenu)
+        self.createMenu.connect("activate",self.cb_createMenu)
+        
+        
+        deleteMenuI = gtk.Image()
+        deleteMenuI.set_from_pixbuf(IconStock.MENU)
+        self.deleteMenu = gtk.ImageMenuItem()
+        self.deleteMenu.set_image(deleteMenuI)
+        gtk.MenuItem.__init__(self.deleteMenu,"Delete Menu")
+        self.append(self.deleteMenu)
+        self.deleteMenu.connect("activate",self.cb_deleteMenu)
         
         self.show_all()
         
@@ -138,26 +154,37 @@ class TreeContextMenu(gtk.Menu):
     def cb_deleteWidget(self, data=None):
         self.currentObject.delete()
     
+    def cb_createMenu(self, data=None):
+        self.currentObject.createMenu()
+        
+    def cb_deleteMenu(self, data=None):
+        self.currentObject.delete()
+    
     def popup(self,obj,button,time):
         self.hide_buttons()
-        if obj.__class__.__name__ == "Server":
+        itemtype = obj.__class__.__name__
+        if itemtype == "Server":
             self.removeServer.set_visible(True)
             self.connectServer.set_visible(True)
             self.properties.set_visible(True)
             self.cssEditor.set_visible(True)
             self.connectServer.set_sensitive(not obj.isOnline())
-        elif obj.__class__.__name__ == "Module":
+        elif itemtype == "Module":
             self.cssEditor.set_visible(True)
             self.createWidget.set_visible(True)
-        elif obj.__class__.__name__ == "Widget":
+        elif itemtype == "Widget":
             self.cssEditor.set_visible(True)
             self.deleteWidget.set_visible(True)
-        elif obj.__class__.__name__ == "GenericScovilleObject":
+        elif itemtype == "GenericScovilleObject":
             pass
-        elif obj.__class__.__name__ == "User":
+        elif itemtype == "User":
             self.deleteUser.set_visible(True)
-        elif obj.__class__.__name__ == "Scoville": # HERE BE DRAGONS
+        elif itemtype == "Scoville": # HERE BE DRAGONS
             self.removeInstance.set_visible(True)
+        elif itemtype == "Site":
+            self.createMenu.set_visible(True)
+        elif itemtype == "Menu":
+            self.deleteMenu.set_visible(True)
         else: 
             return
         self.currentObject = obj

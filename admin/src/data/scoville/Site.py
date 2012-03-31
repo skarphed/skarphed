@@ -135,6 +135,13 @@ class Site(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getSites().getScoville(),
                                         self.loadMenusCallback, "getMenusOfSite", [self.getId()])
     
+    def createMenuCallback(self,json):
+        self.loadMenus()
+        
+    def createMenu(self):
+        self.getApplication().doRPCCall(self.getSites().getScoville(),
+                                        self.createMenuCallback, "createMenuForSite", [self.getId()])
+    
     def getPar(self):
         return self.par
     

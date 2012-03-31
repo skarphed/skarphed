@@ -191,8 +191,8 @@
 			$menu = new Menu();
 			$menu->setId($db->getSeqNext('MNU_GEN'));
 			$menu->setName($name);
-			$db->query($core,"INSERT INTO MENUS VALUES (?,?) ;",array($menu->getId(), $menu->getName()));
-			$db->query($core,"UPDATE SITES SET SIT_MNU_ID = ? WHERE SIT_ID = ?;", array($menu->getId(), $site->getId()));
+			$db->query($core,"INSERT INTO MENUS (MNU_ID,MNU_NAME, MNU_SIT_ID) VALUES (?,?, ?) ;",array($menu->getId(), $menu->getName(), $site->getId()));
+			#$db->query($core,"UPDATE SITES SET SIT_MNU_ID = ? WHERE SIT_ID = ?;", array($menu->getId(), $site->getId()));
 			return $menu;
 		}
 		
@@ -1419,5 +1419,12 @@
 			$db = $core->getDB();
 			$db->query($core, "UPDATE MENUITEMS SET MNI_MNU_ID = NULL WHERE MNI_ID = ?; ",
 					   array($this->getId(), $menuItemId));
+		}
+		
+		public function delete(){
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$db->query($core, "DELETE FROM MENUS WHERE MNU_ID = ? ;", array($this->getId()));
+			$db->commit();
 		}
 	}

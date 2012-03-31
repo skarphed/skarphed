@@ -482,5 +482,25 @@ class class_scvRpc {
 	$menuItem->moveToBottomOrder();
 	return 0;
   }
+  
+  function method_createMenuForSite($params,$error){
+  	$siteId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$compositeManager = $core->getCompositeManager();
+	$site = $compositeManager->getSite($siteId);
+	$actionManager = $core->getActionManager();
+	$actionManager->createMenu($site);
+	return 0;
+  }
+  
+  function method_deleteMenu($params,$error){
+  	$menuId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menu = $actionManager->getMenuById($menuId);
+	$menu->delete();
+  }
 }
 ?>
