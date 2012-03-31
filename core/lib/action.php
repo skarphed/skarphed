@@ -146,6 +146,8 @@
 			if (!isset($menu) and !isset($menuItemParent)){
 				return null;
 			}
+			$core = Core::getInstance();
+			$db = $core->getDB();
 			$menuItem = new MenuItem();
 			$menuItem->setName($name);
 			if (isset($menu)){
@@ -160,8 +162,6 @@
 									   "SELECT MAX(MNI_ORDER) AS MAXORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? ;",
 									   array($menuItemParent->getId()));
 			}
-			$core = Core::getInstance();
-			$db = $core->getDB();
 			$menuItem->setId($db->getSeqNext('MNI_GEN'));
 			if ($orderset = $db->fetchObject($orderres)){
 				$newOrder = $orderset->MAXORDER;
@@ -174,7 +174,6 @@
 						$menuItem->getMenuId(), $menuItem->getParentMenuItemId(),
 						null, $menuItem->getOrder()));
 			return $menuItem;
-			
 		}
 
 		/**
@@ -1033,10 +1032,12 @@
 			$this->menuId = (int)$menuId;
 			$this->parentMenuItem = null;
 			$this->parentMenuItemId = null;
-			$core = Core::getInstance();
-			$db = $core->getDB();
-			$db->query($core,"UPDATE MENUITEMS SET MNI_MNU_ID = ?, MNI_MNI_ID = NULL WHERE MNI_ID = ?",
-							 array($this->menuId, $this->getId()));
+			if($this->getId()!=null){
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core,"UPDATE MENUITEMS SET MNI_MNU_ID = ?, MNI_MNI_ID = NULL WHERE MNI_ID = ?",
+								 array($this->menuId, $this->getId()));
+			}
 			
 		}
 		
@@ -1081,7 +1082,12 @@
 			$this->parentMenuItemId = $parentMenuItemId;
 			$this->menu = null;
 			$this->menuId = null;
-			//HERE BE DRAGONS: Need SQL here? oO
+			if($this->getId()!=null){
+			    $core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core,"UPDATE MENUITEMS SET MNI_MNI_ID = ?, MNI_MNU_ID = NULL WHERE MNI_ID = ?",
+								 array($this->parentMenuItemId, $this->getId()));
+			}
 		}
 		
 		/**
@@ -1120,9 +1126,11 @@
 		 */
 		public function setName($name){
 			$this->name = (string)$name;
-			$core = Core::getInstance();
-			$db = $core->getDB();
-			$db->query($core, "UPDATE MENUITEMS SET MNI_NAME = ? WHERE MNI_ID = ?;",array($this->name,$this->getId()));
+			if ($this->getId()!=null){
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core, "UPDATE MENUITEMS SET MNI_NAME = ? WHERE MNI_ID = ?;",array($this->name,$this->getId()));
+			}
 		}
 		
 		/**

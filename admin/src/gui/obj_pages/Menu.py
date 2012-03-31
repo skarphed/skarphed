@@ -92,10 +92,10 @@ class MenuPage(GenericObjectPage):
         self.info_labelName.set_text(self.menu.getName())
     
     def cb_Add(self,widget=None,data=None):
-        pass
+        self.edit_menutree.getSelectedMenuItem().createMenuItem()
     
     def cb_Remove(self,widget=None,data=None):
-        pass
+        self.edit_menutree.getSelectedMenuItem().delete()
     
     def cb_Increase(self,widget=None,data=None):
         self.edit_menutree.getSelectedMenuItem().increaseOrder()
@@ -140,10 +140,13 @@ class MenuItemTree(gtk.TreeView):
         self.append_column(self.col_name)
         self.renderer_icon = gtk.CellRendererPixbuf()
         self.renderer_name = gtk.CellRendererText()
+        self.renderer_name.set_property('editable',True)
         self.col_name.pack_start(self.renderer_icon,False)
         self.col_name.pack_start(self.renderer_name,True)
         self.col_name.add_attribute(self.renderer_icon,'pixbuf',0)
         self.col_name.add_attribute(self.renderer_name,'text',1)
+        self.renderer_name.connect('edited', self.renamedCallback)
+
         
         self.set_search_column(1)
         
@@ -153,8 +156,13 @@ class MenuItemTree(gtk.TreeView):
         obj_id = self.store.get_value(rowiter,2)
         obj = self.getApplication().getLocalObjectById(obj_id)
         return obj
-        
-        
+    
+    def renamedCallback(self, cell, path, name):
+        obj_id = self.store[path][2]
+        obj = self.getApplication().getLocalObjectById(obj_id)
+        if obj.__class__.__name__ == 'MenuItem':
+            obj.rename(name)    
+    
     def getPar(self):
         return self.par
 

@@ -502,5 +502,48 @@ class class_scvRpc {
 	$menu = $actionManager->getMenuById($menuId);
 	$menu->delete();
   }
+  
+  function method_createMenuItem($params,$error){
+  	$parentId = (int)$params[0];
+	$parentType = (string)$params[1];
+	switch($parentType){
+		case 'menu':
+			$core = scv\Core::getInstance();
+			$actionManager = $core->getActionManager();
+			$menu = $actionManager->getMenuById($parentId);
+			$actionManager->createMenuItem($menu);
+			return 0;
+			break;
+		case 'menuItem':
+			$core = scv\Core::getInstance();
+			$actionManager = $core->getActionManager();
+			$menuItem = $actionManager->getMenuItemById($parentId);
+			$actionManager->createMenuItem(null,$menuItem);
+			break;
+		default:
+			return 1;
+	}
+  }
+  
+  function method_deleteMenuItem($params,$error){
+  	$menuItemId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menuItem = $actionManager->getMenuItemById($menuItemId);
+	$menuItem->delete();
+	return 0;
+  }
+  
+  function method_renameMenuItem($params,$error){
+  	$menuItemId = (int)$params[0];
+	$newName = (string)$params[1];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menuItem = $actionManager->getMenuItemById($menuItemId);
+	$menuItem->setName($newName);
+	return 0;
+  }
 }
 ?>
