@@ -144,6 +144,19 @@ class MenuPage(GenericObjectPage):
 
 class ActionListWidget(gtk.ScrolledWindow):
     def __init__(self, par, actionList):
+        
+        self.par = par
+        gtk.ScrolledWindow.__init__(self)
+        self.actionList = actionList
+        self.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
+        
+        self.container= None
+        self.buttoncontainer = None
+        
+        self.actionList.addCallback(self.render)
+        self.render()
+    
+    def render(self):
         def widgetSorter(x,y):
             x = x.action.getOrder()
             y = y.action.getOrder()
@@ -151,24 +164,29 @@ class ActionListWidget(gtk.ScrolledWindow):
                 return 1
             else:
                 return -1
-        self.par = par
-        gtk.ScrolledWindow.__init__(self)
-        self.actionList = actionList
-        self.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
         
+        if self.container:
+            self.container.destroy()
+        if self.buttoncontainer:
+            self.buttoncontainer.destroy()
+        
+        self.addbutton = gtk.Button(stock=gtk.STOCK_ADD)
+        self.addbutton.connect("clicked", self.addCallback)
         self.container = gtk.VBox()
-        self.add_with_viewport(self.container)
+        self.buttoncontainer = gtk.VBox() 
+        self.add_with_viewport(self.buttoncontainer)
         self.actionWidgets = []
         for action in self.actionList.getActions():
             self.actionWidgets.append(ActionWidget(self,action))
         self.actionWidgets.sort(widgetSorter)
         for actionWidget in self.actionWidgets:
-            self.container.add(actionWidget)
-        self.addbutton = gtk.Button(stock=gtk.STOCK_ADD)
-        self.addbutton.connect("clicked", self.addCallback)
-        self.container.add(self.addbutton)
-        self.show_all()
+            self.container.pack_start(actionWidget,False)
+        self.container.pack_start(gtk.Label(""),True)
         
+        self.buttoncontainer.pack_start(self.container,True)
+        self.buttoncontainer.pack_start(self.addbutton,False)
+        self.show_all()
+    
     def addCallback(self,widget=None,data=None):
         self.actionList.addAction()
     
@@ -197,32 +215,19 @@ class ActionWidgetLabel(gtk.HBox):
         self.action = action
         
         self.actionDisplay = gtk.Entry()
-        self.deleteButton = gtk.Button(stock=gtk.STOCK_DELETE)
-        self.increaseOrderButton = gtk.Button(stock=gtk.STOCK_GO_UP)
-        self.decreaseOrderButton = gtk.Button(stock=gtk.STOCK_GO_DOWN)
-        self.deleteButton.connect("clicked", self.deleteCallback)
-        self.increaseOrderButton.connect("clicked", self.increaseOrderCallback)
-        self.decreaseOrderButton.connect("clicked", self.decreaseOrderCallback)
-        
         self.pack_start(self.actionDisplay,True)
-        self.pack_start(self.deleteButton,False)
-        self.pack_start(self.increaseOrderButton,False)
-        self.pack_start(self.decreaseOrderButton,False)
-
         self.action.addCallback(self.render)
+        self.render()
 
     def render(self):
-        pass
+        if self.action.data['type'] == 'url':
+            self.actionDisplay.set_text('Goto URL: '+self.action.data['url'])
+        elif self.action.data['type'] == 'widgetSpaceConstellation':
+            self.actionDisplay.set_text('Move Widget '+self.action.data['widgetId']+' into Space '+self.action.data['space'])
+        elif self.action.data['type'] == 'site':
+            self.actionDisplay.set_text('Goto Site '+self.action.data['siteId'])
 
-    def deleteCallback(self, widget=None, data=None):
-        self.action.getParent().deleteAction(self.action)
     
-    def increaseOrderCallback(self, widget=None, data=None):
-        self.action.increaseOrder()
-        
-    def decreaseOrderCallback(self, widget=None, data=None):
-        self.action.decreaseOrder()
-        
     def getPar(self):
         return self.par
 
@@ -232,7 +237,7 @@ class ActionWidgetLabel(gtk.HBox):
 class ActionWidgetConfig(gtk.Table):
     def __init__(self, par, action):
         self.par = par
-        gtk.Table.__init__(self,3,3,False)
+        gtk.Table.__init__(self,3,4,False)
         self.action = action
         
         self.radio_url = gtk.RadioButton(None, "URL:")
@@ -244,6 +249,13 @@ class ActionWidgetConfig(gtk.Table):
         self.entry_space = gtk.SpinButton()
         self.entry_site = gtk.ComboBox()
         
+        self.deleteButton = gtk.Button(stock=gtk.STOCK_DELETE)
+        self.increaseOrderButton = gtk.Button(stock=gtk.STOCK_GO_UP)
+        self.decreaseOrderButton = gtk.Button(stock=gtk.STOCK_GO_DOWN)
+        self.deleteButton.connect("clicked", self.deleteCallback)
+        self.increaseOrderButton.connect("clicked", self.increaseOrderCallback)
+        self.decreaseOrderButton.connect("clicked", self.decreaseOrderCallback)
+        
         self.attach(self.radio_url,0,1,0,1)
         self.attach(self.entry_url,1,3,0,1)
         self.attach(self.radio_widgetSpaceConstellation,0,1,1,2)
@@ -251,14 +263,34 @@ class ActionWidgetConfig(gtk.Table):
         self.attach(self.entry_space,2,3,1,2)
         self.attach(self.radio_site,0,1,2,3)
         self.attach(self.entry_site,1,3,2,3)
-        
+        self.attach(self.deleteButton,0,1,3,4)
+        self.attach(self.increaseOrderButton,1,2,3,4)
+        self.attach(self.decreaseOrderButton,2,3,3,4)
         self.action.addCallback(self.render)
         self.show_all()
+        
+        self.action.addCallback(self.render)
         
         self.render()
         
     def render(self):
-        pass
+        if self.action.data['type'] == 'url':
+            self.radio_url.activate()
+            self.entry_url.set_text(self.action.data['url'])
+        elif self.action.data['type'] == 'widgetSpaceConstellation':
+            self.radio_widgetSpaceConstellation.activate()
+        elif self.action.data['type'] == 'site':
+            self.radio_site.activate()
+    
+    def deleteCallback(self, widget=None, data=None):
+        self.action.getPar().deleteAction(self.action)
+    
+    def increaseOrderCallback(self, widget=None, data=None):
+        self.action.increaseOrder()
+        
+    def decreaseOrderCallback(self, widget=None, data=None):
+        self.action.decreaseOrder()
+        
     
 class SiteChooser(gtk.ComboBox):
     def __init__(self):

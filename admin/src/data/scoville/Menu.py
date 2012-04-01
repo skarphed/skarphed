@@ -343,10 +343,13 @@ class ActionList(GenericScovilleObject):
     
     def deleteActionCallback(self,json):
         self.loadActions()
+        
     
     def deleteAction(self,action):
         self.getApplication().doRPCCall(self.getMenuItem().getMenu().getSite().getSites().getScoville(),
                                         self.deleteActionCallback,"deleteAction",[action.getId()])
+        self.children.remove(action)
+        action.destroy()
     
     def getPar(self):
         return self.par
