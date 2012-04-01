@@ -74,34 +74,34 @@
 				$compositeManager = $core->getCompositeManager();
 				$site = $compositeManager->getSite($siteId);
 				if ($site != null){
-					$action->setSiteId($siteId);
+					$action->setSiteId($siteId,true);
 				}else{
 					return null;
 				}
 			}else if (isset($url)){
-				$action->setUrl((string)$url);
+				$action->setUrl((string)$url,true);
 			}else if (isset($widgetId) and isset($spaceId)){
 				$compositeManager = $core->getCompositeManager();
 				$widget = $compositeManager->getWidget($widgetId);
 				if ($widget != null){
-					$action->setWidgetSpaceConstellation($widgetId, $spaceId);
+					$action->setWidgetSpaceConstellation($widgetId, $spaceId,true);
 				}else{
 					return null;
 				}
 			}else{
 				return null;
 			}
-			$action->setName("new action");
+			$action->setName("new action",true);
 			$db = $core->getDB();
 			$newId = $db->getSeqNext('ACT_GEN');
 			$orderres = $db->query($core,"SELECT MAX(ACT_ORDER) AS MAXORDER FROM ACTIONS WHERE ACT_ATL_ID = ? ;",array($action->getActionListId()));
 			if ($orderset = $db->fetchObject($orderres)){
-				$newOrder = $orderset->MAXORDER;
+				$newOrder = $orderset->MAXORDER+1;
 			}else{
 				$newOrder = 0;
 			}
 			$action->setId($newId);
-			
+			$action->setOrder($newOrder);
 			$db->query($core,"INSERT INTO ACTIONS VALUES (?,?,?,?,?,?,?,?)", 
 						array($action->getId(),$action->getName(), $action->getActionListId(),
 							  $action->getSiteId(), $action->getUrl(), $action->getSpace(),
@@ -173,6 +173,9 @@
 						array($menuItem->getId(), $menuItem->getName(),
 						$menuItem->getMenuId(), $menuItem->getParentMenuItemId(),
 						null, $menuItem->getOrder()));
+		    $db->commit();
+			$actionList = $this->createActionList();
+			$menuItem->assignActionList($actionList);
 			return $menuItem;
 		}
 
@@ -214,16 +217,16 @@
 			if ($set = $db->fetchObject($res)) {
 				$action = new Action();
 				if (isset($set->ACT_SIT_ID)){
-					$action->setSiteId($set->ACT_SIT_ID);
+					$action->setSiteId($set->ACT_SIT_ID,true);
 				}
 				if (isset($set->ACT_URL)){
-					$action->setUrl($set->ACT_URL);
+					$action->setUrl($set->ACT_URL,true);
 				}
 				if (isset($set->ACT_WGT_ID) and isset($set->ACT_SPACE)){
-					$action->setWidgetSpaceConstellation($set->ACT_WGT_ID, $set->ACT_SPACE);
+					$action->setWidgetSpaceConstellation($set->ACT_WGT_ID, $set->ACT_SPACE,true);
 				}
 				$action->setId($actionId);
-				$action->setName($set->ACT_NAME);
+				$action->setName($set->ACT_NAME,true);
 				$action->setActionListId($set->ACT_ATL_ID);
 				$action->setOrder($set->ACT_ORDER);
 				
@@ -249,7 +252,7 @@
 			if ($set = $db->fetchObject($res)){
 				$actionList = new ActionList();
 				$actionList->setId($actionListId);
-				$actionList->setName($set->ATL_NAME);
+				$actionList->setName($set->ATL_NAME,true);
 				return $actionList;	
 			}
 			return null;
@@ -272,13 +275,13 @@
 			if ($set = $db->fetchObject($res)){
 				$menuItem = new MenuItem();
 				$menuItem->setId($menuItemId);
-				$menuItem->setName($set->MNI_NAME);
+				$menuItem->setName($set->MNI_NAME, true);
 				$menuItem->setOrder($set->MNI_ORDER);
 				if (isset($set->MNI_MNU_ID)){
-					$menuItem->setMenuId($set->MNI_MNU_ID);
+					$menuItem->setMenuId($set->MNI_MNU_ID,true);
 				}
 				if (isset($set->MNI_MNI_ID)){
-					$menuItem->setParentMenuItemId($set->MNI_MNI_ID);
+					$menuItem->setParentMenuItemId($set->MNI_MNI_ID,true);
 				}
 				if (isset($set->MNI_ATL_ID)){
 					$menuItem->setActionListId($set->MNI_ATL_ID);
@@ -305,7 +308,7 @@
 			if ($set = $db->fetchObject($res)){
 				$menu = new Menu();
 				$menu->setId($menuId);
-				$menu->setName($set->MNU_NAME);
+				$menu->setName($set->MNU_NAME,true);
 				return $menu;
 			}
 			return null;
@@ -406,11 +409,13 @@
 		 * 
 		 * @param string $name The new Name 
 		 */
-		public function setName($name){
+		public function setName($name, $ignoreDb=true){
 			$this->name = (string)$name;
-			$core = Core::getInstance();
-			$db = $core->getDB();
-			$db->query($core,"UPDATE ACTIONS SET ACT_NAME = ? WHERE ACT_ID = ?;",array($this->name, $this->getId()));
+			if (!$ignoreDb){
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core,"UPDATE ACTIONS SET ACT_NAME = ? WHERE ACT_ID = ?;",array($this->name, $this->getId()));
+			}
 		}
 		
 		/**
@@ -480,17 +485,19 @@
 		 * 
 		 * @param string $url The URL to target with this Action
 		 */
-		public function setUrl($url){
+		public function setUrl($url,$ignoreDb=false){
 			$this->url = $url;
 			$this->widgetId = null;
 			$this->spaceId = null;
 			$this->siteId = null;
 			
-			$core = Core::getInstance();
-			$db = $core->getDB();
-			$db->query($core, "UPDATE ACTIONS SET ACT_URL = ?, ACT_SIT_ID = NULL, 
-							   ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ?;",
-							   array($this->getUrl(),$this->getId()));
+			if(!$ignoreDb){
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core, "UPDATE ACTIONS SET ACT_URL = ?, ACT_SIT_ID = NULL, 
+								   ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ?;",
+								   array($this->getUrl(),$this->getId()));
+			}
 		}
 		
 		/**
@@ -515,7 +522,7 @@
 		 * @param int $widgetId The ID of the targeted Widget
 		 * @param int $spaceId The Space that the widget should be placed into
 		 */
-		public function setWidgetSpaceConstellation($widgetId, $spaceId){
+		public function setWidgetSpaceConstellation($widgetId, $spaceId, $ignoreDb = false){
 			if (isset($widgetId) and isset($spaceId)){
 				$core = Core::getInstance();
 				//if ($core->getCompositeManager()->getWidget($widgetId) and
@@ -526,12 +533,13 @@
 				$this->url = null;
 				$this->siteId = null;
 			}
-			
-			$core = Core::getInstance();
-			$db = $core->getDB();
-			$db->query($core, "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = NULL,
-							   ACT_WGT_ID = ?, ACT_SPACE = ? WHERE ACT_ID = ?",
-							   array($this->getWidgetId(),$this->getSpace(),$this->getId()));
+			if (!$ignoreDb){
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core, "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = NULL,
+								   ACT_WGT_ID = ?, ACT_SPACE = ? WHERE ACT_ID = ?",
+								   array($this->getWidgetId(),$this->getSpace(),$this->getId()));
+			}
 		}
 		
 		/**
@@ -543,7 +551,7 @@
 		 * 
 		 * @param int $siteId
 		 */
-		public function setSiteId($siteId){
+		public function setSiteId($siteId,$ignoreDb=false){
 			$core = Core::getInstance();
 			if ($core->getCompositeManager()->getSite($siteId) != null){
 				$this->siteId = $siteId;
@@ -552,11 +560,13 @@
 				$this->url = null;	
 			}
 			
-			$core = Core::getInstance();
-			$db = $core->getDB();
-			$db->query($core, "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = ?, 
-							   ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ?;",
-							   array($this->getSiteId(),$this->getId()));
+			if(!$ignoreDb){
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core, "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = ?, 
+								   ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ?;",
+								   array($this->getSiteId(),$this->getId()));
+			}
 		}
 		
 		/**
@@ -618,6 +628,27 @@
 		public function getUrl(){
 			return $this->url;
 		}
+		
+		/**
+		 * Get Type
+		 * 
+		 * Returns the type of this action wich may be
+		 * 'url', 'site' or 'widgetSpaceConstellation'
+		 * if incostistent, returns null
+		 * 
+		 * @return string The Type
+		 */
+		public function getType(){
+			if (isset($this->url)){
+				return 'url';
+			}elseif (isset($this->widgetId) and isset($this->spaceId)){
+				return 'widgetSpaceConstellation';
+			}elseif (isset($this->siteId)){
+				return 'site';
+			}else{
+				return null;
+			}
+		}
 
 	}
 
@@ -656,11 +687,13 @@
 		 * 
 		 * @param string $name The new Name
 		 */
-		public function setName($name){
+		public function setName($name, $ignoreDb = false){
 			$this->name = (string)$name;
-			$core = Core::getInstance();
-			$db = $core->getDB();
-			$db->query($core, "UPDATE ACTIONLISTS SET ATL_NAME = ? WHERE ATL_ID = ?;", array($this->name, $this->getId()));
+			if (isset($this->id) and !$ignoreDb){
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core, "UPDATE ACTIONLISTS SET ATL_NAME = ? WHERE ATL_ID = ?;", array($this->name, $this->getId()));
+			}
 		}
 		
 		/**
@@ -763,6 +796,24 @@
 		}
 		
 		/**
+		 * Load Actions
+		 * 
+		 * Loads all Actions assigned to this ActionList into the Action
+		 */
+		
+		public function loadActions(){
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			$res = $db->query($core, "SELECT ACT_ID FROM ACTIONS WHERE ACT_ATL_ID = ?;",
+					   array($this->getId()));
+			$this->children = array();
+			$actionManager = $core->getActionManager();
+			while($set = $db->fetchObject($res)){
+				$this->children[] = $actionManager->getActionById($set->ACT_ID);
+			}
+		}
+		
+		/**
 		 * Get Actions
 		 * 
 		 * Returns all Actions assigned to this ActionList
@@ -770,6 +821,7 @@
 		 * @return array The Actions of this ActionList
 		 */
 		public function getActions(){
+			$this->loadActions();
 			return $this->children;
 		}
 		
@@ -1028,11 +1080,11 @@
 		 * 
 		 * @param int $menuId The menuId
 		 */
-		public function setMenuId($menuId){
+		public function setMenuId($menuId,$ignoreDb = false){
 			$this->menuId = (int)$menuId;
 			$this->parentMenuItem = null;
 			$this->parentMenuItemId = null;
-			if($this->getId()!=null){
+			if($this->getId()!=null and !$ignoreDb){
 				$core = Core::getInstance();
 				$db = $core->getDB();
 				$db->query($core,"UPDATE MENUITEMS SET MNI_MNU_ID = ?, MNI_MNI_ID = NULL WHERE MNI_ID = ?",
@@ -1078,11 +1130,11 @@
 		 * 
 		 * @param int $parentMenuItemId The Parent MenuItem for this MenuItem
 		 */
-		public function setParentMenuItemId($parentMenuItemId){
+		public function setParentMenuItemId($parentMenuItemId, $ignoreDb=false){
 			$this->parentMenuItemId = $parentMenuItemId;
 			$this->menu = null;
 			$this->menuId = null;
-			if($this->getId()!=null){
+			if($this->getId()!=null and !$ignoreDb){
 			    $core = Core::getInstance();
 				$db = $core->getDB();
 				$db->query($core,"UPDATE MENUITEMS SET MNI_MNI_ID = ?, MNI_MNU_ID = NULL WHERE MNI_ID = ?",
@@ -1124,9 +1176,9 @@
 		 * 
 		 * @param string $name The name of the MenuItem
 		 */
-		public function setName($name){
+		public function setName($name, $ignoreDb=false){
 			$this->name = (string)$name;
-			if ($this->getId()!=null){
+			if ($this->getId()!=null and !$ignoreDb){
 				$core = Core::getInstance();
 				$db = $core->getDB();
 				$db->query($core, "UPDATE MENUITEMS SET MNI_NAME = ? WHERE MNI_ID = ?;",array($this->name,$this->getId()));
@@ -1301,11 +1353,13 @@
 		 * 
 		 * @param string $name The Name of the Menu
 		 */
-		public function setName($name){
+		public function setName($name, $ignoreDb=false){
 			$this->name = (string)$name;
-			$core = Core::getInstance();
-			$db = $core->getDB();
-			$db->query($core, "UPDATE MENUS SET MNU_NAME = ? WHERE MNU_ID = ?;", array($this->name, $this->getId()));
+			if ($this->getId() != null and !$ignoreDb){
+				$core = Core::getInstance();
+				$db = $core->getDB();
+				$db->query($core, "UPDATE MENUS SET MNU_NAME = ? WHERE MNU_ID = ?;", array($this->name, $this->getId()));
+			}
 		}
 		
 		/**

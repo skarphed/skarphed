@@ -545,5 +545,108 @@ class class_scvRpc {
 	$menuItem->setName($newName);
 	return 0;
   }
+  
+  function method_getActionsOfActionlist($params,$error){
+  	$actionListId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$actionList = $actionManager->getActionListById($actionListId);
+	$actions = $actionList->getActions();
+	
+	$ret = array();
+	foreach($actions as $action){
+		$ret[] = array('id'=>$action->getId(),
+					   'name'=>$action->getName(),
+					   'url'=>$action->getUrl(),
+					   'widgetId'=>$action->getWidgetId(),
+					   'space'=>$action->getSpace(),
+					   'siteId'=>$action->getSiteId(),
+					   'order'=>$action->getOrder(),
+					   'type'=>$action->getType());	
+	}
+	return $ret;
+  }
+  
+  function method_addActionToActionList($params,$error){
+  	$actionListId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$actionList = $actionManager->getActionListById($actionListId);
+	$actionManager->createAction($actionList,null,"");
+	
+	return 0;
+  }
+  
+  function method_deleteAction($params,$error){
+  	$actionId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$action = $actionManager->getActionById($actionId);
+	$action->delete();
+	
+	return 0;
+  }
+  
+  function method_increaseActionOrder($params,$error){
+  	$actionId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$action = $actionManager->getActionById($actionId);
+	$action->increaseOrder();
+	
+	return 0;
+  }
+  
+  function method_decreaseActionOrder($params,$error){
+  	$actionId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$action = $actionManager->getActionById($actionId);
+	$action->decreaseOrder();
+	
+	return 0;
+  }
+  
+  function method_moveToTopActionOrder($params,$error){
+  	$actionId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$action = $actionManager->getActionById($actionId);
+	$action->moveToTopOrder();
+	
+	return 0;
+  }
+  
+  function method_moveToBottomActionOrder($params,$error){
+  	$actionId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$action = $actionManager->getActionById($actionId);
+	$action->moveToBottomOrder();
+	
+	return 0;
+  }
+  
+  function method_getActionListForMenuItem($params,$error){
+  	$menuItemId = (int)$params[0];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menuItem = $actionManager->getMenuItemById($menuItemId);
+	$actionList = $menuItem->getActionList();
+	
+	return array('id'=>$actionList->getId());
+	
+  }
+  
+  
+  
 }
 ?>

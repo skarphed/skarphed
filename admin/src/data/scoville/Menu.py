@@ -62,14 +62,18 @@ class Menu(GenericScovilleObject):
                 self.children.append(MenuItem(self,menuItem))
             else:
                 self.getMenuItemById(menuItem['id']).update(menuItem)
+                menuItemIds.remove(menuItem['id'])
+        for mi in self.children:
+            if mi.getId() in menuItemIds:
+                self.children.remove(mi)
         self.updated()
-        
+    
     def loadMenuItems(self):
         self.getApplication().doRPCCall(self.getSite().getSites().getScoville(),
                                         self.loadMenuItemsCallback,"getMenuItemsOfMenu",[self.getId()])
         
     def getMenuItemsRecursive(self):
-        ret = self.children
+        ret = [c.getLocalId() for c in self.children]
         for menuItem in self.children:
             ret.extend(menuItem.getMenuItemsRecursive())
         return ret
@@ -79,14 +83,14 @@ class Menu(GenericScovilleObject):
     
     def deleteCallback(self,json):
         self.destroy()
-    
+        
     def delete(self):
         self.getApplication().doRPCCall(self.getSite().getSites().getScoville(),
                                         self.deleteCallback,"deleteMenu",[self.getId()])
     
     def createMenuItemCallback(self,json):
         self.loadMenuItems()
-    
+        
     def createMenuItem(self):
         self.getApplication().doRPCCall(self.getSite().getSites().getScoville(),
                                         self.createMenuItemCallback,"createMenuItem",[self.getId(),'menu'])
@@ -102,7 +106,9 @@ class MenuItem(GenericScovilleObject):
         GenericScovilleObject.__init__(self)
         self.par = par
         self.data = data
+        self.actionList = None
         self.updated()
+        self.loadActionList()
         self.loadMenuItems()
         
     def getName(self):
@@ -140,14 +146,19 @@ class MenuItem(GenericScovilleObject):
                 self.children.append(MenuItem(self,menuItem))
             else:
                 self.getMenuItemById(menuItem['id']).update(menuItem)
+                menuItemIds.remove(menuItem['id'])
+        for mi in self.children:
+            if mi.getId() in menuItemIds:
+                self.children.remove(mi)
         self.updated()
+        self.getMenu().updated()
         
     def loadMenuItems(self):
         self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
                                         self.loadMenuItemsCallback,"getMenuItemsOfMenuItem",[self.getId()])
     
     def getMenuItemsRecursive(self):
-        ret = self.children
+        ret = [c.getLocalId() for c in self.children]
         for menuItem in self.children:
             ret.extend(menuItem.getMenuItemsRecursive())
         return ret
@@ -175,14 +186,18 @@ class MenuItem(GenericScovilleObject):
         return self.children
     
     def deleteCallback(self, json):
-        self.destroy()
+        for child in self.children:
+            child.destroy()
+        self.getPar().loadMenuItems()
+        
     
     def delete(self):
         self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
                                         self.deleteCallback,"deleteMenuItem",[self.getId()])
-    
+
     def createMenuItemCallback(self,json):
         self.loadMenuItems()
+        
     
     def createMenuItem(self):
         self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
@@ -190,10 +205,24 @@ class MenuItem(GenericScovilleObject):
     
     def renameCallback(self, json):
         self.getPar().loadMenuItems()
-    
+
     def rename(self, name):
         self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
                                         self.renameCallback,"renameMenuItem",[self.getId(),name])
+    
+    def getActionList(self):
+        return self.actionList
+    
+    def loadActionListCallback(self,json):
+        if self.actionList is None:
+            self.actionList = ActionList(self,json)
+        else:
+            self.actionList.update(json)
+        self.updated()
+    
+    def loadActionList(self):
+        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
+                                        self.loadActionListCallback,"getActionListForMenuItem",[self.getId()])
     
     def getPar(self):
         return self.par
@@ -207,6 +236,120 @@ class MenuItem(GenericScovilleObject):
         else:
             return self.getPar().getMenu()
 
-class Action():pass
+class Action(GenericScovilleObject):
+    def __init__(self,par, data = {}):
+        GenericScovilleObject.__init__(self)
+        self.par = par
+        self.data = data
+        self.updated()
+    
+    def update(self,data):
+        self.data=data
+        self.updated()
+    
+    def getId(self):
+        if self.data.has_key('id'):
+            return self.data['id']
+        else:
+            return None
+    
+    def getName(self):
+        if self.data.has_key('name'):
+            return self.data['name']
+        else:
+            return None
+    
+    def getOrder(self):
+        if self.data.has_key('order'):
+            return self.data['order']
+        else:
+            return None
+    
+    
+    def orderCallback(self,json):
+        self.getPar().loadActions()
+    
+    def increaseOrder(self):
+        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.orderCallback,"increaseActionOrder",[self.getId()])
+    
+    def decreaseOrder(self):
+        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.orderCallback,"decreaseActionOrder",[self.getId()])
+    
+    def moveToTop(self):
+        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.orderCallback,"moveToTopActionOrder",[self.getId()])
+    
+    def moveToBottom(self):
+        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.orderCallback,"moveToBottomActionOrder",[self.getId()])
+    
+    
+    def getPar(self):
+        return self.par
+    
+    def getActionList(self):
+        return self.getPar()
+    
 
-class ActionList():pass
+class ActionList(GenericScovilleObject):
+    def __init__(self,par, data = {}):
+        GenericScovilleObject.__init__(self)
+        self.par = par
+        self.data = data
+        self.updated()
+        self.loadActions()
+    
+    def update(self,data):
+        self.data = data
+        self.updated()
+    
+    def getActions(self):
+        return self.children
+    
+    def getActionById(self, obj_id):
+        for action in self.children:
+            if action.getId() == obj_id:
+                return action
+        return None
+    
+    def loadActionsCallback(self,json):
+        actionIds = [a.getId() for a in self.children]
+        for action in json:
+            if action['id'] not in actionIds:
+                self.children.append(Action(self,action))
+            else:
+                self.getActionById(action['id']).update(action)
+        self.updated()
+            
+    
+    def loadActions(self):
+        self.getApplication().doRPCCall(self.getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.loadActionsCallback,"getActionsOfActionList",[self.getId()])
+    
+    def getId(self):
+        if self.data.has_key('id'):
+            return self.data['id']
+        else:
+            return None
+    
+    def addActionCallback(self,json):
+        self.loadActions()
+    
+    def addAction(self):
+        self.getApplication().doRPCCall(self.getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.addActionCallback,"addActionToActionList",[self.getId()])
+    
+    def deleteActionCallback(self,json):
+        self.loadActions()
+    
+    def deleteAction(self,action):
+        self.getApplication().doRPCCall(self.getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.deleteActionCallback,"deleteAction",[action.getId()])
+    
+    def getPar(self):
+        return self.par
+    
+    def getMenuItem(self):
+        return self.getPar()
