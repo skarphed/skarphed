@@ -29,6 +29,7 @@ import gtk
 
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
+from data.Generic import GenericObjectStoreException
 
 class MenuPage(GenericObjectPage):
     def __init__(self, par, menu):
@@ -92,7 +93,11 @@ class MenuPage(GenericObjectPage):
         
     
     def render(self):
-        menu = self.getApplication().getLocalObjectById(self.menuId)
+        try:
+            menu = self.getApplication().getLocalObjectById(self.menuId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
         self.info_labelName.set_text(menu.getName())
     
     def menuItemChangeCallback(self,*args,**kwargs):
@@ -228,7 +233,11 @@ class ActionWidgetLabel(gtk.HBox):
         self.render()
 
     def render(self):
-        action = self.getApplication().getLocalObjectById(self.actionId)
+        try:
+            action = self.getApplication().getLocalObjectById(self.actionId)
+        except GenericObjectStoreException:
+            self.getPar().destroy()
+            return
         if action.data['type'] == 'url':
             self.actionDisplay.set_text('Goto URL: '+action.data['url'])
         elif action.data['type'] == 'widgetSpaceConstellation':
@@ -280,7 +289,11 @@ class ActionWidgetConfig(gtk.Table):
         self.render()
         
     def render(self):
-        action = self.getApplication().getLocalObjectById(self.actionId)
+        try:
+            action = self.getApplication().getLocalObjectById(self.actionId)
+        except GenericObjectStoreException:
+            self.getPar().destroy()
+            return
         if action.data['type'] == 'url':
             self.radio_url.activate()
             self.entry_url.set_text(action.data['url'])
@@ -431,7 +444,11 @@ class MenuItemStore(gtk.TreeStore):
                         self.objectsToAllocate.remove(obj)
                                 
         objectsAllocated = 1
-        menu = self.getApplication().getLocalObjectById(self.menuId)
+        try:
+            menu = self.getApplication().getLocalObjectById(self.menuId)
+        except GenericObjectStoreException:
+            self.getPar().destroy()
+            return
         self.objectsToAllocate = [self.objectStore.getLocalObjectById(c) for c in menu.getMenuItemsRecursive()]
         self.objectsToAllocate.append(menu)
         self.itersToRemove= []

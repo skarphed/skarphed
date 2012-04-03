@@ -28,7 +28,9 @@ import gtk
 
 import obj_pages
 import IconStock
-    
+
+from data.Generic import GenericObjectStoreException
+
 class Tabs(gtk.Notebook):
     def __init__(self,parent):
         gtk.Notebook.__init__(self)
@@ -71,7 +73,11 @@ class TabLabel(gtk.HBox):
         obj.addCallback(self.render)
         
     def render(self):
-        obj = self.getApplication().getLocalObjectById(self.objId)
+        try:
+            obj = self.getApplication().getLocalObjectById(self.objId)
+        except GenericObjectStoreException:
+            self.getPar().closePage(self.objId)
+            return
         self.icon.set_from_pixbuf(IconStock.getAppropriateIcon(obj))
         self.label.set_text(obj.getName())
         
@@ -102,17 +108,23 @@ class TabPage(gtk.VBox):
     def render(self):
         try:
             self.getApplication().getObjectStore().getLocalObjectById(self.objId)
-        except:
-            self.breadcrumbs.destroy()
-            self.body.destroy()
-            self.destroy()
+        except GenericObjectStoreException:
+            #self.breadcrumbs.destroy()
+            #self.body.destroy()
+            #self.destroy()
+            self.getPar().closePage(self.objId)
         else:
             self.breadcrumbs.render()
             self.body.render()
         #TODO: Implement
         
     def getObject(self):
-        return self.getApplication().getLocalObjectById(self.objId)
+        try:
+            obj = self.getApplication().getLocalObjectById(self.objId)
+            return obj
+        except GenericObjectStoreException:
+            self.getPar().closePage(self.objId)
+            return None
     
     def getPar(self):
         return self.par
@@ -154,6 +166,8 @@ class ButtonBreadCrumbs(gtk.HBox):
             self.remove(widget) 
             widget.destroy()
         obj = self.par.getObject()
+        if obj is None:
+            return
         self.crumbs.append(gtk.Label(obj.getName()))
         while True:
             try:
