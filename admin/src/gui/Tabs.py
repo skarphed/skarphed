@@ -36,17 +36,17 @@ class Tabs(gtk.Notebook):
         self.pagestore = {}
         self.set_scrollable(True)
         
-    def openPage(self,object):
-        if not self.pagestore.has_key(object.getLocalId()):
-            self.pagestore[object.getLocalId()] = TabPage(self,object)
-            self.append_page(self.pagestore[object.getLocalId()],TabLabel(self,object))
-            self.set_tab_reorderable(self.pagestore[object.getLocalId()],True)
-        self.set_current_page(self.page_num(self.pagestore[object.getLocalId()]))
+    def openPage(self,obj):
+        if not self.pagestore.has_key(obj.getLocalId()):
+            self.pagestore[obj.getLocalId()] = TabPage(self,obj)
+            self.append_page(self.pagestore[obj.getLocalId()],TabLabel(self,obj))
+            self.set_tab_reorderable(self.pagestore[obj.getLocalId()],True)
+        self.set_current_page(self.page_num(self.pagestore[obj.getLocalId()]))
         
-    def closePage(self,object):
-        if self.pagestore.has_key(object.getLocalId()):
-            self.remove_page(self.page_num(self.pagestore[object.getLocalId()]))
-            del(self.pagestore[object.getLocalId()])
+    def closePage(self,objId):
+        if self.pagestore.has_key(objId):
+            self.remove_page(self.page_num(self.pagestore[objId]))
+            del(self.pagestore[objId])
             
     def getPar(self):
         return self.par
@@ -55,10 +55,10 @@ class Tabs(gtk.Notebook):
         return self.par.getApplication()
 
 class TabLabel(gtk.HBox):
-    def __init__(self,parent, object):
+    def __init__(self,parent, obj):
         gtk.HBox.__init__(self)
         self.par = parent
-        self.object = object
+        self.objId = obj.getLocalId()
         self.icon = gtk.Image()
         self.label = gtk.Label()
         self.close = gtk.Button("X")
@@ -68,14 +68,15 @@ class TabLabel(gtk.HBox):
         self.pack_end(self.close,False)
         self.show_all()
         self.render()
-        self.object.addCallback(self.render)
+        obj.addCallback(self.render)
         
     def render(self):
-        self.icon.set_from_pixbuf(IconStock.getAppropriateIcon(self.object))
-        self.label.set_text(self.object.getName())
+        obj = self.getApplication().getLocalObjectById(self.objId)
+        self.icon.set_from_pixbuf(IconStock.getAppropriateIcon(obj))
+        self.label.set_text(obj.getName())
         
     def cb_Close(self,widget=None,data=None):
-        self.getPar().closePage(self.object)
+        self.getPar().closePage(self.objId)
     
     def getPar(self):
         return self.par
@@ -84,23 +85,23 @@ class TabLabel(gtk.HBox):
         return self.par.getApplication()
     
 class TabPage(gtk.VBox):
-    def __init__(self,parent, object):
+    def __init__(self,parent, obj):
         gtk.VBox.__init__(self)
         self.par = parent
-        self.object = object
+        self.objId = obj.getLocalId()
         self.brotkasten = gtk.HBox()
         self.breadcrumbs = ButtonBreadCrumbs(self)
-        self.body = obj_pages.generatePageForObject(self,object)
+        self.body = obj_pages.generatePageForObject(self,obj)
         self.brotkasten.pack_start(self.breadcrumbs,False)
         self.pack_start(self.brotkasten,False)
         self.pack_start(self.body,True)
         self.show_all()
         self.render()
-        self.object.addCallback(self.render)
+        obj.addCallback(self.render)
         
     def render(self):
         try:
-            self.getApplication().getObjectStore().getLocalObjectById(self.object.getLocalId())
+            self.getApplication().getObjectStore().getLocalObjectById(self.objId)
         except:
             self.breadcrumbs.destroy()
             self.body.destroy()
@@ -111,7 +112,7 @@ class TabPage(gtk.VBox):
         #TODO: Implement
         
     def getObject(self):
-        return self.object
+        return self.getApplication().getLocalObjectById(self.objId)
     
     def getPar(self):
         return self.par
@@ -120,23 +121,25 @@ class TabPage(gtk.VBox):
         return self.par.getApplication()
 
 class ButtonBreadCrumb(gtk.Button):
-    def __init__(self,parent,object):
-        self.object = object
-        gtk.Button.__init__(self,object.getName())
+    def __init__(self,parent,obj):
+        self.objId = obj.getLocalId()
+        gtk.Button.__init__(self,obj.getName())
         self.par = parent
         self.image = gtk.Image()
-        self.image.set_from_pixbuf(IconStock.getAppropriateIcon(object))
+        self.image.set_from_pixbuf(IconStock.getAppropriateIcon(obj))
         self.set_image(self.image)
         self.connect("clicked",self.cb_Click)
         
     def cb_Click(self,widget=None,data=None):
-        self.getApplication()
+        obj = self.getApplication().getLocalObjectById(self.objId)
+        self.getApplication().mainwin.tabs.openPage(obj)
 
     def getPar(self):
         return self.par
 
     def getApplication(self):
-        return self.par.getApplication().mainwin.tabs.openPage(self.object)
+        
+        return self.par.getApplication()
 
 class ButtonBreadCrumbs(gtk.HBox):
     def __init__(self,parent):
@@ -150,13 +153,13 @@ class ButtonBreadCrumbs(gtk.HBox):
             widget =self.crumbs.pop()
             self.remove(widget) 
             widget.destroy()
-        object = self.par.getObject()
-        self.crumbs.append(gtk.Label(object.getName()))
+        obj = self.par.getObject()
+        self.crumbs.append(gtk.Label(obj.getName()))
         while True:
             try:
-                object = object.getPar()
-                object.addCallback(self.render)
-                button = ButtonBreadCrumb(self,object)
+                obj = obj.getPar()
+                obj.addCallback(self.render)
+                button = ButtonBreadCrumb(self,obj)
                 self.crumbs.insert(0,button)
             except Exception,e:
                 print e
@@ -186,13 +189,13 @@ class BreadCrumbs(gtk.Label):
         self.par.getObject().addCallback(self.render)
     
     def render(self):
-        object = self.par.getObject()
-        crumbstring = object.getName()
+        obj = self.par.getObject()
+        crumbstring = obj.getName()
         while True:
             try:
-                object = object.getPar()
-                object.addCallback(self.render)
-                crumbstring= object.getName()+ " > "+crumbstring
+                obj = object.getPar()
+                obj.addCallback(self.render)
+                crumbstring= obj.getName()+ " > "+crumbstring
             except Exception,e:
                 crumbstring = "# "+crumbstring
                 break

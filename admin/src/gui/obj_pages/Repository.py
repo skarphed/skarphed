@@ -34,10 +34,10 @@ from gui.OperationTool import OperationTool
 import gui.IconStock
 
 class RepositoryPage(GenericObjectPage):
-    def __init__(self,parent,obj):
+    def __init__(self,parent,repo):
         self.par = parent
-        GenericObjectPage.__init__(self,parent,obj)
-        self.repo = obj
+        GenericObjectPage.__init__(self,parent,repo)
+        self.repoId = repo.getLocalId()
         
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
@@ -102,7 +102,7 @@ class RepositoryPage(GenericObjectPage):
         self.mod_AList_col_module.set_sort_column_id(1)
         self.mod_AListScroll.add(self.mod_AList)
         
-        self.mod_CList = OperationTool(self,self.repo.getScoville())
+        self.mod_CList = OperationTool(self,repo.getScoville())
         
         self.modbox.attach(self.mod_label,0,2,0,1)
         self.modbox.attach(self.mod_labelInstalled,0,1,1,2)
@@ -130,8 +130,8 @@ class RepositoryPage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        obj.addCallback(self.render)
-        self.repo.getScoville().getOperationManager().addCallback(self.render)
+        repo.addCallback(self.render)
+        repo.getScoville().getOperationManager().addCallback(self.render)
         self.getApplication().getObjectStore().addCallback(self.render)
     
     def iListGetDataCallback(self, treeview, context, selection, info, timestamp):
@@ -150,13 +150,15 @@ class RepositoryPage(GenericObjectPage):
         if context.get_source_widget().get_name() != "AList":
             return
         module = self.getApplication().getLocalObjectById(int(selection.data))
-        self.repo.getScoville().getModules().installModule(module)
+        repo = self.getApplication().getLocalObjectById(self.repoId)
+        repo.getScoville().getModules().installModule(module)
     
     def aListReceiveCallback(self, treeview, context, x, y, selection, info , timestamp):
         if context.get_source_widget().get_name() != "IList":
             return
         module = self.getApplication().getLocalObjectById(int(selection.data))
-        self.repo.getScoville().getModules().uninstallModule(module)    
+        repo = self.getApplication().getLocalObjectById(self.repoId)
+        repo.getScoville().getModules().uninstallModule(module)    
     
     def getModuleIterById(self, moduleList, moduleId):
         def search(model, path, rowiter, moduleId):
@@ -177,13 +179,14 @@ class RepositoryPage(GenericObjectPage):
             val = model.get_value(rowiter,2)
             if val not in processed:
                 model.itersToRemove.append(rowiter)
-            
-        self.headline.set_markup("<b>Repository: "+self.repo.getName()+"</b>")
+        
+        repo = self.getApplication().getLocalObjectById(self.repoId)
+        self.headline.set_markup("<b>Repository: "+repo.getName()+"</b>")
         
         self.processedIListIds = []
         self.processedAListIds = []
         
-        for module in self.repo.getScoville().getModules().getAllModules():
+        for module in repo.getScoville().getModules().getAllModules():
             if module.data.has_key('installed') and module.data['installed'] == True:
                 rowiter = self.getModuleIterById(self.mod_IListStore,module.getLocalId())
                 if rowiter is None:

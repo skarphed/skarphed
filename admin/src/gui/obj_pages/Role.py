@@ -33,11 +33,11 @@ from GenericObject import FrameLabel
 import gui.IconStock
 
 class RolePage(GenericObjectPage):
-    def __init__(self,parent,object):
-        GenericObjectPage.__init__(self,parent,object)
-        self.role = object
+    def __init__(self,parent,role):
+        GenericObjectPage.__init__(self,parent,role)
+        self.roleId = role.getLocalId()
         
-        self.role.fetchPermissions()
+        role.fetchPermissions()
         
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
@@ -86,26 +86,28 @@ class RolePage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        object.addCallback(self.render)
+        role.addCallback(self.render)
     
     def render(self):
-        self.headline.set_markup("<b>Edit Role: "+self.role.getName()+"</b>")
+        role = self.getApplication().getLocalObjectById(self.roleId)
+        self.headline.set_markup("<b>Edit Role: "+role.getName()+"</b>")
         
-        if self.role.permissiondata is not None:
+        if role.permissiondata is not None:
             self.perm_permlist.clear()
-            for permission in self.role.permissiondata:
+            for permission in role.permissiondata:
                 self.perm_permlist.append((int(permission['granted']),str(permission['right']),''))
         
     
     def toggledRight(self,renderer = None, path = None):
-        iter = self.perm_permlist.get_iter(path)
-        perm = self.perm_permlist.get_value(iter,1)
-        val = 1-self.perm_permlist.get_value(iter,0)
+        rowiter = self.perm_permlist.get_iter(path)
+        perm = self.perm_permlist.get_value(rowiter,1)
+        val = 1-self.perm_permlist.get_value(rowiter,0)
+        role = self.getApplication().getLocalObjectById(self.roleId)
         print val
         if val == 1:
-            self.role.assignPermission(perm)
+            role.assignPermission(perm)
         else:
-            self.role.removePermission(perm)  
+            role.removePermission(perm)  
     
     def getPar(self):
         return self.par

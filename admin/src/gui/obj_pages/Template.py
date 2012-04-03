@@ -33,10 +33,10 @@ from GenericObject import FrameLabel
 import gui.IconStock
 
 class TemplatePage(GenericObjectPage):
-    def __init__(self,parent,obj):
+    def __init__(self,parent,template):
         self.par = parent
-        GenericObjectPage.__init__(self,parent,obj)
-        self.template = obj
+        GenericObjectPage.__init__(self,parent,template)
+        self.templateId = template.getLocalId()
         
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
@@ -77,7 +77,7 @@ class TemplatePage(GenericObjectPage):
         self.upload.add(self.uploadbox)
         self.pack_start(self.upload,False)
         
-        self.template.addCallback(self.render)
+        template.addCallback(self.render)
         self.show_all()
         self.render()
     
@@ -85,13 +85,15 @@ class TemplatePage(GenericObjectPage):
         self.fileToUpload = widget.get_filename()
     
     def uploadTemplate(self, widget=None, data=None):
+        template = self.getApplication().getLocalObjectById(self.templateId)
         if self.fileToUpload is not None and self.fileToUpload != "":
-            self.template.getScoville().uploadTemplate(self.fileToUpload)
+            template.getScoville().uploadTemplate(self.fileToUpload)
         else:
             raise Exception("No File specified")
     
     def render(self):
-        self.info_displayName.set_text(self.template.data['name'])
-        self.info_displayDescription.set_text(self.template.data['description'])
-        self.info_displayAuthor.set_text(self.template.data['author'])
+        template = self.getApplication().getLocalObjectById(self.templateId)
+        self.info_displayName.set_text(template.data['name'])
+        self.info_displayDescription.set_text(template.data['description'])
+        self.info_displayAuthor.set_text(template.data['author'])
         

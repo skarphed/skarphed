@@ -32,15 +32,15 @@ class CssEditor(gtk.Window):
     def __init__(self, par, obj):
         gtk.Window.__init__(self)
         self.par = par
-        self.obj = obj
+        self.objId = obj.getLocalId()
         
-        self.set_title("Scoville Admin PRO :: CssEditor :: "+self.obj.getName())
+        self.set_title("Scoville Admin PRO :: CssEditor :: "+obj.getName())
         self.set_icon(CSS)
         self.set_size_request(600,500)
         
         self.set_border_width(10)
         self.cssframe = PageFrame(self,"Css-Properties",CSS)
-        self.label = gtk.Label("Edit CSS Settings for "+self.obj.getName())
+        self.label = gtk.Label("Edit CSS Settings for "+obj.getName())
         self.store = CssStore(str, str, str, bool, bool, parent=self)
         self.listview = CssView(self)
         self.listview.set_model(self.store)
@@ -76,33 +76,37 @@ class CssEditor(gtk.Window):
         
         self.show_all()
         
-        self.obj.addCallback(self.render)
-        self.obj.loadCssPropertySet()
+        obj.addCallback(self.render)
+        obj.loadCssPropertySet()
     
     def closeCallback(self,widget=None,data=None):
-        self.getPar().closeCssEditor(self.obj)
+        obj = self.getApplication().getLocalObjectById(self.objId)
+        self.getPar().closeCssEditor(obj)
     
     def saveCallback(self,widget=None,data=None):
-        def loop(model,path,iter):
+        def loop(model,path,rowiter):
             if model.get_value(iter,4) == 0:
-                selector = model.get_value(iter,0)
-                property = model.get_value(iter,1)
+                selector = model.get_value(rowiter,0)
+                prop = model.get_value(rowiter,1)
                 value = model.get_value(iter,2)
                 inherited = model.get_value(iter,3)
-                model.newPropertySet[selector+"?"+property] = {'v':value,'i':inherited}
+                model.newPropertySet[selector+"?"+prop] = {'v':value,'i':inherited}
         self.store.newPropertySet = {}
         self.store.foreach(loop)
-        self.obj.setCssPropertySet(self.store.newPropertySet)
-        self.obj.saveCssPropertySet()
+        obj = self.getApplication().getLocalObjectById(self.objId)
+        obj.setCssPropertySet(self.store.newPropertySet)
+        obj.saveCssPropertySet()
     
     def addCallback(self,widget=None,data=None):
         self.store.append(('','','',False,False))
     
     def refreshCallback(self,widget=None,data=None):
-        self.obj.loadCssPropertySet()
+        obj = self.getApplication().getLocalObjectById(self.objId)
+        obj.loadCssPropertySet()
         
     def render(self):
-        propertySet = self.obj.getCssPropertySet()
+        obj = self.getApplication().getLocalObjectById(self.objId)
+        propertySet = obj.getCssPropertySet()
         self.store.clear()
         self.listview.model_selector.clear()
         self.listview.model_property.clear()
@@ -130,7 +134,7 @@ class CssEditor(gtk.Window):
         
     
     def getObject(self):
-        return self.obj
+        return self.getApplication().getLocalObjectById(self.objId)
     
     def getPar(self):
         return self.par
@@ -210,42 +214,42 @@ class CssView(gtk.TreeView):
         self.show_all()
         
     def toggledDeleteCallback(self,render=None,path=None):
-        iter = self.get_model().get_iter(path)
-        val = 1-self.get_model().get_value(iter,4)
-        self.get_model().set_value(iter,4,val)
+        rowiter = self.get_model().get_iter(path)
+        val = 1-self.get_model().get_value(rowiter,4)
+        self.get_model().set_value(rowiter,4,val)
         
     def editedSelectorCallback(self, renderer, path, value):
         liststore = self.get_model()
-        iter = liststore.get_iter(path)
-        liststore.set_value(iter,0,value)
+        rowiter = liststore.get_iter(path)
+        liststore.set_value(rowiter,0,value)
         
     def changedSelectorCallback(self, combo, path, comboiter):
         combomodel = combo.get_property('model')
         liststore = self.get_model()
-        iter = liststore.get_iter(path)
-        liststore.set_value(iter,0,combomodel.get_value(comboiter,0))
+        rowiter = liststore.get_iter(path)
+        liststore.set_value(rowiter,0,combomodel.get_value(comboiter,0))
     
     def editedPropertyCallback(self, renderer, path, value):
         liststore = self.get_model()
-        iter = liststore.get_iter(path)
-        liststore.set_value(iter,1,value)
+        rowiter = liststore.get_iter(path)
+        liststore.set_value(rowiter,1,value)
     
     def changedPropertyCallback(self, combo, path, comboiter):
         combomodel = combo.get_property('model')
         liststore = self.get_model()
-        iter = liststore.get_iter(path)
-        liststore.set_value(iter,1,combomodel.get_value(comboiter,0))
+        rowiter = liststore.get_iter(path)
+        liststore.set_value(rowiter,1,combomodel.get_value(comboiter,0))
     
     def editedValueCallback(self, renderer, path, value):
         liststore = self.get_model()
-        iter = liststore.get_iter(path)
-        liststore.set_value(iter,2,value)
+        rowiter = liststore.get_iter(path)
+        liststore.set_value(rowiter,2,value)
         
     def changedValueCallback(self, combo, path, comboiter):
         combomodel = combo.get_property('model')
         liststore = self.get_model()
-        iter = liststore.get_iter(path)
-        liststore.set_value(iter,2,combomodel.get_value(comboiter,0))
+        rowiter = liststore.get_iter(path)
+        liststore.set_value(rowiter,2,combomodel.get_value(comboiter,0))
 
 class CssStore(gtk.ListStore):
     def __init__(self,*args,**kwargs):

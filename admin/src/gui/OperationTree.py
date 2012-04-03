@@ -38,10 +38,10 @@ class OperationTree(gtk.TreeView):
         #self.context = MatchTreeContextMenu(self.app,self)
         
         if server is not None:
-            self.server = server
+            self.serverId = server.getLocalId()
             self.store = OperationStore(gtk.gdk.Pixbuf, gtk.gdk.Pixbuf, str,str ,int, parent=self.par, server=server, objectStore=self.getApplication().getObjectStore()) #Icon, Name, ID, type
         else:
-            self.server = None
+            self.serverId = None
             self.store = OperationStore(gtk.gdk.Pixbuf, gtk.gdk.Pixbuf, str,str ,int, parent=self.par, objectStore=self.getApplication().getObjectStore()) #Icon, Name, ID, type
         self.context = TreeContextMenu(self)
         self.set_model(self.store)
@@ -89,9 +89,9 @@ class OperationTree(gtk.TreeView):
                     self.grab_focus()
                     self.set_cursor(pathinfo[0],pathinfo[1],0) 
                     selection = self.get_selection()
-                    iter = selection.get_selected()[1]
-                    id = self.store.get_value(iter,4)
-                    obj = self.store.objectStore.getLocalObjectById(id)
+                    rowiter = selection.get_selected()[1]
+                    objid = self.store.get_value(rowiter,4)
+                    obj = self.store.objectStore.getLocalObjectById(objid)
                     self.context.popup(obj,event.button,event.get_time())
                 except:
                     pass

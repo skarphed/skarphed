@@ -34,11 +34,11 @@ from GenericObject import FrameLabel
 import gui.IconStock
 
 class UserPage(GenericObjectPage):
-    def __init__(self,parent,obj):
-        GenericObjectPage.__init__(self,parent,object)
-        self.user = obj
-        self.user.fetchRightsData()
-        self.user.fetchRoleData()
+    def __init__(self,parent,user):
+        GenericObjectPage.__init__(self,parent,user)
+        self.userId = user.getLocalId()
+        user.fetchRightsData()
+        user.fetchRoleData()
         
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
@@ -112,37 +112,38 @@ class UserPage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        obj.addCallback(self.render)
+        user.addCallback(self.render)
         
     def render(self):
-        self.headline.set_markup("<b>Settings for User: "+self.user.getName()+"</b>")
+        user = self.getApplication().getLocalObjectById(self.userId)
+        self.headline.set_markup("<b>Settings for User: "+user.getName()+"</b>")
         
-        if self.user.permissiondata is not None:
+        if user.permissiondata is not None:
             self.perm_permlist.clear()
-            for permission in self.user.permissiondata:
+            for permission in user.permissiondata:
                 self.perm_permlist.append((int(permission['granted']),str(permission['right']),''))
         
-        if self.user.roledata is not None:
+        if user.roledata is not None:
             self.perm_rolelist.clear()
-            for role in self.user.roledata:
+            for role in user.roledata:
                 self.perm_rolelist.append((int(role['granted']), str(role['name']), '', role['id']))
     
     def toggledRole(self,render=None,path=None):
-        iter = self.perm_rolelist.get_iter(path)
-        id = self.perm_rolelist.get_value(iter,3)
-        val = 1-self.perm_rolelist.get_value(iter,0)
-        print val
+        rowiter = self.perm_rolelist.get_iter(path)
+        roleId = self.perm_rolelist.get_value(rowiter,3)
+        val = 1-self.perm_rolelist.get_value(rowiter,0)
+        user = self.getApplication().getLocalObjectById(self.userId)
         if val == 1:
-            self.user.assignRole(id)
+            user.assignRole(roleId)
         else:
-            self.user.removeRole(id)
+            user.removeRole(roleId)
     
     def toggledRight(self,render=None,path=None):
-        iter = self.perm_permlist.get_iter(path)
-        perm = self.perm_permlist.get_value(iter,1)
-        val = 1-self.perm_permlist.get_value(iter,0)
-        print val
+        rowiter = self.perm_permlist.get_iter(path)
+        perm = self.perm_permlist.get_value(rowiter,1)
+        val = 1-self.perm_permlist.get_value(rowiter,0)
+        user = self.getApplication().getLocalObjectById(self.userId)
         if val == 1:
-            self.user.assignPermission(perm)
+            user.assignPermission(perm)
         else:
-            self.user.removePermission(perm)  
+            user.removePermission(perm)  

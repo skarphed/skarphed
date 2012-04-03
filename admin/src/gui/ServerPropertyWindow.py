@@ -30,13 +30,14 @@ import gtk
 from IconStock import SCOVILLE
 from ViewPasswordButton import ViewPasswordButton
 from InstanceWindow import InstanceWindow
+from data.Generic import GenericObjectStoreException
 
 class ServerPropertyWindow(gtk.Window):
     addWindowOpen=False
     def __init__(self,parent, server=None):
         gtk.Window.__init__(self)
         self.par = parent
-        self.server = None
+        self.serverId = None
         if server is None:
             if ServerPropertyWindow.addWindowOpen:
                 self.destroy()
@@ -44,7 +45,7 @@ class ServerPropertyWindow(gtk.Window):
             self.set_title("Scoville Admin Pro :: New Server")
             ServerPropertyWindow.addWindowOpen = True
         else:
-            self.server = server
+            self.serverId = server.getLocalId()
             self.set_title("Scoville Admin Pro :: Server Properties of "+server.getIp())
             
         self.vbox = gtk.VBox()
@@ -136,9 +137,13 @@ class ServerPropertyWindow(gtk.Window):
         self.render()
     
     def render(self):
-        if self.server is not None:
+        try:
+            server = self.getApplication().getLocalObjectById(self.serverId)
+        except GenericObjectStoreException:
+            server = None
+        if server is not None:
             self.instStore.clear()
-            for instance in self.server.getInstances():
+            for instance in server.getInstances():
                 icon = SCOVILLE #TODO: Implement Icon
                 self.instStore.append((icon,instance.getName(),instance.getLocalId()))
         
@@ -155,16 +160,28 @@ class ServerPropertyWindow(gtk.Window):
         instance = self.getCurrentInstance()
         if instance is None:
             return
-        self.server.removeInstance(instance)
+        try:
+            server = self.getApplication().getLocalObjectById(self.serverId)
+        except GenericObjectStoreException:
+            server = None
+        server.removeInstance(instance)
     
     def cb_Edit(self,widget=None,data=None):
         instance = self.getCurrentInstance()
-        if instance is None or self.server is None:
+        try:
+            server = self.getApplication().getLocalObjectById(self.serverId)
+        except GenericObjectStoreException:
+            server = None
+        if instance is None or server is None:
             return
-        InstanceWindow(self,self.server,instance)
+        InstanceWindow(self,server,instance)
     
     def getCurrentInstance(self, onlyId=True):
-        if self.server is None:
+        try:
+            server = self.getApplication().getLocalObjectById(self.serverId)
+        except GenericObjectStoreException:
+            server = None
+        if server is None:
             return None
         selection = self.instList.get_selection()
         rowiter = selection.get_selected()[1]
@@ -172,23 +189,31 @@ class ServerPropertyWindow(gtk.Window):
          
     
     def cb_OK(self,widget=None,data=None):
-        if self.server is None:
+        try:
+            concernedServer = self.getApplication().getLocalObjectById(self.serverId)
+        except GenericObjectStoreException:
+            concernedServer = None
+        if self.serverId is None:
             server = self.getApplication().getData().createServer()
         else:
-            server = self.server
+            server = concernedServer
         server.setIp(self.ipFrame_IPEntry.get_text())
         server.setSSHName(self.sshFrame_NameEntry.get_text())
         server.setSSHPass(self.sshFrame_PassEntry.get_text())
         server.load = server.LOADED_PROFILE
         server.establishConnections()
         
-        if self.server is None:
+        if concernedServer is None:
             ServerPropertyWindow.addWindowOpen = False
         
         self.destroy()
     
     def cb_Cancel(self,widget=None,data=None):
-        if self.server is None:
+        try:
+            server = self.getApplication().getLocalObjectById(self.serverId)
+        except GenericObjectStoreException:
+            server = None
+        if server is None:
             ServerPropertyWindow.addWindowOpen = False
         self.destroy()
         

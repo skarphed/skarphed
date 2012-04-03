@@ -36,8 +36,8 @@ class InstanceWindow(gtk.Window):
     def __init__(self,parent, server=None, instance = None):
         gtk.Window.__init__(self)
         self.par = parent
-        self.server = server
-        self.instance = instance
+        self.serverId = server.getLocalId()
+        self.instanceId = instance.getLocalId()
         self.instanceTypes = self.getApplication().getInstanceTypes()
         
         self.set_title("Scoville Admin PRO :: Configure Instance")
@@ -94,15 +94,16 @@ class InstanceWindow(gtk.Window):
         
         self.add(self.vbox)
         self.show_all()
-        if self.instance is not None:
+        if instance is not None:
             self.urlEntry.set_sensitive(False)
             self.render()
     
     def render(self):
-        if self.instance is not None:
-            self.urlEntry.set_text(self.instance.getUrl())
-            self.userEntry.set_text(self.instance.getUsername())
-            self.passEntry.set_text(self.instance.getPassword())
+        instance = self.getApplication().getLocalObjectById(self.instanceId)
+        if instance is not None:
+            self.urlEntry.set_text(instance.getUrl())
+            self.userEntry.set_text(instance.getUsername())
+            self.passEntry.set_text(instance.getPassword())
     
     def getInstanceType(self,text):
         for instanceType in self.instanceTypes:
@@ -123,15 +124,18 @@ class InstanceWindow(gtk.Window):
             dia.run()
             dia.destroy()
         
-        if self.instance is not None:
-            self.instance.setUsername(self.userEntry.get_text())
-            self.instance.setPassword(self.passEntry.get_text())
-            self.instance.establishConnections()
+        instance = self.getApplication().getLocalObjectById(self.instanceId)
+        server = self.getApplication().getLocalObjectById(self.serverId)
+        
+        if instance is not None:
+            instance.setUsername(self.userEntry.get_text())
+            instance.setPassword(self.passEntry.get_text())
+            instance.establishConnections()
         else:
             url = self.urlEntry.get_text()
-            if self.server is None:
+            if server is None:
                 try:
-                    self.server = self.getApplication().createServerFromInstanceUrl(url)
+                    server = self.getApplication().createServerFromInstanceUrl(url)
                 except DNSError:
                     errorMessage(0)
                     return
@@ -142,7 +146,7 @@ class InstanceWindow(gtk.Window):
             username = self.userEntry.get_text()
             password = self.passEntry.get_text()
             try:
-                self.server.createInstance(instanceType, url, username, password)
+                server.createInstance(instanceType, url, username, password)
             except None:
                 return
         self.destroy()

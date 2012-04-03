@@ -34,7 +34,7 @@ class MenuPage(GenericObjectPage):
     def __init__(self, par, menu):
         GenericObjectPage.__init__(self,par,menu)
         self.par = par
-        self.menu = menu
+        self.menuId = menu.getLocalId()
         
         self.info = PageFrame(self, "Name", IconStock.SITE)
         self.infobox = gtk.HBox()
@@ -87,12 +87,13 @@ class MenuPage(GenericObjectPage):
         
         self.edit_menutree.connect("cursor-changed",self.menuItemChangeCallback)
         
-        self.menu.addCallback(self.render)
+        menu.addCallback(self.render)
         self.show_all()
         
     
     def render(self):
-        self.info_labelName.set_text(self.menu.getName())
+        menu = self.getApplication().getLocalObjectById(self.menuId)
+        self.info_labelName.set_text(menu.getName())
     
     def menuItemChangeCallback(self,*args,**kwargs):
         obj = self.edit_menutree.getSelectedMenuItem()
@@ -144,22 +145,21 @@ class MenuPage(GenericObjectPage):
 
 class ActionListWidget(gtk.ScrolledWindow):
     def __init__(self, par, actionList):
-        
         self.par = par
         gtk.ScrolledWindow.__init__(self)
-        self.actionList = actionList
+        self.actionListId = actionList.getLocalId()
         self.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
         
         self.container= None
         self.buttoncontainer = None
         
-        self.actionList.addCallback(self.render)
+        actionList.addCallback(self.render)
         self.render()
     
     def render(self):
         def widgetSorter(x,y):
-            x = x.action.getOrder()
-            y = y.action.getOrder()
+            x = self.getApplication().getLocalObjectById(x.actionId).getOrder()
+            y = self.getApplication().getLocalObjectById(y.actionId).getOrder()
             if x>y:
                 return 1
             else:
@@ -176,7 +176,8 @@ class ActionListWidget(gtk.ScrolledWindow):
         self.buttoncontainer = gtk.VBox() 
         self.add_with_viewport(self.buttoncontainer)
         self.actionWidgets = []
-        for action in self.actionList.getActions():
+        actionList = self.getApplication().getLocalObjectById(self.actionListId)
+        for action in actionList.getActions():
             self.actionWidgets.append(ActionWidget(self,action))
         self.actionWidgets.sort(widgetSorter)
         for actionWidget in self.actionWidgets:
@@ -188,13 +189,20 @@ class ActionListWidget(gtk.ScrolledWindow):
         self.show_all()
     
     def addCallback(self,widget=None,data=None):
-        self.actionList.addAction()
+        actionList = self.getApplication().getLocalObjectById(self.actionListId)
+        actionList.addAction()
+    
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()   
     
 class ActionWidget(gtk.Expander):
     def __init__(self, par, action):
         gtk.Expander.__init__(self)
         self.par = par
-        self.action = action
+        self.actionId = action.getLocalId()
         
         self.label = ActionWidgetLabel(self,action)
         self.set_label_widget(self.label)
@@ -212,22 +220,22 @@ class ActionWidgetLabel(gtk.HBox):
     def __init__(self,par, action):
         gtk.HBox.__init__(self)
         self.par = par
-        self.action = action
+        self.actionId = action.getLocalId()
         
         self.actionDisplay = gtk.Entry()
         self.pack_start(self.actionDisplay,True)
-        self.action.addCallback(self.render)
+        action.addCallback(self.render)
         self.render()
 
     def render(self):
-        if self.action.data['type'] == 'url':
-            self.actionDisplay.set_text('Goto URL: '+self.action.data['url'])
-        elif self.action.data['type'] == 'widgetSpaceConstellation':
-            self.actionDisplay.set_text('Move Widget '+self.action.data['widgetId']+' into Space '+self.action.data['space'])
-        elif self.action.data['type'] == 'site':
-            self.actionDisplay.set_text('Goto Site '+self.action.data['siteId'])
+        action = self.getApplication().getLocalObjectById(self.actionId)
+        if action.data['type'] == 'url':
+            self.actionDisplay.set_text('Goto URL: '+action.data['url'])
+        elif action.data['type'] == 'widgetSpaceConstellation':
+            self.actionDisplay.set_text('Move Widget '+action.data['widgetId']+' into Space '+action.data['space'])
+        elif action.data['type'] == 'site':
+            self.actionDisplay.set_text('Goto Site '+action.data['siteId'])
 
-    
     def getPar(self):
         return self.par
 
@@ -238,7 +246,7 @@ class ActionWidgetConfig(gtk.Table):
     def __init__(self, par, action):
         self.par = par
         gtk.Table.__init__(self,3,4,False)
-        self.action = action
+        self.actionId = action.getLocalId()
         
         self.radio_url = gtk.RadioButton(None, "URL:")
         self.radio_widgetSpaceConstellation = gtk.RadioButton(self.radio_url, "Widget into Space:")
@@ -266,31 +274,38 @@ class ActionWidgetConfig(gtk.Table):
         self.attach(self.deleteButton,0,1,3,4)
         self.attach(self.increaseOrderButton,1,2,3,4)
         self.attach(self.decreaseOrderButton,2,3,3,4)
-        self.action.addCallback(self.render)
+        action.addCallback(self.render)
         self.show_all()
-        
-        self.action.addCallback(self.render)
         
         self.render()
         
     def render(self):
-        if self.action.data['type'] == 'url':
+        action = self.getApplication().getLocalObjectById(self.actionId)
+        if action.data['type'] == 'url':
             self.radio_url.activate()
-            self.entry_url.set_text(self.action.data['url'])
-        elif self.action.data['type'] == 'widgetSpaceConstellation':
+            self.entry_url.set_text(action.data['url'])
+        elif action.data['type'] == 'widgetSpaceConstellation':
             self.radio_widgetSpaceConstellation.activate()
-        elif self.action.data['type'] == 'site':
+        elif action.data['type'] == 'site':
             self.radio_site.activate()
     
     def deleteCallback(self, widget=None, data=None):
-        self.action.getPar().deleteAction(self.action)
+        action = self.getApplication().getLocalObjectById(self.actionId)
+        action.getPar().deleteAction(action)
     
     def increaseOrderCallback(self, widget=None, data=None):
-        self.action.increaseOrder()
+        action = self.getApplication().getLocalObjectById(self.actionId)
+        action.increaseOrder()
         
     def decreaseOrderCallback(self, widget=None, data=None):
-        self.action.decreaseOrder()
+        action = self.getApplication().getLocalObjectById(self.actionId)
+        action.decreaseOrder()
         
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
     
 class SiteChooser(gtk.ComboBox):
     def __init__(self):
@@ -300,7 +315,7 @@ class MenuItemTree(gtk.TreeView):
     def __init__(self, par, menu=None):
         gtk.TreeView.__init__(self)
         self.par = par
-        self.menu = menu
+        self.menuId = menu.getLocalId()
         
         self.store = MenuItemStore(gtk.gdk.Pixbuf,str,int,int,parent=self.par, objectStore = self.getApplication().getObjectStore(),menu=menu)
         
@@ -344,11 +359,11 @@ class MenuItemStore(gtk.TreeStore):
         gtk.TreeStore.__init__(self,*args)
         self.par = kwargs['parent']
         self.objectStore = kwargs['objectStore']
-        self.menu = kwargs['menu']
+        self.menuId = kwargs['menu'].getLocalId()
         
-        self.menu.addCallback(self.render)
+        kwargs['menu'].addCallback(self.render)
         self.busy = False # Prevent threadcollisions 
-        self.root = self.append(None,(IconStock.MENU,self.menu.getName(),self.menu.getLocalId(),0))
+        self.root = self.append(None,(IconStock.MENU,kwargs['menu'].getName(),self.menuId,0))
         self.render()
 
     def getIterById(self, obj_id):
@@ -416,8 +431,9 @@ class MenuItemStore(gtk.TreeStore):
                         self.objectsToAllocate.remove(obj)
                                 
         objectsAllocated = 1
-        self.objectsToAllocate = [self.objectStore.getLocalObjectById(c) for c in self.menu.getMenuItemsRecursive()]
-        self.objectsToAllocate.append(self.menu)
+        menu = self.getApplication().getLocalObjectById(self.menuId)
+        self.objectsToAllocate = [self.objectStore.getLocalObjectById(c) for c in menu.getMenuItemsRecursive()]
+        self.objectsToAllocate.append(menu)
         self.itersToRemove= []
         self.foreach(search)
         

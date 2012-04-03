@@ -28,7 +28,7 @@ pygtk.require("2.0")
 import gtk
 
 class GenericObjectPage(gtk.VBox):
-    def __init__(self,parent,object,iconstock=None):
+    def __init__(self,parent,obj,iconstock=None):
         gtk.VBox.__init__(self,spacing = 10)
         self.par = parent
         
