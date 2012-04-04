@@ -244,11 +244,11 @@ class ActionWidgetLabel(gtk.HBox):
             self.getPar().destroy()
             return
         if action.data['type'] == 'url':
-            self.actionDisplay.set_text('Goto URL: '+action.data['url'])
+            self.actionDisplay.set_text('Goto URL: '+str(action.data['url']))
         elif action.data['type'] == 'widgetSpaceConstellation':
-            self.actionDisplay.set_text('Move Widget '+action.data['widgetId']+' into Space '+action.data['space'])
+            self.actionDisplay.set_text('Move Widget '+str(action.data['widgetId'])+' into Space '+str(action.data['space']))
         elif action.data['type'] == 'site':
-            self.actionDisplay.set_text('Goto Site '+action.data['siteId'])
+            self.actionDisplay.set_text('Goto Site '+str(action.data['siteId']))
 
     def getPar(self):
         return self.par
@@ -266,10 +266,14 @@ class ActionWidgetConfig(gtk.Table):
         self.radio_widgetSpaceConstellation = gtk.RadioButton(self.radio_url, "Widget into Space:")
         self.radio_site = gtk.RadioButton(self.radio_url, "Other Site:")
         
+        spaceCount = action.getActionList().getMenuItem().getMenu().getSite().getSpaceCount()
+        
         self.entry_url = gtk.Entry()
         self.entry_widget = WidgetChooser(self,action.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville().modules)
-        self.entry_space = gtk.SpinButton()
+        self.entry_space = gtk.SpinButton(gtk.Adjustment(1,1,spaceCount,1,0,0))
         self.entry_site = SiteChooser(self,action.getActionList().getMenuItem().getMenu().getSite().getSites())
+        self.entry_space.set_range(1,spaceCount)
+        
         
         self.deleteButton = gtk.Button(stock=gtk.STOCK_DELETE)
         self.increaseOrderButton = gtk.Button(stock=gtk.STOCK_GO_UP)
@@ -323,7 +327,13 @@ class ActionWidgetConfig(gtk.Table):
         action.decreaseOrder()
         
     def saveCallback(self, widget=None,data=None):
-        pass
+        action = self.getApplication().getLocalObjectById(self.actionId)
+        if self.radio_url.get_active():
+            action.setUrl(self.entry_url.get_text())
+        elif self.radio_widgetSpaceConstellation.get_active():
+            action.setWidgetSpaceConstellation(self.entry_widget.getCurrentWidgetId(),self.entry_space.get_text())
+        elif self.radio_site.get_active():
+            action.setSite(self.entry_site.getCurrentSiteId())
     
     def getPar(self):
         return self.par
@@ -379,7 +389,10 @@ class WidgetChooser(gtk.ComboBox):
         if self.firstrender:
             self.set_active(0)
             self.firstrender = False
-
+    
+    def getCurrentWidgetId(self):
+        return self.store.get_value(self.get_active_iter(),2)
+    
     def getPar(self):
         return self.par
 
@@ -433,7 +446,9 @@ class SiteChooser(gtk.ComboBox):
         if self.firstrender:
             self.set_active(0)
             self.firstrender = False
-            
+    
+    def getCurrentSiteId(self):
+        return self.store.get_value(self.get_active_iter(),2)
         
     def getPar(self):
         return self.par

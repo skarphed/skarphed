@@ -536,6 +536,7 @@
 			if (!$ignoreDb){
 				$core = Core::getInstance();
 				$db = $core->getDB();
+				error_log(">>>>".$this->getWidgetId());
 				$db->query($core, "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = NULL,
 								   ACT_WGT_ID = ?, ACT_SPACE = ? WHERE ACT_ID = ?",
 								   array($this->getWidgetId(),$this->getSpace(),$this->getId()));

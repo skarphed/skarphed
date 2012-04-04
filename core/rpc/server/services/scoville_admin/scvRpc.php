@@ -646,7 +646,41 @@ class class_scvRpc {
 	
   }
   
+  function method_setActionUrl($params,$error){
+  	$actionId = (int)$params[0];
+	$url = (string)$params[1];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$action = $actionManager->getActionById($actionId);
+	$action->setUrl($url);
+	
+	return 0;
+  }
   
+  function method_setActionWidgetSpaceConstellation($params,$error){
+  	$actionId = (int)$params[0];
+	$widgetId = (int)$params[1];
+	$space = (int)$params[2];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$action = $actionManager->getActionById($actionId);
+	$action->setWidgetSpaceConstellation($widgetId,$space);
+	
+	return 0;
+  }
   
+  function method_setActionSite($params,$error){
+  	$actionId = (int)$params[0];
+	$siteId = (int)$params[1];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$action = $actionManager->getActionById($actionId);
+	$action->setSiteId($siteId);
+	
+	return 0;
+  }
 }
 ?>

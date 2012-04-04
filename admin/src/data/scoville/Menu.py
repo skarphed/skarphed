@@ -305,6 +305,23 @@ class Action(GenericScovilleObject):
                                         self.orderCallback,"moveToBottomActionOrder",[self.getId()])
     
     
+    def setNewTargetCallback(self,json):
+        self.getPar().loadActions()
+    
+    def setUrl(self,url):
+        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.setNewTargetCallback,"setActionUrl",[self.getId(),url])
+    
+    def setWidgetSpaceConstellation(self, widgetId, space):
+        widget = self.getApplication().getLocalObjectById(widgetId)
+        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.setNewTargetCallback,"setActionWidgetSpaceConstellation",[self.getId(),widget.getId(),space])
+    
+    def setSite(self,siteId):
+        site = self.getApplication().getLocalObjectById(siteId)
+        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
+                                        self.setNewTargetCallback,"setActionSite",[self.getId(),site.getId()])
+    
     def getPar(self):
         return self.par
     
