@@ -89,7 +89,13 @@ class Module(GenericScovilleObject):
                 self.addChild(Widget(self,widget))
             else:
                 self.getWidgetById(widget['id']).refresh(widget)
+                widgetIds.remove(widget['id'])
+        for wgt in self.children:
+            if wgt.getId() in widgetIds:
+                self.children.remove(wgt)
+                wgt.destroy()
         self.updated()
+        self.getModules().updated()
         
     def loadWidgets(self):
         self.getApplication().doRPCCall(self.getModules().getScoville(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getModuleName()])

@@ -259,7 +259,7 @@ class ActionWidgetLabel(gtk.HBox):
 class ActionWidgetConfig(gtk.Table):
     def __init__(self, par, action):
         self.par = par
-        gtk.Table.__init__(self,3,4,False)
+        gtk.Table.__init__(self,4,4,False)
         self.actionId = action.getLocalId()
         
         self.radio_url = gtk.RadioButton(None, "URL:")
@@ -267,16 +267,18 @@ class ActionWidgetConfig(gtk.Table):
         self.radio_site = gtk.RadioButton(self.radio_url, "Other Site:")
         
         self.entry_url = gtk.Entry()
-        self.entry_widget = gtk.ComboBox()
+        self.entry_widget = WidgetChooser(self,action.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville().modules)
         self.entry_space = gtk.SpinButton()
-        self.entry_site = gtk.ComboBox()
+        self.entry_site = SiteChooser(self,action.getActionList().getMenuItem().getMenu().getSite().getSites())
         
         self.deleteButton = gtk.Button(stock=gtk.STOCK_DELETE)
         self.increaseOrderButton = gtk.Button(stock=gtk.STOCK_GO_UP)
         self.decreaseOrderButton = gtk.Button(stock=gtk.STOCK_GO_DOWN)
+        self.saveButton = gtk.Button(stock=gtk.STOCK_SAVE)
         self.deleteButton.connect("clicked", self.deleteCallback)
         self.increaseOrderButton.connect("clicked", self.increaseOrderCallback)
         self.decreaseOrderButton.connect("clicked", self.decreaseOrderCallback)
+        self.saveButton.connect("clicked", self.saveCallback)
         
         self.attach(self.radio_url,0,1,0,1)
         self.attach(self.entry_url,1,3,0,1)
@@ -288,6 +290,7 @@ class ActionWidgetConfig(gtk.Table):
         self.attach(self.deleteButton,0,1,3,4)
         self.attach(self.increaseOrderButton,1,2,3,4)
         self.attach(self.decreaseOrderButton,2,3,3,4)
+        self.attach(self.saveButton,3,4,3,4)
         action.addCallback(self.render)
         self.show_all()
         
@@ -319,16 +322,125 @@ class ActionWidgetConfig(gtk.Table):
         action = self.getApplication().getLocalObjectById(self.actionId)
         action.decreaseOrder()
         
+    def saveCallback(self, widget=None,data=None):
+        pass
+    
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
+
+class WidgetChooser(gtk.ComboBox):
+    WHITELISTED_CLASSES = ("Site")
+    def __init__(self, par,modules):
+        self.par = par
+        gtk.ComboBox.__init__(self)
+        self.modulesId = modules.getLocalId()
+        
+        self.store = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
+        self.set_model(self.store)
+        
+        self.renderer_icon = gtk.CellRendererPixbuf()
+        self.renderer_text = gtk.CellRendererText()
+        self.pack_start(self.renderer_icon,False)
+        self.pack_start(self.renderer_text,True)
+        self.add_attribute(self.renderer_icon,'pixbuf',0)
+        self.add_attribute(self.renderer_text,'text',1)
+        
+        self.firstrender = True
+        modules.addCallback(self.render)
+        self.render()
+    
+    def render(self):
+        def search(model,path,rowiter):
+            obj_id = model.get_value(rowiter,2)
+            if obj_id >=0:
+                try:
+                    obj = self.getApplication().getLocalObjectById(obj_id)
+                except GenericObjectStoreException:
+                    model.itersToRemove.append(rowiter)
+                else:
+                    model.set_value(rowiter,0,IconStock.WIDGET)
+                    model.set_value(rowiter,1,obj.getName())
+                    model.objectsToAllocate.remove(obj)
+        
+        modules = self.getApplication().getLocalObjectById(self.modulesId)
+        self.store.objectsToAllocate = modules.getAllWidgets()
+        self.store.itersToRemove = []
+        self.store.foreach(search)
+        
+        for rowiter in self.store.itersToRemove:
+            self.store.remove(rowiter)
+        
+        for obj in self.store.objectsToAllocate:
+            self.store.append((IconStock.WIDGET,obj.getName(),obj.getLocalId()))
+            
+        if self.firstrender:
+            self.set_active(0)
+            self.firstrender = False
+
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
+ 
+class SiteChooser(gtk.ComboBox):
+    WHITELISTED_CLASSES = ("Site")
+    def __init__(self, par, sites):
+        self.par = par
+        gtk.ComboBox.__init__(self)
+        self.sitesId = sites.getLocalId()
+        
+        self.store = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
+        self.set_model(self.store)
+        
+        self.renderer_icon = gtk.CellRendererPixbuf()
+        self.renderer_text = gtk.CellRendererText()
+        self.pack_start(self.renderer_icon,False)
+        self.pack_start(self.renderer_text,True)
+        self.add_attribute(self.renderer_icon,'pixbuf',0)
+        self.add_attribute(self.renderer_text,'text',1)
+        
+        sites.addCallback(self.render)
+        self.firstrender = True
+        self.render()
+    
+    def render(self):
+        def search(model,path,rowiter):
+            obj_id = model.get_value(rowiter,2)
+            if obj_id >=0:
+                try:
+                    obj = self.getApplication().getLocalObjectById(obj_id)
+                except GenericObjectStoreException:
+                    model.itersToRemove.append(rowiter)
+                else:
+                    model.set_value(rowiter,0,IconStock.SITE)
+                    model.set_value(rowiter,1,obj.getName())
+                    model.objectsToAllocate.remove(obj)
+        
+        sites = self.getApplication().getLocalObjectById(self.sitesId)
+        self.store.objectsToAllocate = sites.getSites()
+        self.store.itersToRemove = []
+        self.store.foreach(search)
+        
+        for rowiter in self.store.itersToRemove:
+            self.store.remove(rowiter)
+        
+        for obj in self.store.objectsToAllocate:
+            self.store.append((IconStock.SITE,obj.getName(),obj.getLocalId()))    
+        if self.firstrender:
+            self.set_active(0)
+            self.firstrender = False
+            
+        
     def getPar(self):
         return self.par
 
     def getApplication(self):
         return self.par.getApplication()
     
-class SiteChooser(gtk.ComboBox):
-    def __init__(self):
-        pass
-
 class MenuItemTree(gtk.TreeView):
     def __init__(self, par, menu=None):
         gtk.TreeView.__init__(self)

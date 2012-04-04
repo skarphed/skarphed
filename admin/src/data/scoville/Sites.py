@@ -51,6 +51,9 @@ class Sites(GenericScovilleObject):
     def refresh(self):
         self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getSites")
     
+    def getSites(self):
+        return self.children
+    
     def getName(self):
         return "Sites"
     
