@@ -458,7 +458,8 @@ class MenuItemStore(gtk.TreeStore):
         self.itersToRemove= []
         self.foreach(search)
         
-        self.itersToRemove.reverse()
+        self.itersToRemove.reverse() # objects must be deleted from treeview from child to parent
+                                     # but come in in exactly the other direction from getMenuItemsRecursive()
         
         for rowiter in self.itersToRemove:
             self.remove(rowiter)
