@@ -66,6 +66,7 @@ class Menu(GenericScovilleObject):
         for mi in self.children:
             if mi.getId() in menuItemIds:
                 self.children.remove(mi)
+                mi.destroy()
         self.updated()
     
     def loadMenuItems(self):
@@ -94,6 +95,15 @@ class Menu(GenericScovilleObject):
     def createMenuItem(self):
         self.getApplication().doRPCCall(self.getSite().getSites().getScoville(),
                                         self.createMenuItemCallback,"createMenuItem",[self.getId(),'menu'])
+    
+    def deleteMenuItemCallback(self,json):
+        self.loadMenuItems()
+    
+    def deleteMenuItem(self,menuItem):
+        if menuItem in self.children:
+            self.getApplication().doRPCCall(self.getSite().getSites().getScoville(),
+                                        self.deleteMenuItemCallback,"deleteMenuItem",[menuItem.getId()])
+    
     
     def getPar(self):
         return self.par
@@ -150,6 +160,7 @@ class MenuItem(GenericScovilleObject):
         for mi in self.children:
             if mi.getId() in menuItemIds:
                 self.children.remove(mi)
+                mi.destroy()
         self.updated()
         self.getMenu().updated()
         
@@ -223,6 +234,14 @@ class MenuItem(GenericScovilleObject):
     def loadActionList(self):
         self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
                                         self.loadActionListCallback,"getActionListForMenuItem",[self.getId()])
+    
+    def deleteMenuItemCallback(self,json):
+        self.loadMenuItems()
+    
+    def deleteMenuItem(self,menuItem):
+        if menuItem in self.children:
+            self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getScoville(),
+                                        self.deleteMenuItemCallback,"deleteMenuItem",[menuItem.getId()])
     
     def getPar(self):
         return self.par

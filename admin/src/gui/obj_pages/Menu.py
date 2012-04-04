@@ -101,7 +101,16 @@ class MenuPage(GenericObjectPage):
         self.info_labelName.set_text(menu.getName())
     
     def menuItemChangeCallback(self,*args,**kwargs):
-        obj = self.edit_menutree.getSelectedMenuItem()
+        self.addbutton.set_sensitive(False)
+        self.removebutton.set_sensitive(False)
+        self.increasebutton.set_sensitive(False)
+        self.decreasebutton.set_sensitive(False)
+        self.topbutton.set_sensitive(False)
+        self.bottombutton.set_sensitive(False)
+        try:
+            obj = self.edit_menutree.getSelectedMenuItem()
+        except TypeError:
+            return
         if obj.__class__.__name__ == 'MenuItem':
             self.addbutton.set_sensitive(True)
             self.removebutton.set_sensitive(True)
@@ -112,17 +121,13 @@ class MenuPage(GenericObjectPage):
             self.showActionList(obj.getActionList())
         elif obj.__class__.__name__ == 'Menu':
             self.addbutton.set_sensitive(True)
-            self.removebutton.set_sensitive(True)
-            self.increasebutton.set_sensitive(False)
-            self.decreasebutton.set_sensitive(False)
-            self.topbutton.set_sensitive(False)
-            self.bottombutton.set_sensitive(False)
         
     def cb_Add(self,widget=None,data=None):
         self.edit_menutree.getSelectedMenuItem().createMenuItem()
     
     def cb_Remove(self,widget=None,data=None):
-        self.edit_menutree.getSelectedMenuItem().delete()
+        item = self.edit_menutree.getSelectedMenuItem()
+        item.getPar().deleteMenuItem(item)
     
     def cb_Increase(self,widget=None,data=None):
         self.edit_menutree.getSelectedMenuItem().increaseOrder()
@@ -426,9 +431,8 @@ class MenuItemStore(gtk.TreeStore):
             if obj_id >= 0:
                 try:
                     obj = self.objectStore.getLocalObjectById(obj_id)
-                #except data.Generic.GenericObjectStoreException,e:
-                except Exception:
-                    self.itersToRemove.append(rowiter)
+                except GenericObjectStoreException:
+                    model.itersToRemove.append(rowiter)
                 else:
                     if obj.__class__.__name__=="MenuItem":
                         model.set_value(rowiter,0,IconStock.MENUITEM)
@@ -453,6 +457,8 @@ class MenuItemStore(gtk.TreeStore):
         self.objectsToAllocate.append(menu)
         self.itersToRemove= []
         self.foreach(search)
+        
+        self.itersToRemove.reverse()
         
         for rowiter in self.itersToRemove:
             self.remove(rowiter)
