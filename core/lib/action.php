@@ -375,19 +375,71 @@
 		}
 		
 		public function increaseOrder(){
-			//TODO: implement
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			
+			$res = $db->query($core, "SELECT MIN(ACT_ORDER) AS NEWORDER FROM ACTIONS WHERE ACT_ATL_ID = ? AND ACT_ORDER > ? ;", 
+							  array($this->getActionListId(),$this->getOrder()));
+			if ($set = $db->fetchObject($res)){
+				if(!isset($set->NEWORDER)){
+					return;
+				}
+				$tempOrder = $this->getOrder();
+				$db->query($core, "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ORDER = ? AND ACT_ATL_ID = ?", array($tempOrder, $set->NEWORDER, $this->getActionListId()));
+				$db->query($core, "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ?", array($set->NEWORDER, $this->getId()));
+				$db->commit();
+			}
 		}
 
 		public function decreaseOrder(){
-			//TODO: implement
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			
+			$res = $db->query($core, "SELECT MAX(ACT_ORDER) AS NEWORDER FROM ACTIONS WHERE ACT_ATL_ID = ? AND ACT_ORDER < ? ;", 
+							  array($this->getActionListId(),$this->getOrder()));
+			if ($set = $db->fetchObject($res)){
+				if(!isset($set->NEWORDER)){
+					return;
+				}
+				$tempOrder = $this->getOrder();
+				$db->query($core, "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ORDER = ? AND ACT_ATL_ID = ?", array($tempOrder, $set->NEWORDER, $this->getActionListId()));
+				$db->query($core, "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ?", array($set->NEWORDER, $this->getId()));
+				$db->commit();
+			}
 		}
 		
 		public function moveToTopOrder(){
-			//TODO: implement 
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			
+			$res = $db->query($core, "SELECT MAX(ACT_ORDER) AS NEWORDER FROM ACTIONS WHERE ACT_ATL_ID = ? ;", 
+							  array($this->getActionListId(),$this->getOrder()));
+			if ($set = $db->fetchObject($res)){
+				if(!isset($set->NEWORDER)){
+					return;
+				}
+				$tempOrder = $this->getOrder();
+				$db->query($core, "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ORDER = ? AND ACT_ATL_ID = ?", array($tempOrder, $set->NEWORDER, $this->getActionListId()));
+				$db->query($core, "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ?", array($set->NEWORDER, $this->getId()));
+				$db->commit();
+			}	
 		}
 
 		public function moveToBottomOrder(){
-			//TODO: implement
+			$core = Core::getInstance();
+			$db = $core->getDB();
+			
+			$res = $db->query($core, "SELECT MIN(ACT_ORDER) AS NEWORDER FROM ACTIONS WHERE ACT_ATL_ID = ? ;", 
+							  array($this->getActionListId(),$this->getOrder()));
+			if ($set = $db->fetchObject($res)){
+				if(!isset($set->NEWORDER)){
+					return;
+				}
+				$tempOrder = $this->getOrder();
+				$db->query($core, "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ORDER = ? AND ACT_ATL_ID = ?", array($tempOrder, $set->NEWORDER, $this->getActionListId()));
+				$db->query($core, "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ?", array($set->NEWORDER, $this->getId()));
+				$db->commit();
+			}	
 		}
 		
 		/**
