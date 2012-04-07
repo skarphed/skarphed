@@ -80,6 +80,14 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.deleteUser)
         self.deleteUser.connect("activate", self.cb_deleteUser)
         
+        createUserI = gtk.Image()
+        createUserI.set_from_pixbuf(IconStock.USER)
+        self.createUser = gtk.ImageMenuItem()
+        self.createUser.set_image(createUserI)
+        gtk.MenuItem.__init__(self.createUser, "Create User")
+        self.append(self.createUser)
+        self.createUser.connect("activate", self.cb_createUser)
+        
         removeInstanceI = gtk.Image()
         removeInstanceI.set_from_pixbuf(IconStock.DELETE)
         self.removeInstance = gtk.ImageMenuItem()
@@ -145,6 +153,9 @@ class TreeContextMenu(gtk.Menu):
         if cn in ("Server", "Module",  "Widget"):
             self.getApplication().mainwin.openCssEditor(self.currentObject)
     
+    def cb_createUser(self,data=None):
+        InputBox(self,"what should be the name of the new User?", self.currentObject.createUser)
+    
     def cb_deleteUser(self,data=None):
         self.currentObject.delete()        
     
@@ -179,6 +190,8 @@ class TreeContextMenu(gtk.Menu):
             pass
         elif itemtype == "User":
             self.deleteUser.set_visible(True)
+        elif itemtype == "Users":
+            self.createUser.set_visible(True)
         elif itemtype == "Scoville": # HERE BE DRAGONS
             self.removeInstance.set_visible(True)
         elif itemtype == "Site":

@@ -35,7 +35,7 @@ class Users(GenericScovilleObject):
         self.refresh()
     
     def refreshCallback(self,data):
-        userIds = [u.getUserId() for u in self.children]
+        userIds = [u.getId() for u in self.children]
         for user in data:
             if user['id'] not in userIds:
                 self.addChild(User(self,user))
@@ -44,7 +44,7 @@ class Users(GenericScovilleObject):
                 
     def getUserById(self,userId):
         for u in self.children:
-            if u.getUserId() == userId:
+            if u.getId() == userId:
                 return u
         return None
     
@@ -53,6 +53,12 @@ class Users(GenericScovilleObject):
     
     def getName(self):
         return "Users"
+    
+    def createUserCallback(self,json):
+        self.refresh()
+    
+    def createUser(self,name):
+        self.getApplication().doRPCCall(self.getScoville(),self.createUserCallback, "createUser", [name,"default"])
     
     def getPar(self):
         return self.par
