@@ -105,6 +105,13 @@ class Menu(GenericScovilleObject):
                                         self.deleteMenuItemCallback,"deleteMenuItem",[menuItem.getId()])
     
     
+    def renameCallback(self,json):
+        self.getSite().loadMenus()
+    
+    def rename(self,name):
+        self.getApplication().doRPCCall(self.getSite().getSites().getScoville(),
+                                        self.renameCallback,"renameMenu",[self.getId(),name])
+    
     def getPar(self):
         return self.par
     

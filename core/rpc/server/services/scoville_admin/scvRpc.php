@@ -459,7 +459,7 @@ class class_scvRpc {
 	$core = scv\Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menuItem = $actionManager->getMenuItemById($menuItemId);
-	$menuItem->increaseOrder();
+	$menuItem->decreaseOrder();
 	return 0;
   }
   
@@ -679,6 +679,18 @@ class class_scvRpc {
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->setSiteId($siteId);
+	
+	return 0;
+  }
+  
+  function method_renameMenu($params,$error){
+  	$menuId = (int)$params[0];
+	$newName = (string)$params[1];
+	
+	$core = scv\Core::getInstance();
+	$actionManager = $core->getActionManager();
+	$menu = $actionManager->getMenuById($menuId);
+	$menu->setName($newName);
 	
 	return 0;
   }

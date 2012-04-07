@@ -41,8 +41,11 @@ class MenuPage(GenericObjectPage):
         self.infobox = gtk.HBox()
         self.info_labelName = gtk.Label("Name:")
         self.info_entryName = gtk.Entry()
+        self.info_saveName = gtk.Button(stock=gtk.STOCK_SAVE)
         self.infobox.pack_start(self.info_labelName,False)
         self.infobox.pack_start(self.info_entryName,True)
+        self.infobox.pack_start(self.info_saveName,False)
+        self.info_saveName.connect("clicked",self.renameCallback)
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
@@ -99,6 +102,14 @@ class MenuPage(GenericObjectPage):
             self.destroy()
             return
         self.info_labelName.set_text(menu.getName())
+    
+    def renameCallback(self,widget=None,data=None):
+        try:
+            menu = self.getApplication().getLocalObjectById(self.menuId)
+        except GenericObjectStoreException:
+            self.destroy()
+        else:
+            menu.rename(self.info_entryName.get_text())
     
     def menuItemChangeCallback(self,*args,**kwargs):
         self.addbutton.set_sensitive(False)
@@ -273,7 +284,12 @@ class ActionWidgetConfig(gtk.Table):
         self.entry_space = gtk.SpinButton(gtk.Adjustment(1,1,spaceCount,1,0,0))
         self.entry_site = SiteChooser(self,action.getActionList().getMenuItem().getMenu().getSite().getSites())
         self.entry_space.set_range(1,spaceCount)
-        
+        self.entry_url.connect("focus-in-event",self.focusCallback)
+        self.entry_widget.connect("popup",self.focusCallback)
+        self.entry_widget.connect("changed",self.focusCallback)
+        self.entry_space.connect("focus-in-event",self.focusCallback)
+        self.entry_site.connect("popup",self.focusCallback)
+        self.entry_widget.connect("changed",self.focusCallback)
         
         self.deleteButton = gtk.Button(stock=gtk.STOCK_DELETE)
         self.increaseOrderButton = gtk.Button(stock=gtk.STOCK_GO_UP)
@@ -313,6 +329,15 @@ class ActionWidgetConfig(gtk.Table):
             self.radio_widgetSpaceConstellation.activate()
         elif action.data['type'] == 'site':
             self.radio_site.activate()
+    
+    def focusCallback(self,widget=None,event=None):
+        if widget == self.entry_url:
+            self.radio_url.activate()
+        elif widget == self.entry_space or widget == self.entry_widget:
+            self.radio_widgetSpaceConstellation.activate()
+        elif widget == self.entry_site:
+            self.radio_site.activate()
+        
     
     def deleteCallback(self, widget=None, data=None):
         action = self.getApplication().getLocalObjectById(self.actionId)
@@ -466,15 +491,25 @@ class MenuItemTree(gtk.TreeView):
         
         self.set_model(self.store)
         self.col_name = gtk.TreeViewColumn("MenuItem")
+        self.col_order = gtk.TreeViewColumn("order")
         self.append_column(self.col_name)
+        self.append_column(self.col_order)
         self.renderer_icon = gtk.CellRendererPixbuf()
         self.renderer_name = gtk.CellRendererText()
+        self.renderer_order = gtk.CellRendererText()
         self.renderer_name.set_property('editable',True)
         self.col_name.pack_start(self.renderer_icon,False)
         self.col_name.pack_start(self.renderer_name,True)
+        self.col_order.pack_start(self.renderer_order,True)
         self.col_name.add_attribute(self.renderer_icon,'pixbuf',0)
         self.col_name.add_attribute(self.renderer_name,'text',1)
+        self.col_order.add_attribute(self.renderer_order,'text',3)
         self.renderer_name.connect('edited', self.renamedCallback)
+        self.set_reorderable(True)
+        
+        self.col_order.set_sort_column_id(2)
+        self.col_order.set_sort_order(gtk.SORT_DESCENDING)
+        self.store.emit("sort_column_changed")
         
         self.set_search_column(1)
         
