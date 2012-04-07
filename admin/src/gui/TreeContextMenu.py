@@ -120,7 +120,6 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.createMenu)
         self.createMenu.connect("activate",self.cb_createMenu)
         
-        
         deleteMenuI = gtk.Image()
         deleteMenuI.set_from_pixbuf(IconStock.MENU)
         self.deleteMenu = gtk.ImageMenuItem()
@@ -128,6 +127,22 @@ class TreeContextMenu(gtk.Menu):
         gtk.MenuItem.__init__(self.deleteMenu,"Delete Menu")
         self.append(self.deleteMenu)
         self.deleteMenu.connect("activate",self.cb_deleteMenu)
+        
+        createRoleI = gtk.Image()
+        createRoleI.set_from_pixbuf(IconStock.ROLE)
+        self.createRole = gtk.ImageMenuItem()
+        self.createRole.set_image(createRoleI)
+        gtk.MenuItem.__init__(self.createRole,"Create Role")
+        self.append(self.createRole)
+        self.createRole.connect("activate",self.cb_createRole)
+        
+        deleteRoleI = gtk.Image()
+        deleteRoleI.set_from_pixbuf(IconStock.ROLE)
+        self.deleteRole = gtk.ImageMenuItem()
+        self.deleteRole.set_image(deleteRoleI)
+        gtk.MenuItem.__init__(self.deleteRole,"Delete Role")
+        self.append(self.deleteRole)
+        self.deleteRole.connect("activate",self.cb_deleteRole)
         
         self.show_all()
         
@@ -170,6 +185,13 @@ class TreeContextMenu(gtk.Menu):
         
     def cb_deleteMenu(self, data=None):
         self.currentObject.delete()
+        
+    def cb_createRole(self, data=None):
+        InputBox(self,"what should be the name of the new Widget?", self.currentObject.createRole)
+    
+    def cb_deleteRole(self, data=None):
+        self.currentObject.delete()
+    
     
     def popup(self,obj,button,time):
         self.hide_buttons()
@@ -192,6 +214,10 @@ class TreeContextMenu(gtk.Menu):
             self.deleteUser.set_visible(True)
         elif itemtype == "Users":
             self.createUser.set_visible(True)
+        elif itemtype == "Role":
+            self.deleteRole.set_visible(True)
+        elif itemtype == "Roles":
+            self.createRole.set_visible(True)
         elif itemtype == "Scoville": # HERE BE DRAGONS
             self.removeInstance.set_visible(True)
         elif itemtype == "Site":

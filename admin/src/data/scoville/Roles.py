@@ -43,7 +43,7 @@ class Roles(GenericScovilleObject):
             if role['id'] not in roleIds:
                 self.addChild(Role(self,role))
             else:
-                self.getRoleByName(role['id']).refresh(role)
+                self.getRoleById(role['id']).refresh(role)
                 
     
     def getRoleById(self,id):
@@ -57,6 +57,12 @@ class Roles(GenericScovilleObject):
     
     def getName(self):
         return "Roles"
+    
+    def createRoleCallback(self,json):
+        self.refresh()
+    
+    def createRole(self,name):
+        self.getApplication().doRPCCall(self.getScoville(),self.createRoleCallback, "createRole", [{'name':name}])
     
     def getPar(self):
         return self.par

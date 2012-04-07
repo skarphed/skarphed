@@ -68,6 +68,12 @@ class Role(GenericScovilleObject):
     def removePermission(self,perm):
         self.getApplication().doRPCCall(self.getRoles().getScoville(),self.removePermissionCallback, "revokeRightFromRole", [self.getId(),perm])
     
+    def deleteCallback(self,json):
+        self.destroy()
+    
+    def delete(self):
+        self.getApplication().doRPCCall(self.getRoles().getScoville(),self.deleteCallback, "deleteRole", [self.getId()])
+    
     def refresh(self,data):
         self.data = data
         self.updated()
