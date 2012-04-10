@@ -23,3 +23,5 @@ Functoins parseArrayToObject parseObjectToArray sind aus http://www.wozia.pt/blo
 # (c) 2003 Gustavo J A M Carneiro gjc at inescporto.pt
 #     2004-2005 Filip Van Raemdonck
 Public Domain
+
+PyCrypto >= 2.2
