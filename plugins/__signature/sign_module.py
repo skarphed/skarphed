@@ -45,15 +45,18 @@ def main():
                   "Generate Key using sign_module.py generate"
             sys.exit(1)
         import Crypto.Hash.SHA256 as SHA256
+        import Crypto.Signature.PKCS1_v1_5 as PKCS1_v1_5
         import json
         key = RSA.importKey(keyraw)
-        hash = SHA256.new(moduleData).hexdigest()
-        signature = key.sign(hash,'')
+        hash = SHA256.new(moduleData)
+        signer = PKCS1_v1_5.new(key)
+        signature = signer.sign(hash)
         
-        print signature
+        import base64
+        signature = base64.encodestring(signature)
         
         sigFile = open(filename+'.sig','w')
-        sigFile.write(json.dumps(signature))
+        sigFile.write(signature)
         sigFile.close()
         print "Generated Signature"
         
