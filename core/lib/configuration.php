@@ -37,7 +37,10 @@ class Config {
 	}
 	
 	public function initFromDb($database){
-		//TODO: Implement
+		/*$res = $database->query($core,"SELECT PARAM,VAL FROM CONFIG");
+		while($set = $con->fetchObject($res)){
+			$this->configuration[$set->PARAM] = $set->VAL;
+		}*/
 		$this->config_state = self::CONF_LOAD_DB;
 		return;
 	}
