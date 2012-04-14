@@ -23,6 +23,7 @@
 ###########################################################
 
 import Crypto.Cipher.AES
+import Crypto.PublicKey.RSA as RSA
 import json
 import os
 import data.Server
@@ -35,6 +36,8 @@ class Profile(object):
     STATE_LOADED = 1
     
     DATA_STRUCT = {
+                   'privateKey':'',
+                   'publicKey':'',
                    'server':[]
                    }
     
@@ -61,6 +64,35 @@ class Profile(object):
         profilefile.write(aes.encrypt(clear+padding))
         profilefile.close()
     
+    def getPublicKey(self):
+        if self.data.has_key('publickey') and self.data['publickey'] != '':
+            return self.data['publickey']
+        else:
+            raise ProfileException('No publickey defined!')
+    
+    def getPrivateKey(self):
+        if self.data.has_key('privatekey') and self.data['privatekey'] != '':
+            return self.data['privatekey']
+        else:
+            raise ProfileException('No privatekey defined!')
+    
+    def hasKeys(self):
+        if self.data.has_key('privatekey') and self.data['privatekey'] != ''\
+            and self.data.has_key('publickey') and self.data['publickey'] != '':
+            
+            return True
+        return False
+    
+    def generateKeyPair(self):
+        if (not self.data.has_key('privatekey') or self.data['privatekey'] == '')\
+            and (not self.data.has_key('publickey') or self.data['publickey'] == ''):
+            
+            key = RSA.generate(1024, os.urandom)
+            pubkey = key.publickey()
+            self.data['privatekey'] = key.exportKey()
+            self.data['publickey'] = pubkey.exportKey()
+            self.save()
+        
     def load(self):
         if not os.path.exists(os.path.expanduser('~/.scovilleadmin/'+self.username)):
             raise ProfileException("Profile does not exist")

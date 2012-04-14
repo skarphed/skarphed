@@ -30,6 +30,7 @@ import sys
 
 from ServerPropertyWindow import ServerPropertyWindow
 from LoginWindow import LoginWindow
+from KeyWindow import KeyWindow
 from Tree import Tree
 from Tabs import Tabs
 from CssEditor import CssEditor
@@ -92,8 +93,14 @@ class MainWindow(gtk.Window):
         self.addserverbutton.set_stock_id(gtk.STOCK_ADD)
         self.addserverbutton.connect("clicked", self.cb_AddServerButton)
         
+        self.pkibutton=gtk.ToolButton()
+        self.pkibutton.set_stock_id(gtk.STOCK_PROPERTIES)
+        self.pkibutton.connect("clicked", self.cb_pkiButton)
+        
+        
         self.tool.add(self.logoutbutton)
         self.tool.add(self.addserverbutton)
+        self.tool.add(self.pkibutton)
         
         self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"),False)
         self.status.pack_end(self.progress,False)
@@ -137,6 +144,9 @@ class MainWindow(gtk.Window):
     
     def cb_AddServerButton(self,widget=None,data=None):
         ServerPropertyWindow(self)
+    
+    def cb_pkiButton(self,widget=None,data=None):
+        KeyWindow(self, self.getApplication().activeProfile)
     
     def cb_Close(self, widget=None, data=None):
         try:
