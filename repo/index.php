@@ -28,7 +28,7 @@
 			$protocolHandler = new ProtocolHandler($_REQUEST['j']);
 			$protocolHandler->execute();
 		} catch (Exception $e) {
-			echo "{'error':".$e->getMessage()."}";
+			echo '{"error": "'.$e->getMessage().'"}';
 		}
 		echo $protocolHandler->getResult();
 	}else{

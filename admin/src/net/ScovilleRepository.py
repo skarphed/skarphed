@@ -24,8 +24,10 @@
 
 import urllib2, cookielib
 import threading
+import json
 import gobject
 from Tracker import Tracker
+from MultiPartForm import MultiPartForm
 
 cookiejar = cookielib.LWPCookieJar()
 cookiejar.load('cookies.txt')
@@ -33,10 +35,27 @@ cookiejar.load('cookies.txt')
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
 urllib2.install_opener(opener)
 
-class ScovilleUpload(threading.Thread):
+class ScovilleRepositoryException(Exception):pass
+
+class ScovilleRepository(threading.Thread):
     TYPE_TEMPLATE = 0
     RESULT_OK    = 0
     RESULT_ERROR = 1
+    
+    COMMANDS = {1 : 'getAllModules',
+                2 : 'getVersionsOfModule',
+                3 : 'resolveDependenciesDownwards',
+                4 : 'resolveDependenciesUpwards',
+                5 : 'downloadModule',
+                100 : 'authenticate',
+                101 : 'logout',
+                102 : 'changePassword',
+                103 : 'registerDeveloper',
+                104 : 'unregisterDeveloper',
+                105 : 'uploadModule',
+                106 : 'deleteModule',
+                107 : 'getDevelopers'}
+    
     HEADERS = { 'Accept-Language':'en-us,en;q=0.5',        
                 'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7', 
                 'Content-Type':'application/json; charset=UTF-8',
@@ -46,40 +65,41 @@ class ScovilleUpload(threading.Thread):
                 'Connection':'Keep-Alive',
                 'User-agent' : 'ScovilleAdmin'}
     
-    def __init__(self,server, uploadtype, form, callback=None):
+    def __init__(self,repo, command, callback=None):
         threading.Thread.__init__(self)
-        self.server = server
-        
+        self.repo = repo
         self.callback=callback
         
-        if uploadtype == self.TYPE_TEMPLATE:
-            url = str(server.getUrl()+'/rpc/post.php?a=template')
-        else:
-            raise Exception("No valid upload-type")
+        assert ScovilleRepository.COMMANDS.has_key(command['c'])
+        
+        url = str(repo.getUrl())
+        
+        json_enc = json.JSONEncoder()
+        
+        form = MultiPartForm()
+        form.add_field('j',json_enc.encode(command))
         
         post = str(form)
         
         self.request = urllib2.Request(url)
         self.request.add_header('User-agent','ScovilleAdmin')
         self.request.add_header('Content-type',form.get_content_type())
-        a = len(post)
         self.request.add_header('Body-length',len(post))
         self.request.add_data(post)
         
         Tracker().addProcess()
         
-    def run(self):            
-        try:
-            answer = urllib2.urlopen(self.request)
-            result = self.RESULT_OK
-        except urllib2.URLError,e:
-            result = self.RESULT_ERROR
+    def run(self):
+        json_dec = json.JSONDecoder()
+        
+        answer = urllib2.urlopen(self.request)
+        plaintext = answer.read()
+        print plaintext
+        result = json_dec.decode(plaintext)
     
         Tracker().removeProcess()
+        if result.has_key('error'):
+            raise ScovilleRepositoryException(result['error'])
+        
         if self.callback is not None:
             gobject.idle_add(self.callback,result)
-        
-        
-        
-        
-        
