@@ -63,100 +63,60 @@
 					
 					
 				case ProtocolHandler::AUTHENTICATE:
-					try{
-						if (!isset($this->subject->dxd)){
-							throw Exception('Password not set');
-						}
-						$res = $repository->authenticate((string)$this->subject->dxd);
-						return array("r"=>0);
-					} catch (Exception $e) {
-						return array("r"=>$e->getMessage());
+					if (!isset($this->subject->dxd)){
+						throw Exception('Password not set');
 					}
-					break;
+					$res = $repository->authenticate((string)$this->subject->dxd);
+					return array("r"=>0);
 					
 				case ProtocolHandler::LOGOUT:
-					try{
-						$repository->logout();
-						return array("r"=>0);
-					} catch (Exception $e){
-						return array("r"=>$e->getMessage());
-					}
-					break;
+					$repository->logout();
+					return array("r"=>0);
 					
 				case ProtocolHandler::CHANGE_PASSWORD:
-					try{
-						if (!isset($this->subject->dxd)){
-							throw Exception('Password not set');
-						}
-						$repository->changePassword((string)$this->subject->dxd);
-						return array("r"=>0);
-					} catch (Exception $e){
-						return array("r"=>$e->getMessage());
-					}	
-					break;
+					if (!isset($this->subject->dxd)){
+						throw Exception('Password not set');
+					}
+					$repository->changePassword((string)$this->subject->dxd);
+					return array("r"=>0);
 					
 				case ProtocolHandler::REGISTER_DEVELOPER:
-					try{
-						if (!isset($this->subject->name) or 
-						    !isset($this->subject->fullName) or 
-							!isset($this->subject->publicKey)){
-								throw Exception ('Invalid Registrationdata');
-							}
-						$repository->registerDeveloper((string)$this->subject->name,
-													   (string)$this->subject->fullName,
-													   (string)$this->subject->publicKey);
-						return array("r"=>0);
-					} catch (Exception $e){
-						return array("r"=>$e->getMessage());
-					}
-					break;
+					if (!isset($this->subject->name) or 
+					    !isset($this->subject->fullName) or 
+						!isset($this->subject->publicKey)){
+							throw Exception ('Invalid Registrationdata');
+						}
+					$repository->registerDeveloper((string)$this->subject->name,
+												   (string)$this->subject->fullName,
+												   (string)$this->subject->publicKey);
+					return array("r"=>0);
 					
 				case ProtocolHandler::UNREGISTER_DEVELOPER:
-					try{
-						if (!isset($this->subject->devId)){
-							throw Exception('Need DeveloperId');
-						}
-						$repository->unregisterDeveloper((int)$this->subject->devId);
-						return array("r"=>0);
-					} catch (Exception $e){
-						return array("r"=>$e->getMessage());
+					if (!isset($this->subject->devId)){
+						throw Exception('Need DeveloperId');
 					}
-					break;
+					$repository->unregisterDeveloper((int)$this->subject->devId);
+					return array("r"=>0);
 					
 				case ProtocolHandler::UPLOAD_MODULE:
-					try{
-						if (!isset($this->subject->data) or 
-						    !isset($this->subject->signature)){
-						    	throw Exception('Not valid data');
-						    }
-						$repository->uploadModule((string)$this->subject->data,
-												  base64_decode($this->subject->signature));
-						return array("r"=>0);
-					} catch (Exception $e){
-						return array("r"=>$e->getMessage());
-					}
-					
-					break;
+					if (!isset($this->subject->data) or 
+					    !isset($this->subject->signature)){
+					    	throw Exception('Not valid data');
+					    }
+					$repository->uploadModule((string)$this->subject->data,
+											  base64_decode($this->subject->signature));
+					return array("r"=>0);
 					
 				case ProtocolHandler::DELETE_MODULE:
-					try{
-						if (!isset($this->subject->moduleIdentifier)){
-							throw Exception('Need module to delete');			
-						}			
-						$repository->deleteModule((string)$this->subject->moduleIdentifier);
-						return array("r"=>0);
-					} catch (Exception $e){
-						return array("r"=>$e->getMessage());
-					}
-					break;
-
+					if (!isset($this->subject->moduleIdentifier)){
+						throw Exception('Need module to delete');			
+					}			
+					$repository->deleteModule((string)$this->subject->moduleIdentifier);
+					return array("r"=>0);
+	
 				case ProtocolHandler::GET_DEVELOPERS:
-					try{
-						$res = $repository->getDevelopers();
-						return array("r"=>$res);
-					} catch (Exception $e){
-						return array("r"=>$e->getMessage());
-					}
+					$res = $repository->getDevelopers();
+					return array("r"=>$res);
 					
 				default:
 					throw Exception('Unknown Commandidentifier: '.$this->subject->c);
