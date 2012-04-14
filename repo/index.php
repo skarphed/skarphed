@@ -77,10 +77,11 @@
 			
 			div.info{
 				border: 1px dashed silver;
+				text-align:left;
 			}
 			
 			p.info{
-				 text-align:justify;
+				 text-align:left;
 				 line-height: 200%;
 			 }
 			
@@ -98,17 +99,21 @@
 		    <p>Scoville Repository<br></p>		
 	    </div>
 	    <div id="content">
-	    	This is a Scoville repository. It supplies Modules and Templates for Scoville Instances.
+	    	<p>
+	    		This is a Scoville repository. It supplies Modules and Templates for Scoville Instances.
+	    	</p>
+	    	<p>
+		    	The data provided is signed via RSA to ensure that there is no manipulated data coming onto
+		    	your server.
+	    	</p>
 	    	
-	    	The data provided is signed via RSA to ensure that there is no manipulated data coming onto
-	    	your server.
-	    	
-	    	This repository's RSA public key is:
-	    	<div class="info">
+	    	<div class="info" style="font-family: Monospace;">
+	    		<h5>This repository's RSA public key is:</h5>
 	    		<p><?php echo $repository->getPublicKeyForPage(); ?></p>
 	    	</div>
-	    	
-	    	Register this Repository with your Scoville Admintool if you trust the maintainer.
+	    	<p>
+	    		Register this Repository with your Scoville Admintool if you trust the maintainer.
+	    	</p>
 	    </div>
 	</body>
 	

@@ -1,5 +1,5 @@
 <?php
-	include_once('database.php');
+	include_once('repo_database.php');
 	#include_once('Crypt_RSA');
 	
 	
@@ -170,14 +170,14 @@
 
 		public function authenticate($password){
 			$con = $this->establishConection();
-			$res = $con->query("SELECT VALUE FROM CONFIG WHERE PARAM = 'password' OR PARAM = 'salt' ORDER BY PARAM ASC;");
+			$res = $con->query("SELECT VAL FROM CONFIG WHERE PARAM = 'password' OR PARAM = 'salt' ORDER BY PARAM ASC;");
 			$set = $con->fetchObject($res);
-			$password = $set->VALUE;
+			$db_hash = $set->VAL;
 			$set = $con->fetchObject($res);
-			$salt = $set->VALUE;
-			$hash = hash('ripemd160', $password+$salt);
+			$salt = $set->VAL;
+			$hash = hash('ripemd160', $password.$salt);
 			
-			$isValid = $password == $hash;
+			$isValid = $db_hash == $hash;
 			$_SESSION['privileged'] = $isValid;
 			return $isValid;
 		}
@@ -197,17 +197,17 @@
 		
 		private function checkAdmin(){
 			if (!isset($_SESSION['privileged']) or !$_SESSION['privileged'])
-				throw Exception('Only admin may perform this Operation (forgot to log on ?)');
+				throw new Exception('Only admin may perform this Operation (forgot to log on ?)');
 		}
 		
 		public function changePassword($password){
 			$this->checkAdmin();
 				
 			$con = $this->establishConection();
-			$salt = $this->generateSalt();
-			$hash = hash('ripemd160',$password+$salt);
-			$con->query("UPDATE CONFIG SET VALUE = ? WHERE PARAM = ?", array($hash,'password'));
-			$con->query("UPDATE CONFIG SET VALUE = ? WHERE PARAM = ?", array($salt,'salt'));
+			$salt = base64_encode($this->generateSalt());
+			$hash = hash('ripemd160',$password.$salt);
+			$con->query("UPDATE CONFIG SET VAL = ? WHERE PARAM = ?", array($hash,'password'));
+			$con->query("UPDATE CONFIG SET VAL = ? WHERE PARAM = ?", array($salt,'salt'));
 			return true;
 		}
 		
@@ -231,7 +231,7 @@
 					break;
 			}
 			if(!$valid)
-				throw Exception('Signature verification Failed. Data has been manipulated.');
+				throw new Exception('Signature verification Failed. Data has been manipulated.');
 			
 			$filename_temp = hash('md5',$signature);
 			mkdir($filename_temp);
@@ -241,11 +241,11 @@
 			system('tar xfz '.$filename_temp.'.tar.gz -C '.$filename_temp.' > /dev/null');
 			$manifestRaw = file_get_contents($filename_temp."/manifest.json");
 			if ($manifestRaw == false){
-				throw Exception('Error while reading manifest');				
+				throw new Exception('Error while reading manifest');				
 			}
 			$manifest = json_decode($manifestRaw);
 			if ($manifest == null){
-				throw Exception('Manifest is not valid JSON');
+				throw new Exception('Manifest is not valid JSON');
 			}
 			$res = $con->query("SELECT MAX(MOD_VERSIONREV) AS MAXREVISION FROM MODULES WHERE MOD_NAME = ? ;",array($manifest->name));
 			if ($set = $con->fetchObject($res)){
@@ -346,8 +346,8 @@
 			$keys  = $rsa->createKey(1024);
 			
 			$con = $this->establishConection();
-			$con->query("UPDATE CONFIG SET VAL= ? WHERE PARAM = ? ;", array($keys['publickey'],'publickey'));
-			$con->query("UPDATE CONFIG SET VAL= ? WHERE PARAM = ? ;", array($keys['privatekey'],'privatekey'));
+			$con->query("INSERT INTO CONFIG (VAL,PARAM) VALUES (?,?);", array($keys['publickey'],'publickey'));
+			$con->query("INSERT INTO CONFIG (VAL,PARAM) VALUES (?,?);", array($keys['privatekey'],'privatekey'));
 			return true;
 		}
 		
