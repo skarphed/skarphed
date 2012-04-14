@@ -154,7 +154,8 @@ class ServerPropertyWindow(gtk.Window):
         return self.par.getApplication()
     
     def cb_Add(self,widget=None,data=None):
-        InstanceWindow(self)
+        server = self.getApplication().getLocalObjectById(self.serverId)
+        InstanceWindow(self,server)
     
     def cb_Remove(self,widget=None,data=None):
         instance = self.getCurrentInstance()

@@ -40,7 +40,14 @@ class Server(GenericScovilleObject):
     LOADED_PROFILE = 1
     LOADED_SERVERDATA = 2
      
+    instanceTypesLoaded=False
+     
     def __init__(self):
+        if not Server.instanceTypesLoaded:
+            import scoville
+            import scoville_repo
+            Server.instanceTypesLoaded = True
+            
         GenericScovilleObject.__init__(self)
         self.state = self.STATE_OFFLINE
         self.ssh_loggedin = self.SSH_LOCKED

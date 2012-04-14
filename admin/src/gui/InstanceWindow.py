@@ -36,8 +36,12 @@ class InstanceWindow(gtk.Window):
     def __init__(self,parent, server=None, instance = None):
         gtk.Window.__init__(self)
         self.par = parent
-        self.serverId = server.getLocalId()
-        self.instanceId = instance.getLocalId()
+        self.serverId = None
+        if server is not None:
+            self.serverId = server.getLocalId()
+        self.instanceId = None
+        if instance is not None:
+            self.instanceId = instance.getLocalId()
         self.instanceTypes = self.getApplication().getInstanceTypes()
         
         self.set_title("Scoville Admin PRO :: Configure Instance")
@@ -124,7 +128,9 @@ class InstanceWindow(gtk.Window):
             dia.run()
             dia.destroy()
         
-        instance = self.getApplication().getLocalObjectById(self.instanceId)
+        instance = None
+        if self.instanceId is not None:
+            instance = self.getApplication().getLocalObjectById(self.instanceId)
         server = self.getApplication().getLocalObjectById(self.serverId)
         
         if instance is not None:

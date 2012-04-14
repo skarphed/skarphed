@@ -491,7 +491,7 @@ class Repository {
 		if(!is_array($modulemeta)){
 			$modulemeta = $core->parseObjectToArray($modulemeta);
 		}
-		$list = json_decode(file_get_contents($this->getHost().'proto.php?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta)))));
+		$list = json_decode(file_get_contents($this->getHost().'?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta)))));
 		if($list == null){
 			throw new ModuleException("DownloadModule: Could not download module");
 		}

@@ -166,6 +166,10 @@ class Database {
 		return $this->queryCache[$statement];
 	}
 	
+	public function getConnection(){
+		return $this->connection;
+	}
+	
 	public function query($module, $statement, $args=array(), $forceNoCache=false){
 		if(!$this->connection){
 			throw new DatabaseException('Database is not Connected');

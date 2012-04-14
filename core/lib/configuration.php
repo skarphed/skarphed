@@ -21,6 +21,8 @@
 ###########################################################
 namespace scv;
 
+include_once('core.php');
+
 class ConfigException extends \Exception{}
 
 class Config {
@@ -36,8 +38,10 @@ class Config {
 		$this->config_state = self::CONF_LOAD_LOCAL;
 	}
 	
-	public function initFromDb($database){
-		$res = $database->query($core,"SELECT PARAM,VAL FROM CONFIG");
+	public function initFromDb(){
+		$core = Core::getInstance();
+		$con = $core->getDB();
+		$res = $con->query($core,"SELECT PARAM,VAL FROM CONFIG");
 		while($set = $con->fetchObject($res)){
 			$this->configuration[$set->PARAM] = $set->VAL;
 		}
