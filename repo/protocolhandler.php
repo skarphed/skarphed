@@ -15,6 +15,7 @@
 		const UNREGISTER_DEVELOPER = 104;
 		const UPLOAD_MODULE = 105;
 		const DELETE_MODULE = 106;
+		const GET_DEVELOPERS = 107;
 		
 		public function __construct($json){
 			$this->subject = json_decode($json);
@@ -62,32 +63,101 @@
 					
 					
 				case ProtocolHandler::AUTHENTICATE:
-					if (!isset($this->subject->dxd)){
-						throw Exception('Password not set');
+					try{
+						if (!isset($this->subject->dxd)){
+							throw Exception('Password not set');
+						}
+						$res = $repository->authenticate((string)$this->subject->dxd);
+						return array("r"=>0);
+					} catch (Exception $e) {
+						return array("r"=>$e->getMessage());
 					}
-					$repository->authenticate($this->subject->dxd);
 					break;
+					
 				case ProtocolHandler::LOGOUT:
-					$repository->logout();
+					try{
+						$repository->logout();
+						return array("r"=>0);
+					} catch (Exception $e){
+						return array("r"=>$e->getMessage());
+					}
 					break;
+					
 				case ProtocolHandler::CHANGE_PASSWORD:
-					$repository->changePassword();
+					try{
+						if (!isset($this->subject->dxd)){
+							throw Exception('Password not set');
+						}
+						$repository->changePassword((string)$this->subject->dxd);
+						return array("r"=>0);
+					} catch (Exception $e){
+						return array("r"=>$e->getMessage());
+					}	
 					break;
+					
 				case ProtocolHandler::REGISTER_DEVELOPER:
-					$repository->registerDeveloper();
+					try{
+						if (!isset($this->subject->name) or 
+						    !isset($this->subject->fullName) or 
+							!isset($this->subject->publicKey)){
+								throw Exception ('Invalid Registrationdata');
+							}
+						$repository->registerDeveloper((string)$this->subject->name,
+													   (string)$this->subject->fullName,
+													   (string)$this->subject->publicKey);
+						return array("r"=>0);
+					} catch (Exception $e){
+						return array("r"=>$e->getMessage());
+					}
 					break;
+					
 				case ProtocolHandler::UNREGISTER_DEVELOPER:
-					$repository->unregisterDeveloper();
+					try{
+						if (!isset($this->subject->devId)){
+							throw Exception('Need DeveloperId');
+						}
+						$repository->unregisterDeveloper((int)$this->subject->devId);
+						return array("r"=>0);
+					} catch (Exception $e){
+						return array("r"=>$e->getMessage());
+					}
 					break;
+					
 				case ProtocolHandler::UPLOAD_MODULE:
-					$repository->registerDeveloper();
+					try{
+						if (!isset($this->subject->data) or 
+						    !isset($this->subject->signature)){
+						    	throw Exception('Not valid data');
+						    }
+						$repository->uploadModule((string)$this->subject->data,
+												  base64_decode($this->subject->signature));
+						return array("r"=>0);
+					} catch (Exception $e){
+						return array("r"=>$e->getMessage());
+					}
+					
 					break;
+					
 				case ProtocolHandler::DELETE_MODULE:
-					$repository->registerDeveloper();
+					try{
+						if (!isset($this->subject->moduleIdentifier)){
+							throw Exception('Need module to delete');			
+						}			
+						$repository->deleteModule((string)$this->subject->moduleIdentifier);
+						return array("r"=>0);
+					} catch (Exception $e){
+						return array("r"=>$e->getMessage());
+					}
 					break;
-				case ProtocolHandler::REGISTER_DEVELOPER:
-					$repository->registerDeveloper();
-					break;
+
+				case ProtocolHandler::GET_DEVELOPERS:
+					try{
+						$res = $repository->getDevelopers();
+						return array("r"=>$res);
+					} catch (Exception $e){
+						return array("r"=>$e->getMessage());
+					}
+					
 				default:
 					throw Exception('Unknown Commandidentifier: '.$this->subject->c);
 			}

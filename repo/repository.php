@@ -44,7 +44,7 @@
 		
 		public function getAllModules(){
 			$con = $this->establishConection();
-			$resultset = $con->query("select mod_displayname, mod_md5, mod_name, mod_versionmajor, mod_versionminor, mod_versionrev
+			$resultset = $con->query("select mod_displayname, mod_md5, mod_signature, mod_name, mod_versionmajor, mod_versionminor, mod_versionrev
 				from modules join (select mod_name vername 
 				,max(mod_versionmajor*10000000 
 				+mod_versionminor*100000 
@@ -62,14 +62,15 @@
 									 'version_major'=>$result["MOD_VERSIONMAJOR"],
 									 'version_minor'=>$result["MOD_VERSIONMINOR"],
 									 'revision'=>$result["MOD_VERSIONREV"],
-									 'md5'=>$result["MOD_MD5"]);		
+									 'md5'=>$result["MOD_MD5"],
+					        		 'signature'=>$result["MOD_SIGNATURE"]);		
 			}
 			return json_encode(array("r"=>$modules));
 		}
 		
 		public function getVersionsOfModule($module){
 			$con = $this->establishConection();
-			$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules 
+			$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_signature, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules 
 										where mod_name = ? ;",array($module->name));
 			$modules = array();
 			while($result = $con->fetchArray($resultset)){
@@ -78,7 +79,8 @@
 									 'version_major'=>$result["MOD_VERSIONMAJOR"],
 									 'version_minor'=>$result["MOD_VERSIONMINOR"],
 									 'revision'=>$result["MOD_VERSIONREV"],
-									 'md5'=>$result["MOD_MD5"]);			
+									 'md5'=>$result["MOD_MD5"],
+							    	 'signature'=>$result["MOD_SIGNATURE"]);			
 			}
 			return json_encode(array("r"=>$modules));
 		}
@@ -98,7 +100,7 @@
 					} while ($result = $con->fetchArray($resultset));
 					$resultset = $con->query("select dep_mod_dependson from dependencies where dep_mod_id in (" . $moduleids . ") and dep_mod_dependson not in (" . $moduleids . ")");
 				}
-				$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id in (".$moduleids.") and mod_id != ".$modid);
+				$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_signature, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id in (".$moduleids.") and mod_id != ".$modid);
 				$modules = array();
 				while($result = $con->fetchArray($resultset)){
 					$modules[] = array('name'=>$result["MOD_NAME"],
@@ -106,7 +108,8 @@
 										 'version_major'=>$result["MOD_VERSIONMAJOR"],
 										 'version_minor'=>$result["MOD_VERSIONMINOR"],
 										 'revision'=>$result["MOD_VERSIONREV"],
-										 'md5'=>$result["MOD_MD5"]);	
+										 'md5'=>$result["MOD_MD5"],
+							   			 'signature'=>$result["MOD_SIGNATURE"]);	
 				}
 				return json_encode(array("r"=>$modules));
 			}else{
@@ -129,7 +132,7 @@
 					} while ($result = $con->fetchArray($resultset));
 					$resultset = $con->query("select dep_mod_id from dependencies where dep_mod_dependson in (" . $moduleids . ") and dep_mod_id not in (" . $moduleids . ")");
 				}
-				$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id in (".$moduleids.") and mod_id != ".$modid);
+				$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_signature, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules where mod_id in (".$moduleids.") and mod_id != ".$modid);
 				$modules = array();
 				while($result = $con->fetchArray($resultset)){
 					$modules[] = array('name'=>$result["MOD_NAME"],
@@ -137,7 +140,8 @@
 										 'version_major'=>$result["MOD_VERSIONMAJOR"],
 										 'version_minor'=>$result["MOD_VERSIONMINOR"],
 										 'revision'=>$result["MOD_VERSIONREV"],
-										 'md5'=>$result["MOD_MD5"]);	
+										 'md5'=>$result["MOD_MD5"],
+							    		 'signature'=>$result["MOD_SIGNATURE"]);	
 				}
 				return json_encode(array("r"=>$modules));
 			}else{
@@ -147,7 +151,7 @@
 
 		public function downloadModule($module){
 			$con = $this->establishConection();
-			$resultset = $con->query("select mod_name, mod_data, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules 
+			$resultset = $con->query("select mod_name, mod_data, mod_displayname, mod_md5, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev, mod_signature from modules 
 									where mod_name = ? and mod_versionmajor = ? and mod_versionminor = ? and mod_versionrev = ? and mod_md5 = ? ;",
 									array($module->name, $module->version_major,$module->version_minor,$module->revision,$module->md5));
 			if($result = $con->fetchArray($resultset)) {
@@ -156,7 +160,8 @@
 						 	    'version_major'=>$result["MOD_VERSIONMAJOR"],
 							    'version_minor'=>$result["MOD_VERSIONMINOR"],
 							    'revision'=>$result["MOD_VERSIONREV"],
-							    'md5'=>$result["MOD_MD5"]);
+							    'md5'=>$result["MOD_MD5"],
+							    'signature'=>$result["MOD_SIGNATURE"]);
 				return json_encode(array("r"=>$module,"data"=>base64_encode($result["MOD_DATA"])));
 			}else{
 				throw new Exception('Module does not Exist: '.$module->name);
@@ -178,6 +183,7 @@
 		}
 		
 		public function logout(){
+			$this->checkAdmin();
 			$_SESSION['privileged'] = false;
 		}
 		
@@ -227,12 +233,13 @@
 			if(!$valid)
 				throw Exception('Signature verification Failed. Data has been manipulated.');
 			
-			mkdir(hash('md5',$signature));
-			$file = fopen($signature.'.tar.gz','w');
+			$filename_temp = hash('md5',$signature);
+			mkdir($filename_temp);
+			$file = fopen($filename_temp.'.tar.gz','w');
 			fwrite($file,$data);
 			fclose();
-			system('tar xfz '.$signature.'.tar.gz -C '.$signature.' > /dev/null');
-			$manifestRaw = file_get_contents($signature."/manifest.json");
+			system('tar xfz '.$filename_temp.'.tar.gz -C '.$filename_temp.' > /dev/null');
+			$manifestRaw = file_get_contents($filename_temp."/manifest.json");
 			if ($manifestRaw == false){
 				throw Exception('Error while reading manifest');				
 			}
@@ -248,6 +255,14 @@
 			}
 			$mod_id = $con->getSeqNext("MOD_GEN");
 			$md5 = hash('md5',$data);
+
+			$rsa = new Crypt_RSA();
+			$rsa->loadKey($this->getPrivateKey());
+			$rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
+			$rsa->setHash('sha256');
+			$rsa->setMGFHash('sha256');
+			$repo_signature = $rsa->sign($data);
+			
 			$blobid = $con->createBlob($data);
 			$con->query("INSERT INTO MODULES (MOD_ID, MOD_NAME, 
 											MOD_DISPLAYNAME, 
@@ -255,13 +270,15 @@
 											MOD_VERSIONMINOR,
 											MOD_VERSIONREV,
 											MOD_MD5,
+											MOD_SIGNATURE,
 											MOD_DATA)
-									VALUES (?,?,?,?,?,?,?,?)",
+									VALUES (?,?,?,?,?,?,?,?,?)",
 									array($mod_id, $manifest->name,
 										  $manifest->hrname, $manifest->version_major,
-										  $manifest->version_minor, $revision, $md5, $blobid));
-			$this->rrmdir($signature);
-			unlink($signature.'.tar.gz');
+										  $manifest->version_minor, $revision, $md5,
+										  $repo_signature, $blobid));
+			$this->rrmdir($filename_temp);
+			unlink($filename_temp.'.tar.gz');
 			return true;
 		}
 		
@@ -306,6 +323,50 @@
 			$con->query("UPDATE DEVELOPERS SET DEV_PUBLICKEY = '' WHERE DEV_ID = ? ;");
 			
 			return true;	
+		}
+		
+		public function getDevelopers(){
+			$this->checkAdmin();
+			
+			$con = $this->establishConection();
+			$res = $con->query("SELECT DEV_ID, DEV_NAME, DEV_FULLNAME FROM DEVELOPERS ;");
+			$ret = array();
+			while($set = $con->fetchObject($res)){
+				$ret[] = array('devId'=>$set->DEV_ID,
+							   'name'=>$set->DEV_NAME,
+							   'fullName'=>$set->DEV_FULLNAME);
+			}
+			return json_encode($ret);
+		}
+		
+		public function createOwnKeypair(){
+			include_once('Crypt/RSA.php');
+			
+			$rsa = new Crypt_RSA();
+			$keys  = $rsa->createKey(1024);
+			
+			$con = $this->establishConection();
+			$con->query("UPDATE CONFIG SET VAL= ? WHERE PARAM = ? ;", array($keys['publickey'],'publickey'));
+			$con->query("UPDATE CONFIG SET VAL= ? WHERE PARAM = ? ;", array($keys['privatekey'],'privatekey'));
+			return true;
+		}
+		
+		private function getPublicKey(){
+			$con = $this->establishConection();
+			$res = $con->query("SELECT VAL FROM CONFIG WHERE PARAM = 'publickey';");
+			if ($set = $con->fetchObject($res)){
+				return $set->VAL;
+			}
+			return null;
+		}
+		
+		private function getPrivateKey(){
+			$con = $this->establishConection();
+			$res = $con->query("SELECT VAL FROM CONFIG WHERE PARAM = 'privatekey';");
+			if ($set = $con->fetchObject($res)){
+				return $set->VAL;
+			}
+			return null;
 		}
 	}
 ?>

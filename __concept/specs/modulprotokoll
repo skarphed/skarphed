@@ -105,7 +105,37 @@ Ueberlegungen:
 Das Repo muss sicherstellen, dass Module keine zyklischen abhaengigkeiten 
 Aufbauen.
 
-
+>>100 Authentication:
+  Admin -> {'c':100, 'dxd':'password'}
+  Repo ->  {'r':errorcode}
+  
+>>101 Logout:
+  Admin -> {'c':101}
+  Repo ->  {'r':errorcode}
+  
+>>102 Change Password
+  Admin -> {'c':102, 'dxd':'password'}
+  Repo ->  {'r':errorcode}
+  
+>>103 Register Developer
+  Admin -> {'c':103, 'name':'nameOfDeveloper', 'fullName':'fullNameOfDeveloper','publicKey':'publickey'}
+  Repo ->  {'r':errorcode}
+  
+>>104 Unregister Developer
+  Admin -> {'c':104, 'devId':developerId}
+  Repo ->  {'r':errorcode}
+  
+>>105 Upload Module
+  Coder -> {'c':105, 'data': data, 'signature':signature}
+  Repo ->  {'r':errorcode}
+  
+>>106 Delete Module
+  Admin -> {'c':106, 'moduleIdentifier': 'moduleIdentifier'}
+  Repo ->  {'r':errorcode}
+  
+>>107 Get Developers
+  Admin -> {'c':107}
+  Repo ->  {'r': [{'devId':X, 'name':'Name','fullName':'fullname'}, {dev ..} ]}
 Die Command-Codes nochmal im Überblick
 
 
