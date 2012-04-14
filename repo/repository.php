@@ -368,5 +368,9 @@
 			}
 			return null;
 		}
+		
+		public function getPublicKeyForPage(){
+			return $this->getPublicKey();
+		}
 	}
 ?>
