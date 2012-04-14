@@ -42,23 +42,23 @@
 			$repository = Repository::getInstance();
 			switch($this->subject->c){
 				case ProtocolHandler::GET_ALL_MODULES:
-					$repository->getAllModules();
+					$this->result = $repository->getAllModules();
 					break;
 				case ProtocolHandler::GET_VERSIONS_OF_MODULE:
 					$this->verifyModule();
-					$repository->getVersionsOfModule($this->subject->m);
+					$this->result =$repository->getVersionsOfModule($this->subject->m);
 					break;
 				case ProtocolHandler::RESOLVE_DEPENDENCIES_DOWNWARDS:
 					$this->verifyModule();
-					$repository->resolveDependenciesDownwards($this->subject->m);
+					$this->result = $repository->resolveDependenciesDownwards($this->subject->m);
 					break;
 				case ProtocolHandler::RESOLVE_DEPENDENCIES_UPWARDS:
 					$this->verifyModule();
-					$repository->resolveDependenciesUpwards($this->subject->m);
+					$this->result = $repository->resolveDependenciesUpwards($this->subject->m);
 					break;
 				case ProtocolHandler::DOWNLOAD_MODULE:
 					$this->verifyModule();
-					$repository->downloadModule($this->subject->m);
+					$this->result = $repository->downloadModule($this->subject->m);
 					break;
 					
 					
@@ -67,18 +67,21 @@
 						throw Exception('Password not set');
 					}
 					$res = $repository->authenticate((string)$this->subject->dxd);
-					return array("r"=>0);
+					$this->result = array("r"=>0);
+					break;
 					
 				case ProtocolHandler::LOGOUT:
 					$repository->logout();
-					return array("r"=>0);
+					$this->result = array("r"=>0);
+					break;
 					
 				case ProtocolHandler::CHANGE_PASSWORD:
 					if (!isset($this->subject->dxd)){
 						throw Exception('Password not set');
 					}
 					$repository->changePassword((string)$this->subject->dxd);
-					return array("r"=>0);
+					$this->result = array("r"=>0);
+					break;
 					
 				case ProtocolHandler::REGISTER_DEVELOPER:
 					if (!isset($this->subject->name) or 
@@ -89,14 +92,16 @@
 					$repository->registerDeveloper((string)$this->subject->name,
 												   (string)$this->subject->fullName,
 												   (string)$this->subject->publicKey);
-					return array("r"=>0);
+					$this->result = array("r"=>0);
+					break;
 					
 				case ProtocolHandler::UNREGISTER_DEVELOPER:
 					if (!isset($this->subject->devId)){
 						throw Exception('Need DeveloperId');
 					}
 					$repository->unregisterDeveloper((int)$this->subject->devId);
-					return array("r"=>0);
+					$this->result = array("r"=>0);
+					break;
 					
 				case ProtocolHandler::UPLOAD_MODULE:
 					if (!isset($this->subject->data) or 
@@ -105,18 +110,21 @@
 					    }
 					$repository->uploadModule((string)$this->subject->data,
 											  base64_decode($this->subject->signature));
-					return array("r"=>0);
+					$this->result = array("r"=>0);
+					break;
 					
 				case ProtocolHandler::DELETE_MODULE:
 					if (!isset($this->subject->moduleIdentifier)){
 						throw Exception('Need module to delete');			
 					}			
 					$repository->deleteModule((string)$this->subject->moduleIdentifier);
-					return array("r"=>0);
+					$this->result = array("r"=>0);
+					break;
 	
 				case ProtocolHandler::GET_DEVELOPERS:
 					$res = $repository->getDevelopers();
-					return array("r"=>$res);
+					$this->result = array("r"=>$res);
+					break;
 					
 				default:
 					throw Exception('Unknown Commandidentifier: '.$this->subject->c);
