@@ -49,7 +49,7 @@ class Scoville_repo(Instance):
         self.state = self.STATE_OFFLINE
         self.loggedin = self.SCV_LOCKED
         self.load = self.LOADED_NONE
-        self.data = {'modules':[], 'devlopers':[]}
+        self.data = {'modules':[], 'developers':[]}
         
         self.url = url
         self.username = username
@@ -94,7 +94,10 @@ class Scoville_repo(Instance):
     
     def loadModules(self):
         ScovilleRepository(self, {'c':1}, self.loadModulesCallback).start()
-
+    
+    def getModules(self):
+        return self.data['modules']
+    
     def loadDevelopersCallback(self, result):
         result = result['r']
         developernames = [d['name'] for d in self.data['developers']]
@@ -104,8 +107,11 @@ class Scoville_repo(Instance):
         self.updated()       
     
     def loadDevelopers(self):
-        ScovilleRepository(self, {'c':107}, self.loadModulesCallback).start()
-        
+        ScovilleRepository(self, {'c':107}, self.loadDevelopersCallback).start()
+    
+    def getDevelopers(self):
+        return self.data['developers']
+    
     def establishConnections(self):
         self.authenticate()
         self.loadDevelopers()
@@ -130,8 +136,12 @@ class Scoville_repo(Instance):
     def moduleCallback(self,result):
         self.loadModules()
     
-    def uploadModule(self, data):
+    def uploadModule(self, filepath):
         privatekey = self.getApplication().activeProfile.getPrivateKey()
+        
+        moduleFile = open(filepath,'r')
+        data = moduleFile.read()
+        moduleFile.close()
         
         key = RSA.importKey(privatekey)
         dataHash = SHA256.new(data)
@@ -139,7 +149,7 @@ class Scoville_repo(Instance):
         signature = signer.sign(dataHash)
         signature = base64.encodestring(signature)
         
-        ScovilleRepository(self, {'c':105,'data':data, 'signature':signature}, self.moduleCallback).start()
+        ScovilleRepository(self, {'c':105,'data':base64.encodestring(data), 'signature':signature}, self.moduleCallback).start()
         
     def deleteModule(self,moduleName):
         ScovilleRepository(self, {'c':106,'moduleIdentifier':moduleName}, self.moduleCallback).start()

@@ -39,9 +39,6 @@ class Scoville_repoPage (GenericObjectPage):
         
         self.table = gtk.Table(2,4,False)
         
-        
-        
-        
         self.adminFrame= PageFrame(self, "Repository", IconStock.REPO)
         self.adminHBox = gtk.HBox()
         self.adminHBoxDummy = gtk.Label("")
@@ -131,14 +128,22 @@ class Scoville_repoPage (GenericObjectPage):
         pass
     
     def cb_Add(self,widget=None,data=None):
-        pass
+        name = self.developerNameEntry.get_text()
+        fullName = self.developerFullnameEntry.get_text()
+        textBuffer = self.developerPublicKeyEntry.get_buffer()
+        publicKey = textBuffer.get_text(textBuffer.get_start_iter(),textBuffer.get_end_iter())
+        
+        repo = self.getApplication().getLocalObjectById(self.repoId)
+        repo.registerDeveloper(name,fullName,publicKey)
+        
     
     def fileChosen(self, widget=None, data=None):
         self.fileToUpload = widget.get_filename()
     
     
     def uploadModule(self,widget=None,data=None):
-        pass
+        repo = self.getApplication().getLocalObjectById(self.repoId)
+        repo.uploadModule(self.fileToUpload)
     
     def getPar(self):
         return self.par
@@ -165,10 +170,11 @@ class ModuleList(gtk.ScrolledWindow):
         self.col.add_attribute(self.ren_icon, 'pixbuf',0)
         self.col.add_attribute(self.ren_text, 'text', 1)
         self.treeview.append_column(self.col)
+        self.add(self.treeview)
         
         repo.addCallback(self.render)
         self.show_all()
-        #self.render()
+        self.render()
         
     def render(self):
         repo = self.getApplication().getLocalObjectById(self.repoId)
@@ -204,10 +210,11 @@ class DeveloperList(gtk.ScrolledWindow):
         self.col.add_attribute(self.ren_icon, 'pixbuf',0)
         self.col.add_attribute(self.ren_text, 'text', 1)
         self.treeview.append_column(self.col)
+        self.add(self.treeview)
         
         repo.addCallback(self.render)
         self.show_all()
-        #self.render()
+        self.render()
         
     def render(self):
         repo = self.getApplication().getLocalObjectById(self.repoId)
@@ -215,7 +222,7 @@ class DeveloperList(gtk.ScrolledWindow):
         
         self.store.clear()
         for developer in developers:
-            self.store.append((IconStock.MODULE,developer['fullName']))
+            self.store.append((IconStock.USER,developer['fullName']))
         
         
     def getPar(self):
