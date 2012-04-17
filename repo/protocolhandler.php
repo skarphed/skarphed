@@ -129,7 +129,7 @@
 					    !isset($this->subject->signature)){
 					    	throw new Exception('Not valid data');
 					    }
-					$repository->uploadModule((string)$this->subject->data,
+					$repository->uploadModule(base64_decode($this->subject->data),
 											  base64_decode($this->subject->signature));
 					$this->result = json_encode(array("r"=>0));
 					break;

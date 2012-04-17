@@ -84,7 +84,7 @@
 									 'version_minor'=>$result["MOD_VERSIONMINOR"],
 									 'revision'=>$result["MOD_VERSIONREV"],
 									 'md5'=>$result["MOD_MD5"],
-					        		 'signature'=>$result["MOD_SIGNATURE"]);		
+					        		 'signature'=>base64_encode($result["MOD_SIGNATURE"]));		
 			}
 			return json_encode(array("r"=>$modules));
 		}
@@ -245,7 +245,7 @@
 			$valid = false;
 			$developerId = null;
 			while($set = $con->fetchObject($res)){
-				$rsa->loadKey($set->DEV_PULICKEY);
+				$rsa->loadKey($set->DEV_PUBLICKEY);
 				$valid = $rsa->verify($data,$signature);
 				if ($valid)
 					$developerId = $set->DEV_ID;
@@ -258,7 +258,7 @@
 			mkdir($filename_temp);
 			$file = fopen($filename_temp.'.tar.gz','w');
 			fwrite($file,$data);
-			fclose();
+			fclose($file);
 			system('tar xfz '.$filename_temp.'.tar.gz -C '.$filename_temp.' > /dev/null');
 			$manifestRaw = file_get_contents($filename_temp."/manifest.json");
 			if ($manifestRaw == false){
@@ -329,10 +329,11 @@
 		public function registerDeveloper($name, $fullname, $publickey){
 			$this->checkAdmin();
 			
+			$con = $this->establishConection();
 			$devId = $con->getSeqNext("DEV_GEN");
 			
 			$con = $this->establishConection();
-			$con->query("INSERT INTO DEVELOPERS (DEV_ID, DEV_NAME, DEV_FULLNAME, DEV_PUBLICKEY)
+			$con->query("INSERT INTO DEVELOPER (DEV_ID, DEV_NAME, DEV_FULLNAME, DEV_PUBLICKEY)
 						 VALUES (?,?,?,?) ;", array($devId, $name, $fullname, $publickey));
 			return true;
 		}
@@ -341,7 +342,7 @@
 			$this->checkAdmin();
 			
 			$con = $this->establishConection();
-			$con->query("UPDATE DEVELOPERS SET DEV_PUBLICKEY = '' WHERE DEV_ID = ? ;");
+			$con->query("UPDATE DEVELOPER SET DEV_PUBLICKEY = '' WHERE DEV_ID = ? ;");
 			
 			return true;	
 		}
@@ -350,14 +351,14 @@
 			$this->checkAdmin();
 			
 			$con = $this->establishConection();
-			$res = $con->query("SELECT DEV_ID, DEV_NAME, DEV_FULLNAME FROM DEVELOPERS ;");
+			$res = $con->query("SELECT DEV_ID, DEV_NAME, DEV_FULLNAME FROM DEVELOPER ;");
 			$ret = array();
 			while($set = $con->fetchObject($res)){
 				$ret[] = array('devId'=>$set->DEV_ID,
 							   'name'=>$set->DEV_NAME,
 							   'fullName'=>$set->DEV_FULLNAME);
 			}
-			return json_encode($ret);
+			return $ret;
 		}
 		
 		public function createOwnKeypair(){
