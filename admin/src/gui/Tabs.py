@@ -26,10 +26,34 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-import obj_pages
 import IconStock
 
 from data.Generic import GenericObjectStoreException
+
+class PageGenerator(object):
+    def __init__(self,par,obj):
+        self.obj = obj
+        self.par = par
+        
+    def getInstanceOfObject(self,obj):
+        try:
+            while True:
+                if hasattr(obj,'getInstanceType'):
+                    return obj.getInstanceType()
+                else:
+                    obj = obj.getPar()
+        except Exception,e:
+            print type(e)
+            return None
+    
+    def createPage(self):
+        instanceType = self.getInstanceOfObject(self.obj)
+        page = None
+        if instanceType is not None:
+            exec "from "+instanceType.instanceTypeName+"."+self.obj.__class__.__name__+\
+             " import "+self.obj.__class__.__name__+"Page"
+            exec "page = "+self.obj.__class__.__name__+"Page(self.par, self.obj)"            
+        return page
 
 class Tabs(gtk.Notebook):
     def __init__(self,parent):
@@ -97,7 +121,7 @@ class TabPage(gtk.VBox):
         self.objId = obj.getLocalId()
         self.brotkasten = gtk.HBox()
         self.breadcrumbs = ButtonBreadCrumbs(self)
-        self.body = obj_pages.generatePageForObject(self,obj)
+        self.body = PageGenerator(self,obj).createPage()
         self.brotkasten.pack_start(self.breadcrumbs,False)
         self.pack_start(self.brotkasten,False)
         self.pack_start(self.body,True)

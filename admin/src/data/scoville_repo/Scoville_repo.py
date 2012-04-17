@@ -134,9 +134,9 @@ class Scoville_repo(Instance):
         privatekey = self.getApplication().activeProfile.getPrivateKey()
         
         key = RSA.importKey(privatekey)
-        hash = SHA256.new(data)
+        dataHash = SHA256.new(data)
         signer = PKCS1_v1_5.new(key)
-        signature = signer.sign(hash)
+        signature = signer.sign(dataHash)
         signature = base64.encodestring(signature)
         
         ScovilleRepository(self, {'c':105,'data':data, 'signature':signature}, self.moduleCallback).start()

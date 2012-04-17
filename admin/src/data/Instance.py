@@ -41,6 +41,8 @@ class Instance(GenericScovilleObject):
         pass
     def setPassword(self,password):
         pass
+    def getInstanceType(self):
+        return InstanceType(self.instanceTypeName, self.displayName)
     
 class InstanceType():
     def __init__(self, typename, displayname):
