@@ -239,7 +239,7 @@ class class_scvRpc {
 	$repos = $moduleM->getRepositories();
 	if (count($repos) > 0){
 		$repo = $repos[0];
-		return json_encode(array('id'=>$repo->getId(),'ip'=>$repo->getIp(),'port'=>$repo->getPort(),'name'=>$repo->getName()));
+		return array('id'=>$repo->getId(),'ip'=>$repo->getIp(),'port'=>$repo->getPort(),'name'=>$repo->getName());
 	}else{
 		return null;
 	}

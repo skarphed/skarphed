@@ -22,6 +22,7 @@
 namespace scv;
 
 include_once "core.php";
+include_once "Crypt/RSA.php";
 class ModuleException extends \Exception{}
 
 interface IModule{
@@ -432,6 +433,7 @@ class Repository {
 	private $ip = null;
 	private $port = null;
 	private $lastupdate = null;
+	private $publickey = null;
 	
 	public function __construct($id, $name, $ip, $port, $lastupdate) {
 		$this->id = (int)$id;
@@ -439,6 +441,7 @@ class Repository {
 		$this->ip = (string)$ip;
 		$this->port = (int)$port;
 		$this->lastupdate = $lastupdate;
+		$this->publickey = $this->loadPublicKey();
 	}
 	
 	public function getIp(){
@@ -457,6 +460,10 @@ class Repository {
 		return $this->port;
 	}
 	
+	public function getPublicKey(){
+		return $this->publickey;
+	}
+	
 	private function getHost() {
 		if($this->port == 80) {
 			$host = "http://{$this->ip}/";
@@ -468,6 +475,11 @@ class Repository {
 	
 	public function getAllModules() {
 		$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>1))));
+		return $list->r;
+	}
+	
+	public function loadPublicKey() {
+		$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>6))));
 		return $list->r;
 	}
 	
@@ -486,6 +498,16 @@ class Repository {
 		return $list->r;
 	}
 	
+	public function verifyModule($data,$signature){
+		$decoded_signature = base64_decode($signature);
+		$rsa = new Crypt_RSA();
+		$rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
+		$rsa->setHash('sha256');
+		$rsa->setMGFHash('sha256');
+		$rsa->loadKey($this->getPublicKey());
+		return $rsa->verify($data,$decoded_signature);
+	}
+	
 	public function downloadModule($modulemeta){
 		$core = Core::getInstance();
 		if(!is_array($modulemeta)){
@@ -499,7 +521,11 @@ class Repository {
 		if(!$modulefile){
 			throw new ModuleException("DownloadModule: Could not write module to harddrive");
 		}
-		fwrite($modulefile,base64_decode($list->data));
+		$data = base64_decode($list->data);
+		if(!$this->verifyModule($data, $modulemeta->signature)){
+			throw new ModuleException("Verify Module: The module verification failed.");
+		}
+		fwrite($modulefile,$data);
 		fclose($modulefile);
 	}
 	
@@ -530,8 +556,8 @@ class Repository {
 		}else{
 			throw new RepositoryException("There are two, even more or negative repositories. Shit's massively fucked up here!") ;
 		}
-		$stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE ) VALUES (?,?,?,?,?) MATCHING (REP_ID);";
-		$db->query($core,$stmnt,array($this->id,$this->name,$this->ip,$this->port,$this->lastupdate));
+		$stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (?,?,?,?,?,?) MATCHING (REP_ID);";
+		$db->query($core,$stmnt,array($this->id,$this->name,$this->ip,$this->port,$this->lastupdate, $this->publickey));
 		return;
 	}
 
