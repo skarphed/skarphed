@@ -499,8 +499,9 @@ class Repository {
 	}
 	
 	public function verifyModule($data,$signature){
+		error_log($signature);
 		$decoded_signature = base64_decode($signature);
-		$rsa = new Crypt_RSA();
+		$rsa = new \Crypt_RSA();
 		$rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
 		$rsa->setHash('sha256');
 		$rsa->setMGFHash('sha256');
@@ -513,7 +514,9 @@ class Repository {
 		if(!is_array($modulemeta)){
 			$modulemeta = $core->parseObjectToArray($modulemeta);
 		}
-		$list = json_decode(file_get_contents($this->getHost().'?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta)))));
+		$response = file_get_contents($this->getHost().'?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta))));
+		error_log($response);
+		$list = json_decode($response);
 		if($list == null){
 			throw new ModuleException("DownloadModule: Could not download module");
 		}
@@ -522,7 +525,7 @@ class Repository {
 			throw new ModuleException("DownloadModule: Could not write module to harddrive");
 		}
 		$data = base64_decode($list->data);
-		if(!$this->verifyModule($data, $modulemeta->signature)){
+		if(!$this->verifyModule($data, $list->r->signature)){
 			throw new ModuleException("Verify Module: The module verification failed.");
 		}
 		fwrite($modulefile,$data);

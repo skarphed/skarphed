@@ -283,7 +283,6 @@
 			$rsa->setHash('sha256');
 			$rsa->setMGFHash('sha256');
 			$repo_signature = base64_encode($rsa->sign($data));
-			error_log($repo_signature);
 			
 			$blobid = $con->createBlob($data);
 			$con->query("INSERT INTO MODULES (MOD_ID, MOD_NAME, 
