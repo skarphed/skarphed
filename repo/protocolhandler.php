@@ -86,6 +86,7 @@
 					break;
 				case ProtocolHandler::GET_PUBLICKEY:
 					$this->result = json_encode(array("r"=>$repository->getPublicKeyForScoville()));
+					break;
 					
 				case ProtocolHandler::AUTHENTICATE:
 					if (!isset($this->subject->dxd)){
