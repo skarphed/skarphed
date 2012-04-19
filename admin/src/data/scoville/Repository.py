@@ -25,22 +25,35 @@
 from data.Generic import GenericScovilleObject
 
 class Repository(GenericScovilleObject):
-    def __init__(self,parent, data = {}):
+    def __init__(self,parent,host,port,name, data = {}):
         GenericScovilleObject.__init__(self)
         self.par = parent
         self.data = data
-        self.ip = '192.168.0.23'
+        self.host = host
+        if port is not None:
+            self.port = port
+        else:
+            self.port = 80
+        self.name = name
         self.updated()
     
     def getName(self):
-        if self.ip is not None:
-            return "Repository [%s]"%self.ip
+        if self.host is not None and self.name is not None:
+            return self.name+" ["+self.host+"]"
+        elif self.host is not None:
+            return "Repository ["+self.host+"]"
         else:
             return "(No Repository)"
     
     def refresh(self,data):
         self.data = data
         self.updated()
+    
+    def getURL(self):
+        if self.host is not None and self.port is not None:
+            return self.host+":"+str(self.port)
+        else:
+            return ""
     
     def getPar(self):
         return self.par

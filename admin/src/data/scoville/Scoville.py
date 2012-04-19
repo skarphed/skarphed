@@ -126,9 +126,7 @@ class Scoville(Instance):
         if True: #'scoville.sites.view' in self.serverRights
             self.sites = Sites(self)
             self.addChild(self.sites)
-        if 'scoville.modules.install' in self.serverRights or 'scoville.modules.uninstall' in self.serverRights:
-            self.repo = Repository(self)
-            self.addChild(self.repo)
+        self.loadRepository()
         if True: #'scoville.template.modify' in self.serverRights
             self.loadTemplate()
         if True: #'scoville.operation.modify' in self.serverRights
@@ -176,6 +174,23 @@ class Scoville(Instance):
     def uploadTemplateCallback(self,res):
         if res != ScovilleUpload.RESULT_ERROR:
             self.loadTemplate()
+    
+    def getRepository(self):
+        return self.repo
+    
+    def loadRepositoryCallback(self,json):
+        repo = Repository(self,json['ip'],json['port'],json['name'])
+        self.repo = repo
+        self.updated()
+    
+    def loadRepository(self):
+        self.getApplication().doRPCCall(self,self.loadRepositoryCallback, "getRepository")
+    
+    def setRepositoryCallback(self,json):
+        self.loadRepository()
+        
+    def setRepository(self,host,port):
+        self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [host,port])
     
     def uploadTemplate(self, filepath):
         form = MultiPartForm()
