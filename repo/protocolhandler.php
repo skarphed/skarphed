@@ -23,12 +23,15 @@
 	include_once('repository.php');
 	
 	class ProtocolHandler  {
+		//Calls From Scoville to Repository
 		const GET_ALL_MODULES = 1;
 		const GET_VERSIONS_OF_MODULE = 2;
 		const RESOLVE_DEPENDENCIES_DOWNWARDS = 3;
 		const RESOLVE_DEPENDENCIES_UPWARDS = 4;
 		const DOWNLOAD_MODULE = 5;
+		const GET_PUBLICKEY = 6;
 		
+		//Calls from AdminGUI to Repository
 		const AUTHENTICATE = 100;
 		const LOGOUT = 101;
 		const CHANGE_PASSWORD = 102;
@@ -81,7 +84,8 @@
 					$this->verifyModule();
 					$this->result = $repository->downloadModule($this->subject->m);
 					break;
-					
+				case ProtocolHandler::GET_PUBLICKEY:
+					$this->result = json_encode(array("r"=>$repository->getPublicKeyForScoville()));
 					
 				case ProtocolHandler::AUTHENTICATE:
 					if (!isset($this->subject->dxd)){

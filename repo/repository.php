@@ -395,5 +395,9 @@
 		public function getPublicKeyForPage(){
 			return $this->getPublicKey();
 		}
+		
+		public function getPublicKeyForScoville(){
+			return $this->getPublicKey();
+		}
 	}
 ?>
