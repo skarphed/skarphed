@@ -144,6 +144,14 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.deleteRole)
         self.deleteRole.connect("activate",self.cb_deleteRole)
         
+        updateModulesI = gtk.Image()
+        updateModulesI.set_from_pixbuf(IconStock.MODULE_UPDATEABLE)
+        self.updateModules = gtk.ImageMenuItem()
+        self.updateModules.set_image(updateModulesI)
+        gtk.MenuItem.__init__(self.updateModules,"Update Modules")
+        self.append(self.updateModules)
+        self.updateModules.connect("activate",self.cb_updateModules)
+        
         self.show_all()
         
     def hide_buttons(self):
@@ -192,6 +200,8 @@ class TreeContextMenu(gtk.Menu):
     def cb_deleteRole(self, data=None):
         self.currentObject.delete()
     
+    def cb_updateModules(self, data=None):
+        self.currentObject.updateModules()
     
     def popup(self,obj,button,time):
         self.hide_buttons()
@@ -220,6 +230,7 @@ class TreeContextMenu(gtk.Menu):
             self.createRole.set_visible(True)
         elif itemtype == "Scoville": # HERE BE DRAGONS
             self.removeInstance.set_visible(True)
+            self.updateModules.set_visible(True)
         elif itemtype == "Site":
             self.createMenu.set_visible(True)
         elif itemtype == "Menu":

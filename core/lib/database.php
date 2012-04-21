@@ -205,30 +205,56 @@ class Database {
 		ibase_commit();
 	}
 	
+	public function createTablesForModule($tables, $modId){
+		foreach ($tables as $table) {
+			$this->createTableForModule($table, $modId);
+		}
+	}
+	
+	public function updateTablesForModule($tables, $modId){
+		$res = $this->query($core,"SELECT MDT_ID, MDT_NAME FROM MODULETABLES WHERE MDT_MOD_ID = ?",array($modId));
+		$existingTables = array();
+		while($set = $this->fetchObject($res)){
+			$existingTables[] = array("id"=>$set->MDT_ID,"name"=>$set->MDT_NAME);
+		}
+		foreach ($tables as $table){
+			$found = false;
+			foreach ($existingTables as $i=>$existingTables){
+				if ($existingTable['name'] == $table->name){
+					$found = true;
+					unset($existingTables[$i]);
+				}
+			}
+			if (!$found){
+				$this->createTableForModule($table, $modId);
+			}else{
+				//TODO: implement changed columns
+			}
+			
+		}
+		foreach($existingTables as $existingTable){
+			$this->removeTableForModule($existingTable, $modId)
+		}
+		
+	}
+	
 	/**
 	 * This function creates the tables necessary to run a module
 	 * by interpreting the objectlist $table
 	 */
 	
-	public function createTableForModule($tables, $modId){
+	private function createTableForModule($tables, $modId){
 		//TODO: Implement Sequence
-		foreach ($tables as $table) {
-			$newTableId = $this->getSeqNext("MDT_GEN"); // Generiere TabellenId
-			$newTableString = $this->generateZeros(6-strlen((string)$newTableId)).(string)$newTableId; //Mache string im stile '001234'
-			$statement = "CREATE TABLE TAB_$newTableString ( MOD_INSTANCE_ID INT ";
-			$autoincrement = null;
-			foreach($table->columns as $column){
-				$statement.=", $column->name $column->type ";
-				if(isset($column->primary)) {
-					if($column->primary == true) {
-						$statement.="primary key ";
-					} else {
-						if(isset($column->unique)) {
-							if($column->unique == true) {
-								$statement.="unique ";
-							}
-						}
-					}
+		
+		$newTableId = $this->getSeqNext("MDT_GEN"); // Generiere TabellenId
+		$newTableString = $this->generateZeros(6-strlen((string)$newTableId)).(string)$newTableId; //Mache string im stile '001234'
+		$statement = "CREATE TABLE TAB_$newTableString ( MOD_INSTANCE_ID INT ";
+		$autoincrement = null;
+		foreach($table->columns as $column){
+			$statement.=", $column->name $column->type ";
+			if(isset($column->primary)) {
+				if($column->primary == true) {
+					$statement.="primary key ";
 				} else {
 					if(isset($column->unique)) {
 						if($column->unique == true) {
@@ -236,44 +262,51 @@ class Database {
 						}
 					}
 				}
-				if(isset($column->notnull)) {
-					if($column->notnull == true) {
-						$statement.="not null ";
-					}
-				}
-				if(isset($column->autoincrement)) {
-					if($column->autoincrement == true) {
-						if($autoincrement == null) {
-							$autoincrement = $column->name;
-						}
+			} else {
+				if(isset($column->unique)) {
+					if($column->unique == true) {
+						$statement.="unique ";
 					}
 				}
 			}
-			$statement.=");";
-			$updateModuleTables = ibase_prepare("INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?);");
-			ibase_execute($updateModuleTables, $newTableId, $table->name, $modId);
-			ibase_query($statement);
-			if($autoincrement != null) {
-				$statement = "CREATE SEQUENCE SEQ_$newTableString;";
-				ibase_query($statement);
-				$statement = "SET TERM ^ ;
-				CREATE TRIGGER TRG_AUTO_$newTableString FOR TAB_$newTableString
-				ACTIVE BEFORE INSERT POSITION 0
-				AS
-					DECLARE VARIABLE tmp DECIMAL(18,0);
-				BEGIN
-					IF (NEW.$autoincrement IS NULL) THEN
-						NEW.$autoincrement = GEN_ID(, 1);
-					ELSE BEGIN
-						tmp = GEN_ID(SEQ_$newTableString, 0);
-						IF (tmp < new.$autoincrement) THEN
-							tmp = GEN_ID(SEQ_$newTableString, new.$autoincrement - tmp);
-					END
-				END^
-				SET TERM ; ^";
-				ibase_query($statement);
+			if(isset($column->notnull)) {
+				if($column->notnull == true) {
+					$statement.="not null ";
+				}
+			}
+			if(isset($column->autoincrement)) {
+				if($column->autoincrement == true) {
+					if($autoincrement == null) {
+						$autoincrement = $column->name;
+					}
+				}
 			}
 		}
+		$statement.=");";
+		$updateModuleTables = ibase_prepare("INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?);");
+		ibase_execute($updateModuleTables, $newTableId, $table->name, $modId);
+		ibase_query($statement);
+		if($autoincrement != null) {
+			$statement = "CREATE SEQUENCE SEQ_$newTableString;";
+			ibase_query($statement);
+			$statement = "SET TERM ^ ;
+			CREATE TRIGGER TRG_AUTO_$newTableString FOR TAB_$newTableString
+			ACTIVE BEFORE INSERT POSITION 0
+			AS
+				DECLARE VARIABLE tmp DECIMAL(18,0);
+			BEGIN
+				IF (NEW.$autoincrement IS NULL) THEN
+					NEW.$autoincrement = GEN_ID(, 1);
+				ELSE BEGIN
+					tmp = GEN_ID(SEQ_$newTableString, 0);
+					IF (tmp < new.$autoincrement) THEN
+						tmp = GEN_ID(SEQ_$newTableString, new.$autoincrement - tmp);
+				END
+			END^
+			SET TERM ; ^";
+			ibase_query($statement);
+		}
+		
 		
 // 		foreach ($tables as $table){
 // 			$newTableId = $this->getSeqNext("MDT_GEN"); // Generiere TabellenId
@@ -295,7 +328,21 @@ class Database {
 	 * This function removes tables for a specific module
 	 */
 	
-	public function removeTableForModule($tables, $modId){
+	public function removeTableForModule($table, $modId){
+		$gettableIds = "SELECT MDT_ID 
+						FROM MODULETABLES 
+						WHERE MDT_MOD_ID = ? AND MDT_NAME = ?;";
+	    $prepared = ibase_prepare($gettableIds);
+		$cursor = ibase_execute($prepared, $modId, $table['name']);
+		while($tableset = ibase_fetch_object($cursor)){
+			$tabId = "TAB_".$this->generateZeros(6-strlen((string)$tableset->MDT_ID)).(string)$tableset->MDT_ID;
+			$deletestmnt = "DROP TABLE $tabId ;";
+			ibase_query($deletestmnt);
+		}
+		return;
+	}
+	
+	public function removeTablesForModule($tables, $modId){
 		$gettableIds = "SELECT MDT_ID 
 						FROM MODULETABLES 
 						WHERE MDT_MOD_ID = ? ;";

@@ -217,6 +217,12 @@ class Scoville(Instance):
     def loadCssPropertySet(self):
         self.getApplication().doRPCCall(self,self.loadCssPropertySetCallback, "getCssPropertySet", [None,None,None])
     
+    def updateModulesCallback(self):
+        self.modules.refresh()
+    
+    def updateModules(self):
+        self.getApplication().doRPCCall(self,self.updateModulesCallback, "updateModules")
+    
     def getCssPropertySet(self):
         return self.cssPropertySet
     

@@ -565,6 +565,16 @@
 		}	
 	}
 	
+	class ModuleUpdateOperation extends ModuleOperation {
+		public function doWorkload(){
+			$core = Core::getInstance();
+			$moduleM = $core->getModuleManager();
+			$repositories = $moduleM->getRepositories();
+			$repositories[0]->downloadModule($this->getMeta());
+			$moduleM->updateModule($this->getValue("name"));
+		}
+	}
+	
 	/**
 	 * Always Failing Operation
 	 *

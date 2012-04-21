@@ -79,14 +79,19 @@ class ModuleManager extends Singleton {
 	
 	protected function init(){}
 	
+	private function updateDatabaseTables($tables,$moduleId){
+		$core = Core::getInstance();
+		$core->getDB()->updateTablesForModule($tables,$moduleId);
+	}
+	
 	private function createDatabaseTables($tables,$moduleId){
 		$core =  Core::getInstance();
-		$core->getDB()->createTableForModule($tables,$moduleId);
+		$core->getDB()->createTablesForModule($tables,$moduleId);
 	}
 	
 	private function removeDatabaseTables($tables,$moduleId){
 		$core = Core::getInstance();
-		$core->getDB()->removeTableForModule($tables,$moduleId);
+		$core->getDB()->removeTablesForModule($tables,$moduleId);
 	}
 	
 	/**
@@ -100,6 +105,18 @@ class ModuleManager extends Singleton {
 		$rightsManager = $core->getRightsManager();
 		foreach($rights as $right){
 		  $rightsManager->createRight($right,$manifest->name);	
+		}
+		return;
+	}
+	
+	private function updateRights($manifest, $moduleId){
+		$rights = $manifest->rights;
+		$core = Core::getInstance();
+		$rightsManager = $core->getRightsManager();
+		foreach($rights as $right){
+		  try{
+		  $rightsManager->createRight($right,$manifest->name);
+		  } catch(Exception $e){}	
 		}
 		return;
 	}
@@ -136,6 +153,43 @@ class ModuleManager extends Singleton {
 		$statement = "DELETE FROM MODULES WHERE MOD_NAME = ?;";
 		$db->query($core,$statement,array($manifest->name,));
 	    return;
+	}
+	
+	public function updateModule($moduleId){
+		$core = Core::getInstance();
+		$modulesPath = $core->getConfig()->getEntry("modules.path");
+		if (!is_dir("../".$modulesPath.$moduleId)){
+			throw new ModuleException("InstallationError: Can't update Module, because it is not Installed");
+		}
+		$core->recursiveDelete('../".$modulesPath.$moduleId');
+		mkdir('../'.$modulesPath.$moduleId);
+		system('tar xfz /tmp/'.escapeshellarg($moduleId).'.tar.gz -C ../'.$modulesPath.escapeshellarg($moduleId).'/ > /dev/null');
+		
+		$manifestRaw = file_get_contents('../'.$modulesPath.$moduleId.'/manifest.json');
+		if ($manifestRaw == false){
+			throw new ModuleException("InstallationError: $moduleId is not a valid Scoville Module");
+			return;
+		}
+		
+		$manifest = json_decode($manifestRaw);
+		
+		if ($manifest == null){
+			throw new ModuleException("InstallationError: Manifest seems to be broken. Validate!");
+			return;
+		}
+		
+		$db = $core->getDB();
+		$db->query("UPDATE MODULES SET MOD_VERSIONMAJOR = ?, MOD_VERSIONMINOR = ? , MOD_VERSIONREV = ? WHERE MOD_NAME = ? ;", 
+					array($manifest->version_major, $manifest->version_minor, $manifest->revision));
+		$res = $db->query("SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ?;", 
+					array($manifest->name));
+		$moduleId = null;
+		if ($set = $db->fetchObject($res)){
+			$moduleId = $set->MOD_ID;
+		}
+		
+		$this->updateDatabaseTables($manifest->tables, $moduleId);
+		$this->updateRights($manifest->rights, $moduleId);
 	}
 	
 	public  function installModule($moduleId){
@@ -199,6 +253,19 @@ class ModuleManager extends Singleton {
 			$ret[] = new Repository($set['REP_ID'],$set['REP_NAME'],$set['REP_IP'],$set['REP_PORT'],$set['REP_LASTUPDATE']);
 		}
 		return $ret;
+	}
+	
+	public function updateModuleFromRepository($repository, $module){
+		$core = Core::getInstance();
+		
+		if(!is_array($module)){
+			$module = $core->parseObjectToArray($module);
+		}
+		$opM = $core->getOperationManager();
+		
+		$operation = new ModuleUpdateOperation();
+		$operation->setValuesFromMeta($module);
+		$operation->store();
 	}
 	
 	public function installModuleFromRepository($repository, $module, $operationId){
@@ -366,6 +433,51 @@ class ModuleManager extends Singleton {
 		}
 	}
 	
+	public function updateModules(){
+		/*$core = Core::getInstance();
+		$db = $core->getDB();
+		$modules = array();
+		
+		$stmnt = "SELECT MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_REP_ID, MOD_MD5 FROM MODULES ;";
+		$res = $db->query($core,$stmnt);
+		
+		$repositoryJobLocks = ModuleOperation::getCurrentlyProcessedModules();
+		$repositories = $this->getRepositories();
+		$repository = $repositories[0];
+		
+		while($set = $db->fetchArray($res)){
+			$modules[]=array('name'=>$set['MOD_NAME'], 'hrname'=>$set['MOD_DISPLAYNAME'], 
+							 'version_major'=>$set['MOD_VERSIONMAJOR'], 'version_minor'=>$set['MOD_VERSIONMINOR'], 
+							 'revision'=>$set ['MOD_VERSIONREV'], 'md5'=>$set['MOD_MD5'], 'serverModuleId'=> $set['MOD_ID']);
+		}
+		
+		foreach ($modules as $module){
+			$versions = $repository->getAllVersions($module);
+			foreach ($versions as $version){
+				if ($this->versionCompare($module, $version) == -1){ // if version is bigger than modulesown version
+					
+				}
+			}
+		}*/
+		
+		
+		
+		//$repositoryJobLocks = ModuleOperation::getCurrentlyProcessedModules();
+		$repositories = $this->getRepositories();
+		$repository = $repositories[0];
+		
+		$modules = $this->getModules();
+		foreach ($modules as $module){
+			if (isset($module['toUpdate']) and $module['toUpdate']){
+				$lastestModule = $repository->getLatestVersion($module);
+				$this->updateModuleFromRepository($repository, $latestModule);
+			}
+		}
+		
+		
+		
+	}
+	
 	/**
 	 * Get All modules of this server
 	 * 
@@ -486,6 +598,11 @@ class Repository {
 	public function getAllVersions($modulemeta) {
 		$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>2,"m"=>$modulemeta))));
 		return $list->r;
+	}
+	
+	public function getLatestVersion($modulemeta) {
+		$module = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>7,"m"=>$modulemeta))));
+		return $module->r;
 	}
 	
 	public function getDependencies($modulemeta) {

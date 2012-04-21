@@ -89,6 +89,35 @@
 			return json_encode(array("r"=>$modules));
 		}
 		
+		public function getLatestVersion($module){
+			$con = $this->establishConection();
+			$resultset = $con->query("select mod_displayname, mod_md5, mod_signature, mod_name, mod_versionmajor, mod_versionminor, mod_versionrev
+				from modules join (select mod_name vername 
+				,max(mod_versionmajor*10000000 
+				+mod_versionminor*100000 
+				+mod_versionrev) ver 
+				from modules 
+				group by mod_name) 
+				on vername = mod_name 
+				and ver = mod_versionmajor*10000000 
+				+mod_versionminor*100000 
+				+mod_versionrev
+				where mod_name = ?", array($module->name));
+			
+			if($result = $con->fetchArray($resultset)){
+				$module = array('name'=>$result["MOD_NAME"],
+									 'hrname'=>$result["MOD_DISPLAYNAME"],
+									 'version_major'=>$result["MOD_VERSIONMAJOR"],
+									 'version_minor'=>$result["MOD_VERSIONMINOR"],
+									 'revision'=>$result["MOD_VERSIONREV"],
+									 'md5'=>$result["MOD_MD5"],
+					        		 'signature'=>base64_encode($result["MOD_SIGNATURE"]));		
+			}else{
+				throw new Exception('Module does not Exist: '.$module->name);
+			}
+			return array("r"=>$module);
+		}
+		
 		public function getVersionsOfModule($module){
 			$con = $this->establishConection();
 			$resultset = $con->query("select mod_name, mod_displayname, mod_md5, mod_signature, mod_id, mod_versionmajor, mod_versionminor, mod_versionrev from modules 

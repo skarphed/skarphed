@@ -30,6 +30,7 @@
 		const RESOLVE_DEPENDENCIES_UPWARDS = 4;
 		const DOWNLOAD_MODULE = 5;
 		const GET_PUBLICKEY = 6;
+		const GET_LATEST_VERSION = 7;
 		
 		//Calls from AdminGUI to Repository
 		const AUTHENTICATE = 100;
@@ -87,7 +88,11 @@
 				case ProtocolHandler::GET_PUBLICKEY:
 					$this->result = json_encode(array("r"=>$repository->getPublicKeyForScoville()));
 					break;
-					
+				case ProtocolHandler::GET_LATEST_VERSION:
+					$this->result = json_encode($repository->getLatestVersion($this->subject->m));
+					break;
+				
+				
 				case ProtocolHandler::AUTHENTICATE:
 					if (!isset($this->subject->dxd)){
 						throw new Exception('Password not set');

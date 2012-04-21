@@ -245,6 +245,13 @@ class class_scvRpc {
 	}
   }
   
+  function method_updateModules($params,$error){
+  	$core = scv\Core::getInstance();
+	$moduleManager = $core->getModuleManager();
+	$moduleManager->updateModules();
+	return 0;
+  }
+  
   function method_uninstallModule($params,$error){
   	$module = $params[0];
 	$operationId = $params[1];
