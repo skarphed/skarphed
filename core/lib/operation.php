@@ -573,6 +573,10 @@
 			$repositories[0]->downloadModule($this->getMeta());
 			$moduleM->updateModule($this->getValue("name"));
 		}
+		
+		public function optimizeQueue(){
+			
+		}
 	}
 	
 	/**

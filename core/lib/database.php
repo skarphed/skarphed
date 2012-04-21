@@ -233,7 +233,7 @@ class Database {
 			
 		}
 		foreach($existingTables as $existingTable){
-			$this->removeTableForModule($existingTable, $modId)
+			$this->removeTableForModule($existingTable, $modId);
 		}
 		
 	}
