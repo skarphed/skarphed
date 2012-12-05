@@ -34,7 +34,8 @@ class Config {
 	private $config_state = self::CONF_NOT_LOAD;
 	
 	public function __construct(){
-		$this->configuration = json_decode(file_get_contents('../lib/config.json'),true);
+		global $SCV_GLOBALCFG;
+		$this->configuration = json_decode(file_get_contents($SCV_GLOBALCFG['SCV_WEBPATH'].$SCV_GLOBALCFG['SCV_INSTANCE_SCOPE_ID'].'/config.json'),true);
 		$this->config_state = self::CONF_LOAD_LOCAL;
 	}
 	
