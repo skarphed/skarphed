@@ -38,10 +38,15 @@ instanceid=`cat /etc/scoville/GEN_INSTANCE`
 instanceid=`expr $instanceid + 1`
 
 mkdir $SCV_WEBPATH$instanceid
-touch $SCV_WEBPATH$instanceid/instance.conf.php
-sed s#//number//#$instanceid#g ./instance.conf.php $SCV_WEBPATH$instanceid/instance.conf.php > $SCV_WEBPATH$instanceid/instance.conf.php
-cp -r ./web/* $SCV_WEBPATH$instanceid/
-cp ./config.json $SCV_WEBPATH$instanceid/
+cp -r ./web/ $SCV_WEBPATH$instanceid/
+touch $SCV_WEBPATH$instanceid/web/instance.conf.php
+sed s#//number//#$instanceid#g ./instance.conf.php $SCV_WEBPATH$instanceid/web/instance.conf.php > $SCV_WEBPATH$instanceid/web/instance.conf.php
+
+cp ./index.php $SCV_WEBPATH$instanceid/
+
+cp ./config.json $SCV_WEBPATH$instanceid/web/
+cp -r ./rpc/ $SCV_WEBPATH$instanceid/
+cp $SCV_WEBPATH$instanceid/web/instance.conf.php $SCV_WEBPATH$instanceid/rpc/instance.conf.php
 
 mkdir /tmp/scv_$instanceid
 sed s#//SCVWEBROOT//#$SCV_WEBPATH$instanceid#g ./apache2.conf > /tmp/scv_$instanceid/replace
