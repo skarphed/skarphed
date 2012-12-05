@@ -30,4 +30,5 @@ builder = gtk.Builder()
 builder.add_from_file(os.path[0]+"/src/gui/NewScoville.ui")
 
 class NewScovilleWindow(object):
-    pass
+    def __init__(self):
+    	pass
