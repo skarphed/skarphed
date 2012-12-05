@@ -1,6 +1,6 @@
 Scoville Lizenztechnisches und Abhaengigkeiten
 
-Schriftart  "IDM"  ::  Public Domain -> ueberpruefen!!!
+Schriftart  "News Cycle"  ::  OFL (SIL Open Font License)
 
 
 Abhaengigkeiten: 
