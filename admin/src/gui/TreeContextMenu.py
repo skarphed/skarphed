@@ -30,6 +30,7 @@ import gtk
 import IconStock
 
 from ServerPropertyWindow import ServerPropertyWindow
+from NewScoville import NewScoville
 from InputBox import InputBox
 
 class TreeContextMenu(gtk.Menu):
@@ -88,6 +89,22 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.createUser)
         self.createUser.connect("activate", self.cb_createUser)
         
+        createInstanceI = gtk.Image()
+        createInstanceI.set_from_pixbuf(IconStock.SCOVILLE)
+        self.createInstance = gtk.ImageMenuItem()
+        self.createInstance.set_image(createInstanceI)
+        gtk.MenuItem.__init__(self.createInstance,"Create Instance")
+        self.append(self.createInstance)
+        self.createInstance.connect("activate",self.cb_createInstance)
+
+        destroyInstanceI = gtk.Image()
+        destroyInstanceI.set_from_pixbuf(IconStock.DELETE)
+        self.destroyInstance = gtk.ImageMenuItem()
+        self.destroyInstance.set_image(destroyInstanceI)
+        gtk.MenuItem.__init__(self.destroyInstance,"Create Instance")
+        self.append(self.destroyInstance)
+        self.destroyInstance.connect("activate",self.cb_destroyInstance)
+
         removeInstanceI = gtk.Image()
         removeInstanceI.set_from_pixbuf(IconStock.DELETE)
         self.removeInstance = gtk.ImageMenuItem()
@@ -168,6 +185,13 @@ class TreeContextMenu(gtk.Menu):
         if self.currentObject.__class__.__name__ == "Server":
             ServerPropertyWindow(self.getPar().getPar(),server=self.currentObject)
     
+    def cb_createInstance(self,data=None):
+        if self.currentObject.__class__.__name__ == "Server":
+            NewScoville(self.getPar().getPar(),server=self.currentObject)
+
+    def cb_destroyInstance(self,data=None):
+        pass
+
     def cb_removeInstance(self,data=None):
         self.currentObject.getServer().removeInstance(self.currentObject)
     
@@ -210,6 +234,7 @@ class TreeContextMenu(gtk.Menu):
             self.removeServer.set_visible(True)
             self.connectServer.set_visible(True)
             self.properties.set_visible(True)
+            self.createInstance.set_visible(True)
             self.cssEditor.set_visible(True)
             self.connectServer.set_sensitive(not obj.isOnline())
         elif itemtype == "Module":
@@ -230,6 +255,7 @@ class TreeContextMenu(gtk.Menu):
             self.createRole.set_visible(True)
         elif itemtype == "Scoville": # HERE BE DRAGONS
             self.removeInstance.set_visible(True)
+            self.destroyInstance.set_visible(True)
             self.updateModules.set_visible(True)
         elif itemtype == "Site":
             self.createMenu.set_visible(True)

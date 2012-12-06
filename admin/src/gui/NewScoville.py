@@ -25,11 +25,40 @@
 import pygtk
 pygtk.require("2.0")
 import gtk
+import os
 
-builder = gtk.Builder()
-builder.add_from_file(os.path[0]+"/src/gui/NewScoville.ui")
+class NewScoville(gtk.Window):
+    def __init__(self,par,server):
+        self.par = par
 
-class NewScovilleWindow(gtk.Window):
-    def __init__(self):
-    	self = builder.get_object("window1")
+        self.handlers = {
+            "cb_Ok":self.cb_Ok,
+            "cb_Cancel":self.cb_Cancel
+        }
 
+        builder = gtk.Builder()
+        builder.add_from_file(os.path.dirname(__file__)+"/NewScoville.ui")
+        print type(self.cb_Ok)
+        print type(self.cb_Cancel)
+        builder.connect_signals(self.handlers)
+
+        self = builder.get_object("window1")
+        self.serverId = server.getLocalId()
+        self.show_all()
+        
+
+
+    def cb_Ok(self,widget=None,data=None):
+        print "OK GELECKT"
+
+    def cb_Cancel(self,widget=None,data=None):
+        print "ABBRECHEN GELECKT"
+
+    def render():
+        pass
+
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
