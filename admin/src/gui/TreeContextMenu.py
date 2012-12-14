@@ -101,7 +101,7 @@ class TreeContextMenu(gtk.Menu):
         destroyInstanceI.set_from_pixbuf(IconStock.DELETE)
         self.destroyInstance = gtk.ImageMenuItem()
         self.destroyInstance.set_image(destroyInstanceI)
-        gtk.MenuItem.__init__(self.destroyInstance,"Create Instance")
+        gtk.MenuItem.__init__(self.destroyInstance,"Destroy Instance")
         self.append(self.destroyInstance)
         self.destroyInstance.connect("activate",self.cb_destroyInstance)
 
