@@ -23,7 +23,7 @@
 ###########################################################
 
 
-from data.Generic import ObjectStore
+from data.Generic import ObjectStore, GenericScovilleObject
 from data.Instance import Instance
 
 from Users import Users
@@ -35,9 +35,87 @@ from Template import Template
 from Operation import OperationManager
 
 import json as jayson #HERE BE DRAGONS
+import os
 import os.path
+import shutil
+import tarfile
+import random
 from net.MultiPartForm import MultiPartForm
 from net.ScovilleUpload import ScovilleUpload
+
+class ScovilleInstaller(GenericScovilleObject):    
+    def __init__(self,data,server,target):
+        self.server=server
+        self.target=target
+        self.data  = data
+        self.installationId = int(random.random()*1000)
+        self.BUILDPATH = "/tmp/scvinst"+str(self.installationId)+"/"
+
+    def installDebian6(self):
+        #try:
+        os.mkdir(self.BUILDPATH)
+
+        con = self.server.ssh_connection
+        #Here Be Dragons: How long is the connection kept open?
+        apache_template = open("../installer/debian6/apache2.conf","r").read()
+        apacheconf = apache_template%(self.data['apache.ip'],
+                                      self.data['apache.port'],
+                        "ServerName "+self.data['apache.domain'],
+                       "ServerAlias "+self.data['apache.subdomain'],)
+
+        apacheconfresult = open(self.BUILDPATH+"apache2.conf","w")
+        apacheconfresult.write(apacheconf)
+        apacheconfresult.close()
+
+        scv_config = {}
+        for key,val in self.data.items():
+            if key.startswith("core.") or key.startswith("db."):
+                scv_config[key] = val
+
+        jenc = jayson.JSONEncoder()
+        config_json = open(self.BUILDPATH+"config.json","w")
+        config_json.write(jenc.encode(scv_config))
+        config_json.close()
+
+        shutil.copyfile("../installer/debian6/instance.conf.php",self.BUILDPATH+"instance.conf.php")
+        shutil.copyfile("../installer/debian6/scoville.conf",self.BUILDPATH+"scoville.conf")
+        shutil.copyfile("../installer/debian6/install.sh", self.BUILDPATH+"install.sh")
+
+        shutil.copyfile("../../core/index.php",self.BUILDPATH+"index.php")
+        shutil.copytree("../../core/web",self.BUILDPATH+"web")
+        shutil.copytree("../../core/rpc",self.BUILDPATH+"rpc")
+        shutil.copytree("../../core/lib",self.BUILDPATH+"lib")
+
+        tar = tarfile.open(self.BUILDPATH+"scv_install.tar.gz","w:gz")
+        tar.add(self.BUILDPATH+"apache2.conf")
+        tar.add(self.BUILDPATH+"config.json")
+        tar.add(self.BUILDPATH+"instance.conf.php")
+        tar.add(self.BUILDPATH+"scoville.conf")
+        tar.add(self.BUILDPATH+"install.sh")
+        tar.add(self.BUILDPATH+"web")
+        tar.add(self.BUILDPATH+"rpc")
+        tar.add(self.BUILDPATH+"lib")
+        tar.add(self.BUILDPATH+"index.php")
+        tar.close()
+
+        con_stdin, con_stdout, con_stderr = con.exec_command("mkdir /tmp/scvinst"+str(self.installationId))
+        ftp = con.open_sftp()
+        ftp.put(self.BUILDPATH+"scv_install.tar.gz","/tmp/scvinst"+str(self.installationId)+"/scv_install.tar.gz")
+        ftp.close()
+
+        con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/scvinst"+str(self.installationId)+"; tar xvfz scv_install.tar.gz -C / ; chmod 755 install.sh ; ./install.sh ")
+
+        print con_stdout.read()
+        #except Exception, e:
+        #   raise e
+        #finally:
+        
+        #shutil.rmtree(self.BUILDPATH)
+
+
+    def install(self):
+        if self.target=="Debian6":
+            self.installDebian6()
 
 class Scoville(Instance):
     STATE_OFFLINE = 0
@@ -49,7 +127,12 @@ class Scoville(Instance):
     LOADED_NONE = 0
     LOADED_PROFILE = 1
     LOADED_SERVERDATA = 2
-     
+    
+    @classmethod
+    def installNewScoville(cls, data, server, target):
+        installer = ScovilleInstaller(data,server,target)
+        installer.install()
+
     def __init__(self, server, url="", username="", password=""):
         Instance.__init__(self,server)
         self.instanceTypeName = "scoville"
