@@ -52,7 +52,6 @@ class ScovilleInstaller(GenericScovilleObject):
         self.BUILDPATH = "/tmp/scvinst"+str(self.installationId)+"/"
 
     def installDebian6(self):
-        #try:
         os.mkdir(self.BUILDPATH)
 
         con = self.server.ssh_connection
@@ -106,11 +105,8 @@ class ScovilleInstaller(GenericScovilleObject):
         con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/scvinst"+str(self.installationId)+"; tar xvfz scv_install.tar.gz -C / ; chmod 755 install.sh ; ./install.sh ")
 
         print con_stdout.read()
-        #except Exception, e:
-        #   raise e
-        #finally:
         
-        #shutil.rmtree(self.BUILDPATH)
+        shutil.rmtree(self.BUILDPATH)
 
 
     def install(self):
