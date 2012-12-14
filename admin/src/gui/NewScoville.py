@@ -168,7 +168,7 @@ class NewScoville(gtk.Window):
               "apache.subdomain":self.apache_subdomain_entry.get_text(),
             }
             target = self.target_combobox.get_active_text()
-            server.installScovilleInstance(instanceData, target)
+            server.installNewInstance(instanceData, target)
 
 
     def cb_Cancel(self,widget=None,data=None):
@@ -217,6 +217,7 @@ class NewScoville(gtk.Window):
             targets = self.servers[0].INSTALLATION_TARGETS
             for target in targets:
                 self.target_combobox_model.append((target,))
+            self.target_combobox.set_active_iter(self.target_combobox_model.get_iter_first())
             self.targetsRendered=True
 
     def getPar(self):
