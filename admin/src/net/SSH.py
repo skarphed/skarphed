@@ -49,9 +49,9 @@ class SSHConnector(threading.Thread):
             self.connection.connect(server.getIp(), 22, server.getSSHName(), server.getSSHPass())
         except paramiko.AuthenticationException:
             server.setSSHState(server.SSH_LOCKED)
-            server.ssh_connection = self
+            server.ssh_connection = None
         else:
             server.setSSHState(server.SSH_UNLOCKED)
-            server.ssh_connection = None
+            server.ssh_connection = self.connection
         Tracker().removeProcess()
         gobject.idle_add(server.updated)
