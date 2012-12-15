@@ -30,6 +30,32 @@ import IconStock
 
 from data.Generic import GenericObjectStoreException
 
+class GenericPage(gtk.ScrolledWindow):
+    def __init__(self,par, obj):
+        self.par = par
+        self.objId = obj.getLocalId()
+        gtk.ScrolledWindow.__init__(self)
+        self.vbox = gtk.VBox()
+        self.labeltop = gtk.Label()
+        self.labelbottom = gtk.Label("no further details")
+        self.vbox.add(self.labeltop)
+        self.vbox.add(self.labelbottom)
+        self.add(self.vbox)
+        self.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        obj.addCallback(self.render)
+        self.render()
+
+    def render(self):
+        obj = self.getApplication().getLocalObjectById(self.objId)
+        self.labeltop.set_text(obj.getName())
+
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
+
+
 class PageGenerator(object):
     def __init__(self,par,obj):
         self.obj = obj
@@ -48,7 +74,7 @@ class PageGenerator(object):
     
     def createPage(self):
         instanceType = self.getInstanceOfObject(self.obj)
-        page = None
+        page = GenericPage(self.par,self.obj)
         if instanceType is not None:
             exec "from "+instanceType.instanceTypeName+"."+self.obj.__class__.__name__+\
              " import "+self.obj.__class__.__name__+"Page"
