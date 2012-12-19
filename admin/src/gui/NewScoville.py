@@ -161,7 +161,7 @@ class NewScoville(gtk.Window):
               "db.ip":self.db_ip_entry.get_text(),
               "db.name":self.db_name_entry.get_text(),
               "db.user":self.db_user_entry.get_text(),
-              "db.pass":self.db_pass_entry.get_text(),
+              "db.password":self.db_pass_entry.get_text(),
               "apache.ip":self.apache_ip_entry.get_text(),
               "apache.port":self.apache_port_entry.get_text(),
               "apache.domain":self.apache_domain_entry.get_text(),
