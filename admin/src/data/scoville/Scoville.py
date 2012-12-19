@@ -54,8 +54,6 @@ class ScovilleInstaller(GenericScovilleObject):
     def installDebian6(self):
         os.mkdir(self.BUILDPATH)
 
-        con = self.server.ssh_connection
-        #Here Be Dragons: How long is the connection kept open?
         apache_template = open("../installer/debian6/apache2.conf","r").read()
         apacheconf = apache_template%(self.data['apache.ip'],
                                       self.data['apache.port'],
@@ -97,11 +95,15 @@ class ScovilleInstaller(GenericScovilleObject):
         tar.add(self.BUILDPATH+"index.php")
         tar.close()
 
+        con = self.server.getSSH()
         con_stdin, con_stdout, con_stderr = con.exec_command("mkdir /tmp/scvinst"+str(self.installationId))
+
+        con = self.server.getSSH()
         ftp = con.open_sftp()
         ftp.put(self.BUILDPATH+"scv_install.tar.gz","/tmp/scvinst"+str(self.installationId)+"/scv_install.tar.gz")
         ftp.close()
 
+        con = self.server.getSSH()
         con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/scvinst"+str(self.installationId)+"; tar xvfz scv_install.tar.gz -C / ; chmod 755 install.sh ; ./install.sh ")
 
         print con_stdout.read()

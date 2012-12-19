@@ -53,5 +53,6 @@ class SSHConnector(threading.Thread):
         else:
             server.setSSHState(server.SSH_UNLOCKED)
             server.ssh_connection = self.connection
+            server.ssh_ready = True
         Tracker().removeProcess()
         gobject.idle_add(server.updated)

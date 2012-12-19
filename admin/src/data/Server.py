@@ -54,6 +54,7 @@ class Server(GenericScovilleObject):
         GenericScovilleObject.__init__(self)
         self.state = self.STATE_OFFLINE
         self.ssh_loggedin = self.SSH_LOCKED
+        self.ssh_ready = False
         self.load = self.LOADED_NONE
         self.data = {}
         
@@ -89,6 +90,16 @@ class Server(GenericScovilleObject):
     def connectSSH(self):
         self.getApplication().getSSHConnection(self)
     
+    """call From threaded"""
+    def getSSH(self):
+        try:
+            con_stdin, con_stdout, con_stderr = self.ssh_connection.exec_command("uname")
+        except socket.error, e:
+            self.ssh_ready = False
+            self.getServer().connectSSH()
+        while not self.ssh_ready: pass
+        return self.ssh_connection
+
     def establishConnections(self):
         self.connectSSH()
     
