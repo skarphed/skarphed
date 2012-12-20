@@ -28,7 +28,6 @@
   		continue;
   	}
   	$linesplit = preg_split("/=/",$configline);
-  	echo $linesplit[0]."<>".$linesplit[1];
   	$SCV_GLOBALCFG[$linesplit[0]] = $linesplit[1];
   }
 
