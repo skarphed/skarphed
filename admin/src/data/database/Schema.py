@@ -24,12 +24,6 @@
 
 from data.Generic import GenericScovilleObject
 
-"""
-from data.Instance import InstanceType
-o = GenericScovilleObject()
-o.getApplication().registerInstanceType(InstanceType("scoville_repo","Scoville Repository"))
-o.destroy()"""
-
 class Schema(GenericScovilleObject):
 	def __init__(self, par):
 		GenericScovilleObject.__init__(self)

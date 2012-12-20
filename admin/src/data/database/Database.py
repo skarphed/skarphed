@@ -25,11 +25,21 @@
 from data.Generic import GenericScovilleObject
 
 class Database(GenericScovilleObject):
-	def __init__(self, par):
-		GenericScovilleObject.__init__(self)
-		self.par = par
+    def __init__(self, par):
+        GenericScovilleObject.__init__(self)
+        self.par = par
+        self.schemes = []
 
-	def getPar(self):
+    def createSovilleSchema(self, rootname, rootpw):
+        pass
+
+    def deleteScovilleSchema(self):
+        pass
+
+    def updateSchemata(self):
+        pass
+
+    def getPar(self):
         return self.par
     
     def getModules(self):
