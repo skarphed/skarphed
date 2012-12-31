@@ -28,7 +28,7 @@ else
 	echo -1 > /etc/scoville/GEN_INSTANCE
 
 	rm -r /var/www
-	rm -r /etc/apache/sites-enabled/000-default
+	rm /etc/apache2/sites-enabled/000-default
 
 	touch /etc/scoville/INSTALLED
 
@@ -57,9 +57,8 @@ mkdir /var/log/apache2/www_scv_$instanceid
 touch /var/log/apache2/www_scv_$instanceid/error.log
 touch /var/log/apache2/www_scv_$instanceid/access.log
 
+echo $instanceid > /etc/scoville/GEN_INSTANCE
 
 /etc/init.d/apache2 restart
-
-echo $instanceid > /etc/scoville/GEN_INSTANCE
 
 echo Installation Finished successfully.
