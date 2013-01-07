@@ -25,9 +25,11 @@
 from data.Generic import GenericScovilleObject
 
 class Schema(GenericScovilleObject):
-	def __init__(self, par):
+	def __init__(self, par, db_user="", db_password=""):
 		GenericScovilleObject.__init__(self)
 		self.par = par
+        self.db_user = db_user
+        self.db_password = db_password
 
 	def getPar(self):
         return self.par

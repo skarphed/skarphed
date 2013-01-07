@@ -23,24 +23,38 @@
 ###########################################################
 
 from data.Generic import GenericScovilleObject
+from data.database.Schema import Schema
 
 class Database(GenericScovilleObject):
-    def __init__(self, par):
+    def __init__(self, par, dba_user="", dba_password=""):
         GenericScovilleObject.__init__(self)
         self.par = par
         self.schemes = []
+        self.dba_user = dba_user
+        self.dba_password = dba_password
 
-    def createSovilleSchema(self, rootname, rootpw):
-        pass
+    def createSchema(self, name):
+        username = "ABCDEFGH"
+        password = "abcdefgh"
+        con = self.getServer().getSSH()
+        # Threadauslagerung
+        con_in, con_out, conn_err = con.exec_comand("gsec -user %s -pass %s add -username %s -password %s"%(self.dba_user,
+                                                                                        self.dba_password,
+                                                                                        name))
+        schema = Schema(self, username, password)
+        self.schemes.append(schema)
 
-    def deleteScovilleSchema(self):
-        pass
+    def deleteSchema(self):
+        con = self.getServer().getSSH()
 
     def updateSchemata(self):
-        pass
+        con = self.getServer().getSSH()
 
     def getPar(self):
         return self.par
+
+    def getName(self):
+        return "Firebird 2.5 Database"
     
-    def getModules(self):
+    def getServer(self):
         return self.getPar()
