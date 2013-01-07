@@ -34,22 +34,37 @@ from Repository import Repository
 from Template import Template
 from Operation import OperationManager
 
+from threading import Thread
 import json as jayson #HERE BE DRAGONS
 import os
 import os.path
 import shutil
 import tarfile
 import random
+import gobject
 from net.MultiPartForm import MultiPartForm
 from net.ScovilleUpload import ScovilleUpload
 
-class ScovilleInstaller(GenericScovilleObject):    
+class ScovilleInstaller(GenericScovilleObject):
+    class InstallThread(Thread):
+        def __init__(self, installer):
+            Thread.__init__(self)
+            self.installer = installer
+
+        def run(self):
+            if self.installer.target=="Debian6":
+                self.installer.installDebian6()
+
+
     def __init__(self,data,server,target):
+        GenericScovilleObject.__init__(self)
         self.server=server
         self.target=target
         self.data  = data
         self.installationId = int(random.random()*1000)
         self.BUILDPATH = "/tmp/scvinst"+str(self.installationId)+"/"
+        self.installThread = self.InstallThread(self)
+        self.status = 0
 
     def installDebian6(self):
         os.mkdir(self.BUILDPATH)
@@ -64,6 +79,10 @@ class ScovilleInstaller(GenericScovilleObject):
         apacheconfresult.write(apacheconf)
         apacheconfresult.close()
 
+        self.status = 10
+        gobject.idle_add(self.updated)
+
+
         scv_config = {}
         for key,val in self.data.items():
             if key.startswith("core.") or key.startswith("db."):
@@ -77,6 +96,9 @@ class ScovilleInstaller(GenericScovilleObject):
         shutil.copyfile("../installer/debian6/instance.conf.php",self.BUILDPATH+"instance.conf.php")
         shutil.copyfile("../installer/debian6/scoville.conf",self.BUILDPATH+"scoville.conf")
         shutil.copyfile("../installer/debian6/install.sh", self.BUILDPATH+"install.sh")
+
+        self.status = 30
+        gobject.idle_add(self.updated)
 
         shutil.copyfile("../../core/index.php",self.BUILDPATH+"index.php")
         shutil.copytree("../../core/web",self.BUILDPATH+"web")
@@ -95,13 +117,24 @@ class ScovilleInstaller(GenericScovilleObject):
         tar.add(self.BUILDPATH+"index.php")
         tar.close()
 
+        self.status = 45
+        gobject.idle_add(self.updated)
+
         con = self.server.getSSH()
         con_stdin, con_stdout, con_stderr = con.exec_command("mkdir /tmp/scvinst"+str(self.installationId))
+
+        self.status = 50
+        gobject.idle_add(self.updated)
+
 
         con = self.server.getSSH()
         ftp = con.open_sftp()
         ftp.put(self.BUILDPATH+"scv_install.tar.gz","/tmp/scvinst"+str(self.installationId)+"/scv_install.tar.gz")
         ftp.close()
+
+        self.status = 65
+        gobject.idle_add(self.updated)
+
 
         con = self.server.getSSH()
         con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/scvinst"+str(self.installationId)+"; tar xvfz scv_install.tar.gz -C / ; chmod 755 install.sh ; ./install.sh ")
@@ -109,11 +142,18 @@ class ScovilleInstaller(GenericScovilleObject):
         print con_stdout.read()
         
         shutil.rmtree(self.BUILDPATH)
+        self.status = 100
+        gobject.idle_add(self.updated)
 
+
+    def getName(self):
+        return "Scoville Installer"
+
+    def getStatus(self):
+        return self.status
 
     def install(self):
-        if self.target=="Debian6":
-            self.installDebian6()
+        self.installThread.start()
 
 class Scoville(Instance):
     STATE_OFFLINE = 0
@@ -130,6 +170,7 @@ class Scoville(Instance):
     def installNewScoville(cls, data, server, target):
         installer = ScovilleInstaller(data,server,target)
         installer.install()
+        return installer
 
     def __init__(self, server, url="", username="", password=""):
         Instance.__init__(self,server)

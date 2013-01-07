@@ -126,7 +126,7 @@ class Server(GenericScovilleObject):
     def installNewInstance(self,data,target,instanceType="scoville"):
         if instanceType == "scoville":
             from scoville.Scoville import Scoville
-            Scoville.installNewScoville(data,self,target)
+            return Scoville.installNewScoville(data,self,target)
         elif instanceType == "scoville_repo":
             print "Not Implemented yet: %s"%(instanceType,)
         elif instanceType == "scoville_database":

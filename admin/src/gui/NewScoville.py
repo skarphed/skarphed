@@ -32,6 +32,7 @@ class NewScoville(gtk.Window):
     def __init__(self,par,server=None):
         self.par = par
         self.serverId =None
+        self.installerId = None
         if server is not None:
             self.serverId = server.getLocalId()
         gtk.Window.__init__(self)
@@ -128,9 +129,9 @@ class NewScoville(gtk.Window):
 
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
         self.cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
-        self.buttonboxdummy = gtk.Label("")
+        self.progress = gtk.ProgressBar()
         self.buttonhbox = gtk.HBox()
-        self.buttonhbox.pack_start(self.buttonboxdummy,True)
+        self.buttonhbox.pack_start(self.progress,True)
         self.buttonhbox.pack_start(self.cancel,False)
         self.buttonhbox.pack_start(self.ok,False)
 
@@ -168,7 +169,8 @@ class NewScoville(gtk.Window):
               "apache.subdomain":self.apache_subdomain_entry.get_text(),
             }
             target = self.target_combobox.get_active_text()
-            server.installNewInstance(instanceData, target)
+            installer = server.installNewInstance(instanceData, target)
+            self.installerId = installer.getLocalId()
 
 
     def cb_Cancel(self,widget=None,data=None):
@@ -219,6 +221,11 @@ class NewScoville(gtk.Window):
                 self.target_combobox_model.append((target,))
             self.target_combobox.set_active_iter(self.target_combobox_model.get_iter_first())
             self.targetsRendered=True
+
+        if self.installerId is not None:
+            installer = self.getApplication().getLocalObjectById(self.installerId)
+            self.progress.set_fraction(installer.getStatus()/100)
+            self.progress.set_text("Installing ... %d %%"%(installer.getStatus(),))
 
     def getPar(self):
         return self.par
