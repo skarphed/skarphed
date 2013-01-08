@@ -97,6 +97,9 @@ class Server(GenericScovilleObject):
         except socket.error, e:
             self.ssh_ready = False
             self.getServer().connectSSH()
+        except AttributeError, e:
+            self.ssh_ready = False
+            self.getServer().connectSSH()
         while not self.ssh_ready: pass
         return self.ssh_connection
 
