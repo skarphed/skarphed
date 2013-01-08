@@ -128,7 +128,7 @@ class NewScoville(gtk.Window):
         self.frm_apache.add(self.frm_apache_tbl)
 
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
-        self.cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
+        self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)
         self.progress = gtk.ProgressBar()
         self.buttonhbox = gtk.HBox()
         self.buttonhbox.pack_start(self.progress,True)
@@ -148,6 +148,8 @@ class NewScoville(gtk.Window):
 
         self.ok.connect("clicked", self.cb_Ok)
         self.cancel.connect("clicked", self.cb_Cancel)
+
+        self.set_icon_from_file("../data/icon/mp_logo.png")
 
         self.show_all()
         self.getApplication().getObjectStore().addCallback(self.render)
@@ -174,7 +176,7 @@ class NewScoville(gtk.Window):
 
 
     def cb_Cancel(self,widget=None,data=None):
-        print "ABBRECHEN GELECKT"
+        self.destroy()
 
     def getModuleIterById(self, serverlist, serverId):
         def search(model, path, rowiter, serverId):
@@ -226,6 +228,21 @@ class NewScoville(gtk.Window):
             installer = self.getApplication().getLocalObjectById(self.installerId)
             self.progress.set_fraction(installer.getStatus()/100)
             self.progress.set_text("Installing ... %d %%"%(installer.getStatus(),))
+            
+            sensitive = installer.status == 100
+            self.srv_combobox.set_sensitive(sensitive)
+            self.srv_name_entry.set_sensitive(sensitive)
+            self.db_ip_entry.set_sensitive(sensitive)
+            self.db_name_entry.set_sensitive(sensitive)
+            self.db_user_entry.set_sensitive(sensitive)
+            self.db_pass_entry.set_sensitive(sensitive)
+            self.target_combobox.set_sensitive(sensitive)
+            self.apache_ip_entry.set_sensitive(sensitive)
+            self.apache_port_entry.set_sensitive(sensitive)
+            self.apache_domain_entry.set_sensitive(sensitive)
+            self.apache_subdomain_entry.set_sensitive(sensitive)
+            self.ok.set_sensitive(sensitive)
+            self.cancel.set_sensitive(sensitive)
 
     def getPar(self):
         return self.par
