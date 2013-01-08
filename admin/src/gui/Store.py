@@ -36,7 +36,8 @@ class Store(gtk.TreeStore):
                         "OperationManager",
                         "Action",
                         "ActionList",
-                        "MenuItem")
+                        "MenuItem",
+                        "ScovilleInstaller")
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
         assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
