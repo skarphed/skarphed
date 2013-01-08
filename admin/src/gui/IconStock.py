@@ -39,6 +39,7 @@ ACTIONLIST              = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 ADD                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/add.png",16,16)
 CREDENTIAL              = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/credential.png",16,16)
 CSS                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/css.png",16,16)
+DATABASE                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/database.png",16,16)
 DELETE                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/delete.png",16,16)
 ERROR                   = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/error.png",16,16)
 MENU                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/menu.png",16,16)
@@ -51,6 +52,7 @@ RELOAD                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 REPO                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/repo.png",16,16)
 RETRY                   = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/retry.png",16,16)
 ROLE                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/role.png",16,16)
+SCHEMA                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/schema.png",16,16)
 SCOVILLE                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/scoville.png",16,16)
 SERVER_INVALID          = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/server_invalid.png",16,16) #DEPRECATED
 SERVER_LOCKED           = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/server_locked.png",16,16) #DEPRECATED
@@ -82,7 +84,9 @@ icon_object_map = {
                    "Action"     : ACTION,
                    "ActionList" : ACTIONLIST,
                    "Menu"       : MENU,
-                   "MenuItem"   : MENUITEM   
+                   "MenuItem"   : MENUITEM,
+                   "Database"   : DATABASE,
+                   "Schema"     : SCHEMA   
                    }
 
 def getServerIcon(server):
