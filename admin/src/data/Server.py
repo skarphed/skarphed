@@ -29,6 +29,7 @@ import re
 
 from Generic import GenericScovilleObject
 from Generic import ObjectStore
+from Instance import InstanceType
 
 class Server(GenericScovilleObject):
     STATE_OFFLINE = 0
@@ -49,6 +50,7 @@ class Server(GenericScovilleObject):
         if not Server.instanceTypesLoaded:
             import scoville
             import scoville_repo
+            import database
             Server.instanceTypesLoaded = True
             
         GenericScovilleObject.__init__(self)
@@ -135,6 +137,17 @@ class Server(GenericScovilleObject):
         elif instanceType == "scoville_database":
             print "Not Implemented yet: %s"%(instanceType,)
     
+    def setDatabase(self, user="", password=""):
+        for child in self.children:
+            if child.instanceTypeName == "database":
+                child.setUsername(user)
+                child.setPassword(password)
+                return
+
+        instanceType = InstanceType("database","Database")
+        self.createInstance(instanceType, "", user, password)
+        self.getApplication().activeProfile.updateProfile()
+
     def createInstance(self,instanceType, url, username, password):
         instance = None
         exec "from "+instanceType.instanceTypeName+"."+instanceType.instanceTypeName.capitalize()+\
@@ -143,6 +156,7 @@ class Server(GenericScovilleObject):
         self.addChild(instance)
         self.updated()
         instance.establishConnections()
+        return instance
         
     def removeInstance(self, instance):
         if instance in self.children:
@@ -153,6 +167,7 @@ class Server(GenericScovilleObject):
     def getInstances(self):
         return self.children
 
+ 
 class DNSError(Exception):
     pass
 

@@ -31,6 +31,7 @@ import IconStock
 
 from ServerPropertyWindow import ServerPropertyWindow
 from NewScoville import NewScoville
+from database.NewDatabase import NewDatabase
 from InputBox import InputBox
 
 class TreeContextMenu(gtk.Menu):
@@ -169,6 +170,14 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.updateModules)
         self.updateModules.connect("activate",self.cb_updateModules)
         
+        registerDatabaseI = gtk.Image()
+        registerDatabaseI.set_from_pixbuf(IconStock.DATABASE)
+        self.registerDatabase = gtk.ImageMenuItem()
+        self.registerDatabase.set_image(registerDatabaseI)
+        gtk.MenuItem.__init__(self.registerDatabase,"Register Database")
+        self.append(self.registerDatabase)
+        self.registerDatabase.connect("activate",self.cb_registerDatabase)
+
         self.show_all()
         
     def hide_buttons(self):
@@ -226,6 +235,9 @@ class TreeContextMenu(gtk.Menu):
     
     def cb_updateModules(self, data=None):
         self.currentObject.updateModules()
+
+    def cb_registerDatabase(self, data=None):
+        NewDatabase(self.getPar().getPar(), self.currentObject)
     
     def popup(self,obj,button,time):
         self.hide_buttons()
@@ -236,7 +248,9 @@ class TreeContextMenu(gtk.Menu):
             self.properties.set_visible(True)
             self.createInstance.set_visible(True)
             self.cssEditor.set_visible(True)
+            self.registerDatabase.set_visible(True)
             self.connectServer.set_sensitive(not obj.isOnline())
+
         elif itemtype == "Module":
             self.cssEditor.set_visible(True)
             self.createWidget.set_visible(True)

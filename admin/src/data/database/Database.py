@@ -26,10 +26,11 @@ from data.Generic import GenericScovilleObject
 from data.database.Schema import Schema
 
 class Database(GenericScovilleObject):
-    def __init__(self, par, dba_user="", dba_password=""):
+    def __init__(self, par, url="", dba_user="", dba_password=""):
         GenericScovilleObject.__init__(self)
         self.par = par
-        self.schemes = []
+        self.instanceTypeName = "database"
+        self.displayName = "Database"
         self.dba_user = dba_user
         self.dba_password = dba_password
 
@@ -41,14 +42,36 @@ class Database(GenericScovilleObject):
         con_in, con_out, conn_err = con.exec_comand("gsec -user %s -pass %s add -username %s -password %s"%(self.dba_user,
                                                                                         self.dba_password,
                                                                                         name))
-        schema = Schema(self, username, password)
-        self.schemes.append(schema)
+        schema = Schema(self, name, username, password)
+        self.children.append(schema)
+
+    def addSchema(self, name, user, password):
+        schema = Schema(self,name,user,password)
+        self.children.append(schema)
+
+    def establishConnections(self):
+        pass
 
     def deleteSchema(self):
         con = self.getServer().getSSH()
 
     def updateSchemata(self):
         con = self.getServer().getSSH()
+
+    def getUsername(self):
+        return self.dba_user
+
+    def getPassword(self):
+        return self.dba_password
+
+    def setUsername(self,username):
+        self.dba_user = username
+
+    def setPassword(self,password):
+        self.dba_password = password
+
+    def getSchemas(self):
+        return self.children
 
     def getPar(self):
         return self.par
