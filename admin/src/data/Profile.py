@@ -104,6 +104,7 @@ class Profile(object):
             js = json.decoder.JSONDecoder()
             clear = clear.rstrip("X")
             self.data = js.decode(clear[4:])
+            print self.data
             self.state = self.STATE_LOADED
             profilefile.close()
             for server in self.data['server']:
@@ -114,7 +115,10 @@ class Profile(object):
                 srv.establishConnections()
                 for instance in server['instances']:
                     instanceType = InstanceType(instance['typename'],instance['typedisp'])
-                    srv.createInstance(instanceType,instance['url'],instance['username'],instance['password'])
+                    createdInstance = srv.createInstance(instanceType,instance['url'],instance['username'],instance['password'])
+                    if instance['typename'] == "database":
+                        for schema in instance['schemas']:
+                            createdInstance.addSchema(schema['name'], schema['user'], schema['pass'])
                  
         else:
             profilefile.close()
@@ -129,6 +133,7 @@ class Profile(object):
             clear = "SCOV"+js.encode(self.data)
             padding = "X"*(16-(len(clear)%16))
             profilefile.write(aes.encrypt(clear+padding))
+            #print clear
             profilefile.close()
     
     def updateProfile(self):
@@ -136,7 +141,20 @@ class Profile(object):
         for server in data.Server.getServers():
             instances = []
             for instance in server.getInstances():
-                instances.append({'typename':instance.instanceTypeName,
+                if instance.instanceTypeName == "database":
+                    schemas = []
+                    for schema in instance.getSchemas():
+                        schemas.append({'name':schema.getName(),
+                                        'user':schema.getUser(),
+                                        'pass':schema.getPassword()})
+                    instances.append({'typename':instance.instanceTypeName,
+                            'typedisp':instance.displayName,
+                            'url':'',
+                            'schemas':schemas,
+                            'username':instance.getUsername(),
+                            'password':instance.getPassword()})
+                else:
+                    instances.append({'typename':instance.instanceTypeName,
                             'typedisp':instance.displayName,
                             'url':instance.getUrl(),
                             'username':instance.getUsername(),
