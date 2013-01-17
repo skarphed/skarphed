@@ -31,7 +31,7 @@ import IconStock
 
 from ServerPropertyWindow import ServerPropertyWindow
 from NewScoville import NewScoville
-from database.NewDatabase import NewDatabase
+from gui.database.NewDatabase import NewDatabase
 from InputBox import InputBox
 
 class TreeContextMenu(gtk.Menu):
@@ -178,6 +178,39 @@ class TreeContextMenu(gtk.Menu):
         self.append(self.registerDatabase)
         self.registerDatabase.connect("activate",self.cb_registerDatabase)
 
+        registerSchemaI = gtk.Image()
+        registerSchemaI.set_from_pixbuf(IconStock.SCHEMA)
+        self.registerSchema = gtk.ImageMenuItem()
+        self.registerSchema.set_image(registerSchemaI)
+        gtk.MenuItem.__init__(self.registerSchema,"Register Schema")
+        self.append(self.registerSchema)
+        self.registerSchema.connect("activate",self.cb_registerSchema)
+
+        createSchemaI = gtk.Image()
+        createSchemaI.set_from_pixbuf(IconStock.SCHEMA)
+        self.createSchema = gtk.ImageMenuItem()
+        self.createSchema.set_image(createSchemaI)
+        gtk.MenuItem.__init__(self.createSchema,"Create Schema")
+        self.append(self.createSchema)
+        self.createSchema.connect("activate",self.cb_createSchema)
+
+        unregisterSchemaI = gtk.Image()
+        unregisterSchemaI.set_from_pixbuf(IconStock.SCHEMA)
+        self.unregisterSchema = gtk.ImageMenuItem()
+        self.unregisterSchema.set_image(unregisterSchemaI)
+        gtk.MenuItem.__init__(self.unregisterSchema,"Unregister Schema")
+        self.append(self.unregisterSchema)
+        self.unregisterSchema.connect("activate",self.cb_unregisterSchema)
+        
+        destroySchemaI = gtk.Image()
+        destroySchemaI.set_from_pixbuf(IconStock.SCHEMA)
+        self.destroySchema = gtk.ImageMenuItem()
+        self.destroySchema.set_image(destroySchemaI)
+        gtk.MenuItem.__init__(self.destroySchema,"Destroy Schema")
+        self.append(self.destroySchema)
+        self.destroySchema.connect("activate",self.cb_destroySchema)
+                
+
         self.show_all()
         
     def hide_buttons(self):
@@ -238,6 +271,18 @@ class TreeContextMenu(gtk.Menu):
 
     def cb_registerDatabase(self, data=None):
         NewDatabase(self.getPar().getPar(), self.currentObject)
+
+    def cb_registerSchema(self, data=None):
+        pass
+
+    def cb_createSchema(self, data=None):
+        pass
+
+    def cb_unregisterSchema(self, data=None):
+        pass
+
+    def cb_destroySchema(self, data=None):
+        pass
     
     def popup(self,obj,button,time):
         self.hide_buttons()
@@ -275,6 +320,11 @@ class TreeContextMenu(gtk.Menu):
             self.createMenu.set_visible(True)
         elif itemtype == "Menu":
             self.deleteMenu.set_visible(True)
+        elif itemtype == "Database":
+            self.registerSchema.set_visible(True)
+            self.createSchema.set_visible(True)
+            self.unregisterSchema.set_visible(True)
+            self.destroySchema.set_visible(True)
         else: 
             return
         self.currentObject = obj
