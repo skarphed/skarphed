@@ -104,7 +104,6 @@ class Profile(object):
             js = json.decoder.JSONDecoder()
             clear = clear.rstrip("X")
             self.data = js.decode(clear[4:])
-            print self.data
             self.state = self.STATE_LOADED
             profilefile.close()
             for server in self.data['server']:
@@ -133,7 +132,6 @@ class Profile(object):
             clear = "SCOV"+js.encode(self.data)
             padding = "X"*(16-(len(clear)%16))
             profilefile.write(aes.encrypt(clear+padding))
-            #print clear
             profilefile.close()
     
     def updateProfile(self):
