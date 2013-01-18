@@ -118,7 +118,7 @@ class Profile(object):
                     createdInstance = srv.createInstance(instanceType,instance['url'],instance['username'],instance['password'])
                     if instance['typename'] == "database":
                         for schema in instance['schemas']:
-                            createdInstance.addSchema(schema['name'], schema['user'], schema['pass'])
+                            createdInstance.registerSchema(schema['name'], schema['user'], schema['pass'])
                  
         else:
             profilefile.close()
