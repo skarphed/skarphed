@@ -57,7 +57,7 @@ class User {
 	 * Sets The User's Password to an string value 
 	 * 
 	 * Only to be used internally! To change the password use User::alterPassword()!
-	 * The password is a ripemd160 hash
+	 * The password is a sha512 hash
 	 * 
 	 * @param int $pwd The new Passwordhash
 	 */
@@ -77,8 +77,8 @@ class User {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
-		if ((hash('ripemd160',$oldpassword.User::SALT) == $this->password) xor $newuser){
-			$this->password = hash('ripemd160',$newpassword.User::SALT);
+		if ((hash('sha512',$oldpassword.User::SALT) == $this->password) xor $newuser){
+			$this->password = hash('sha512',$newpassword.User::SALT);
 			$this->store();
 			$passwordqry = "SELECT USR_PASSWORD FROM USERS WHERE USR_ID = ?";
 			$res = $db->query($core,$passwordqry,array($this->id));
@@ -117,7 +117,7 @@ class User {
 	 */
 	public function authenticate($password){
 		$core = Core::getInstance();
-		if (hash('ripemd160',$password.User::SALT) == $this->password){
+		if (hash('sha512',$password.User::SALT) == $this->password){
 			return true;
 		}
 		return false;
