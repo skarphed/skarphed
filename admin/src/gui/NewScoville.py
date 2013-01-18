@@ -27,6 +27,8 @@ pygtk.require("2.0")
 import gtk
 import os
 import gui.IconStock
+from ObjectCombo import ObjectCombo
+from data.Server import Server
 
 class NewScoville(gtk.Window):
     def __init__(self,par,server=None):
@@ -55,15 +57,8 @@ class NewScoville(gtk.Window):
         self.frm_root_tbl = gtk.Table(2,2,False)
         self.frm_apache_tbl = gtk.Table(2,4,False)
 
-        self.srv_combobox = gtk.ComboBox()
-        self.srv_combobox_model = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
-        self.srv_combobox.set_model(self.srv_combobox_model)
-        self.srv_cell_icon = gtk.CellRendererPixbuf()
-        self.srv_combobox.pack_start(self.srv_cell_icon, True)
-        self.srv_combobox.add_attribute(self.srv_cell_icon, "pixbuf", 0)
-        self.srv_cell_name = gtk.CellRendererText()
-        self.srv_combobox.pack_start(self.srv_cell_name, False)
-        self.srv_combobox.add_attribute(self.srv_cell_name, "text", 1)
+        self.srv_combobox = ObjectCombo(self,"Server", server)
+
         self.srv_label = gtk.Label("Server:")
         self.srv_name_label = gtk.Label("New Instance Name:")
         self.srv_name_entry = gtk.Entry()
@@ -157,68 +152,31 @@ class NewScoville(gtk.Window):
 
 
     def cb_Ok(self,widget=None,data=None):
-        if self.serverId is not None:
-            server = self.getApplication().getLocalObjectById(self.serverId)
-            instanceData = {
-              "core.name":self.srv_name_entry.get_text(),
-              "db.ip":self.db_ip_entry.get_text(),
-              "db.name":self.db_name_entry.get_text(),
-              "db.user":self.db_user_entry.get_text(),
-              "db.password":self.db_pass_entry.get_text(),
-              "apache.ip":self.apache_ip_entry.get_text(),
-              "apache.port":self.apache_port_entry.get_text(),
-              "apache.domain":self.apache_domain_entry.get_text(),
-              "apache.subdomain":self.apache_subdomain_entry.get_text(),
-            }
-            target = self.target_combobox.get_active_text()
-            installer = server.installNewInstance(instanceData, target)
-            self.installerId = installer.getLocalId()
+        server = self.srv_combobox.getSelected()
+        instanceData = {
+          "core.name":self.srv_name_entry.get_text(),
+          "db.ip":self.db_ip_entry.get_text(),
+          "db.name":self.db_name_entry.get_text(),
+          "db.user":self.db_user_entry.get_text(),
+          "db.password":self.db_pass_entry.get_text(),
+          "apache.ip":self.apache_ip_entry.get_text(),
+          "apache.port":self.apache_port_entry.get_text(),
+          "apache.domain":self.apache_domain_entry.get_text(),
+          "apache.subdomain":self.apache_subdomain_entry.get_text(),
+        }
+        target = self.target_combobox.get_active_text()
+        installer = server.installNewInstance(instanceData, target)
+        self.installerId = installer.getLocalId()
 
 
     def cb_Cancel(self,widget=None,data=None):
         self.destroy()
 
-    def getModuleIterById(self, serverlist, serverId):
-        def search(model, path, rowiter, serverId):
-            val = model.get_value(rowiter,2)
-            if val == serverId:
-                model.tempiter = rowiter
-        
-        serverlist.tempiter = None
-        serverlist.foreach(search, serverId)
-        rowiter=serverlist.tempiter
-        if rowiter is not None:
-            return rowiter
-        else:
-            return None
-
     def render(self):
-        def search(model, path, rowiter, processed):
-            val = model.get_value(rowiter,2)
-            if val not in processed:
-                model.itersToRemove.append(rowiter)
-        self.servers = self.getApplication().getObjectStore().getServers()
-        processedServerIds = []
-        for server in self.servers:
-            rowiter = self.getModuleIterById(self.srv_combobox_model, server.getLocalId()) 
-            if rowiter is None:
-                self.srv_combobox_model.append((gui.IconStock.getServerIcon(server),server.getName(),server.getLocalId()))
-            else:
-                self.srv_combobox_model.set_value(rowiter,0,gui.IconStock.getServerIcon(server))
-                self.srv_combobox_model.set_value(rowiter,1,server.getName())
-            processedServerIds.append(server.getLocalId())
-
-
-        if self.serverId is not None:
-            activeiter = self.getModuleIterById(self.srv_combobox_model, self.serverId) 
-            self.srv_combobox.set_active_iter(activeiter)
-        self.srv_combobox_model.itersToRemove = []
-        self.srv_combobox_model.foreach(search, processedServerIds)
-        for rowiter in self.srv_combobox_model.itersToRemove:
-            self.srv_combobox_model.remove(rowiter)
+        self.srv_combobox.render()
 
         if not self.targetsRendered:
-            targets = self.servers[0].INSTALLATION_TARGETS
+            targets = Server.INSTALLATION_TARGETS
             for target in targets:
                 self.target_combobox_model.append((target,))
             self.target_combobox.set_active_iter(self.target_combobox_model.get_iter_first())

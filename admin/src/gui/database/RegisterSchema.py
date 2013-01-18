@@ -78,7 +78,7 @@ class RegisterSchema(gtk.Window):
         self.destroy()
 
     def render(self):
-        database = self.getApplication().getLocalObjectById(self.serverId)
+        database = self.getApplication().getLocalObjectById(self.databaseId)
         if database is None:
             self.destroy()
 

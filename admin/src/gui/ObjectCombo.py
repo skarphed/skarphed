@@ -33,7 +33,12 @@ class ObjectCombo(gtk.ComboBox):
     def __init__(self, par, objectType, selectedObject=None):
         gtk.ComboBox.__init__(self)
         self.par = par
-        self.objectType = objectType.__class__.__name__
+
+        if type(objectType) != str:
+            self.objectType = objectType.__class__.__name__
+        else:
+            self.objectType = objectType
+        
         self.selectedObjectId = selectedObject.getLocalId()
 
         self.model = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
@@ -55,9 +60,9 @@ class ObjectCombo(gtk.ComboBox):
             if val not in processed:
                 model.itersToRemove.append(rowiter)
         
-        self.obj = self.getApplication().getObjectStore().getAllOfClass(self.objectType)
+        objs = self.getApplication().getObjectStore().getAllOfClass(self.objectType)
         processedObjectIds = []
-        for obj in self.objs:
+        for obj in objs:
             rowiter = self.getIterById(self.model, obj.getLocalId()) 
             if rowiter is None:
                 self.model.append((IconStock.getServerIcon(obj),obj.getName(),obj.getLocalId()))
@@ -67,7 +72,7 @@ class ObjectCombo(gtk.ComboBox):
             processedObjectIds.append(obj.getLocalId())
 
 
-        if self.selectedObject is not None:
+        if self.selectedObjectId is not None:
             activeiter = self.getIterById(self.model, self.selectedObjectId) 
             self.set_active_iter(activeiter)
         self.model.itersToRemove = []
@@ -90,7 +95,7 @@ class ObjectCombo(gtk.ComboBox):
             return None
 
     def getSelected(self):
-        active_iter = self.getActiveIter()
+        active_iter = self.get_active_iter()
         objId = self.model.get_value(active_iter,2)
         obj = self.getApplication().getObjectStore().getLocalObjectById(objId)
         return obj

@@ -62,7 +62,7 @@ class ObjectStore(object):
         if type(obj) != str:
             obj = obj.__class__.__name__
         res = []
-        for element in ObjectStore.localObjects.values()
+        for element in ObjectStore.localObjects.values():
             if element.__class__.__name__ == obj:
                 res.append(element)
         return res
