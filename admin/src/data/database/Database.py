@@ -64,19 +64,16 @@ class Database(GenericScovilleObject):
         sql = open("../installer/_database/scvdb.sql","r").read()
         sql = sql%{'USER':username,'PASSWORD':schemaroot_pw, 'SALT':schemaroot_salt, 'NAME':name}
 
-        print "\n\n%s\n\n"%sql
-
         #HERE BE DRAGONS
-        con_in, con_out, conn_err = con.exec_command("""echo "add %s -pw %s" | gsec -user %s -pass %s ;;
-                                                       cd /var/firebird/2.5/data ;;
-                                                       echo "%s" | isql-fb -user %s -password %s
-                                                                                   """%(username,
-                                                                                        password,
-                                                                                        self.dba_user,
-                                                                                        self.dba_password,
-                                                                                        sql,
-                                                                                        username,
-                                                                                        password))
+        command = """echo "add %(user)s -pw %(pass)s" | gsec -user %(user_dba)s -pass %(pass_dba)s ;
+                                                       cd /var/lib/firebird/2.5/data ;
+                                                       echo "%(sql)s" | isql-fb -user %(user)s -password %(pass)s
+                                                                                   """%{'user': username,
+                                                                                        'pass':password,
+                                                                                        'user_dba':self.dba_user,
+                                                                                        'pass_dba':self.dba_password,
+                                                                                        'sql':sql}
+        con_in, con_out, conn_err = con.exec_command(command)
 
         schema = Schema(self, name, username, password)
         self.children.append(schema)
@@ -93,10 +90,15 @@ class Database(GenericScovilleObject):
 
     def destroySchema(self,schema):
         con = self.getServer().getSSH()
-        con_in, con_out, con_err = con.exec_command("""echo "DROP DATABASE %s;" | isql-fb -user %s -pass %s"""%(schema.name,
-                                                                                                               self.dba_user,
-                                                                                                               self.dba_password))
-        self.unregisterSchema()
+        command ="""cd /var/lib/firebird/2.5/data ; 
+                    echo "CONNECT '%(name)s.fdb'; DROP DATABASE;" | isql-fb -user %(user_dba)s -pass %(pass_dba)s ;
+                    echo "del %(user)s" | gsec -user %(user_dba)s -pass %(pass_dba)s """%{'name':schema.db_name,
+                                                                                    'user_dba':self.dba_user,
+                                                                                    'pass_dba':self.dba_password,
+                                                                                    'user':schema.db_user }
+        print command
+        con_in, con_out, con_err = con.exec_command(command)
+        self.unregisterSchema(schema)
 
     def unregisterSchema(self, schema):
         self.children.remove(schema)
@@ -118,10 +120,10 @@ class Database(GenericScovilleObject):
     def _generateRandomString(self,length):
         ret = ""
         for i in range(length):
-            i = -1
-            while i in (-1,96,91,92,93,60,62):
-                randrange(48,123)
-            ret+=chr()
+            x = -1
+            while x in (-1,91,92,93,94,95,96,60,61,62,58,59,63,64):
+                x = randrange(48,123)
+            ret+=chr(x)
         return ret
 
     def getUsername(self):
