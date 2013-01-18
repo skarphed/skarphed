@@ -33,6 +33,7 @@ from ServerPropertyWindow import ServerPropertyWindow
 from NewScoville import NewScoville
 from gui.database.NewDatabase import NewDatabase
 from gui.database.NewSchema import NewSchema
+from gui.database.RegisterSchema import RegisterSchema
 from InputBox import InputBox
 
 class TreeContextMenu(gtk.Menu):
@@ -274,7 +275,7 @@ class TreeContextMenu(gtk.Menu):
         NewDatabase(self.getPar().getPar(), self.currentObject)
 
     def cb_registerSchema(self, data=None):
-        pass
+        RegisterSchema(self.getPar().getPar(), self.currentObject)
 
     def cb_createSchema(self, data=None):
         NewSchema(self.getPar().getPar(), self.currentObject)
