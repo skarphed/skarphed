@@ -25,7 +25,21 @@
 from data.Generic import GenericScovilleObject
 from data.database.Schema import Schema
 
+from hashlib import sha512
+from random import randrange
+
+from threading import Thread
+
 class Database(GenericScovilleObject):
+    class GenerateSchemaThread(Thread):
+        def __init__(self, database, name):
+            self.database = database
+            self.name = name
+            Thread.__init__(self)
+
+        def run(self):
+            database.executeCreateSchema(self.name)
+
     def __init__(self, par, url="", dba_user="", dba_password=""):
         GenericScovilleObject.__init__(self)
         self.par = par
@@ -34,29 +48,73 @@ class Database(GenericScovilleObject):
         self.dba_user = dba_user
         self.dba_password = dba_password
 
-    def createSchema(self, name):
-        username = "ABCDEFGH"
-        password = "abcdefgh"
+    def createSchema(self,name):
+        thread = GenerateSchemaThread(self,name)
+        thread.start()
+
+    def executeCreateSchema(self, name):
+        username = self._generateRandomString(8)
+        password = self._generateRandomString(8)
+
+        schemaroot_pw , schemaroot_salt = self.generateSaltedPassword()
+
         con = self.getServer().getSSH()
-        # Threadauslagerung
-        con_in, con_out, conn_err = con.exec_comand("gsec -user %s -pass %s add -username %s -password %s"%(self.dba_user,
+
+        sql = open("../installer/_database/scvdb.sql","r").read()
+        sql = sql%{'USER':username,'PASSWORD':schemaroot_pw, 'SALT':schemaroot_salt, 'NAME':name}
+
+        #HERE BE DRAGONS
+        con_in, con_out, conn_err = con.exec_comand("""echo "add %s -pw %s" | gsec -user %s -pass %s ;;
+                                                       cd /var/firebird/2.5/data ;;
+                                                       echo "%s" | isql-fb -user %s -password %s
+                                                                                   """%(username,
+                                                                                        password,
+                                                                                        self.dba_user,
                                                                                         self.dba_password,
-                                                                                        name))
+                                                                                        sql,
+                                                                                        username,
+                                                                                        password))
+
         schema = Schema(self, name, username, password)
         self.children.append(schema)
 
-    def addSchema(self, name, user, password):
+    def registerSchema(self, name, user, password):
         schema = Schema(self,name,user,password)
         self.children.append(schema)
+        self.updated()
 
     def establishConnections(self):
-        pass
+        pass 
 
-    def deleteSchema(self):
+    def destroySchema(self,schema):
         con = self.getServer().getSSH()
+        con_in, con_out, con_err = con.exec_comand("""echo "DROP DATABASE %s;" | isql-fb -user %s -pass %s"""%(schema.name,
+                                                                                                               self.dba_user,
+                                                                                                               self.dba_password))
+        self.unregisterSchema()
+
+    def unregisterSchema(self, schema):
+        self.children.remove(schema)
+        schema.destroy()
+        self.updated()
 
     def updateSchemata(self):
         con = self.getServer().getSSH()
+
+
+    def generateSaltedPassword(self, password):
+        salt = self._generateRandomString(128)
+        pw = "root"
+        h = sha512()
+        h.update(pw+salt)
+        pw = u.hexdigest()
+        return (pw, salt)
+
+    def _generateRandomString(self,length):
+        ret = ""
+        for i in range(length):
+            ret+=chr(randrange(33,127))
+        return ret
 
     def getUsername(self):
         return self.dba_user
