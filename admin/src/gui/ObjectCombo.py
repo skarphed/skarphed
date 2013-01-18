@@ -39,7 +39,9 @@ class ObjectCombo(gtk.ComboBox):
         else:
             self.objectType = objectType
         
-        self.selectedObjectId = selectedObject.getLocalId()
+        self.selectedObjectId = None
+        if selectedObject is not None:
+            self.selectedObjectId = selectedObject.getLocalId()
 
         self.model = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
         
@@ -65,9 +67,9 @@ class ObjectCombo(gtk.ComboBox):
         for obj in objs:
             rowiter = self.getIterById(self.model, obj.getLocalId()) 
             if rowiter is None:
-                self.model.append((IconStock.getServerIcon(obj),obj.getName(),obj.getLocalId()))
+                self.model.append((IconStock.getAppropriateIcon(obj),obj.getName(),obj.getLocalId()))
             else:
-                self.model.set_value(rowiter,0,IconStock.getServerIcon(obj))
+                self.model.set_value(rowiter,0,IconStock.getAppropriateIcon(obj))
                 self.model.set_value(rowiter,1,obj.getName())
             processedObjectIds.append(obj.getLocalId())
 

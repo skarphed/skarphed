@@ -52,7 +52,7 @@ class NewScoville(gtk.Window):
         self.frm_apache = gtk.Frame("Apache2")
 
         self.frm_srv_tbl = gtk.Table(2,2,False)
-        self.frm_db_tbl = gtk.Table(2,4,False)
+        self.frm_db_tbl = gtk.Table(2,2,False)
         self.frm_target_tbl = gtk.Table(3,1,False)
         self.frm_root_tbl = gtk.Table(2,2,False)
         self.frm_apache_tbl = gtk.Table(2,4,False)
@@ -70,25 +70,20 @@ class NewScoville(gtk.Window):
         self.frm_srv_tbl.attach(self.srv_name_entry,1,2,1,2)
         self.frm_srv.add(self.frm_srv_tbl)
 
-        self.db_ip_entry = gtk.Entry()
-        self.db_name_entry = gtk.Entry()
-        self.db_user_entry = gtk.Entry()
-        self.db_pass_entry = gtk.Entry()
-        self.db_ip_label = gtk.Label("IP:")
-        self.db_name_label = gtk.Label("DB-Name:")
-        self.db_user_label = gtk.Label("User:")
-        self.db_pass_label = gtk.Label("Password:")
+        self.db_radio_new = gtk.RadioButton(None,"Create new on Database:")
+        self.db_radio_use = gtk.RadioButton(self.db_radio_new,"Use existing Schema:")
+        self.db_db_combo = ObjectCombo(self,"Database")
+        self.db_schema_combo = ObjectCombo(self,"Schema")
+        self.db_schema_combo.set_sensitive(False)
 
-        self.frm_db_tbl.attach(self.db_ip_label,0,1,0,1)
-        self.frm_db_tbl.attach(self.db_ip_entry,1,2,0,1)
-        self.frm_db_tbl.attach(self.db_name_label,0,1,1,2)
-        self.frm_db_tbl.attach(self.db_name_entry,1,2,1,2)
-        self.frm_db_tbl.attach(self.db_user_label,0,1,2,3)
-        self.frm_db_tbl.attach(self.db_user_entry,1,2,2,3)
-        self.frm_db_tbl.attach(self.db_pass_label,0,1,3,4)
-        self.frm_db_tbl.attach(self.db_pass_entry,1,2,3,4)
-        self.frm_db.add(self.frm_db_tbl)
-
+        self.db_radio_new.connect("toggled", self.cb_ToggledDb,1)
+        self.db_radio_use.connect("toggled", self.cb_ToggledDb,2)
+        
+        self.frm_db_tbl.attach(self.db_radio_new,0,1,0,1)
+        self.frm_db_tbl.attach(self.db_db_combo,1,2,0,1)
+        self.frm_db_tbl.attach(self.db_radio_use,0,1,1,2)
+        self.frm_db_tbl.attach(self.db_schema_combo,1,2,1,2)
+        self.frm_db.add(self.frm_db_tbl)        
 
         self.target_label = gtk.Label("Target-OS:")
         self.target_combobox_model = gtk.ListStore(str)
@@ -150,20 +145,32 @@ class NewScoville(gtk.Window):
         self.getApplication().getObjectStore().addCallback(self.render)
         self.render()
 
-
     def cb_Ok(self,widget=None,data=None):
         server = self.srv_combobox.getSelected()
+
+        if self.db_radio_new.get_active():
+            db = self.db_db_combo.getSelected()
+            newSchemaName = self.srv_name_entry.get_text()
+            newSchemaName = newSchemaName.translate(None, "!\"§$%&/()=?`´#+~'><|^¹²³¼½¬{[]}\\ *-.,:;")
+            schema = db.createSchema(newSchemaName)
+        elif self.db_radio_use.get_active():
+            schema = self.db_schema_combo.getSelected()
+ 
         instanceData = {
           "core.name":self.srv_name_entry.get_text(),
-          "db.ip":self.db_ip_entry.get_text(),
-          "db.name":self.db_name_entry.get_text(),
-          "db.user":self.db_user_entry.get_text(),
-          "db.password":self.db_pass_entry.get_text(),
+          "db.ip":schema.getDatabase().getServer().getIp(),
+          "db.name":schema.db_name,
+          "db.user":schema.db_user,
+          "db.password":schema.db_password,
           "apache.ip":self.apache_ip_entry.get_text(),
           "apache.port":self.apache_port_entry.get_text(),
           "apache.domain":self.apache_domain_entry.get_text(),
           "apache.subdomain":self.apache_subdomain_entry.get_text(),
         }
+
+        if self.db_radio_new.get_active():
+            schema.destroy()
+
         target = self.target_combobox.get_active_text()
         installer = server.installNewInstance(instanceData, target)
         self.installerId = installer.getLocalId()
@@ -172,8 +179,19 @@ class NewScoville(gtk.Window):
     def cb_Cancel(self,widget=None,data=None):
         self.destroy()
 
+    def cb_ToggledDb(self, widget=None, data=None):
+        if data==1:
+            self.db_db_combo.set_sensitive(True)
+            self.db_schema_combo.set_sensitive(False)
+        elif data==2:
+            self.db_db_combo.set_sensitive(False)
+            self.db_schema_combo.set_sensitive(True)
+
+
     def render(self):
         self.srv_combobox.render()
+        self.db_schema_combo.render()
+        self.db_db_combo.render()
 
         if not self.targetsRendered:
             targets = Server.INSTALLATION_TARGETS
@@ -190,10 +208,10 @@ class NewScoville(gtk.Window):
             sensitive = installer.status == 100
             self.srv_combobox.set_sensitive(sensitive)
             self.srv_name_entry.set_sensitive(sensitive)
-            self.db_ip_entry.set_sensitive(sensitive)
-            self.db_name_entry.set_sensitive(sensitive)
-            self.db_user_entry.set_sensitive(sensitive)
-            self.db_pass_entry.set_sensitive(sensitive)
+            self.db_db_combo.set_sensitive(sensitive)
+            self.db_schema_combo.set_sensitive(sensitive)
+            self.db_radio_new.set_sensitive(sensitive)
+            self.db_radio_use.set_sensitive(sensitive)
             self.target_combobox.set_sensitive(sensitive)
             self.apache_ip_entry.set_sensitive(sensitive)
             self.apache_port_entry.set_sensitive(sensitive)

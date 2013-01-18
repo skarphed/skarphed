@@ -34,13 +34,15 @@ import gobject
 
 class Database(GenericScovilleObject):
     class GenerateSchemaThread(Thread):
-        def __init__(self, database, name):           
+        def __init__(self, database, name, username, password):           
             Thread.__init__(self)
             self.database = database
             self.name = name
+            self.username = username
+            self.password = password 
 
         def run(self):
-            self.database.executeCreateSchema(self.name)
+            self.database.executeCreateSchema(self.name, self.username, self.password)
 
     def __init__(self, par, url="", dba_user="", dba_password=""):
         GenericScovilleObject.__init__(self)
@@ -51,12 +53,12 @@ class Database(GenericScovilleObject):
         self.dba_password = dba_password
 
     def createSchema(self,name):
-        self.GenerateSchemaThread(self,name).start()
-
-    def executeCreateSchema(self, name):
         username = self._generateRandomString(8)
         password = self._generateRandomString(8)
+        self.GenerateSchemaThread(self,name,username,password).start()
+        return Schema(self,name,username,password)
 
+    def executeCreateSchema(self, name, username, password):
         schemaroot_pw , schemaroot_salt = self.generateSaltedPassword('root')
 
         con = self.getServer().getSSH()
