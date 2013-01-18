@@ -63,8 +63,3 @@ touch /var/log/apache2/www_scv_$instanceid/access.log
 echo $instanceid > /etc/scoville/GEN_INSTANCE
 
 echo Installation Finished successfully.
-
-
-
-
-
