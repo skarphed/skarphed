@@ -116,7 +116,7 @@ class UseProfile(gtk.Fixed):
             hash.update(password)
             self.getApplication().doLoginTry(username,hash.hexdigest())
         except Exception,e :
-            pass
+            raise e
         else:
             self.getPar().destroy()
 

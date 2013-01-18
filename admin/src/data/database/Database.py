@@ -96,7 +96,6 @@ class Database(GenericScovilleObject):
                                                                                     'user_dba':self.dba_user,
                                                                                     'pass_dba':self.dba_password,
                                                                                     'user':schema.db_user }
-        print command
         con_in, con_out, con_err = con.exec_command(command)
         self.unregisterSchema(schema)
 
