@@ -58,12 +58,17 @@ class ObjectStore(object):
         for cb in ObjectStore.callbacks:
             cb()
     
-    def getServers(self):
+    def getAllOfClass(self, obj):
+        if type(obj) != str:
+            obj = obj.__class__.__name__
         res = []
-        for element in ObjectStore.localObjects.values():
-            if element.__class__.__name__ == 'Server':
+        for element in ObjectStore.localObjects.values()
+            if element.__class__.__name__ == obj:
                 res.append(element)
         return res
+
+    def getServers(self):
+        return self.getAllOfClass("Server")
     
     def clear(self):
         for element in ObjectStore.localObjects.keys():
