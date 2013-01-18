@@ -1,4 +1,4 @@
-CREATE DATABASE %(NAME)s;
+CREATE DATABASE %(NAME)s.fdb;
 
 /********************* ROLES **********************/
 

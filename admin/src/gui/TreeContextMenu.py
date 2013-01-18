@@ -32,6 +32,7 @@ import IconStock
 from ServerPropertyWindow import ServerPropertyWindow
 from NewScoville import NewScoville
 from gui.database.NewDatabase import NewDatabase
+from gui.database.NewSchema import NewSchema
 from InputBox import InputBox
 
 class TreeContextMenu(gtk.Menu):
@@ -276,13 +277,13 @@ class TreeContextMenu(gtk.Menu):
         pass
 
     def cb_createSchema(self, data=None):
-        pass
+        NewSchema(self.getPar().getPar(), self.currentObject)
 
     def cb_unregisterSchema(self, data=None):
-        pass
+        self.currentObject.getPar().unregisterSchema(self.currentObject)
 
     def cb_destroySchema(self, data=None):
-        pass
+        self.currentObject.getPar().destroySchema(self.currentObject)
     
     def popup(self,obj,button,time):
         self.hide_buttons()
@@ -323,6 +324,7 @@ class TreeContextMenu(gtk.Menu):
         elif itemtype == "Database":
             self.registerSchema.set_visible(True)
             self.createSchema.set_visible(True)
+        elif itemtype == "Schema":
             self.unregisterSchema.set_visible(True)
             self.destroySchema.set_visible(True)
         else: 

@@ -30,15 +30,17 @@ from random import randrange
 
 from threading import Thread
 
+import gobject
+
 class Database(GenericScovilleObject):
     class GenerateSchemaThread(Thread):
-        def __init__(self, database, name):
+        def __init__(self, database, name):           
+            Thread.__init__(self)
             self.database = database
             self.name = name
-            Thread.__init__(self)
 
         def run(self):
-            database.executeCreateSchema(self.name)
+            self.database.executeCreateSchema(self.name)
 
     def __init__(self, par, url="", dba_user="", dba_password=""):
         GenericScovilleObject.__init__(self)
@@ -49,22 +51,23 @@ class Database(GenericScovilleObject):
         self.dba_password = dba_password
 
     def createSchema(self,name):
-        thread = GenerateSchemaThread(self,name)
-        thread.start()
+        self.GenerateSchemaThread(self,name).start()
 
     def executeCreateSchema(self, name):
         username = self._generateRandomString(8)
         password = self._generateRandomString(8)
 
-        schemaroot_pw , schemaroot_salt = self.generateSaltedPassword()
+        schemaroot_pw , schemaroot_salt = self.generateSaltedPassword('root')
 
         con = self.getServer().getSSH()
 
         sql = open("../installer/_database/scvdb.sql","r").read()
         sql = sql%{'USER':username,'PASSWORD':schemaroot_pw, 'SALT':schemaroot_salt, 'NAME':name}
 
+        print "\n\n%s\n\n"%sql
+
         #HERE BE DRAGONS
-        con_in, con_out, conn_err = con.exec_comand("""echo "add %s -pw %s" | gsec -user %s -pass %s ;;
+        con_in, con_out, conn_err = con.exec_command("""echo "add %s -pw %s" | gsec -user %s -pass %s ;;
                                                        cd /var/firebird/2.5/data ;;
                                                        echo "%s" | isql-fb -user %s -password %s
                                                                                    """%(username,
@@ -77,6 +80,8 @@ class Database(GenericScovilleObject):
 
         schema = Schema(self, name, username, password)
         self.children.append(schema)
+        self.installFinished = True
+        gobject.idle_add(self.updated)
 
     def registerSchema(self, name, user, password):
         schema = Schema(self,name,user,password)
@@ -88,7 +93,7 @@ class Database(GenericScovilleObject):
 
     def destroySchema(self,schema):
         con = self.getServer().getSSH()
-        con_in, con_out, con_err = con.exec_comand("""echo "DROP DATABASE %s;" | isql-fb -user %s -pass %s"""%(schema.name,
+        con_in, con_out, con_err = con.exec_command("""echo "DROP DATABASE %s;" | isql-fb -user %s -pass %s"""%(schema.name,
                                                                                                                self.dba_user,
                                                                                                                self.dba_password))
         self.unregisterSchema()
@@ -107,13 +112,16 @@ class Database(GenericScovilleObject):
         pw = "root"
         h = sha512()
         h.update(pw+salt)
-        pw = u.hexdigest()
+        pw = h.hexdigest()
         return (pw, salt)
 
     def _generateRandomString(self,length):
         ret = ""
         for i in range(length):
-            ret+=chr(randrange(33,127))
+            i = -1
+            while i in (-1,96,91,92,93,60,62):
+                randrange(48,123)
+            ret+=chr()
         return ret
 
     def getUsername(self):
