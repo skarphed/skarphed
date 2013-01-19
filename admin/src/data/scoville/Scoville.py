@@ -86,6 +86,9 @@ class ScovilleInstaller(GenericScovilleObject):
         scv_config = {}
         for key,val in self.data.items():
             if key.startswith("core.") or key.startswith("db."):
+                if key == "db.name":
+                    scv_config[key] = val+".fdb"
+                    continue
                 scv_config[key] = val
 
         jenc = jayson.JSONEncoder()
