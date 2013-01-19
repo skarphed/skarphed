@@ -19,7 +19,20 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-  require '../lib/core.php';
+  $SCV_GLOBALCFG = array();
+  $configfile = file_get_contents("/etc/scoville/scoville.conf");
+  $configfile = preg_split("/\n/",$configfile);
+  foreach($configfile as $configline){
+    if (preg_match("/^#/",$configline)){
+      continue;
+    }
+    $linesplit = preg_split("/=/",$configline);
+    $SCV_GLOBALCFG[$linesplit[0]] = $linesplit[1];
+  }
+
+  require 'instance.conf.php';
+
+  require $SCV_GLOBALCFG['SCV_LIBPATH'].'/core.php';
   
   use scv;
   

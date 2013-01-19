@@ -53,6 +53,8 @@ sed s#//SCVWEBROOT//#$SCV_WEBPATH$instanceid#g ./apache2.conf > /tmp/scv_$instan
 sed s#//SCVINSTANCEID//#$instanceid#g  /tmp/scv_$instanceid/replace > /etc/apache2/sites-enabled/www_scv_$instanceid
 rm -r /tmp/scv_$instanceid
 
+chown -R www-data:www-data $SCV_WEBPATH$instanceid
+
 mkdir /var/log/apache2/www_scv_$instanceid
 touch /var/log/apache2/www_scv_$instanceid/error.log
 touch /var/log/apache2/www_scv_$instanceid/access.log
