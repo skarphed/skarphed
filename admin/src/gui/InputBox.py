@@ -57,6 +57,8 @@ class InputBox(gtk.Window):
         
         self.add(self.vbox)
         self.show_all()
+
+        self.entry.grab_focus()
     
     def okCallback(self,widget=None,data=None):
         def errorMessage(msgId):

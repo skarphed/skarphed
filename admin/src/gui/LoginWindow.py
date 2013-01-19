@@ -98,8 +98,6 @@ class UseProfile(gtk.Fixed):
         self.put(self.e_password,110,35)
         self.put(self.ok,110,60)
         
-        self.e_user.grab_focus()
-        
         self.ok.connect("clicked", self.cb_OK)
         
     def getPar(self):
@@ -130,8 +128,10 @@ class LoginWindow(gtk.Window):
         self.vbox = gtk.VBox()
         self.image = gtk.image_new_from_file("../data/login.png")
         self.notebook = gtk.Notebook()
-        self.notebook.append_page(UseProfile(self),gtk.Label("load profile"))
-        self.notebook.append_page(NewProfile(self),gtk.Label("create profile"))
+        self.useprofile = UseProfile(self)
+        self.newprofile = NewProfile(self)
+        self.notebook.append_page(self.useprofile,gtk.Label("load profile"))
+        self.notebook.append_page(self.newprofile,gtk.Label("create profile"))
         self.vbox.add(self.image)
         self.vbox.add(self.notebook)
         self.add(self.vbox)
@@ -139,8 +139,9 @@ class LoginWindow(gtk.Window):
         self.set_position(gtk.WIN_POS_CENTER)
         self.set_resizable(False)
         
-        
         self.show_all()
+
+        self.useprofile.e_user.grab_focus()
         
     def getPar(self):
         return self.par

@@ -130,6 +130,7 @@ class MainWindow(gtk.Window):
         about.set_comments("Scoville Admin PRO is a professional tool to manage your Scoville installations")
         about.set_website("http://www.masterprogs.de")
         about.set_logo(gtk.gdk.pixbuf_new_from_file(sys.path[0]+"/../data/login.png"))
+        about.set_border_width(0)
         about.run()
         about.destroy()
     
