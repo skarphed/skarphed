@@ -152,24 +152,26 @@ class NewScoville(gtk.Window):
             db = self.db_db_combo.getSelected()
             newSchemaName = self.srv_name_entry.get_text()
             newSchemaName = newSchemaName.translate(None, "!\"§$%&/()=?`´#+~'><|^¹²³¼½¬{[]}\\ *-.,:;")
-            schema = db.createSchema(newSchemaName)
+            schemaInfo = db.createSchema(newSchemaName)
+            schemaInfo['ip'] = db.getServer().getIp()
         elif self.db_radio_use.get_active():
             schema = self.db_schema_combo.getSelected()
+            schemaInfo = {'name':schema.db_name,
+                          'user':schema.db_user,
+                          'pass':schema.db_password,
+                          'ip':schema.getDatabase().getServer().getIp()}
  
         instanceData = {
           "core.name":self.srv_name_entry.get_text(),
-          "db.ip":schema.getDatabase().getServer().getIp(),
-          "db.name":schema.db_name,
-          "db.user":schema.db_user,
-          "db.password":schema.db_password,
+          "db.ip":schemaInfo['ip'],
+          "db.name":schemaInfo['name'],
+          "db.user":schemaInfo['user'],
+          "db.password":schemaInfo['pass'],
           "apache.ip":self.apache_ip_entry.get_text(),
           "apache.port":self.apache_port_entry.get_text(),
           "apache.domain":self.apache_domain_entry.get_text(),
           "apache.subdomain":self.apache_subdomain_entry.get_text(),
         }
-
-        if self.db_radio_new.get_active():
-            schema.destroy()
 
         target = self.target_combobox.get_active_text()
         installer = server.installNewInstance(instanceData, target)

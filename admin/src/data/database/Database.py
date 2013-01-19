@@ -56,7 +56,7 @@ class Database(GenericScovilleObject):
         username = self._generateRandomString(8)
         password = self._generateRandomString(8)
         self.GenerateSchemaThread(self,name,username,password).start()
-        return Schema(self,name,username,password)
+        return {'name':name,'user':username,'pass':password}
 
     def executeCreateSchema(self, name, username, password):
         schemaroot_pw , schemaroot_salt = self.generateSaltedPassword('root')
