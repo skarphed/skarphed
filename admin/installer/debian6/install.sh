@@ -13,6 +13,7 @@ else
 
 	apt-get install -y apache2 php5-interbase php-pear
 
+	wget http://phpseclib.sourceforge.net/channel.xml -O /dev/null -o /dev/null # HOTFIX for broken pear channel
 	pear channel-discover phpseclib.sourceforge.net
 	pear remote-list -c phpseclib
 	pear install phpseclib/Crypt_RSA-0.3.1 #version unbedingt noetig?
