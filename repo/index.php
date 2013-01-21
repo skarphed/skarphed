@@ -23,7 +23,7 @@
 	session_start();
 	
 	if (isset($_REQUEST['j'])){
-		include_once('protocolhandler.php');
+		require_once('protocolhandler.php');
 		try{
 			$protocolHandler = new ProtocolHandler($_REQUEST['j']);
 			$protocolHandler->execute();
@@ -32,7 +32,7 @@
 		}
 		echo $protocolHandler->getResult();
 	}else{
-		include_once('repository.php');
+		require_once('repository.php');
 		$repository = Repository::getInstance();
 ?>
 <!DOCTYPE HTML>

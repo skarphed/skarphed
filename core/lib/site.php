@@ -21,7 +21,7 @@
 ###########################################################
 namespace scv;
 
-include_once 'core.php';
+require_once 'core.php';
 
 class SiteException extends \Exception{}
 class WidgetException extends \Exception{}

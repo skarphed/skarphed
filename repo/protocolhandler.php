@@ -20,7 +20,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-	include_once('repository.php');
+	require_once('repository.php');
 	
 	class ProtocolHandler  {
 		//Calls From Scoville to Repository

@@ -27,17 +27,17 @@ abstract class Singleton {
 	abstract protected function init();
 }
 
-include_once 'configuration.php';
-include_once 'database.php';
-include_once 'module.php';
-include_once "user.php";
-include_once "css.php";
-include_once "operation.php";
-include_once "template.php";
-include_once "site.php";
-include_once "rightmanagement.php";
-include_once "binary.php";
-include_once "action.php";
+require_once 'configuration.php';
+require_once 'database.php';
+require_once 'module.php';
+require_once "user.php";
+require_once "css.php";
+require_once "operation.php";
+require_once "template.php";
+require_once "site.php";
+require_once "rightmanagement.php";
+require_once "binary.php";
+require_once "action.php";
 
 session_start();
 

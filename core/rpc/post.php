@@ -1,6 +1,6 @@
 <?php
 
-include_once '../lib/core.php';
+require_once '../lib/core.php';
 
 $core = scv\Core::getInstance();
 $userM = $core->getUserManager();

@@ -21,8 +21,8 @@
 ###########################################################
 namespace scv;
 
-include_once "core.php";
-include_once "Crypt/RSA.php";
+require_once "core.php";
+require_once "Crypt/RSA.php";
 class ModuleException extends \Exception{}
 
 interface IModule{
@@ -365,7 +365,7 @@ class ModuleManager extends Singleton {
 	public function loadModule($moduleName){
 		$core = Core::getInstance();
 		try{
-			include_once $moduleName."/module.php";
+			require_once $moduleName."/module.php";
 			$moduleClass = str_replace(".","_", $moduleName);
 			//eval("\$module = new $moduleClass(\$core);");
 			$module = new $moduleClass($core);
@@ -384,7 +384,7 @@ class ModuleManager extends Singleton {
 			throw new ModuleException("Load Module: Module with id $moduleId does not exist!");
 		}
 		try{
-			include_once $moduleName."/module.php";
+			require_once $moduleName."/module.php";
 			$moduleClass = str_replace(".","_", $moduleName);
 			//eval("\$module = new $moduleClass(\$core);");
 			$module = new $moduleClass($core);

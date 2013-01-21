@@ -20,8 +20,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-	include_once('repo_database.php');
-	#include_once('Crypt_RSA');
+	require_once('repo_database.php');
+	#require_once('Crypt_RSA');
 	
 	
 	abstract class Singleton {
@@ -270,7 +270,7 @@
 		}
 		
 		public function uploadModule($data,$signature){
-			include_once('Crypt/RSA.php');
+			require_once('Crypt/RSA.php');
 			$con = $this->establishConection();
 			
 			$rsa = new Crypt_RSA();
@@ -399,7 +399,7 @@
 		}
 		
 		public function createOwnKeypair(){
-			include_once('Crypt/RSA.php');
+			require_once('Crypt/RSA.php');
 			
 			$rsa = new Crypt_RSA();
 			$keys  = $rsa->createKey(1024);

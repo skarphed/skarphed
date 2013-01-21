@@ -21,7 +21,7 @@
 ###########################################################
 namespace scv;
 
-include_once 'core.php';
+require_once 'core.php';
 
 class TemplateException extends \Exception{}
 
