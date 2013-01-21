@@ -32,6 +32,7 @@
 	
 	class Repository extends Singleton{
 		private static $instance = null;
+		private $config = null;
 	
 		public static function getInstance(){
 			if (Repository::$instance==null){
@@ -41,7 +42,10 @@
 			return Repository::$instance;
 		}
 		
-		protected function init(){}
+		protected function init(){
+			$cfg_file = file_get_contents("config.json");
+			$this->config = json_decode($cfg_file,true);
+		}
 		
 		private function rrmdir($dir) {
 			if (is_dir($dir)) {
@@ -58,7 +62,10 @@
 		
 		private function establishConection(){
 			$con = new repo_database();
-			$con->set_all("zigapeda","10.8.0.58","scvrepo.gdb","test");
+			$con->set_all($this->config['db.user'],
+						  $this->config['db.ip'],
+						  $this->config['db.name'],
+						  $this->config['db.password']);
 			$con->connect();
 			return $con;
 		}
