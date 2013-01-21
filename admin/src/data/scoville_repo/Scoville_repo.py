@@ -54,6 +54,8 @@ class Scoville_repo(Instance):
         self.url = url
         self.username = username
         self.password = password
+
+        self.newPassword = None
         
     def setUrl(self,url):
         self.url= url
@@ -118,11 +120,14 @@ class Scoville_repo(Instance):
         self.loadModules()
     
     def changePasswordCallback(self,result):
+        #TODO: check for error
+        self.password = self.newPassword
+        self.newPassword = None
         self.updated()
     
     def changePassword(self, password):
         ScovilleRepository(self, {'c':102,'dxd':password}, self.changePasswordCallback).start()
-        self.setPassword(password)
+        self.newPassword = password
         
     def developerCallback(self,result):
         self.loadDevelopers()

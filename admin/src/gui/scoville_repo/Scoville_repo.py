@@ -66,6 +66,7 @@ class Scoville_repoPage (GenericObjectPage):
         self.adminHBox.pack_start(self.adminTable,False)
         self.adminHBox.pack_start(self.adminHBoxDummy,True)
         self.adminFrame.add(self.adminHBox)
+        self.adminButtonChange.connect("clicked", self.cb_ChangePassword)
         self.pack_start(self.adminFrame,False)
         
         self.moduleFrame=PageFrame(self, "Modules", IconStock.MODULE)
@@ -127,6 +128,16 @@ class Scoville_repoPage (GenericObjectPage):
     def render(self):
         pass
     
+    def cb_ChangePassword(self, widget=None, data=None):
+        pw1 = self.adminPasswordEntry.get_text()
+        pw2 = self.adminRepeatEntry.get_text()
+        if pw1 == pw2:
+            repo = self.getApplication().getLocalObjectById(self.repoId)
+            repo.changePassword(pw1)
+        else:
+            pass #TODO: Implement error behaviour
+
+
     def cb_Add(self,widget=None,data=None):
         name = self.developerNameEntry.get_text()
         fullName = self.developerFullnameEntry.get_text()
