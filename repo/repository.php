@@ -232,7 +232,7 @@
 			$db_hash = $set->VAL;
 			$set = $con->fetchObject($res);
 			$salt = $set->VAL;
-			$hash = hash('ripemd160', $password.$salt);
+			$hash = hash('sha512', $password.$salt);
 			
 			$isValid = $db_hash == $hash;
 			$_SESSION['privileged'] = $isValid;
@@ -262,7 +262,7 @@
 				
 			$con = $this->establishConection();
 			$salt = base64_encode($this->generateSalt());
-			$hash = hash('ripemd160',$password.$salt);
+			$hash = hash('sha512',$password.$salt);
 			$con->query("UPDATE CONFIG SET VAL = ? WHERE PARAM = ?", array($hash,'password'));
 			$con->query("UPDATE CONFIG SET VAL = ? WHERE PARAM = ?", array($salt,'salt'));
 			return true;
