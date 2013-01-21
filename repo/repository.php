@@ -231,7 +231,7 @@
 			$set = $con->fetchObject($res);
 			$db_hash = $set->VAL;
 			$set = $con->fetchObject($res);
-			$salt = $set->VAL;
+			$salt = base64_decode($set->VAL);
 			$hash = hash('sha512', $password.$salt);
 			
 			$isValid = $db_hash == $hash;
@@ -261,8 +261,9 @@
 			$this->checkAdmin();
 				
 			$con = $this->establishConection();
-			$salt = base64_encode($this->generateSalt());
+			$salt = $this->generateSalt();
 			$hash = hash('sha512',$password.$salt);
+			$salt = base64_encode($salt);
 			$con->query("UPDATE CONFIG SET VAL = ? WHERE PARAM = ?", array($hash,'password'));
 			$con->query("UPDATE CONFIG SET VAL = ? WHERE PARAM = ?", array($salt,'salt'));
 			return true;
