@@ -30,7 +30,7 @@ error_reporting( E_ALL ^ E_NOTICE );
 /*
  * start jsonrpc server
  */
-require dirname(__FILE__) . "/server/JsonRpcServer.php";
+require_once dirname(__FILE__) . "/server/JsonRpcServer.php";
 
 /*
  * load Scovilleconfig
@@ -47,7 +47,7 @@ foreach($configfile as $configline){
 	$SCV_GLOBALCFG[$linesplit[0]] = $linesplit[1];
 }
 
-require 'instance.conf.php';
+require_once 'instance.conf.php';
 
 JsonRpcServer::run();
 ?>

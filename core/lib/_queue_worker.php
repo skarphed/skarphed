@@ -55,7 +55,7 @@
 				fwrite ($pidfile,$pid);
 				fclose ($pidfile);
 			}else{
-				require 'core.php';
+				require_once 'core.php';
 				$core = scv\Core::getInstance();
 				$opM  = $core->getOperationManager();
 				while(true){

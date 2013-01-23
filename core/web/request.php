@@ -30,9 +30,9 @@
     $SCV_GLOBALCFG[$linesplit[0]] = $linesplit[1];
   }
 
-  require 'instance.conf.php';
+  require_once 'instance.conf.php';
 
-  require $SCV_GLOBALCFG['SCV_LIBPATH'].'/core.php';
+  require_once $SCV_GLOBALCFG['SCV_LIBPATH'].'/core.php';
   
   use scv;
   
