@@ -575,7 +575,7 @@ class CssPropertySet {
 				foreach ($this->getNonInherited() as $selector => $values){
 					$splittedSelector = explode('?',$selector);
 					if (count($splittedSelector) == 1){
-						array_unshift("",$splittedSelector);
+						array_unshift($splittedSelector,"");
 					}
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
@@ -598,7 +598,7 @@ class CssPropertySet {
 					
 					$splittedSelector = explode('?',$selector);
 					if (count($splittedSelector) == 1){
-						array_unshift("",$splittedSelector);
+						array_unshift($splittedSelector,"");
 					}
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
@@ -618,7 +618,7 @@ class CssPropertySet {
 				foreach ($this->getNonInherited() as $selector => $values){
 					$splittedSelector = explode('?',$selector);
 					if (count($splittedSelector) == 1){
-						array_unshift("",$splittedSelector);
+						array_unshift($splittedSelector,"");
 					}
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
