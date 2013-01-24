@@ -12,13 +12,11 @@ foreach($configfile as $configline){
 
 require_once 'instance.conf.php';
 
-  
-
 require_once $SCV_GLOBALCFG['SCV_LIBPATH'].'/core.php';
 
 class class_scvRpc {
   function method_test($params, $error)	{
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$db = $core->getDB();
 	$dbip = $core->getConfig()->getEntry('db.ip');
 	
@@ -27,18 +25,18 @@ class class_scvRpc {
   }
   
   function method_getServerInfo($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	  
 	return $core->getConfig()->getEntry('core.name');
   }
   
   function method_getServerUsers($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	return "test";
   }
   
   function method_authenticateUser($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$username = $params[0];
 	$password = $params[1];
 	
@@ -65,7 +63,7 @@ class class_scvRpc {
   }
 
   function method_getUsers($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$userM = $core->getUserManager();
 	$users = $userM->getUsersForAdminInterface();
@@ -74,7 +72,7 @@ class class_scvRpc {
   }
   
   function method_getRoles($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$roles = $rightM->getRoles();
 	$ret = array();
@@ -87,7 +85,7 @@ class class_scvRpc {
   function method_createUser($params,$error){
   	$username = $params[0];
 	$password = $params[1];
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$userM = $core->getUserManager();
 	$userM->createUser($username,$password,null);
 	return true;
@@ -97,7 +95,7 @@ class class_scvRpc {
   	$userId = $params[0];
 	$rightName = $params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	
 	$user = $core->getUserManager()->getUserByName($userId);
 	$user->grantRight($rightName);
@@ -108,7 +106,7 @@ class class_scvRpc {
   	$userId = $params[0];
 	$rightName = $params[1];
 	
-	$core = scv\Core::getInstance();	
+	$core = Core::getInstance();	
 	
 	$user = $core->getUserManager()->getUserByName($userId);
 	$user->revokeRight($rightName);
@@ -117,7 +115,7 @@ class class_scvRpc {
   
   function method_getRightsForUserPage($params,$error){
   	$userId = $params[0];
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$user = $core->getUserManager()->getUserByName($userId);	
 	return json_encode($user->getGrantableRights());	
   }
@@ -126,7 +124,7 @@ class class_scvRpc {
   	$roleId = $params[0];
 	$rightName = $params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$role = $rightM->getRole($roleId);
 	$role->addRight($rightName);
@@ -138,7 +136,7 @@ class class_scvRpc {
   	$roleId = $params[0];
 	$rightName = $params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$role = $rightM->getRole($roleId);
 	$role->removeRight($rightName);
@@ -148,7 +146,7 @@ class class_scvRpc {
   
   function method_getRightsForRolePage($params,$error){
   	$roleId = $params[0];
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$role = $core->getRightsManager()->getRole($roleId);	
 	return json_encode($role->getGrantableRights());	
   }
@@ -156,7 +154,7 @@ class class_scvRpc {
   function method_createRole($params,$error){
   	$data = $params[0];
   	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$role = $rightM->createRole($data);
 	return $role->getId();
@@ -165,14 +163,14 @@ class class_scvRpc {
   
   function method_deleteRole($params,$error){
   	$roleId = $params[0];
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$rightM->getRole($roleId)->delete();
   }
   
   function method_getRolesForUserPage($params,$error){
   	$userName = $params[0];
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$user = $core->getUserManager()->getUserByName($userName);	
 	return json_encode($user->getGrantableRoles());
   }
@@ -181,7 +179,7 @@ class class_scvRpc {
   	$userName = $params[0];
 	$roleId = $params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$role = $rightM->getRole($roleId);
 	$core->getUserManager()->getUserByName($userName)->assignRole($role);
@@ -192,7 +190,7 @@ class class_scvRpc {
   	$userName = $params[0];
 	$roleId = $params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$rightM = $core->getRightsManager();
 	$role = $rightM->getRole($roleId);
 	$core->getUserManager()->getUserByName($userName)->revokeRole($role);
@@ -204,7 +202,7 @@ class class_scvRpc {
 	$widgetId = $params[1];
 	$session =  $params[2];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$cssM = $core->getCssManager();
 	$cssPropertySet = $cssM->getCssPropertySet($moduleId,$widgetId,$session);
 	$data = $cssPropertySet->serializeSet();
@@ -214,7 +212,7 @@ class class_scvRpc {
   function method_setCssPropertySet($params,$error){
   	$data = $params[0];
 	
-	$core = scv\Core::getInstance();	
+	$core = Core::getInstance();	
 	$cssM = $core->getCssManager();
 	$cssPropertySet = $cssM->createCssPropertySetFromSerial($data);
 	$cssPropertySet->store();
@@ -224,7 +222,7 @@ class class_scvRpc {
   function method_getModules($params,$error){
   	$getInstalledOnly = $params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$moduleM = $core->getModuleManager();
 	$modules = $moduleM->getModules($getInstalledOnly);
 	
@@ -235,7 +233,7 @@ class class_scvRpc {
   	$ip = $params[0];
 	$port = (int)$params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$moduleM = $core->getModuleManager();
 	foreach ($moduleM->getRepositories() as $repo){
 		$repo->delete();
@@ -245,7 +243,7 @@ class class_scvRpc {
   }
   
   function method_getRepository($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$moduleM = $core->getModuleManager();
 	$repos = $moduleM->getRepositories();
 	if (count($repos) > 0){
@@ -257,7 +255,7 @@ class class_scvRpc {
   }
   
   function method_updateModules($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$moduleManager = $core->getModuleManager();
 	$moduleManager->updateModules();
 	return 0;
@@ -267,7 +265,7 @@ class class_scvRpc {
   	$module = $params[0];
 	$operationId = $params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$moduleM = $core->getModuleManager();
 	$moduleM->uninstallModuleRemote(null,$module,$operationId);
   	return true;  //TODO:implement
@@ -277,7 +275,7 @@ class class_scvRpc {
   	$module = $params[0];
 	$operationId = $params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$moduleM = $core->getModuleManager();
 	$modulemeta = array("name"=>$module->name,
 						"hrname"=>$module->hrname,
@@ -292,7 +290,7 @@ class class_scvRpc {
   function method_dropOperation($params,$error){
   	$operationId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$opM = $core->getOperationManager();
 	$opM->dropOperation($operationId);
 	
@@ -301,7 +299,7 @@ class class_scvRpc {
   function method_retryOperation($params,$error){
   	$operationId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$opM = $core->getOperationManager();
 	$opM->retryOperation($operationId);
   }
@@ -309,7 +307,7 @@ class class_scvRpc {
   function method_cancelOperation($params,$error){
   	$operationId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$opM = $core->getOperationManager();
 	$opM->cancelOperation($operationId);
   }
@@ -317,7 +315,7 @@ class class_scvRpc {
   function method_deleteUser($params,$error){
   	$userId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$userM = $core->getUserManager();
 	$user = $userM->getUserById($userId);
 	$user->delete();
@@ -329,7 +327,7 @@ class class_scvRpc {
   		$operationtypes = $params[0];
   	}
 	
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$opM = $core->getOperationManager();
 	$operations = $opM->getCurrentOperationsForGUI($operationtypes);
 	
@@ -337,7 +335,7 @@ class class_scvRpc {
   }
   
   function method_getSites($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
   	$compositeM = $core->getCompositeManager();	
 	
   	return $compositeM->getSitesMeta();
@@ -346,7 +344,7 @@ class class_scvRpc {
   function method_getSite($params,$error){
   	$siteId = $params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$compositeM = $core->getCompositeManager();	
 	$site = $compositeM->getSite($siteId);
 	
@@ -358,7 +356,7 @@ class class_scvRpc {
 	$space = $params[1];
 	$widgetId = $params[2];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$compositeM = $core->getCompositeManager();	
 	$site = $compositeM->getSite($siteId);
 	$widget = $compositeM->getWidget($widgetId);
@@ -370,7 +368,7 @@ class class_scvRpc {
   	$siteId = $params[0];
 	$space = $params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$compositeM = $core->getCompositeManager();
 	$site = $compositeM->getSite($siteId);
 	$site->removeWidget($space);
@@ -378,7 +376,7 @@ class class_scvRpc {
   }
   
   function method_getCurrentTemplate($params,$error){
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$templateM = $core->getTemplateManager();
 	$currentTemplate = $templateM->createCurrentInstalled();
 	return $currentTemplate->getManifest();
@@ -388,7 +386,7 @@ class class_scvRpc {
   	$moduleName = $params[0];
 	$name = $params[1];
 	
-  	$core = scv\Core::getInstance();
+  	$core = Core::getInstance();
 	$compositeM = $core->getCompositeManager();
 	return $compositeM->createWidget($moduleName,$name);
 	
@@ -397,7 +395,7 @@ class class_scvRpc {
   function method_deleteWidget($params,$error){
   	$widgetId = $params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$compositeM = $core->getCompositeManager();
 	$widget = $compositeM->getWidget($widgetId);
 	$widget->delete();
@@ -407,7 +405,7 @@ class class_scvRpc {
   function method_getWidgetsOfModule($params,$error){
   	$moduleName = $params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$compositeM = $core->getCompositeManager();
 	return $compositeM->getWidgetsOfModule($moduleName);	
   }
@@ -415,7 +413,7 @@ class class_scvRpc {
   function method_getMenusOfSite($params,$error){
   	$siteId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$compositeManager = $core->getCompositeManager();
 	
 	$menus = $compositeManager->getSite($siteId)->getMenus();
@@ -430,7 +428,7 @@ class class_scvRpc {
   function method_getMenuItemsOfMenu($params,$error){
   	$menuId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	
 	$menuItems = $actionManager->getMenuById($menuId)->getMenuItems();
@@ -447,7 +445,7 @@ class class_scvRpc {
   function method_getMenuItemsOfMenuItem($params,$error){
   	$menuItemId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	
 	$menuItems = $actionManager->getMenuItemById($menuItemId)->getMenuItems();
@@ -464,7 +462,7 @@ class class_scvRpc {
   function method_increaseMenuItemOrder($params,$error){
   	$menuItemId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menuItem = $actionManager->getMenuItemById($menuItemId);
 	$menuItem->increaseOrder();
@@ -474,7 +472,7 @@ class class_scvRpc {
   function method_decreaseMenuItemOrder($params,$error){
   	$menuItemId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menuItem = $actionManager->getMenuItemById($menuItemId);
 	$menuItem->decreaseOrder();
@@ -484,7 +482,7 @@ class class_scvRpc {
   function method_moveToTopMenuItemOrder($params,$error){
   	$menuItemId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menuItem = $actionManager->getMenuItemById($menuItemId);
 	$menuItem->moveToTopOrder();
@@ -494,7 +492,7 @@ class class_scvRpc {
   function method_moveToBottomMenuItemOrder($params,$error){
   	$menuItemId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menuItem = $actionManager->getMenuItemById($menuItemId);
 	$menuItem->moveToBottomOrder();
@@ -504,7 +502,7 @@ class class_scvRpc {
   function method_createMenuForSite($params,$error){
   	$siteId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$compositeManager = $core->getCompositeManager();
 	$site = $compositeManager->getSite($siteId);
 	$actionManager = $core->getActionManager();
@@ -515,7 +513,7 @@ class class_scvRpc {
   function method_deleteMenu($params,$error){
   	$menuId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menu = $actionManager->getMenuById($menuId);
 	$menu->delete();
@@ -526,14 +524,14 @@ class class_scvRpc {
 	$parentType = (string)$params[1];
 	switch($parentType){
 		case 'menu':
-			$core = scv\Core::getInstance();
+			$core = Core::getInstance();
 			$actionManager = $core->getActionManager();
 			$menu = $actionManager->getMenuById($parentId);
 			$actionManager->createMenuItem($menu);
 			return 0;
 			break;
 		case 'menuItem':
-			$core = scv\Core::getInstance();
+			$core = Core::getInstance();
 			$actionManager = $core->getActionManager();
 			$menuItem = $actionManager->getMenuItemById($parentId);
 			$actionManager->createMenuItem(null,$menuItem);
@@ -546,7 +544,7 @@ class class_scvRpc {
   function method_deleteMenuItem($params,$error){
   	$menuItemId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menuItem = $actionManager->getMenuItemById($menuItemId);
 	$menuItem->delete();
@@ -557,7 +555,7 @@ class class_scvRpc {
   	$menuItemId = (int)$params[0];
 	$newName = (string)$params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menuItem = $actionManager->getMenuItemById($menuItemId);
 	$menuItem->setName($newName);
@@ -567,7 +565,7 @@ class class_scvRpc {
   function method_getActionsOfActionlist($params,$error){
   	$actionListId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$actionList = $actionManager->getActionListById($actionListId);
 	$actions = $actionList->getActions();
@@ -589,7 +587,7 @@ class class_scvRpc {
   function method_addActionToActionList($params,$error){
   	$actionListId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$actionList = $actionManager->getActionListById($actionListId);
 	$actionManager->createAction($actionList,null,"");
@@ -600,7 +598,7 @@ class class_scvRpc {
   function method_deleteAction($params,$error){
   	$actionId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->delete();
@@ -611,7 +609,7 @@ class class_scvRpc {
   function method_increaseActionOrder($params,$error){
   	$actionId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->increaseOrder();
@@ -622,7 +620,7 @@ class class_scvRpc {
   function method_decreaseActionOrder($params,$error){
   	$actionId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->decreaseOrder();
@@ -633,7 +631,7 @@ class class_scvRpc {
   function method_moveToTopActionOrder($params,$error){
   	$actionId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->moveToTopOrder();
@@ -644,7 +642,7 @@ class class_scvRpc {
   function method_moveToBottomActionOrder($params,$error){
   	$actionId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->moveToBottomOrder();
@@ -655,7 +653,7 @@ class class_scvRpc {
   function method_getActionListForMenuItem($params,$error){
   	$menuItemId = (int)$params[0];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menuItem = $actionManager->getMenuItemById($menuItemId);
 	$actionList = $menuItem->getActionList();
@@ -668,7 +666,7 @@ class class_scvRpc {
   	$actionId = (int)$params[0];
 	$url = (string)$params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->setUrl($url);
@@ -681,7 +679,7 @@ class class_scvRpc {
 	$widgetId = (int)$params[1];
 	$space = (int)$params[2];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->setWidgetSpaceConstellation($widgetId,$space);
@@ -693,7 +691,7 @@ class class_scvRpc {
   	$actionId = (int)$params[0];
 	$siteId = (int)$params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$action = $actionManager->getActionById($actionId);
 	$action->setSiteId($siteId);
@@ -705,7 +703,7 @@ class class_scvRpc {
   	$menuId = (int)$params[0];
 	$newName = (string)$params[1];
 	
-	$core = scv\Core::getInstance();
+	$core = Core::getInstance();
 	$actionManager = $core->getActionManager();
 	$menu = $actionManager->getMenuById($menuId);
 	$menu->setName($newName);
