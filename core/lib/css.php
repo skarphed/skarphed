@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once 'core.php';
 
-class CssException extends \Exception {}
+class CssException extends Exception {}
 
 class CssManager extends Singleton{
 	private static $instance = null;

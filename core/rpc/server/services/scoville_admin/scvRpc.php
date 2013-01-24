@@ -1,4 +1,19 @@
 <?php
+$SCV_GLOBALCFG = array();
+$configfile = file_get_contents("/etc/scoville/scoville.conf");
+$configfile = preg_split("/\n/",$configfile);
+foreach($configfile as $configline){
+	if (preg_match("/^#/",$configline)){
+		continue;
+	}
+	$linesplit = preg_split("/=/",$configline);
+	$SCV_GLOBALCFG[$linesplit[0]] = $linesplit[1];
+}
+
+require_once 'instance.conf.php';
+
+  
+
 require_once $SCV_GLOBALCFG['SCV_LIBPATH'].'/core.php';
 
 class class_scvRpc {

@@ -19,8 +19,6 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 abstract class Singleton {
 	abstract public static function getInstance();
 

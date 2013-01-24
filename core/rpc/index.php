@@ -32,22 +32,6 @@ error_reporting( E_ALL ^ E_NOTICE );
  */
 require dirname(__FILE__) . "/server/JsonRpcServer.php";
 
-/*
- * load Scovilleconfig
- */
-
-$SCV_GLOBALCFG = array();
-$configfile = file_get_contents("/etc/scoville/scoville.conf");
-$configfile = preg_split("/\n/",$configfile);
-foreach($configfile as $configline){
-	if (preg_match("/^#/",$configline)){
-		continue;
-	}
-	$linesplit = preg_split("/=/",$configline);
-	$SCV_GLOBALCFG[$linesplit[0]] = $linesplit[1];
-}
-
-require 'instance.conf.php';
 
 JsonRpcServer::run();
 ?>

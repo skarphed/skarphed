@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once "core.php";
 require_once "Crypt/RSA.php";
-class ModuleException extends \Exception{}
+class ModuleException extends Exception{}
 
 interface IModule{
 	public function getName();
@@ -537,7 +535,7 @@ class ModuleManager extends Singleton {
 	
 }
 
-class RepositoryException extends \Exception {}
+class RepositoryException extends Exception {}
 
 class Repository {
 	private $id = null;

@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once "core.php";
 
-class BinaryException extends \Exception {}
+class BinaryException extends Exception {}
 
 class BinaryManager extends Singleton {
 	private static $instance = null;

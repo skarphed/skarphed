@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once 'core.php';
 
-class RightsException extends \Exception{}
+class RightsException extends Exception{}
 
 class Role {
 	private $roleId = null;
