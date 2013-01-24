@@ -19,15 +19,11 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-
-
-namespace scv;
-
 require_once 'core.php';
 
 
 
-class UserException extends \Exception{}
+class UserException extends Exception{}
 
 class User {
 	const SALT = 'ooj1nahMeeP4bohzJa2ied6eeir1IchijeyeiSh6zeG5TaiEang6peeiu0ohZie2';

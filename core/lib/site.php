@@ -19,12 +19,10 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once 'core.php';
 
-class SiteException extends \Exception{}
-class WidgetException extends \Exception{}
+class SiteException extends Exception{}
+class WidgetException extends Exception{}
 
 class CompositeManager extends Singleton{
 	private static $instance = null;

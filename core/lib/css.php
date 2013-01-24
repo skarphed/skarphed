@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once 'core.php';
 
-class CssException extends \Exception {}
+class CssException extends Exception {}
 
 class CssManager extends Singleton{
 	private static $instance = null;
@@ -577,7 +575,7 @@ class CssPropertySet {
 				foreach ($this->getNonInherited() as $selector => $values){
 					$splittedSelector = explode('?',$selector);
 					if (count($splittedSelector) == 1){
-						array_unshift("",$splittedSelector);
+						array_unshift($splittedSelector,"");
 					}
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
@@ -600,7 +598,7 @@ class CssPropertySet {
 					
 					$splittedSelector = explode('?',$selector);
 					if (count($splittedSelector) == 1){
-						array_unshift("",$splittedSelector);
+						array_unshift($splittedSelector,"");
 					}
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();
@@ -620,7 +618,7 @@ class CssPropertySet {
 				foreach ($this->getNonInherited() as $selector => $values){
 					$splittedSelector = explode('?',$selector);
 					if (count($splittedSelector) == 1){
-						array_unshift("",$splittedSelector);
+						array_unshift($splittedSelector,"");
 					}
 					if(!isset($selectorlist[$splittedSelector[0]])){
 						$selectorlist[$splittedSelector[0]]= array();

@@ -34,8 +34,6 @@
 
   require_once $SCV_GLOBALCFG['SCV_LIBPATH'].'/core.php';
   
-  use scv;
-  
   $request = new Request();
   
   class Request {
@@ -46,7 +44,7 @@
     
     public function __construct() {
       $this->json = json_decode($_POST['data']);
-      $this->core = scv\Core::getInstance();
+      $this->core = Core::getInstance();
       $this->db = $this->core->getDB();
       switch($this->json->t) {
         case "i":

@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once('core.php');
 
-class ConfigException extends \Exception{}
+class ConfigException extends Exception{}
 
 class Config {
     const CONF_NOT_LOAD = 0;
@@ -35,7 +33,8 @@ class Config {
 	
 	public function __construct(){
 		global $SCV_GLOBALCFG;
-		$this->configuration = json_decode(file_get_contents($SCV_GLOBALCFG['SCV_WEBPATH'].$SCV_GLOBALCFG['SCV_INSTANCE_SCOPE_ID'].'/web/config.json'),true);
+		$configfilepath = $SCV_GLOBALCFG['SCV_WEBPATH'].$SCV_GLOBALCFG['SCV_INSTANCE_SCOPE_ID'].'/web/config.json';
+		$this->configuration = json_decode(file_get_contents($configfilepath),true);
 		$this->config_state = self::CONF_LOAD_LOCAL;
 	}
 	

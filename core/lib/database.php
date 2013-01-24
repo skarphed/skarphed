@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once 'core.php';
 
-class DatabaseException extends \Exception {}
+class DatabaseException extends Exception {}
 
 class Database {
 	private $connection = null;

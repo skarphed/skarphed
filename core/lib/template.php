@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-namespace scv;
-
 require_once 'core.php';
 
-class TemplateException extends \Exception{}
+class TemplateException extends Exception{}
 
 class TemplateManager extends Singleton{
 	private static $instance = null;

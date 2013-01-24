@@ -19,11 +19,10 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-	namespace scv;
 
 	require_once("core.php");
 	
-	class ActionException extends \Exception{}
+	class ActionException extends Exception{}
 
 	/**
 	 * ActionManager

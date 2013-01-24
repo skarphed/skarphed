@@ -19,11 +19,9 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-	namespace scv;
-
 	require_once("core.php");
 	
-	class OperationException extends \Exception{}
+	class OperationException extends Exception{}
 	
 	
 	/**
@@ -167,7 +165,7 @@
 				try{
 					$this->processChildren($childOperation);
 					$childOperation->doWorkload();
-				}catch(\Exception $e){
+				}catch(Exception $e){
 					$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
 					$db->query($core,$stmnt_err,array((int)$set['OPE_ID']));
 					$core->debugGrindlog("While Operation: ".$e->getMessage());
@@ -211,7 +209,7 @@
 				try{
 					$this->processChildren($operation);
 					$operation->doWorkload();
-				}catch (\Exception $e){
+				}catch (Exception $e){
 					$stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;";
 					$db->query($core,$stmnt_err,array($operation->getId()));
 					$core->debugGrindlog("While Operation: ".$e->getMessage());
@@ -595,7 +593,7 @@
   		public function doWorkload(){
   			$core = Core::getInstance();
 			$core->debugGrindlog("IN WORKLOAD");
-  			throw new \Exception("I failed so fuckin hard!");
+  			throw new Exception("I failed so fuckin hard!");
   			
   			
   		}
