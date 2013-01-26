@@ -20,6 +20,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+  global $SCV_GLOBALCFG;
   $SCV_GLOBALCFG = array();
   $configfile = file_get_contents("/etc/scoville/scoville.conf");
   $configfile = preg_split("/\n/",$configfile);
