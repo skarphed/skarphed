@@ -551,7 +551,7 @@ class Repository {
 		$this->ip = (string)$ip;
 		$this->port = (int)$port;
 		$this->lastupdate = $lastupdate;
-		$this->publickey = $this->loadPublicKey();
+		$this->publickey = null;
 	}
 	
 	public function getIp(){
@@ -571,6 +571,9 @@ class Repository {
 	}
 	
 	public function getPublicKey(){
+		if (is_null($this->publickey)){
+			$this->publickey = $this->loadPublicKey()
+		}
 		return $this->publickey;
 	}
 	
@@ -675,7 +678,7 @@ class Repository {
 			throw new RepositoryException("There are two, even more or negative repositories. Shit's massively fucked up here!") ;
 		}
 		$stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (?,?,?,?,?,?) MATCHING (REP_ID);";
-		$db->query($core,$stmnt,array($this->id,$this->name,$this->ip,$this->port,$this->lastupdate, $this->publickey));
+		$db->query($core,$stmnt,array($this->id,$this->name,$this->ip,$this->port,$this->lastupdate, $this->getPublicKey()));
 		return;
 	}
 
