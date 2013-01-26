@@ -239,13 +239,11 @@
 		 * @return Array A list of Operation-Representations
 		 */
 		public function getCurrentOperationsForGUI($operationTypes=null){
-			$mapping = function($name){return "scv\\".$name;};
 			$core = Core::getInstance();
 			$opM = $core->getOperationManager();
 			$db = $core->getDB();
 			
 			if (isset($operationTypes) and is_array($operationTypes)){
-				$operationTypes = array_map($mapping,$operationTypes);
 				$core->debugGrindlog(json_encode($operationTypes));
 				$stmnt = "SELECT OPE_ID, OPE_OPE_PARENT, OPE_INVOKED, OPE_TYPE, OPE_STATUS FROM OPERATIONS WHERE OPE_TYPE IN (?) ORDER BY OPE_INVOKED;";
 				$res = $db->query($core,$stmnt,array($operationTypes));
@@ -266,7 +264,7 @@
 							   "parent"=>$set['OPE_OPE_PARENT'],
 							   //"invoked"=>date("Y-m-d H:i:s",$set['OPE_INVOKED']),
 							   "invoked"=>$set['OPE_INVOKED'],
-							   "type"=>str_replace("scv\\","",$set['OPE_TYPE']),
+							   "type"=>$set['OPE_TYPE'],
 							   "status"=>$set['OPE_STATUS'],
 							   "data"=>$valuesToSend);
 			}
@@ -506,7 +504,7 @@
 			$opM = $core->getOperationManager();
 			$db = $core->getDB();
 			
-			$stmnt = "SELECT OPE_ID, OPE_OPE_PARENT, OPE_TYPE FROM OPERATIONS WHERE OPE_TYPE = 'scv\ModuleInstallOperation' or OPE_TYPE = 'scv\ModuleUninstallOperation';";
+			$stmnt = "SELECT OPE_ID, OPE_OPE_PARENT, OPE_TYPE FROM OPERATIONS WHERE OPE_TYPE = 'ModuleInstallOperation' or OPE_TYPE = 'ModuleUninstallOperation';";
 			$res = $db->query($core,$stmnt);
 			$ret = array();
 			while($set = $db->fetchArray($res)){
