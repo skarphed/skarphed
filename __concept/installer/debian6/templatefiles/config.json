@@ -1,8 +1,0 @@
-{
-    "core.name":"some random scoville",
-
-	"db.ip":"127.0.0.1",
-	"db.name":"scvInst1",
-	"db.user":"grindhold",
-	"db.password":"test"
-}
