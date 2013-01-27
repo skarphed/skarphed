@@ -23,8 +23,6 @@ require_once '/usr/share/php/PHPUnit/Framework/TestCase.php';
 require_once '../lib/core.php';
 require_once '../lib/css.php';
 
-use scv;
-
 /*TODO:
  * Rechteueberpreufung in die Tests integrieren
  * Tests fuer Widget- und Sessionbasierende Propertysets bauen
@@ -34,7 +32,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
     protected function setUp() {
-        $this->fixture = scv\Core::getInstance(); 
+        $this->fixture = Core::getInstance(); 
     }
 	
 	public function testServerPropertySet(){
@@ -44,12 +42,12 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$_SESSION['loggedin'] = "true";
 		$_SESSION['user']->grantRight('scoville.css.edit',false);
 		
-		$propertyset = new scv\CssPropertySet();
+		$propertyset = new CssPropertySet();
 		$propertyset->setTypeGeneral();
 		$this->assertEquals(null,$propertyset->getModuleId());
 		$this->assertEquals(null,$propertyset->getWidgetId());
 		$this->assertEquals(null,$propertyset->getSessionId());
-		$this->assertEquals(scv\CssPropertySet::GENERAL,$propertyset->getType());
+		$this->assertEquals(CssPropertySet::GENERAL,$propertyset->getType());
 		
 		$propertyset->editValue("div","color","#fff");
 		$this->assertEquals("#fff", $propertyset->getValue("div","color"));
@@ -62,7 +60,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(null,$fetchedset->getModuleId());
 		$this->assertEquals(null,$fetchedset->getWidgetId());
 		$this->assertEquals(null,$fetchedset->getSessionId());
-		$this->assertEquals(scv\CssPropertySet::GENERAL,$fetchedset->getType());
+		$this->assertEquals(CssPropertySet::GENERAL,$fetchedset->getType());
 		$this->assertEquals("#fff", $fetchedset->getValue("div","color"));
 		$this->assertEquals(null, $fetchedset->getValue("div","notsetvalue"));
 		$fetchedset->delete();
@@ -76,12 +74,12 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$_SESSION['user']->grantRight('scoville.css.edit',false);
 		$moduleId = 1; // de.zigapeda.scoville.text
 		
-		$propertyset = new scv\CssPropertySet();
+		$propertyset = new CssPropertySet();
 		$propertyset->setModuleId($moduleId);
 		$this->assertEquals($moduleId,$propertyset->getModuleId());
 		$this->assertEquals(null,$propertyset->getWidgetId());
 		$this->assertEquals(null,$propertyset->getSessionId());
-		$this->assertEquals(scv\CssPropertySet::MODULE,$propertyset->getType());
+		$this->assertEquals(CssPropertySet::MODULE,$propertyset->getType());
 		
 		$propertyset->editValue("div","color","#fff");
 		$this->assertEquals("#fff", $propertyset->getValue("div","color"));
@@ -94,7 +92,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($moduleId,$fetchedset->getModuleId());
 		$this->assertEquals(null,$fetchedset->getWidgetId());
 		$this->assertEquals(null,$fetchedset->getSessionId());
-		$this->assertEquals(scv\CssPropertySet::MODULE,$fetchedset->getType());
+		$this->assertEquals(CssPropertySet::MODULE,$fetchedset->getType());
 		$this->assertEquals("#fff", $fetchedset->getValue("div","color"));
 		$this->assertEquals(null, $fetchedset->getValue("div","notsetvalue"));
 		$fetchedset->delete();
@@ -111,12 +109,12 @@ class TestCss extends PHPUnit_Framework_TestCase {
 			array("s"=>".adsf","k"=>"border","v"=>"1px solid silver"),
 			array("s"=>"#blub","k"=>"font-family","v"=>"Verdana")
 		);
-		$parser = new scv\CssParser($DATA);
+		$parser = new CssParser($DATA);
 		$this->assertEquals("1px",$parser->getValue(".adsf","font-size"));
 		$this->assertEquals("#af0",$parser->getValue(".adsf","color"));
 		$this->assertEquals("1px solid silver",$parser->getValue(".adsf","border"));
 		$this->assertEquals("Verdana",$parser->getValue("#blub","font-family"));
-		$parser2 = new scv\CssParser();
+		$parser2 = new CssParser();
 		$parser2->parseData($DATA);
 		$this->assertEquals("1px",$parser2->getValue(".adsf","font-size"));
 		$this->assertEquals("#af0",$parser2->getValue(".adsf","color"));
@@ -129,7 +127,7 @@ class TestCss extends PHPUnit_Framework_TestCase {
 	}
 	
 	protected function tearDown(){
-		if (isset($_SESSION['user']) and get_class($_SESSION['user']) == 'scv\User'){
+		if (isset($_SESSION['user']) and get_class($_SESSION['user']) == 'User'){
 			$_SESSION['user']->delete(false);
 			unset($_SESSION['user']);
 		}

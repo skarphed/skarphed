@@ -22,14 +22,12 @@
 require_once '/usr/share/php/PHPUnit/Framework/TestCase.php';
 require_once '../lib/core.php';
 
-use scv;
-
 class TestCore extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
     protected function setUp() {
         // Array-Fixture erzeugen.
-        $this->fixture = scv\Core::getInstance();
+        $this->fixture = Core::getInstance();
     }
  
     public function testNameIsRight() {

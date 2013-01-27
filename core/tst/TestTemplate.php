@@ -26,7 +26,7 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
     protected function setUp() {
-        $this->fixture = scv\Core::getInstance(); 
+        $this->fixture = Core::getInstance(); 
     }
 	
 	public function testInstallTemplate(){
@@ -66,7 +66,7 @@ class TestTemplate extends PHPUnit_Framework_TestCase {
 	}
 	
 	protected function tearDown(){
-		if (isset($_SESSION['user']) and get_class($_SESSION['user']) == 'scv\User'){
+		if (isset($_SESSION['user']) and get_class($_SESSION['user']) == 'User'){
 			$_SESSION['user']->delete(false);
 			unset($_SESSION['user']);
 		}

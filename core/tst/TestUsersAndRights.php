@@ -22,8 +22,6 @@
 require_once '/usr/share/php/PHPUnit/Framework/TestCase.php';
 require_once '../lib/core.php';
 
-use scv;
-
 class TestUsersAndRights extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
@@ -32,7 +30,7 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 		  session_destroy();
 		}catch(Exception $e){}*/
         // Array-Fixture erzeugen.
-        $this->fixture = scv\Core::getInstance(); 
+        $this->fixture = Core::getInstance(); 
     }
  
     public function testNameIsRight() {
@@ -51,7 +49,7 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 		$userM= $this->fixture->getUserManager();
 		$userM->createUser("testCreateAndDeleteUser", "testpassword", null);
 		$user = $userM->getUserByName("testCreateAndDeleteUser");
-		$this->assertEquals('scv\User', get_class($user));
+		$this->assertEquals('User', get_class($user));
 		$this->assertTrue($user->authenticate("testpassword"));
 		$user->delete(false);
 		$this->assertTrue(true);
@@ -68,7 +66,7 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 		$user->alterPassword("testpassword", "tochangepassword");
 		$this->assertFalse($user->authenticate("tochangepassword"));
 		
-		$this->assertEquals('scv\User', get_class($user));
+		$this->assertEquals('User', get_class($user));
 		$this->assertTrue($user->authenticate("testpassword"));
 		$user->delete(false);
 		$this->assertTrue(true);
@@ -76,7 +74,7 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 	}
 	
 	public function testCannotSetPasswordWithoutOldPasssword(){
-		$this->setExpectedException('scv\UserException','Could not set Password: Old password is wrong');
+		$this->setExpectedException('UserException','Could not set Password: Old password is wrong');
 		$userM = $this->fixture->getUserManager();
 		$user = $userM->getUserByName("genericTestUser");
 		$user->alterPassword("tochangepassword","falsepassword");
@@ -133,10 +131,10 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 		
 		
 		$this->assertNotContains('scoville.manageserverdata',$user->getRights());
-		$this->setExpectedException('scv\UserException', 'Granting Right: This user is not allowed to grant rights!');
+		$this->setExpectedException('UserException', 'Granting Right: This user is not allowed to grant rights!');
         try {
 			$user->grantRight('scoville.manageserverdata',true);
-		}catch(scv\UserException $e){
+		}catch(UserException $e){
 			$user->delete(false);
 			$_SESSION['user']->delete(false);		
 			unset($_SESSION['user']);
@@ -173,7 +171,7 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 		$roleData = json_decode('{"name":"testCreateDeleteRoleWithCheck"}');
 		$rightM = $this->fixture->getRightsManager();
 		$role = $rightM->createRole($roleData,false); 
-		$this->assertEquals('scv\Role',get_class($role));
+		$this->assertEquals('Role',get_class($role));
 		$role->delete(false);
 		//TODO: getRole Should return null or throw exception
 		
@@ -225,7 +223,7 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 		$_SESSION['user'] = $userM->getUserByName("currentSessionUser");
 		$_SESSION['loggedin'] = "true";
 		
-		$this->setExpectedException('scv\RightsException','Add Right: User Cannot edit a Roleright that he does not possess himself!');
+		$this->setExpectedException('RightsException','Add Right: User Cannot edit a Roleright that he does not possess himself!');
 		
 		$_SESSION['user']->grantRight('scoville.roles.create',false);
 		$_SESSION['user']->grantRight('scoville.roles.modify',false);
@@ -240,7 +238,7 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 			$this->assertContains('scoville.manageserverdata',$role->getRights());
 			$role->removeRight('scoville.manageserverdata');
 			$this->assertNotContains('scoville.manageserverdata',$role->getRights());
-		}catch(scv\RightsException $e){
+		}catch(RightsException $e){
 			$role->delete(false);
 			$_SESSION['user']->delete(false);
 			unset($_SESSION['user']);		
@@ -408,17 +406,17 @@ class TestUsersAndRights extends PHPUnit_Framework_TestCase {
 	
 	protected function tearDown(){
 		try{
-		    if (isset($role) and $role != null and get_class($role) == 'scv\Role'){
+		    if (isset($role) and $role != null and get_class($role) == 'Role'){
 		    	$role->delete(false);
 		    }
 		}catch(Exception $e){}
 		try{
-		    if (isset($user) and $user != null and get_class($user) == 'scv\User'){
+		    if (isset($user) and $user != null and get_class($user) == 'User'){
 		    	$user->delete(false);
 		    }
 		}catch(Exception $e){}
 		try{
-		    if (isset($_SESSION['user']) and $_SESSION['user'] != null and get_class($_SESSION['user']) == 'scv\User'){
+		    if (isset($_SESSION['user']) and $_SESSION['user'] != null and get_class($_SESSION['user']) == 'User'){
 		  		$_SESSION['user']->delete(false);
 		  	}
 		}catch(Exception $e){}

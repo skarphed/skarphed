@@ -22,13 +22,11 @@
 require_once '/usr/share/php/PHPUnit/Framework/TestCase.php';
 require_once '../lib/core.php';
 
-use scv;
-
 class TestBinary extends PHPUnit_Framework_TestCase {
     protected $fixture;
  
     protected function setUp() {
-        $this->fixture = scv\Core::getInstance(); 
+        $this->fixture = Core::getInstance(); 
     }
     
     public function testCreateBinary() {
@@ -129,13 +127,13 @@ class TestBinary extends PHPUnit_Framework_TestCase {
     }
     
     public function testFailLoad() {
-    	$this->setExpectedException('scv\BinaryException','Data ID not found!');
+    	$this->setExpectedException('BinaryException','Data ID not found!');
     	$bm = $this->fixture->getBinarymanager();
     	$bin = $bm->load(123);
     }
     
     public function testFailLoadMD5() {
-    	$this->setExpectedException('scv\BinaryException','Data ID not found!');
+    	$this->setExpectedException('BinaryException','Data ID not found!');
     	$bm = $this->fixture->getBinarymanager();
     	$bin = $bm->loadmd5("abcabcabcabcabcabcabcabcabcabcab");
     }
@@ -145,7 +143,7 @@ class TestBinary extends PHPUnit_Framework_TestCase {
 		$db->query($this->fixture,"DELETE FROM binarys;");
 		$db->commit();
 		try{
-			if (isset($_SESSION['user']) and $_SESSION['user'] != null and get_class($_SESSION['user']) == 'scv\User'){
+			if (isset($_SESSION['user']) and $_SESSION['user'] != null and get_class($_SESSION['user']) == 'User'){
 				$_SESSION['user']->delete(false);
 			}
 		}catch(Exception $e){
