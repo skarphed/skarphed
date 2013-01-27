@@ -45,7 +45,7 @@ class class_scvRpc {
 	$usermanager = $core->getUserManager();
 	try{
 		$user = $usermanager->getUserByName($username);
-	}catch(scv\UserException $e){
+	}catch(UserException $e){
 		session_destroy();
 		return false;
 	}
