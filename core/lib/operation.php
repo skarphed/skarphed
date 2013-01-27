@@ -117,7 +117,7 @@
 		 * 
 		 * Restore an Operationobject stored in the database by a Dataset consisting of
 		 * the operation's ID and the operation's TYPE:
-		 * For example:   array("OPE_ID"=>100,"OPE_TYPE"=>"scv\\TestOperation")
+		 * For example:   array("OPE_ID"=>100,"OPE_TYPE"=>"TestOperation")
 		 * Restores the Operationobject's $_values-property by the data saved
 		 * in the DB-Table OPERATIONDATA
 		 * 

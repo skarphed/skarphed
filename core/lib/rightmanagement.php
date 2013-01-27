@@ -456,13 +456,13 @@ class RightsManager extends Singleton{
 		$skiprights = array();
 		
 		switch(get_class($object)){
-			case 'scv\User':
+			case 'User':
 				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;";
 				$stmnt2 = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) INNER JOIN USERROLES ON (URO_ROL_ID = RRI_ROL_ID) WHERE URO_USR_ID = ?; ";
 				$res = $db->query($core,$stmnt,array($object->getId()));
 				$res2 = $db->query($core,$stmnt2,array($object->getId())); 
 				break;
-			case 'scv\Role':
+			case 'Role':
 				$stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;";
 				$res = $db->query($core,$stmnt,array($object->getId()));
 				break;
