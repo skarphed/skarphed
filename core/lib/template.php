@@ -66,9 +66,11 @@ class TemplateManager extends Singleton{
 	}
 	
 	public function createCurrentInstalled(){
+		global $SCV_GLOBALCFG;
 		$core = Core::getInstance();
 		$template = new Template();
-		$manifestRaw = file_get_contents("../web/manifest.json");
+		$manifestWebPath = $SCV_GLOBALCFG['SCV_WEBPATH'].$SCV_GLOBALCFG['SCV_INSTANCE_SCOPE_ID']."/web/manifest.json";
+		$manifestRaw = file_get_contents($manifestWebPath);
 		if ($manifestRaw == false){
 			throw new ModuleException("InstallationError: The manifest is not a valid Scoville Template");
 			return;
@@ -127,7 +129,8 @@ class Template {
 			$stmnt = "UPDATE WIDGETS SET WGT_SIT_ID = NULL WHERE WGT_SIT_ID IN (".join(",",$siteIds).") ;";
 			$db->query($core,$stmnt);
 		}
-		unlink("../web/manifest.json");
+		$manifestWebPath = $SCV_GLOBALCFG['SCV_WEBPATH'].$SCV_GLOBALCFG['SCV_INSTANCE_SCOPE_ID']."/web/manifest.json";
+		unlink($manifestWebPath);
 	}
 	
 	
@@ -182,6 +185,8 @@ class Template {
 	}
 	
 	public function install($tryToMap=false, $checkRight=true){
+		global $SCV_GLOBALCFG;
+
 		if ($this->installed){
 			throw new TemplateException("Installation: This template is already installed!");
 		}
@@ -225,7 +230,8 @@ class Template {
 			$htmlBlob = $db->createBlob($sitedata);
 			$db->query($core,$stmnt,array($site->name, $site->desc, $site->filename, $htmlBlob, $spaces, isset($site->default)?1:0));
 		}
-		copy("/tmp/".$this->getTemporaryFolder()."/manifest.json", "../web/manifest.json");
+		$manifestWebPath = $SCV_GLOBALCFG['SCV_WEBPATH'].$SCV_GLOBALCFG['SCV_INSTANCE_SCOPE_ID']."/web/manifest.json";
+		copy("/tmp/".$this->getTemporaryFolder()."/manifest.json", $manifestWebPath);
 		return;
 	}
 	
