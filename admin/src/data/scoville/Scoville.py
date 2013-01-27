@@ -24,7 +24,7 @@
 
 
 from data.Generic import ObjectStore, GenericScovilleObject
-from data.Instance import Instance
+from data.Instance import Instance, InstanceType
 
 from Users import Users
 from Modules import Modules
@@ -147,6 +147,11 @@ class ScovilleInstaller(GenericScovilleObject):
         shutil.rmtree(self.BUILDPATH)
         self.status = 100
         gobject.idle_add(self.updated)
+        gobject.idle_add(self.addInstanceToServer)
+
+    def addInstanceToServer(self):
+        self.server.createInstance(InstanceType("scoville","Scoville"), "http://"+self.data['apache.domain'], "root", "root")
+        self.destroy()
 
 
     def getName(self):

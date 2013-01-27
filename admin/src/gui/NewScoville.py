@@ -29,6 +29,7 @@ import os
 import gui.IconStock
 from ObjectCombo import ObjectCombo
 from data.Server import Server
+from data.Generic import GenericObjectStoreException
 
 class NewScoville(gtk.Window):
     def __init__(self,par,server=None):
@@ -203,11 +204,15 @@ class NewScoville(gtk.Window):
             self.targetsRendered=True
 
         if self.installerId is not None:
-            installer = self.getApplication().getLocalObjectById(self.installerId)
-            self.progress.set_fraction(installer.getStatus()/100)
-            self.progress.set_text("Installing ... %d %%"%(installer.getStatus(),))
-            
-            sensitive = installer.status == 100
+            try:
+                installer = self.getApplication().getLocalObjectById(self.installerId)
+                self.progress.set_fraction(installer.getStatus()/100)
+                self.progress.set_text("Installing ... %d %%"%(installer.getStatus(),))
+                
+                sensitive = installer.status == 100
+            except GenericObjectStoreException, e:
+                sensitive = True
+
             self.srv_combobox.set_sensitive(sensitive)
             self.srv_name_entry.set_sensitive(sensitive)
             self.db_db_combo.set_sensitive(sensitive)
