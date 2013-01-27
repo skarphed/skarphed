@@ -30,6 +30,7 @@ class User {
 	private $id = null;
 	private $name = null;
 	private $password = null;
+	private $salt = null;
 	
 	/** 
 	 * Sets The User's Id Attribute to an integer value
@@ -61,6 +62,10 @@ class User {
 		$this->password = (string)$pwd;
 	}
 	
+
+	public function setSalt($salt){
+		$this->salt = (string)$salt;
+	}
 	
 	/**
 	 * Alters the User's password. 
@@ -73,8 +78,9 @@ class User {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
-		if ((hash('sha512',$oldpassword.User::SALT) == $this->password) xor $newuser){
-			$this->password = hash('sha512',$newpassword.User::SALT);
+		if ((hash('sha512',$oldpassword.$this->salt) == $this->password) xor $newuser){
+			$this->generateNewSalt();
+			$this->password = hash('sha512',$newpassword.$this->salt);
 			$this->store();
 			$passwordqry = "SELECT USR_PASSWORD FROM USERS WHERE USR_ID = ?";
 			$res = $db->query($core,$passwordqry,array($this->id));
@@ -87,6 +93,16 @@ class User {
 		}
 	}
 	
+	private function generateNewSalt(){
+		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*?";
+        $newSalt = "";
+        $len = mt_rand(64,127);
+        for ( $i = 0; $i < $len ; $i++ ) {
+            $newSalt .= $characterList{mt_rand(0, (strlen($characterList) - 1))};
+        }
+        $this->setSalt($newSalt);
+	}
+
 	/**
 	 * Get the Users current Name
 	 * 
@@ -113,7 +129,7 @@ class User {
 	 */
 	public function authenticate($password){
 		$core = Core::getInstance();
-		if (hash('sha512',$password.User::SALT) == $this->password){
+		if (hash('sha512',$password.$this->salt) == $this->password){
 			return true;
 		}
 		return false;
@@ -157,17 +173,18 @@ class User {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		if ($this->id == null){
-			$query = "INSERT INTO USERS (USR_ID, USR_NAME, USR_PASSWORD)
-			          VALUES (?,?,?);";
+			$query = "INSERT INTO USERS (USR_ID, USR_NAME, USR_PASSWORD, USR_SALT)
+			          VALUES (?,?,?,?);";
 		    $this->setId($db->getSeqNext('USR_GEN'));
-		    $db->query($core,$query,array($this->id,$this->name,$this->password));
+		    $db->query($core,$query,array($this->id,$this->name,$this->password,$this->salt));
 		}else{
 			$query = "UPDATE USERS SET 
 						USR_NAME = ?,
-						USR_PASSWORD = ?
+						USR_PASSWORD = ?,
+						USR_SALT = ?
 					  WHERE USR_ID = ?";
 					  
-		    $db->query($core,$query,array($this->name,$this->password,$this->id));
+		    $db->query($core,$query,array($this->name,$this->password,$this->id, $this->salt));
 			if (ibase_errmsg() != false){
 				throw new UserException("Storing User: Something went wrong in the Database");
 			} 
@@ -395,7 +412,7 @@ class UserManager extends Singleton {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
-		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS WHERE USR_NAME= ? ;",array($username));
+		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS WHERE USR_NAME= ? ;",array($username));
 		$userset = $db->fetchObject($res);
 		
 		if(!$userset){
@@ -406,6 +423,7 @@ class UserManager extends Singleton {
 		$user->setId($userset->USR_ID);
 		$user->setName($userset->USR_NAME);
 		$user->setPassword($userset->USR_PASSWORD);
+		$user->setSalt($userset->USR_SALT);
 		return $user;
 	}
 	
@@ -421,7 +439,7 @@ class UserManager extends Singleton {
 		$core = Core::getInstance();
 		$db = $core->getDB();
 		
-		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS WHERE USR_ID= ? ;",array($userId));
+		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS WHERE USR_ID= ? ;",array($userId));
 		$userset = $db->fetchObject($res);
 		
 		if(!$userset){
@@ -432,6 +450,7 @@ class UserManager extends Singleton {
 		$user->setId($userset->USR_ID);
 		$user->setName($userset->USR_NAME);
 		$user->setPassword($userset->USR_PASSWORD);
+		$user->setSalt($userset->USR_SALT);
 		return $user;
 	}
 	
@@ -451,13 +470,14 @@ class UserManager extends Singleton {
 		if ($checkRight){
 			$checkstring = " WHERE 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $this->getSessionUserId().",'scoville.users.view')) ";
 		}
-		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD FROM USERS $checkstring ;",array());
+		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS $checkstring ;",array());
 		$users = array();
 		while($userset = $db->fetchObject($res)){
 		    $user = new User();
 			$user->setId($userset->USR_ID);
 			$user->setName($userset->USR_NAME);
 			$user->setPassword($userset->USR_PASSWORD);
+			$user->setSalt($userset->USR_SALT);
 			$users[] = $user;
 		}
 		
