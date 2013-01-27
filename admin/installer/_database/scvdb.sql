@@ -445,6 +445,12 @@ INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) VALUES (1,19);
 INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) VALUES (1,20);
 INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) VALUES (1,21);
 
-SET GENERATOR USR_GEN TO VALUE 1;
-SET GENERATOR ROL_GEN TO VALUE 1;
-SET GENERATOR RIG_GEN TO VALUE 21;
+INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (1, 'No Repository', '0.0.0.0', '80', NULL, '');
+
+INSERT INTO SITES VALUES (1, 'Mainsite', NULL, '<div id=\"h1\"><div id=\"s1\"></div></div><div id=\"h2\"><div id=\"s2\"><div id=\"v1\"></div><div id=\"s3\"></div></div><div id=\"v2\"><div id=\"s4\"></div></div><div id=\"v3\"><div id=\"s5\"></div></div></div><div id=\"h3\"><div id=\"template_bottom\"><span>This Site is using Scoville </span> <span style=\"color:#f00;\">&lt;</span><span style=\"color:#0f0;\">}-</span><span> a CMS by masterprogs &copy; 2011</span></div></div>', 'Mainsite for Content', 5, 'mainsite.html', 1);
+
+SET GENERATOR REP_GEN TO 1;
+SET GENERATOR SIT_GEN TO 1;
+SET GENERATOR USR_GEN TO 1;
+SET GENERATOR ROL_GEN TO 1;
+SET GENERATOR RIG_GEN TO 21;
