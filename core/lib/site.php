@@ -60,7 +60,7 @@ class CompositeManager extends Singleton{
 			$site->setSpaces($set['SIT_SPACES']);
 			return $site;
 		}else{
-			throw SiteException("GetFirstSite: There is no existing Site in the Database!");
+			throw new SiteException("GetFirstSite: There is no existing Site in the Database!");
 		}
 	}
 	
@@ -79,7 +79,7 @@ class CompositeManager extends Singleton{
 			$site->setSpaces($set['SIT_SPACES']);
 			return $site;
 		}else{
-			throw SiteException("Get: This Site does not exist in Database");
+			throw new SiteException("Get: This Site does not exist in Database");
 		}
 	}
 	

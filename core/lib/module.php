@@ -572,7 +572,7 @@ class Repository {
 	
 	public function getPublicKey(){
 		if (is_null($this->publickey)){
-			$this->publickey = $this->loadPublicKey()
+			$this->publickey = $this->loadPublicKey();
 		}
 		return $this->publickey;
 	}
