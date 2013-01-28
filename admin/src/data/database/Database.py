@@ -61,20 +61,31 @@ class Database(GenericScovilleObject):
     def executeCreateSchema(self, name, username, password):
         schemaroot_pw , schemaroot_salt = self.generateSaltedPassword('root')
 
+        installationId = self._generateRandomString(8)
+
+        sql = open("../installer/_database/scvdb.sql","r")
+        sqlData = sql.read()%{'USER':username,'PASSWORD':schemaroot_pw, 'SALT':schemaroot_salt, 'NAME':name}
+        sql.close()
+        #sqlTmp = open("/tmp/%s.sql"%installationId,"w")
+        #sqlTmp.write(sqlData)
+
         con = self.getServer().getSSH()
-
-        sql = open("../installer/_database/scvdb.sql","r").read()
-        sql = sql%{'USER':username,'PASSWORD':schemaroot_pw, 'SALT':schemaroot_salt, 'NAME':name}
-
+        #ftp = con.open_sftp()
+        #ftp.put("/tmp/%s.sql"%installationId,"/var/lib/firebird/2.5/data/%s.sql"%installationId)
+        #ftp.close()
         #HERE BE DRAGONS
+
         command = """echo "add %(user)s -pw %(pass)s" | gsec -user %(user_dba)s -pass %(pass_dba)s ;
                                                        cd /var/lib/firebird/2.5/data ;
-                                                       echo "%(sql)s" | isql-fb -user %(user)s -password %(pass)s
+                                                       echo "%(sql)s" > %(inst_id)s.sql ;
+                                                       cat %(inst_id)s.sql | isql-fb -user %(user)s -password %(pass)s ;
+                                                       rm %(inst_id)s.sql
                                                                                    """%{'user': username,
                                                                                         'pass':password,
                                                                                         'user_dba':self.dba_user,
                                                                                         'pass_dba':self.dba_password,
-                                                                                        'sql':sql}
+                                                                                        'inst_id':installationId,
+                                                                                        'sql':sqlData}
         con_in, con_out, conn_err = con.exec_command(command)
 
         schema = Schema(self, name, username, password)
