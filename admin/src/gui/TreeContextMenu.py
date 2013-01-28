@@ -294,7 +294,6 @@ class TreeContextMenu(gtk.Menu):
             self.connectServer.set_visible(True)
             self.properties.set_visible(True)
             self.createInstance.set_visible(True)
-            self.cssEditor.set_visible(True)
             self.registerDatabase.set_visible(True)
             self.connectServer.set_sensitive(not obj.isOnline())
 
@@ -317,6 +316,7 @@ class TreeContextMenu(gtk.Menu):
         elif itemtype == "Scoville": # HERE BE DRAGONS
             self.removeInstance.set_visible(True)
             self.destroyInstance.set_visible(True)
+            self.cssEditor.set_visible(True)
             self.updateModules.set_visible(True)
         elif itemtype == "Site":
             self.createMenu.set_visible(True)
