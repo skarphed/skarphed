@@ -62,6 +62,19 @@ class User {
 		$this->password = (string)$pwd;
 	}
 	
+	/** 
+	 * Check Right 
+	 * 
+	 * Checks if a permission is assigned to this User
+	 * 
+	 * @param int $pwd The new Passwordhash
+	 */
+
+	public function checkRight($right){
+		$core = Core::getInstance();
+		$rightM = $core->getRightsManager();
+		return $rightM->checkRight($right,$this->getId());
+	}
 
 	public function setSalt($salt){
 		$this->salt = (string)$salt;
@@ -147,15 +160,14 @@ class User {
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
 		$db = $core->getDB();
-		
-		$checkstring = "";
-		if ($checkRight){
-			$checkstring = "AND  1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.delete')) ";
+
+		if ($checkRight and !$sessionUser->checkRight('scoville.users.delete')){
+			throw new UserException("delete: Sessionuser is not allowed to delete users!");
 		}
 		
-		$stmnt_usr="DELETE FROM USERS WHERE USR_ID = ? $checkstring ;";
-		$stmnt_uro="DELETE FROM USERROLES WHERE URO_USR_ID = ? $checkstring ;";
-		$stmnt_uri="DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? $checkstring ;";
+		$stmnt_usr="DELETE FROM USERS WHERE USR_ID = ? ;";
+		$stmnt_uro="DELETE FROM USERROLES WHERE URO_USR_ID = ? ;";
+		$stmnt_uri="DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? ;";
 		$res = $db->query($core,$stmnt_uri,array($this->getId()));
 		$res = $db->query($core,$stmnt_uro,array($this->getId()));
 		$res = $db->query($core,$stmnt_usr,array($this->getId()));
@@ -282,9 +294,11 @@ class User {
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
 		$checkstring = "";
-		if ($checkRight){
-			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $sessionUser->getId().",'scoville.users.grant_revoke')) ";
+
+		if ($checkRight and !$rightM->checkRight('scoville.users.grant_revoke', $sessionUser){
+			throw new UserException("Revoking Right: This Sessionuser is not allowed to grant or revoke Permissions!" );
 		}
+
 		$rightId = $rightM->getIdForRight($right);
 		if ($rightId == null){
 			throw new UserException("Revoking Right: There is no such right as $right");
@@ -296,7 +310,7 @@ class User {
 			if($checkRight and !$rightM->checkRight($right,$sessionUser)){
 				return;
 			} 
-			$db->query($core,"DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? $checkstring ;",array($this->id, $rightId));
+			$db->query($core,"DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? ;",array($this->id, $rightId));
 			if (ibase_errmsg() != false){
 				throw new UserException("Revoking Right: Something went wrong in the Database");
 			} 
@@ -386,7 +400,7 @@ class UserManager extends Singleton {
 			return $_SESSION['user'];
 		}else{return null;}
 	}
-	
+
 	/**
 	 * Get Id of current Session user
 	 * 
@@ -466,11 +480,13 @@ class UserManager extends Singleton {
 	public function getUsers($checkRight=true){
 		$core = Core::getInstance();
 		$db = $core->getDB();
-		$checkstring = "";
-		if ($checkRight){
-			$checkstring = " WHERE 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $this->getSessionUserId().",'scoville.users.view')) ";
+		$userM = $core->getUserManager();
+		$sessionUser = $userM->getSessionUser();
+
+		if ($checkRight and !$sessionUser->checkRight('scoville.users.view'){
+			throw new UserException("getUsers: This user is not allowed to view users!");
 		}
-		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS $checkstring ;",array());
+		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS ;",array());
 		$users = array();
 		while($userset = $db->fetchObject($res)){
 		    $user = new User();

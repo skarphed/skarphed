@@ -147,16 +147,11 @@ class Role {
 		$rightM = $core->getRightsManager();
 		$userM = $core->getUserManager();
 		
-		$checkString="";
-		if ($checkRight){
-			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
-		}
-		
 		if ($checkRight and !$rightM->checkRight($rightId,$userM->getSessionUser())){
 				throw new RightsException("Remove Right: User Cannot edit a Roleright that he does not possess himself!");
 		}
 		
-		$stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ?) $checkString ; ";
+		$stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ?); ";
 		$db->query($core,$stmnt, array($this->roleId,$rightId));
 		return;
 	}
@@ -175,9 +170,8 @@ class Role {
 		$db = $core->getDB();
 		$userM = $core->getUserManager();
 		
-		$checkstring="";
-		if ($checkRight){
-			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.modify')) ";
+		if ($checkRight and !$rightM->checkRight('scoville.roles.modify',$userM->getSessionUser())){
+				throw new RightsException("Remove Right: User is not allowed to edit Roles!");
 		}
 		
 		$stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) 
@@ -247,15 +241,14 @@ class Role {
 		$core=Core::getInstance();
 		$db = $core->getDB();
 		$userM = $core->getUserManager();
-		
-		$checkString="";
-		if ($checkRight){
-			$checkstring = " AND 1 = (SELECT AVAILABLE FROM CHECK_RIGHT(". $userM->getSessionUserId().",'scoville.roles.delete')) ";
+
+		if ($checkRight and !$rightM->checkRight('scoville.roles.delete',$userM->getSessionUser())){
+				throw new RightsException("Remove Right: User is not allowed to delete Roles!");
 		}
 		
 		//USERROLES und ROLERIGHTS DURCH FOREIGN-KEY BERUECKSICHTIGT!
 		
-		$stmntRole = "DELETE FROM ROLES WHERE ROL_ID = ? $checkString ;";
+		$stmntRole = "DELETE FROM ROLES WHERE ROL_ID = ? ;";
 		$db->query($core,$stmntRole, array($this->roleId));
 	}
 	
@@ -358,16 +351,30 @@ class RightsManager extends Singleton{
 	 * @param User $user The user to be checked
 	 * @return bool If assigned: TRUE, if not assigned: FALSE
 	 */
-	public function checkRight($right,$user){
-		$core = Core::getInstance();
-		$db = $core->getDB();
-		$stmnt = "SELECT AVAILABLE FROM CHECK_RIGHT(? , ?);";
-		$res = $db->query($core,$stmnt,array($user->getId(),$right));
-		$set = $db->fetchArray($res);
-	    if($set['AVAILABLE'] == 1){
-			return true;
-		}
-		return false; 
+	public function checkRight($right,$userId){
+		if (get_class($userId) == 'User'){
+ 			$userId = $userId->getId();
+ 	    }
+	    $sql= "select 1 as RESULT from RDB\$DATABASE  where ? in(select rig_name
+		        from USERROLES
+		        left join ROLES
+		          on rol_id = uro_rol_id
+		        left join ROLERIGHTS
+		          on rri_rol_id = rol_id
+		        left join RIGHTS
+		          on rig_id = rri_rig_id
+		        where uro_usr_id = ?
+		        union
+		        select rig_name
+		        from USERRIGHTS
+		        left join RIGHTS
+		          on rig_id = uri_rig_id
+		        where uri_usr_id = ?) ; ";
+        $core = Core::getInstance();
+        $db = $core->getDB();
+        $res = $db->query($core,$sql,array($right,$userId,$userId));
+        $set = $db->fetchObject($res);
+        return $set->RESULT == 1;
 	}
 	
 	/**

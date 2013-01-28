@@ -30,18 +30,6 @@ CREATE DOMAIN BOOL
  check (value = 0 or value = 1)
 ;
 
-/******************* PROCEDURES ******************/
-
-SET TERM ^ ;
-CREATE PROCEDURE CHECK_RIGHT (
-    USERID Integer,
-    RIGHTNAME Varchar(64) )
-RETURNS (
-    AVAILABLE Integer )
-AS
-BEGIN SUSPEND; END^
-SET TERM ; ^
-
 /******************** TABLES **********************/
 
 CREATE TABLE ACTIONLISTS
@@ -256,43 +244,6 @@ BEGIN
 END^
 SET TERM ; ^
 
-SET TERM ^ ;
-ALTER PROCEDURE CHECK_RIGHT (
-    USERID Integer,
-    RIGHTNAME Varchar(64) )
-RETURNS (
-    AVAILABLE Integer )
-AS
-declare temp_available int;
-begin
-  available = 0;
-  for select 1
-      from RDB$DATABASE
-      where :rightname in (select rig_name
-                           from USERROLES
-                           left join ROLES
-                             on rol_id = uro_rol_id
-                           left join ROLERIGHTS
-                             on rri_rol_id = rol_id
-                           left join RIGHTS
-                             on rig_id = rri_rig_id
-                           where uro_usr_id = :userid
-                           union
-                           select rig_name
-                           from USERRIGHTS
-                           left join RIGHTS
-                             on rig_id = uri_rig_id
-                           where uri_usr_id = :userid)
-    into :temp_available
-  do
-  begin
-    if (:temp_available = 1) then available = 1;
-  end
-  suspend;
-end^
-SET TERM ; ^
-
-
 ALTER TABLE ACTIONS ADD CONSTRAINT ACT_FK_ATL
   FOREIGN KEY (ACT_ATL_ID) REFERENCES ACTIONLISTS (ATL_ID) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ACTIONS ADD CONSTRAINT ACT_FK_SIT
@@ -333,8 +284,7 @@ ALTER TABLE WIDGETS ADD CONSTRAINT WGT_FK_MOD
   FOREIGN KEY (WGT_MOD_ID) REFERENCES MODULES (MOD_ID) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE WIDGETS ADD CONSTRAINT WGT_FK_SIT
   FOREIGN KEY (WGT_SIT_ID) REFERENCES SITES (SIT_ID) ON UPDATE CASCADE ON DELETE CASCADE;
-GRANT EXECUTE
- ON PROCEDURE CHECK_RIGHT TO  %(USER)s;
+
 
 GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE
  ON ACTIONLISTS TO  %(USER)s WITH GRANT OPTION;
