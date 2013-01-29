@@ -149,6 +149,7 @@ class NewScoville(gtk.Window):
 
         self.ok.connect("clicked", self.cb_Ok)
         self.cancel.connect("clicked", self.cb_Cancel)
+        self.connect("delete-event",self.cb_Cancel)
 
         self.set_icon_from_file("../data/icon/mp_logo.png")
 
@@ -190,6 +191,10 @@ class NewScoville(gtk.Window):
 
 
     def cb_Cancel(self,widget=None,data=None):
+        self.srv_combobox.destroy()
+        self.repo_combobox.destroy()
+        self.db_db_combo.destroy()
+        self.db_schema_combo.destroy()
         self.destroy()
 
     def cb_ToggledDb(self, widget=None, data=None):

@@ -54,6 +54,10 @@ class ObjectStore(object):
     def addCallback(self, cb):
         ObjectStore.callbacks.append(cb)
     
+    def removeCallback(self, cb):
+        if cb in ObjectStore.callbacks:
+            ObjectStore.callbacks.remove(cb)
+    
     def updated(self):
         for cb in ObjectStore.callbacks:
             cb()

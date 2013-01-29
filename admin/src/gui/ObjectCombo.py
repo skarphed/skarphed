@@ -106,6 +106,10 @@ class ObjectCombo(gtk.ComboBox):
         else:
             return None
 
+    def destroy(self):
+        self.getApplication().getObjectStore().removeCallback(self.render)
+        gtk.ComboBox.destroy(self)
+
     def getSelected(self):
         active_iter = self.get_active_iter()
         objId = self.model.get_value(active_iter,2)
