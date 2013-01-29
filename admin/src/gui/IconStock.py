@@ -69,24 +69,25 @@ WIDGET                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 
 
 icon_object_map = {
-                   "Server"     : SERVER,
-                   "Users"      : USER,
-                   "User"       : USER,
-                   "Modules"    : MODULE,
-                   "Module"     : MODULE,
-                   "Roles"      : ROLE,
-                   "Role"       : ROLE,
-                   "Sites"      : SITE,
-                   "Site"       : SITE,
-                   "Repository" : REPO,
-                   "Template"   : TEMPLATE,
-                   "Widget"     : WIDGET,
-                   "Action"     : ACTION,
-                   "ActionList" : ACTIONLIST,
-                   "Menu"       : MENU,
-                   "MenuItem"   : MENUITEM,
-                   "Database"   : DATABASE,
-                   "Schema"     : SCHEMA   
+                   "Server"           : SERVER,
+                   "Users"            : USER,
+                   "User"             : USER,
+                   "Modules"          : MODULE,
+                   "Module"           : MODULE,
+                   "Roles"            : ROLE,
+                   "Role"             : ROLE,
+                   "Sites"            : SITE,
+                   "Site"             : SITE,
+                   "Repository"       : REPO,
+                   "Scoville_repo"    : REPO,
+                   "Template"         : TEMPLATE,
+                   "Widget"           : WIDGET,
+                   "Action"           : ACTION,
+                   "ActionList"       : ACTIONLIST,
+                   "Menu"             : MENU,
+                   "MenuItem"         : MENUITEM,
+                   "Database"         : DATABASE,
+                   "Schema"           : SCHEMA   
                    }
 
 def getServerIcon(server):
