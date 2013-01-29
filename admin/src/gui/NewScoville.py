@@ -48,11 +48,13 @@ class NewScoville(gtk.Window):
         self.toplabel = gtk.Label("Please configure the new Installation")
 
         self.frm_srv = gtk.Frame("Server")
+        self.frm_repo = gtk.Frame("Repository")
         self.frm_db = gtk.Frame("Database")
         self.frm_target = gtk.Frame("Target-OS")
         self.frm_apache = gtk.Frame("Apache2")
 
         self.frm_srv_tbl = gtk.Table(2,2,False)
+        self.frm_repo_tbl = gtk.Table(2,1,False)
         self.frm_db_tbl = gtk.Table(2,2,False)
         self.frm_target_tbl = gtk.Table(3,1,False)
         self.frm_root_tbl = gtk.Table(2,2,False)
@@ -70,6 +72,13 @@ class NewScoville(gtk.Window):
         self.frm_srv_tbl.attach(self.srv_name_label,0,1,1,2)
         self.frm_srv_tbl.attach(self.srv_name_entry,1,2,1,2)
         self.frm_srv.add(self.frm_srv_tbl)
+
+        self.repo_combobox = ObjectCombo(self,"Scoville_repo")
+        self.repo_label = gtk.Label("Repository")
+
+        self.frm_repo_tbl.attach(self.repo_label,0,1,0,1)
+        self.frm_repo_tbl.attach(self.repo_combobox,1,2,0,1)
+        self.frm_repo.add(self.frm_repo_tbl)
 
         self.db_radio_new = gtk.RadioButton(None,"Create new on Database:")
         self.db_radio_use = gtk.RadioButton(self.db_radio_new,"Use existing Schema:")
@@ -130,6 +139,7 @@ class NewScoville(gtk.Window):
         self.vboxdummy = gtk.Label("")
         self.vbox.pack_start(self.toplabel)
         self.vbox.pack_start(self.frm_srv)
+        self.vbox.pack_start(self.frm_repo)
         self.vbox.pack_start(self.frm_db)
         self.vbox.pack_start(self.frm_target)
         self.vbox.pack_start(self.frm_apache)
@@ -148,12 +158,12 @@ class NewScoville(gtk.Window):
 
     def cb_Ok(self,widget=None,data=None):
         server = self.srv_combobox.getSelected()
-
         if self.db_radio_new.get_active():
             db = self.db_db_combo.getSelected()
+            repo = self.repo_combobox.getSelected()
             newSchemaName = self.srv_name_entry.get_text()
             newSchemaName = newSchemaName.translate(None, "!\"§$%&/()=?`´#+~'><|^¹²³¼½¬{[]}\\ *-.,:;")
-            schemaInfo = db.createSchema(newSchemaName)
+            schemaInfo = db.createSchema(newSchemaName,repo)
             schemaInfo['ip'] = db.getServer().getIp()
         elif self.db_radio_use.get_active():
             schema = self.db_schema_combo.getSelected()
@@ -186,10 +196,11 @@ class NewScoville(gtk.Window):
         if data==1:
             self.db_db_combo.set_sensitive(True)
             self.db_schema_combo.set_sensitive(False)
+            self.repo_combobox.set_sensitive(True)
         elif data==2:
             self.db_db_combo.set_sensitive(False)
             self.db_schema_combo.set_sensitive(True)
-
+            self.repo_combobox.set_sensitive(False)
 
     def render(self):
         self.srv_combobox.render()

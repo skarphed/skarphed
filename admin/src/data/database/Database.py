@@ -34,15 +34,16 @@ import gobject
 
 class Database(GenericScovilleObject):
     class GenerateSchemaThread(Thread):
-        def __init__(self, database, name, username, password):           
+        def __init__(self, database, name, username, password, repo):           
             Thread.__init__(self)
             self.database = database
             self.name = name
             self.username = username
-            self.password = password 
+            self.password = password
+            self.repo = repo 
 
         def run(self):
-            self.database.executeCreateSchema(self.name, self.username, self.password)
+            self.database.executeCreateSchema(self.name, self.username, self.password, self.repo)
 
     def __init__(self, par, url="", dba_user="", dba_password=""):
         GenericScovilleObject.__init__(self)
@@ -52,19 +53,23 @@ class Database(GenericScovilleObject):
         self.dba_user = dba_user
         self.dba_password = dba_password
 
-    def createSchema(self,name):
+    def createSchema(self,name,repo):
         username = self._generateRandomString(8)
         password = self._generateRandomString(8)
-        self.GenerateSchemaThread(self,name,username,password).start()
+        self.GenerateSchemaThread(self,name,username,password,repo).start()
         return {'name':name,'user':username,'pass':password}
 
-    def executeCreateSchema(self, name, username, password):
+    def executeCreateSchema(self, name, username, password, repo):
         schemaroot_pw , schemaroot_salt = self.generateSaltedPassword('root')
 
         con = self.getServer().getSSH()
 
         sql = open("../installer/_database/scvdb.sql","r").read()
-        sql = sql%{'USER':username,'PASSWORD':schemaroot_pw, 'SALT':schemaroot_salt, 'NAME':name}
+        sql = sql%{'USER':username,
+                   'PASSWORD':schemaroot_pw, 
+                   'SALT':schemaroot_salt, 
+                   'NAME':name,
+                   'REPO':repo.getUrl().replace("http://","")}
 
         #HERE BE DRAGONS
         command = """echo "add %(user)s -pw %(pass)s" | gsec -user %(user_dba)s -pass %(pass_dba)s ;
