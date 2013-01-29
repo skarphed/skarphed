@@ -73,7 +73,7 @@ class NewScoville(gtk.Window):
         self.frm_srv_tbl.attach(self.srv_name_entry,1,2,1,2)
         self.frm_srv.add(self.frm_srv_tbl)
 
-        self.repo_combobox = ObjectCombo(self,"Scoville_repo")
+        self.repo_combobox = ObjectCombo(self,"Scoville_repo", selectFirst=True)
         self.repo_label = gtk.Label("Repository")
 
         self.frm_repo_tbl.attach(self.repo_label,0,1,0,1)
@@ -82,8 +82,8 @@ class NewScoville(gtk.Window):
 
         self.db_radio_new = gtk.RadioButton(None,"Create new on Database:")
         self.db_radio_use = gtk.RadioButton(self.db_radio_new,"Use existing Schema:")
-        self.db_db_combo = ObjectCombo(self,"Database")
-        self.db_schema_combo = ObjectCombo(self,"Schema")
+        self.db_db_combo = ObjectCombo(self,"Database", selectFirst=True)
+        self.db_schema_combo = ObjectCombo(self,"Schema", selectFirst=True)
         self.db_schema_combo.set_sensitive(False)
 
         self.db_radio_new.connect("toggled", self.cb_ToggledDb,1)

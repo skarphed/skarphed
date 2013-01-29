@@ -30,15 +30,18 @@ import gtk
 import IconStock
 
 class ObjectCombo(gtk.ComboBox):
-    def __init__(self, par, objectType, selectedObject=None):
+    def __init__(self, par, objectType, selectedObject=None, selectFirst=False):
         gtk.ComboBox.__init__(self)
         self.par = par
+
+        self.selectFirst = selectFirst
+        self.firstSelected = False
 
         if type(objectType) != str:
             self.objectType = objectType.__class__.__name__
         else:
             self.objectType = objectType
-        
+
         self.selectedObjectId = None
         if selectedObject is not None:
             self.selectedObjectId = selectedObject.getLocalId()
@@ -63,6 +66,13 @@ class ObjectCombo(gtk.ComboBox):
                 model.itersToRemove.append(rowiter)
         
         objs = self.getApplication().getObjectStore().getAllOfClass(self.objectType)
+
+        if len(objs)>=1 and self.selectFirst and self.selectedObjectId is None and not self.firstSelected:
+            self.selectedObjectId = objs[0].getLocalId()
+            self.firstSelected = True
+
+
+
         processedObjectIds = []
         for obj in objs:
             rowiter = self.getIterById(self.model, obj.getLocalId()) 
