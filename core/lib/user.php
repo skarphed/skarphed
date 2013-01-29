@@ -295,7 +295,7 @@ class User {
 		$sessionUser = $userM->getSessionUser();
 		$checkstring = "";
 
-		if ($checkRight and !$rightM->checkRight('scoville.users.grant_revoke', $sessionUser){
+		if ($checkRight and !$rightM->checkRight('scoville.users.grant_revoke', $sessionUser)){
 			throw new UserException("Revoking Right: This Sessionuser is not allowed to grant or revoke Permissions!" );
 		}
 
@@ -483,10 +483,10 @@ class UserManager extends Singleton {
 		$userM = $core->getUserManager();
 		$sessionUser = $userM->getSessionUser();
 
-		if ($checkRight and !$sessionUser->checkRight('scoville.users.view'){
+		if ($checkRight and !$sessionUser->checkRight('scoville.users.view')){
 			throw new UserException("getUsers: This user is not allowed to view users!");
 		}
-		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS ;",array());
+		$res = $db->query($core,"SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS ;");
 		$users = array();
 		while($userset = $db->fetchObject($res)){
 		    $user = new User();

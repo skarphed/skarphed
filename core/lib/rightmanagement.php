@@ -352,8 +352,10 @@ class RightsManager extends Singleton{
 	 * @return bool If assigned: TRUE, if not assigned: FALSE
 	 */
 	public function checkRight($right,$userId){
-		if (get_class($userId) == 'User'){
+		if (is_object($userId) and get_class($userId) == 'User'){
  			$userId = $userId->getId();
+ 	    }elseif (!is_int($userId)){
+ 	    	throw new RightsException("checkRight expects \$userId to be either a integer or a User-Object!");
  	    }
 	    $sql= "select 1 as RESULT from RDB\$DATABASE  where ? in(select rig_name
 		        from USERROLES
