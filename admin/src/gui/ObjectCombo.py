@@ -50,10 +50,10 @@ class ObjectCombo(gtk.ComboBox):
         
         self.set_model(self.model)
         self.iconrenderer = gtk.CellRendererPixbuf()
-        self.pack_start(self.iconrenderer, True)
+        self.pack_start(self.iconrenderer, False)
         self.add_attribute(self.iconrenderer, "pixbuf", 0)
         self.namerenderer = gtk.CellRendererText()
-        self.pack_start(self.namerenderer, False)
+        self.pack_start(self.namerenderer, True)
         self.add_attribute(self.namerenderer, "text", 1)
 
         self.getApplication().getObjectStore().addCallback(self.render)
