@@ -225,6 +225,7 @@ class NewScoville(gtk.Window):
                 sensitive = True
 
             self.srv_combobox.set_sensitive(sensitive)
+            self.repo_combobox.set_sensitive(sensitive)
             self.srv_name_entry.set_sensitive(sensitive)
             self.db_db_combo.set_sensitive(sensitive)
             self.db_schema_combo.set_sensitive(sensitive)
