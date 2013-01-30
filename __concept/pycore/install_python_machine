@@ -1,0 +1,25 @@
+apt-get install libapache2-mod-python python-pip libfbclient2 python-dev
+
+pip install fdb pycrypto jsonrpclib
+
+#bzr checkout http://bzr.json-rpc.org/trunk
+#cd trunk
+#python setup.py build
+#python setup.py install
+
+Add following lines into DocumentRoot Directive:
+  AddHandler mod_python .py
+  PythonHandler mod_python.publisher
+  PythonDebug On
+
+#Add following lines into New Document Directive /var/www_scv_x/rpc/
+#  <Directory /var/www/rpc/>
+#       Options Indexes FollowSymLinks MultiViews
+#       AllowOverride None
+#       Order allow,deny
+#       allow from all
+#       AddHandler mod_python .py
+#       PythonHandler jsonrpc
+#  </Directory>
+
+
