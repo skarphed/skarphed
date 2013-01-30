@@ -1,0 +1,3 @@
+[submodule "python-jsonrpc"]
+	path = python-jsonrpc
+	url = https://github.com/grindhold/python-jsonrpc
