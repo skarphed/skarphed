@@ -52,7 +52,9 @@ class ScovilleInstaller(GenericScovilleObject):
             self.installer = installer
 
         def run(self):
-            if self.installer.target=="Debian6":
+            if self.installer.target=="Debian6/PHP":
+                self.installer.installDebian6()
+            if self.installer.target=="Debian6/Python":
                 self.installer.installDebian6()
 
 
@@ -118,6 +120,90 @@ class ScovilleInstaller(GenericScovilleObject):
         tar.add(self.BUILDPATH+"rpc")
         tar.add(self.BUILDPATH+"lib")
         tar.add(self.BUILDPATH+"index.php")
+        tar.close()
+
+        self.status = 45
+        gobject.idle_add(self.updated)
+
+        con = self.server.getSSH()
+        con_stdin, con_stdout, con_stderr = con.exec_command("mkdir /tmp/scvinst"+str(self.installationId))
+
+        self.status = 50
+        gobject.idle_add(self.updated)
+
+
+        con = self.server.getSSH()
+        ftp = con.open_sftp()
+        ftp.put(self.BUILDPATH+"scv_install.tar.gz","/tmp/scvinst"+str(self.installationId)+"/scv_install.tar.gz")
+        ftp.close()
+
+        self.status = 65
+        gobject.idle_add(self.updated)
+
+
+        con = self.server.getSSH()
+        con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/scvinst"+str(self.installationId)+"; tar xvfz scv_install.tar.gz -C / ; chmod 755 install.sh ; ./install.sh ")
+
+        print con_stdout.read()
+        
+        shutil.rmtree(self.BUILDPATH)
+        self.status = 100
+        gobject.idle_add(self.updated)
+        gobject.idle_add(self.addInstanceToServer)
+
+    def installDebian6_py(self):
+        os.mkdir(self.BUILDPATH)
+
+        apache_template = open("../installer/debian6_py/apache2.conf","r").read()
+        apacheconf = apache_template%(self.data['apache.ip'],
+                                      self.data['apache.port'],
+                        "ServerName "+self.data['apache.domain'],
+                       "ServerAlias "+self.data['apache.subdomain'],)
+
+        apacheconfresult = open(self.BUILDPATH+"apache2.conf","w")
+        apacheconfresult.write(apacheconf)
+        apacheconfresult.close()
+
+        self.status = 10
+        gobject.idle_add(self.updated)
+
+
+        scv_config = {}
+        for key,val in self.data.items():
+            if key.startswith("core.") or key.startswith("db."):
+                if key == "db.name":
+                    scv_config[key] = val+".fdb"
+                    continue
+                scv_config[key] = val
+
+        jenc = jayson.JSONEncoder()
+        config_json = open(self.BUILDPATH+"config.json","w")
+        config_json.write(jenc.encode(scv_config))
+        config_json.close()
+
+        shutil.copyfile("../installer/debian6_py/instanceconf.py",self.BUILDPATH+"instanceconf.py")
+        shutil.copyfile("../installer/debian6_py/scoville.conf",self.BUILDPATH+"scoville.conf")
+        shutil.copyfile("../installer/debian6_py/install.sh", self.BUILDPATH+"install.sh")
+
+        self.status = 30
+        gobject.idle_add(self.updated)
+
+        shutil.copyfile("../../pycore/index.py",self.BUILDPATH+"index.py")
+        shutil.copytree("../../pycore/web",self.BUILDPATH+"web")
+        shutil.copytree("../../pycore/rpc",self.BUILDPATH+"rpc")
+        shutil.copytree("../../pycore/lib",self.BUILDPATH+"lib")
+        shutil.copytree("../../python-jsonrpc",self.BUILDPATH+"python-jsonrpc")
+
+        tar = tarfile.open(self.BUILDPATH+"scv_install.tar.gz","w:gz")
+        tar.add(self.BUILDPATH+"apache2.conf")
+        tar.add(self.BUILDPATH+"config.json")
+        tar.add(self.BUILDPATH+"instanceconf.py")
+        tar.add(self.BUILDPATH+"scoville.conf")
+        tar.add(self.BUILDPATH+"install.sh")
+        tar.add(self.BUILDPATH+"web")
+        tar.add(self.BUILDPATH+"rpc")
+        tar.add(self.BUILDPATH+"lib")
+        tar.add(self.BUILDPATH+"index.py")
         tar.close()
 
         self.status = 45
