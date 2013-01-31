@@ -161,10 +161,10 @@ class Database(object):
         pass #TODO Implement
 
     def createTablesForModule(module, tables):
-        pass
+        pass #TODO Implement
 
     def updateTablesForModule(module, tables):
-        pass
+        pass #TODO Implement
 
 
 class QueryCache(object):
