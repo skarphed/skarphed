@@ -55,7 +55,7 @@ class ScovilleInstaller(GenericScovilleObject):
             if self.installer.target=="Debian6/PHP":
                 self.installer.installDebian6()
             if self.installer.target=="Debian6/Python":
-                self.installer.installDebian6()
+                self.installer.installDebian6_py()
 
 
     def __init__(self,data,server,target):
@@ -203,6 +203,7 @@ class ScovilleInstaller(GenericScovilleObject):
         tar.add(self.BUILDPATH+"web")
         tar.add(self.BUILDPATH+"rpc")
         tar.add(self.BUILDPATH+"lib")
+        tar.add(self.BUILDPATH+"python-jsonrpc")
         tar.add(self.BUILDPATH+"index.py")
         tar.close()
 

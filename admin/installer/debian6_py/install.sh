@@ -11,12 +11,14 @@ else
 	
 	#external component installation
 
-	apt-get install -y apache2 libapache2-mod-python python-pip libfbclient2
+	apt-get install -y apache2 libapache2-mod-python python-pip libfbclient2 python-dev
 
 	pip install fdb pycrypto
 
-	python ./python-jsonrpc/setup.py build
-	python ./python-jsonrpc/setup.py install
+    cd ./python-jsonrpc/
+	python setup.py build
+	python setup.py install
+	cd ..
 
 	mkdir /etc/scoville
 	cp ./scoville.conf /etc/scoville/
