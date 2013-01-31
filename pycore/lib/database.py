@@ -22,6 +22,35 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+###########################################################
+# Rewrite from PHP status
+# 
+# Class Database
+# - private  functio __construct               --done 
+# - public function setIp                      --done  
+# - public function setDbName                  --done  
+# - public function setUser                    --done
+# - public function setPassword                --done
+# - public function connect                    --done
+# - private function getLowestUseQuery         --done QueryCache
+# - private function generateZeros             --obsolete
+# - private function replaceModuleTables       --done
+# - private function createQueryInCache        --obsolete QueryCache
+# - public function getConnection              --done
+# - public function fetchArray                 --obsolete
+# - public function fetchObject                --obsolete
+# - public function commit                     --done
+# - public function createTablesForModule      TODO
+# - public function updateTablesForModule      TODO
+# - public function createTableForModule       TODO
+# - public function removeTableForModule       TODO
+# - public function removeTablesForModule      TODO
+# - public function getSeqNext                 --done
+# - public function getSeqCurrent              --done
+# - public function createBlob                 --obsolete
+# - public function getInfo                    TODO
+###########################################################
+
 import re
 import fdb
 from scv import Core
@@ -49,10 +78,10 @@ class Database(object):
 
         core = Core()
         config = core.getConfig()
-        self.setIp(config.getEntry('db.ip'))
-        self.setDbName(config.getEntry('db.name'))
-        self.setUser(config.getEntry('db.user'))
-        self.setPassword(config.getEntry('db.password'))
+        self.set_ip(config.getEntry('db.ip'))
+        self.set_db_name(config.getEntry('db.name'))
+        self.set_user(config.getEntry('db.user'))
+        self.set_password(config.getEntry('db.password'))
         self.connect()
 
     def connect(self):
@@ -69,19 +98,19 @@ class Database(object):
             raise DatabaseException(e.value)
         return
 
-    def setIp(self, ip):
+    def set_ip(self, ip):
         self._ip = str(ip)
 
-    def setDbName(self, dbname):
+    def set_db_name(self, dbname):
         self._dname = str(dbname)
 
-    def setUser(self, user):
+    def set_user(self, user):
         self._user = str(user)
 
-    def setPassword(self, password):
+    def set_password(self, password):
         self._password = str(password)
 
-    def getConnection(self):
+    def get_connection(self):
         return self._connection
 
     def commit(self):
@@ -91,7 +120,7 @@ class Database(object):
         if self._connection is None:
             raise DatabaseException(DatabaseException.getMsg(2))
         if module.getName() != "de.masterprogs.scoville.core":
-            statement = self._replaceModuleTables(module,statement)
+            statement = self._replace_module_tables(module,statement)
         cur = self._connection.cursor()    
         prepared = self._queryCache(cur, statement)
         try:
@@ -100,7 +129,7 @@ class Database(object):
             raise DatabaseException(e.value)
         return cur
 
-    def _replacemoduleTables(self, module, query):
+    def _replace_module_tables(self, module, query):
         tagpattern = re.compile('\$\{[A-Za-z0-9.]+\}')
         matches = tagpattern.findall(query)
         matches = list(set(matches)) # making matches unique
@@ -143,27 +172,27 @@ class Database(object):
             raise DatabaseException(DatabaseException.getMsg(3,str(matchesRaw)))
         return query
 
-    def getSeqNext(self,sequenceId):
+    def get_seq_next(self,sequenceId):
         cur = self._connection.cursor()
         statement = "SELECT GEN_ID ( %s , 1) FROM DUAL ;"%str(sequenceId)
         cur.execute(statement)
         res = cur.fetchone()
         return res[0]
 
-    def getSeqCurrent(self,sequenceId):
+    def get_seq_current(self,sequenceId):
         cur = self._connection.cursor()
         statement = "SELECT GEN_ID ( %s , 0) FROM DUAL ;"%str(sequenceId)
         cur.execute(statement)
         res = cur.fetchone()
         return res[0]
 
-    def removeTablesForModule(module, tables):
+    def remove_tables_for_module(module, tables):
         pass #TODO Implement
 
-    def createTablesForModule(module, tables):
+    def create_tables_for_module(module, tables):
         pass #TODO Implement
 
-    def updateTablesForModule(module, tables):
+    def update_tables_for_module(module, tables):
         pass #TODO Implement
 
 
@@ -177,14 +206,14 @@ class QueryCache(object):
     def __call__(self, cur, query):
         if query not in self.queries:
             if len(self.queries) >= self.MAX_QUERIES:
-                lowest = self._getLowestUseQuery()
+                lowest = self._get_lowest_use_query()
                 del(self.queries[lowest])
             self.queries[query] = {self.RANK:0,self.PREP:cur.prep(query)}
         self.queres[query][self.RANK] += 1
         return self.queries[query]
 
 
-    def _getLowestUseQuery(self):
+    def _get_lowest_use_query(self):
         lowest = None
         lquery = None
         for query, querydict in self.queries.items():
