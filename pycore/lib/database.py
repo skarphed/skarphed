@@ -53,7 +53,6 @@
 
 import re
 import fdb
-from scv import Core
 
 class DatabaseException(Exception):
     """
@@ -65,7 +64,7 @@ class DatabaseException(Exception):
         3:"""Could not resolve Tables:"""
     }
 
-    def getMsg(self,nr, info):
+    def get_msg(self,nr, info=""):
         return "DB_"+str(nr)+": "+self.ERRORS[nr]+" "+info
     
 
@@ -73,10 +72,12 @@ class Database(object):
     """
     The Database-Class handles the connection to a Firebird 2.5+ Database
     """
-    def __init__(self):
+    def __init__(self, core):
         """
         The Database loads connectiondata to the database from the config of Core
         """
+        self._core = core
+        
         self._connection = None
         self._ip = None
         self._dbname = None
@@ -85,12 +86,11 @@ class Database(object):
 
         self._queryCache = QueryCache()
 
-        core = Core()
-        config = core.getConfig()
-        self.set_ip(config.getEntry('db.ip'))
-        self.set_db_name(config.getEntry('db.name'))
-        self.set_user(config.getEntry('db.user'))
-        self.set_password(config.getEntry('db.password'))
+        config = self._core.get_configuration()
+        self.set_ip(config.get_entry('db.ip'))
+        self.set_db_name(config.get_entry('db.name'))
+        self.set_user(config.get_entry('db.user'))
+        self.set_password(config.get_entry('db.password'))
         self.connect()
 
     def connect(self):
@@ -99,7 +99,7 @@ class Database(object):
         connection in _connection
         """
         if None in (self.user, self.ip, self.dbname, self.password):
-            raise DatabaseException(DatabaseException.getMsg(1))
+            raise DatabaseException(DatabaseException.get_msg(1))
             #TODO: Globally Definable DB-Path
         try:
             self._connection = fdb.connect(
@@ -153,7 +153,7 @@ class Database(object):
         it is necessary to determine tablenames
         """
         if self._connection is None:
-            raise DatabaseException(DatabaseException.getMsg(2))
+            raise DatabaseException(DatabaseException.get_msg(2))
         if module.getName() != "de.masterprogs.scoville.core":
             statement = self._replace_module_tables(module,statement)
         cur = self._connection.cursor()    
@@ -210,7 +210,7 @@ class Database(object):
         if len(matchesRaw) != len(replacementsDone):
             for replacement in replacementsDone:
                 matchesRaw.remove(replacement)
-            raise DatabaseException(DatabaseException.getMsg(3,str(matchesRaw)))
+            raise DatabaseException(DatabaseException.get_msg(3,str(matchesRaw)))
         return query
 
     def get_seq_next(self,sequenceId):
@@ -252,6 +252,12 @@ class Database(object):
         update tables as part of module update
         """
         pass #TODO Implement
+
+    def get_core(self):
+        """
+        returns the core
+        """
+        return self._core
 
 
 class QueryCache(object):

@@ -22,10 +22,46 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+from configuration import Configuration
 from database import Database
 
+class CoreException(Exception):
+    ERRORS = {
+        1:"""Only the Configuration-class is authorized to access this variable"""
+    }
+
+    def get_msg(self,nr, info=""):
+        return "DB_"+str(nr)+": "+self.ERRORS[nr]+" "+info
+
+
 class Core(object):
-	def __init__(self):
-		self.a = "hello world"
-		self.b = 1337
-		self.c = {"asdf":"asffe"}
+	"""
+	The Core class is the interface to the world of Scoville
+	"""
+	def __init__(self, core_config):
+		"""
+		Initialize configuration and database-connection
+		"""
+		self._core_config = core_config
+
+		self._configuration = Configuration()
+		self._database = Database()
+
+	def get_core_config(self,obj):
+		"""
+		Passes the core config on to the Configuration class.
+		This is the only time in a scoville lifetime, that this happens.
+		"""
+		if obj.__class__.__name__ != "Configuration":
+			raise CoreException(CoreException.get_msg(1))
+		else:
+			return self._core_config
+
+    def get_configuration(self):
+    	"""
+    	Returns the instance of Configuration
+    	"""
+    	return self._configuration
+
+	def get_db(self):
+		return self._database
