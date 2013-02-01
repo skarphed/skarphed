@@ -62,7 +62,7 @@ from random import randrange
 
 class UserException(Exception):
     """
-    Exceptions for Database-Module
+    Exceptions for User-Module
     """
     ERRORS = {
         0:"""The password has not been assigned properly. This shouldnt happen""",
@@ -76,7 +76,6 @@ class UserException(Exception):
         8:"""A User cannot revoke a permission that he does not possess himself""",
         9:"""There is no user with the name """,
         10:"""Get Users: This user is not allowed to view users"""
-
     }
 
     @classmethod
@@ -311,7 +310,7 @@ class User(object):
         revoke a role from this user
         needs role object
         """
-        return role.assign_to(self, check_permission)
+        return role.revoke_from(self, check_permission)
 
     @classmethod
     def set_core(cls, core):
@@ -347,7 +346,7 @@ class User(object):
 
         if res is None:
             raise UserException(UserException.get_msg(9,username))
-        user = User()
+        user = User(cls._core)
         user.set_id(res['USR_ID'])
         user.set_name(res['USR_NAME'])
         user.set_password(res['USR_PASSWORD'])
@@ -367,7 +366,7 @@ class User(object):
 
         if res is None:
             raise UserException(UserException.get_msg(9,username))
-        user = User()
+        user = User(cls._core)
         user.set_id(res['USR_ID'])
         user.set_name(res['USR_NAME'])
         user.set_password(res['USR_PASSWORD'])
@@ -390,7 +389,7 @@ class User(object):
         users = []
         res = cur.fetchmapall()
         for row in res:
-            user = User()
+            user = User(cls._core)
             user.set_id(row['USR_ID'])
             user.set_name(row['USR_NAME'])
             user.set_password(row['USR_PASSWORD'])
@@ -403,7 +402,7 @@ class User(object):
         """
         creates a new user
         """
-        user = User()
+        user = User(cls._core)
         user.set_name(username)
         user.set_password("")
         user.store()
@@ -422,6 +421,9 @@ class User(object):
         return ret
 
 class UserManager(object):
+    """
+    UserManger wraps User's classmethods
+    """
     def __init__(self,core):
         """
         Initialize UserManager
