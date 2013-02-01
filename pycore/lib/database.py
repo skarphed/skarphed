@@ -148,6 +148,7 @@ class Database(object):
         """
         self._connection.commit()
 
+    #MODULEINVOLVED
     def query(self, module, statement, args=(), forceNoCache=False):
         """
         execute a query on the database. be sure to deliver the module.
@@ -165,6 +166,7 @@ class Database(object):
             raise DatabaseException(e.value)
         return cur
 
+    #MODULEINVOLVED
     def _replace_module_tables(self, module, query):
         """
         replaces module-based tablenames like
@@ -236,6 +238,7 @@ class Database(object):
         res = cur.fetchone()
         return res[0]
 
+    #MODULEINVOLVED
     def remove_tables_for_module(module, tables):
         """
         remove tables as part of module uninstallation
@@ -244,6 +247,7 @@ class Database(object):
         # Discussion here is: How are modules loaded this time?
         # And how can i talk to them
 
+    #MODULEINVOLVED
     def create_tables_for_module(module, tables):
         """
         create tables as part of module installation
@@ -252,6 +256,7 @@ class Database(object):
         # Discussion here is: How are modules loaded this time?
         # And how can i talk to them
 
+    #MODULEINVOLVED
     def update_tables_for_module(module, tables):
         """
         update tables as part of module update
