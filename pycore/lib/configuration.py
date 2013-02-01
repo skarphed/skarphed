@@ -39,8 +39,9 @@ class ConfigurationException(Exception):
         1:"""This Configurationentry does not exist!"""
     }
 
-    def get_msg(self,nr, info=""):
-        return "DB_"+str(nr)+": "+self.ERRORS[nr]+" "+info
+    @classmethod
+    def get_msg(cls,nr, info=""):
+        return "DB_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
 
 
 class Configuration(object):
@@ -98,9 +99,16 @@ class Configuration(object):
         raise ConfigurationException(ConfigurationException.get_msg(1))
 
 
+    def get_parent(self):
+        """
+        returns Confiuration's coreobject
+        """
+        return self._core
+
     def get_core(self):
         """
         returns Confiuration's coreobject
         """
         return self._core
+        
 

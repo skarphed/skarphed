@@ -24,14 +24,16 @@
 
 from configuration import Configuration
 from database import Database
+from user import UserManager
 
 class CoreException(Exception):
     ERRORS = {
         1:"""Only the Configuration-class is authorized to access this variable"""
     }
 
-    def get_msg(self,nr, info=""):
-        return "DB_"+str(nr)+": "+self.ERRORS[nr]+" "+info
+    @classmethod
+    def get_msg(cls,nr, info=""):
+        return "DB_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
 
 
 class Core(object):
@@ -46,6 +48,7 @@ class Core(object):
 
 		self._configuration = Configuration()
 		self._database = Database()
+		self._user_manager = None
 
 	def get_core_config(self,obj):
 		"""
@@ -65,3 +68,11 @@ class Core(object):
 
 	def get_db(self):
 		return self._database
+
+	def get_user_manager(self):
+		if self._user_manager is None:
+			self._user_manager = UserManager()
+	    return self._user_manager
+
+    def get_name(self):
+    	return "de.masterprogs.scoville.core"

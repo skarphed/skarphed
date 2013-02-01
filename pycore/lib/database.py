@@ -64,8 +64,9 @@ class DatabaseException(Exception):
         3:"""Could not resolve Tables:"""
     }
 
-    def get_msg(self,nr, info=""):
-        return "DB_"+str(nr)+": "+self.ERRORS[nr]+" "+info
+    @classmethod
+    def get_msg(cls,nr, info=""):
+        return "DB_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
     
 
 class Database(object):
@@ -154,7 +155,7 @@ class Database(object):
         """
         if self._connection is None:
             raise DatabaseException(DatabaseException.get_msg(2))
-        if module.getName() != "de.masterprogs.scoville.core":
+        if module.get_name() != "de.masterprogs.scoville.core":
             statement = self._replace_module_tables(module,statement)
         cur = self._connection.cursor()    
         prepared = self._queryCache(cur, statement)
@@ -240,22 +241,34 @@ class Database(object):
         remove tables as part of module uninstallation
         """
         pass #TODO Implement
+        # Discussion here is: How are modules loaded this time?
+        # And how can i talk to them
 
     def create_tables_for_module(module, tables):
         """
         create tables as part of module installation
         """
         pass #TODO Implement
+        # Discussion here is: How are modules loaded this time?
+        # And how can i talk to them
 
     def update_tables_for_module(module, tables):
         """
         update tables as part of module update
         """
         pass #TODO Implement
+        # Discussion here is: How are modules loaded this time?
+        # And how can i talk to them
+
+    def get_parent(self):
+        """
+        returns Database's coreobject
+        """
+        return self._core
 
     def get_core(self):
         """
-        returns the core
+        returns Database's coreobject
         """
         return self._core
 
