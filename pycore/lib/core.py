@@ -25,6 +25,7 @@
 from configuration import Configuration
 from database import Database
 from user import UserManager
+from permissions import PermissionManager
 
 class CoreException(Exception):
     ERRORS = {
@@ -49,6 +50,7 @@ class Core(object):
 		self._configuration = Configuration()
 		self._database = Database()
 		self._user_manager = None
+		self._permission_manager = None
 
 	def get_core_config(self,obj):
 		"""
@@ -73,6 +75,11 @@ class Core(object):
 		if self._user_manager is None:
 			self._user_manager = UserManager()
 	    return self._user_manager
+
+	def get_permission_manager(self):
+		if self._permission_manager is None:
+			self._permission_manager = PermissionManager()
+		return self._permission_manager
 
     def get_name(self):
     	return "de.masterprogs.scoville.core"
