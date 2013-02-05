@@ -5,8 +5,10 @@ import os
 
 from moduleexpansion import ModuleExpansion
 
+class ModuleException(Exception): pass
+
 class Module(object):
-    def __init__(self, core):
+    def __init__(self, core, widgetId=None):
         self._core = core
 
         path = os.path.realpath(__file__)
@@ -21,6 +23,7 @@ class Module(object):
         self._permissions = [] 
         self._tables = []
         self._load_manifest()
+        self._widgetId = None
 
     def _load_manifest(self):
         manifest_file = open(self._path+"manifest.json")
@@ -46,6 +49,8 @@ class Module(object):
     """
 
     def render_pure_html(self,args={}):
+        if self._widgetId is None:
+            raise ModuleException
         return "<h3>news! %s %s</h3>"%(ModuleExpansion().a,self._core.c)
 
     def render_html(self,args={}):
