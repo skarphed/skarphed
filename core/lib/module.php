@@ -23,41 +23,41 @@ require_once "core.php";
 require_once "Crypt/RSA.php";
 class ModuleException extends Exception{}
 
-interface IModule{
-	public function getName();
+// interface IModule{
+// 	public function getName();
 	
-	public function renderHTML($moduleInstanceId);
+// 	public function renderHTML($moduleInstanceId);
 	
-	public function renderJavascript($moduleInstanceId);
+// 	public function renderJavascript($moduleInstanceId);
 	
-}
+// }
 
-class Module implements IModule {
-	private $name = testmodul;
+// class Module implements IModule {
+// 	private $name = testmodul;
 	
-	public function __construct($modulename){}
+// 	public function __construct($modulename){}
 	
-	public function renderHTML($moduleInstanceId){
+// 	public function renderHTML($moduleInstanceId){
 		
-	}
+// 	}
 	
-	public function renderJavascript($moduleInstanceId){
+// 	public function renderJavascript($moduleInstanceId){
 		
-	}
+// 	}
 	
-	/**
-	 * Set the widgetId
-	 * 
-	 * Set the id of the widget the module has to operate on
-	 */
-	public function setWidgetId($widgetId){
+// 	/**
+// 	 * Set the widgetId
+// 	 * 
+// 	 * Set the id of the widget the module has to operate on
+// 	 */
+// 	public function setWidgetId($widgetId){
 		
-	}
+// 	}
 	
-	public function getName(){
-		return $this->name;
-	}
-}
+// 	public function getName(){
+// 		return $this->name;
+// 	}
+// }
 
 class ModuleManager extends Singleton {
 	/**
@@ -65,17 +65,17 @@ class ModuleManager extends Singleton {
 	 *  to run the Module
 	 */
 	
-	private static $instance = null;
+	// private static $instance = null;
 	
-	public static function getInstance(){
-		if (ModuleManager::$instance==null){
-			ModuleManager::$instance = new ModuleManager();
-			ModuleManager::$instance->init();
-		}
-		return ModuleManager::$instance;
-	}
+	// public static function getInstance(){
+	// 	if (ModuleManager::$instance==null){
+	// 		ModuleManager::$instance = new ModuleManager();
+	// 		ModuleManager::$instance->init();
+	// 	}
+	// 	return ModuleManager::$instance;
+	// }
 	
-	protected function init(){}
+	// protected function init(){}
 	
 	private function updateDatabaseTables($tables,$moduleId){
 		$core = Core::getInstance();

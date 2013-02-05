@@ -1,10 +1,10 @@
 {
-  "name":"de.grindhold.scoville.news",
+  "name":"grindhold_news",
   "hrname":"News",
   "version_major":0,
   "version_minor":0,
   "revision":1,
-  "rights":["write","delete","edit","deletecomments"],
+  "permissions":["write","delete","edit","deletecomments"],
   "tables":[
     {"name":"news",
      "columns":[

@@ -294,67 +294,67 @@ class Site {
 	}
 }
 
-class Widget {
-	private $id=null;
-	private $name= null;
-	private $siteId=null;
-	private $moduleId=null;
-	private $space=null;
+// class Widget {
+// 	private $id=null;
+// 	private $name= null;
+// 	private $siteId=null;
+// 	private $moduleId=null;
+// 	private $space=null;
 	
-	public function getId(){
-		return $this->id;
-	}
+// 	public function getId(){
+// 		return $this->id;
+// 	}
 	
 	
-	public function setId($id){
-		$this->id = (int)$id;
-	}
+// 	public function setId($id){
+// 		$this->id = (int)$id;
+// 	}
 	
-	public function setName($name){
-		$this->name = (string)$name;
-	}
+// 	public function setName($name){
+// 		$this->name = (string)$name;
+// 	}
 	
-	public function setSiteId($siteId){
-		$this->siteId = (int)$siteId;
-	}
+// 	public function setSiteId($siteId){
+// 		$this->siteId = (int)$siteId;
+// 	}
 	
-	public function setModuleId($moduleId){
-		$this->moduleId = (int)$moduleId;
-	}
+// 	public function setModuleId($moduleId){
+// 		$this->moduleId = (int)$moduleId;
+// 	}
 	
-	public function setSpace($space){
-		$this->space = (int)$space;
-	}
+// 	public function setSpace($space){
+// 		$this->space = (int)$space;
+// 	}
 	
-	public function store($checkRight=true){
-		$core = Core::getInstance();
-		$db = $core->getDB();
+// 	public function store($checkRight=true){
+// 		$core = Core::getInstance();
+// 		$db = $core->getDB();
 		
-		if ($this->id == null){
-			$this->id = $db->getSeqNext('WGT_GEN');
-		}
+// 		if ($this->id == null){
+// 			$this->id = $db->getSeqNext('WGT_GEN');
+// 		}
 		
-		if ($this->moduleId == null){
-			throw new WidgetException("Store: Cannot store a Widget that is not linked to a Module (\$moduleId)");
-		}
+// 		if ($this->moduleId == null){
+// 			throw new WidgetException("Store: Cannot store a Widget that is not linked to a Module (\$moduleId)");
+// 		}
 		
-		$stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_SPACE)
-					VALUES (?,?,?,?,?) MATCHING (WGT_ID) ;";
-	    $db->query($core,$stmnt,array($this->id,$this->name,$this->siteId,$this->moduleId,$this->space));
-	    return;
-	}
+// 		$stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_SPACE)
+// 					VALUES (?,?,?,?,?) MATCHING (WGT_ID) ;";
+// 	    $db->query($core,$stmnt,array($this->id,$this->name,$this->siteId,$this->moduleId,$this->space));
+// 	    return;
+// 	}
 	
-	public function delete($checkRight=true){
-		$core = Core::getInstance();
-		$db = $core->getDB();
+// 	public function delete($checkRight=true){
+// 		$core = Core::getInstance();
+// 		$db = $core->getDB();
 		
-		if($this->id == null){
-			throw new WidgetException("Delete: Cannot delete a Widget that does not exist in database");
-		}
+// 		if($this->id == null){
+// 			throw new WidgetException("Delete: Cannot delete a Widget that does not exist in database");
+// 		}
 		
-		$stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;";
-		$db->query($core,$stmnt,array($this->id));
-	}
-}
+// 		$stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;";
+// 		$db->query($core,$stmnt,array($this->id));
+// 	}
+// }
 	
 ?>
