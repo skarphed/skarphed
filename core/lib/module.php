@@ -537,162 +537,162 @@ class ModuleManager extends Singleton {
 
 class RepositoryException extends Exception {}
 
-class Repository {
-	private $id = null;
-	private $name = null;
-	private $ip = null;
-	private $port = null;
-	private $lastupdate = null;
-	private $publickey = null;
+// class Repository {
+// 	private $id = null;
+// 	private $name = null;
+// 	private $ip = null;
+// 	private $port = null;
+// // 	private $lastupdate = null;
+// // 	private $publickey = null;
 	
-	public function __construct($id, $name, $ip, $port, $lastupdate) {
-		$this->id = (int)$id;
-		$this->name = (string)$name;
-		$this->ip = (string)$ip;
-		$this->port = (int)$port;
-		$this->lastupdate = $lastupdate;
-		$this->publickey = null;
-	}
+// 	public function __construct($id, $name, $ip, $port, $lastupdate) {
+// 		$this->id = (int)$id;
+// 		$this->name = (string)$name;
+// 		$this->ip = (string)$ip;
+// 		$this->port = (int)$port;
+// 		$this->lastupdate = $lastupdate;
+// 		$this->publickey = null;
+// 	}
 	
-	public function getIp(){
-		return $this->ip;
-	}
+	// public function getIp(){
+	// 	return $this->ip;
+	// }
 	
-	public function getId(){
-		return $this->id;
-	}
+	// public function getId(){
+	// 	return $this->id;
+	// }
 	
-	public function getName(){
-		return $this->name;
-	}
+	// public function getName(){
+	// 	return $this->name;
+	// }
 	
-	public function getPort(){
-		return $this->port;
-	}
+	// public function getPort(){
+	// 	return $this->port;
+	// }
 	
-	public function getPublicKey(){
-		if (is_null($this->publickey)){
-			$this->publickey = $this->loadPublicKey();
-		}
-		return $this->publickey;
-	}
+	// public function getPublicKey(){
+	// 	if (is_null($this->publickey)){
+	// 		$this->publickey = $this->loadPublicKey();
+	// 	}
+	// 	return $this->publickey;
+	// }
 	
-	private function getHost() {
-		if($this->port == 80) {
-			$host = "http://{$this->ip}/";
-		} else {
-			$host = "http://{$this->ip}:{$this->port}/";
-		}		
-		return $host;
-	}
+	// private function getHost() {
+	// 	if($this->port == 80) {
+	// 		$host = "http://{$this->ip}/";
+	// 	} else {
+	// 		$host = "http://{$this->ip}:{$this->port}/";
+	// 	}		
+	// 	return $host;
+	// }
 	
-	public function getAllModules() {
-		$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>1))));
-		return $list->r;
-	}
+	// public function getAllModules() {
+	// 	$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>1))));
+	// 	return $list->r;
+	// }
 	
-	public function loadPublicKey() {
-		$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>6))));
-		return $list->r;
-	}
+	// public function loadPublicKey() {
+	// 	$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>6))));
+	// 	return $list->r;
+	// }
 	
-	public function getAllVersions($modulemeta) {
-		$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>2,"m"=>$modulemeta))));
-		return $list->r;
-	}
+	// public function getAllVersions($modulemeta) {
+	// 	$list = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>2,"m"=>$modulemeta))));
+	// 	return $list->r;
+	// }
 	
-	public function getLatestVersion($modulemeta) {
-		$module = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>7,"m"=>$modulemeta))));
-		return $module->r;
-	}
+	// public function getLatestVersion($modulemeta) {
+	// 	$module = json_decode(file_get_contents($this->getHost()."?j=".json_encode(array("c"=>7,"m"=>$modulemeta))));
+	// 	return $module->r;
+	// }
 	
-	public function getDependencies($modulemeta) {
-		$list = json_decode(file_get_contents($this->getHost()."j=".json_encode(array("c"=>3,"m"=>$modulemeta))));
-		return $list->r;
-	}
+	// public function getDependencies($modulemeta) {
+	// 	$list = json_decode(file_get_contents($this->getHost()."j=".json_encode(array("c"=>3,"m"=>$modulemeta))));
+	// 	return $list->r;
+	// }
 	
-	public function getDescDependencies($modulemeta) {
-		$list = json_decode(file_get_contents($this->getHost()."j=".json_encode(array("c"=>4,"m"=>$modulemeta))));
-		return $list->r;
-	}
+	// public function getDescDependencies($modulemeta) {
+	// 	$list = json_decode(file_get_contents($this->getHost()."j=".json_encode(array("c"=>4,"m"=>$modulemeta))));
+	// 	return $list->r;
+	// }
 	
-	public function verifyModule($data,$signature){
-		error_log($signature);
-		$decoded_signature = base64_decode($signature);
-		$rsa = new \Crypt_RSA();
-		$rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
-		$rsa->setHash('sha256');
-		$rsa->setMGFHash('sha256');
-		$rsa->loadKey($this->getPublicKey());
-		return $rsa->verify($data,$decoded_signature);
-	}
+	// public function verifyModule($data,$signature){
+	// 	error_log($signature);
+	// 	$decoded_signature = base64_decode($signature);
+	// 	$rsa = new \Crypt_RSA();
+	// 	$rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
+	// 	$rsa->setHash('sha256');
+	// 	$rsa->setMGFHash('sha256');
+	// 	$rsa->loadKey($this->getPublicKey());
+	// 	return $rsa->verify($data,$decoded_signature);
+	// }
 	
-	public function downloadModule($modulemeta){
-		$core = Core::getInstance();
-		if(!is_array($modulemeta)){
-			$modulemeta = $core->parseObjectToArray($modulemeta);
-		}
-		$response = file_get_contents($this->getHost().'?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta))));
-		error_log($response);
-		$list = json_decode($response);
-		if($list == null){
-			throw new ModuleException("DownloadModule: Could not download module");
-		}
-		$modulefile = fopen("/tmp/".$list->r->name.".tar.gz",'w');
-		if(!$modulefile){
-			throw new ModuleException("DownloadModule: Could not write module to harddrive");
-		}
-		$data = base64_decode($list->data);
-		if(!$this->verifyModule($data, $list->r->signature)){
-			throw new ModuleException("Verify Module: The module verification failed.");
-		}
-		fwrite($modulefile,$data);
-		fclose($modulefile);
-	}
+	// public function downloadModule($modulemeta){
+	// 	$core = Core::getInstance();
+	// 	if(!is_array($modulemeta)){
+	// 		$modulemeta = $core->parseObjectToArray($modulemeta);
+	// 	}
+	// 	$response = file_get_contents($this->getHost().'?j='.urlencode(json_encode(array('c'=>5,'m'=>$modulemeta))));
+	// 	error_log($response);
+	// 	$list = json_decode($response);
+	// 	if($list == null){
+	// 		throw new ModuleException("DownloadModule: Could not download module");
+	// 	}
+	// 	$modulefile = fopen("/tmp/".$list->r->name.".tar.gz",'w');
+	// 	if(!$modulefile){
+	// 		throw new ModuleException("DownloadModule: Could not write module to harddrive");
+	// 	}
+	// 	$data = base64_decode($list->data);
+	// 	if(!$this->verifyModule($data, $list->r->signature)){
+	// 		throw new ModuleException("Verify Module: The module verification failed.");
+	// 	}
+	// 	fwrite($modulefile,$data);
+	// 	fclose($modulefile);
+	// }
 	
-	public function getModule($moduleid) {
+// 	public function getModule($moduleid) {
 		
-	}
+// 	}
 	
-	public function store() {
-		$core = Core::getInstance();
-		$moduleM = $core->getModuleManager();
+// 	public function store() {
+// 		$core = Core::getInstance();
+// 		$moduleM = $core->getModuleManager();
 		
-		$db = $core->getDB();
-		$currentRepos =count($moduleM->getRepositories());
+// 		$db = $core->getDB();
+// 		$currentRepos =count($moduleM->getRepositories());
 		
-		if ($currentRepos == 1){
-			if (!is_int($this->id)){
-				throw new RepositoryException("Storing Repo: There is a repository, but this one has no ID.");
-			}
-			try {
-				$repo = $moduleM->getRepository($this->id);
-			}catch(RepositoryException $e){
-				throw new RepositoryException("Storing Repo: This repository is not the repository, that is already in the Database");
-			}
-		}elseif ($currentRepos == 0){
-			if ($this->id == null){
-				$this->id = $db->getSeqNext('REP_GEN');
-			}
-		}else{
-			throw new RepositoryException("There are two, even more or negative repositories. Shit's massively fucked up here!") ;
-		}
-		$stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (?,?,?,?,?,?) MATCHING (REP_ID);";
-		$db->query($core,$stmnt,array($this->id,$this->name,$this->ip,$this->port,$this->lastupdate, $this->getPublicKey()));
-		return;
-	}
+// 		if ($currentRepos == 1){
+// 			if (!is_int($this->id)){
+// 				throw new RepositoryException("Storing Repo: There is a repository, but this one has no ID.");
+// 			}
+// 			try {
+// 				$repo = $moduleM->getRepository($this->id);
+// 			}catch(RepositoryException $e){
+// 				throw new RepositoryException("Storing Repo: This repository is not the repository, that is already in the Database");
+// 			}
+// 		}elseif ($currentRepos == 0){
+// 			if ($this->id == null){
+// 				$this->id = $db->getSeqNext('REP_GEN');
+// 			}
+// 		}else{
+// 			throw new RepositoryException("There are two, even more or negative repositories. Shit's massively fucked up here!") ;
+// 		}
+// 		$stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (?,?,?,?,?,?) MATCHING (REP_ID);";
+// 		$db->query($core,$stmnt,array($this->id,$this->name,$this->ip,$this->port,$this->lastupdate, $this->getPublicKey()));
+// 		return;
+// 	}
 
-	public function delete(){
-		if (is_null($this->id)){
-			throw new RepositoryException("Can't delete Repo with null-id! ");
-		}
-		$core = Core::getInstance();
-		$db = $core->getDB();
+// 	public function delete(){
+// 		if (is_null($this->id)){
+// 			throw new RepositoryException("Can't delete Repo with null-id! ");
+// 		}
+// 		$core = Core::getInstance();
+// 		$db = $core->getDB();
 		
-		$stmnt = "DELETE FROM REPOSITORIES WHERE REP_ID = ? ;" ;
-		$db->query($core,$stmnt,array($this->id));
-		return;
-	} 
-}
+// 		$stmnt = "DELETE FROM REPOSITORIES WHERE REP_ID = ? ;" ;
+// 		$db->query($core,$stmnt,array($this->id));
+// 		return;
+// 	} 
+// }
 
 ?>

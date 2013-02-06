@@ -29,12 +29,22 @@
 #
 ###########################################################
 
-from json import JSONDecoder
+from json import JSONDecoder, JSONEncoder
+from urllib2 import urlopen
+import base64
+import Crypto.PublicKey.RSA as RSA
+import os
+import tarfile
+
 
 class ModuleCoreException(Exception):
     ERRORS = {
         0:"""This instance does not have a WidgetId. Therefore, Widget-bound methods cannot be used""",
-        1:"""This Widgets needs a module, to be saved into database"""
+        1:"""This Widgets needs a module, to be saved into database""",
+        2:"""Module could not be downloaded""",
+        3:"""Module signature is not valid! Packet may be compromised""",
+        4:"""Can't delete Repo with null-id! """,
+        5:"""Module already exists!"""
     }
 
     @classmethod
@@ -205,9 +215,38 @@ class ModuleManager(object):
         pass
 
     def install_module(self,module_meta):
+        configuration = self._core.get_configuration()
+        libpath = configuration.get_entry("global.libpath")
+
+        datafile = open("/tmp/"+module_meta["name"]+"_v"+ \
+                                module_meta["version_major"]+"_"+ \
+                                module_meta["version_minor"]+"_"+ \
+                                module_meta["revision"]+".tar.gz")
+
+        modulepath = libpath+"/"+module_meta["name"]+"/v"+\
+                              module_meta["version_major"]+"_"+ \
+                              module_meta["version_minor"]+"_"+ \
+                              module_meta["revision"]
+
+        if os.path.exists(libpath+"/"+module_meta["name"]):
+            if os.path.exists(modulepath)
+                raise ModuleCoreException(ModuleCoreException.get_msg(5))
+            else:
+                os.mkdir(modulepath)
+        else:
+            os.mkdir(libpath+"/"+module_meta["name"])
+            open(libpath+"/"+module_name["meta"]+"/__init__.py","w").close()
+            os.mkdir(modulepath)
+
+        tar = tarfile.open("/tmp/"+result["r"]["name"]+"_v"+ \
+                                result["r"]["version_major"]+"_"+ \
+                                result["r"]["version_minor"]+"_"+ \
+                                result["r"]["revision"]+".tar.gz", "r:gz")
+        
+
         #$version = v+$version_major+_+version_minor+_+revision
         #install folder will be LIBPATH/module_name/$version/*
-        pass
+
 
     def update_module(self,module_meta):
         pass
@@ -215,11 +254,160 @@ class ModuleManager(object):
     def uninstall_module(self,module_meta):
         pass
 
+    def get_meta_from_module(self,module):
+        d = {
+            "name":module.get_name(),
+            "hrname":module.get_hrname(),
+            "version_major".module.get_version("major"),
+            "version_minor".module.get_version("minor"),
+            "revision".module.get_version("revision"),
+        }
+        return d
+
 class Repository(object):
-    def __init__(self):
-        self._id = None
-        self._name = None
-        self._ip = None
-        self._port = None
-        self._lastupdate = None
+    def __init__(self, core, nr=None, name=None, ip=None, port=80, lastupdate=None):
+        self._core = core
+
+        self._id = nr
+        self._name = name
+        self._ip = ip
+        self._port = port
+        self._lastupdate = lastupdate
         self._public_key = None
+
+    def get_ip(self):
+        """
+        trivial
+        """
+        return self._ip
+
+    def get_id(self):
+        """
+        trivial
+        """
+        return self._id
+
+    def get_name(self):
+        """
+        trivial
+        """
+        return self._name
+
+    def get_port(self):
+        """
+        trivial
+        """
+        return self._port
+
+    def get_public_key(self):
+        """
+        trivial
+        """
+        if self._public_key is None:
+            self._public_key = self.load_public_key()
+        return self._public_key
+
+    def get_host(self):
+        """
+        trivial
+        """
+        if self._port == 80:
+            return "http://"+self._ip+"/"
+        else:
+            return "http://"+self._ip+":"+str(self._port)+"/"
+
+    def _http_call(self,msg):
+        if self._jsondecoder is None:
+            self._jsondecoder = JSONDecoder()
+        if self._jsonencoder is None:
+            self._jsonencoder = JSONEncoder()
+        url = self.get_host()+"?j="+self._jsonencoder.encode(msg)
+        http = urlopen(url)
+        return self._jsondecoder.decode(http.read())
+
+
+    def get_all_modules(self):
+        result = self._http_call({'c':1})
+        return result["r"]
+
+    def load_public_key(self):
+        result = self._http_call({'c':6})
+        return result["r"]
+
+    def get_all_versions(self, module):
+        if type(module) != dict:
+            modulemanager = self._core.get_module_manager()
+            module = modulemanager.get_meta_from_module(module)
+        result = self._http_call({'c':2,'m':module})
+        return result["r"]
+
+    def get_latest_version(self, module):
+        if type(module) != dict:
+            modulemanager = self._core.get_module_manager()
+            module = modulemanager.get_meta_from_module(module)
+        result = self._http_call({'c':7,'m':module})
+        return result["r"]
+
+    def get_dependencies(self, module):
+        if type(module) != dict:
+            modulemanager = self._core.get_module_manager()
+            module = modulemanager.get_meta_from_module(module)
+        result = self._http_call({'c':3,'m':module})
+        return result["r"]
+
+    def get_descending_dependencies(self, module):
+        if type(module) != dict:
+            modulemanager = self._core.get_module_manager()
+            module = modulemanager.get_meta_from_module(module)
+        result = self._http_call({'c':4,'m':module})
+        return result["r"]
+
+    def verify_module(self,data,signature):
+        """
+        verifies if the data has been signed by this repository
+        """
+        import Crypto.Hash.SHA256 as SHA256
+        k = RSA.importKey(self.get_public_key())
+        h = SHA256.new(data).hexdigest()
+        return k.verify(h,signature)
+
+    def download_module(self,module):
+        """
+        downloads a module and
+        returns the data directly!
+        """
+        if type(module) != dict:
+            modulemanager = self._core.get_module_manager()
+            module = modulemanager.get_meta_from_module(module)
+        result = self._http_call({'c':5,'m':module})
+        if result is None:
+            raise ModuleCoreException(ModuleCoreException.get_msg(2))
+        data = base64.decodestring(result["data"])
+        if not self.verify_module(data, result["r"]["signature"]):
+            raise ModuleCoreException(ModuleCoreException.get_msg(3))
+        datafile = open("/tmp/"+result["r"]["name"]+"_v"+ \
+                                result["r"]["version_major"]+"_"+ \
+                                result["r"]["version_minor"]+"_"+ \
+                                result["r"]["revision"]+".tar.gz")
+        datafile.write(data)
+        datafile.close()
+
+    def store(self):
+        """
+        currently only one repository can be owned by one scoville instance
+        """
+        db = self._core.get_db()
+        stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (?,?,?,?,?,?) MATCHING (REP_ID) ;"
+        db.query(self._core,stmnt,(self._id, self._name, self._ip, self._port, self._lastupdate, self.get_public_key()))
+
+
+    def delete(self):
+        """
+        deletes this repo from database
+        """
+        if self._id is None:
+            raise ModuleCoreException(ModuleCoreException.get_msg(4))
+        db = self._core.get_db()
+
+        stmnt = "DELETE FROM REPOSITORIES WHERE REP_ID = ? ;"
+        db.query(self._core,stmnt,(self._id,))

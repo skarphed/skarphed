@@ -468,7 +468,7 @@ class ModuleInstallOperation(ModuleOperation):
         module_manager = self._core.get_module_manager()
         repositories = module_manager.get_repositories()
         repositories[0].download_module(self.get_meta())
-        module_manager.install_module(self.get_value("name"))
+        module_manager.install_module(self.get_meta())
 
     def optimize_queue(self):
         """
@@ -492,7 +492,7 @@ class ModuleUninstallOperation(ModuleOperation):
         tell the module manager to install a specific module.
         """
         module_manager = self._core.get_module_manager()
-        module_manager.uninstall_module(self.get_value("name"))
+        module_manager.uninstall_module(self.get_meta())
 
     def optimize_queue(self):
         """
@@ -518,7 +518,7 @@ class ModuleUpdateOperation(ModuleOperation):
         module_manager = self._core.get_module_manager()
         repositories = module_manager.get_repositories()
         repositories[0].download_module(self.get_meta())
-        module_manager.update_module(self.get_value("name"))
+        module_manager.update_module(self.get_meta())
         
     def optimize_queue(self):
         """
