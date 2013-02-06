@@ -40,50 +40,50 @@ class CoreException(Exception):
 
 
 class Core(object):
-	"""
-	The Core class is the interface to the world of Scoville
-	"""
-	def __init__(self, core_config):
-		"""
-		Initialize configuration and database-connection
-		"""
-		self._core_config = core_config
+    """
+    The Core class is the interface to the world of Scoville
+    """
+    def __init__(self, core_config):
+        """
+        Initialize configuration and database-connection
+        """
+        self._core_config = core_config
 
-		self._configuration = Configuration()
-		self._database = Database()
-		self._user_manager = None
-		self._permission_manager = None
+        self._configuration = Configuration()
+        self._database = Database()
+        self._user_manager = None
+        self._permission_manager = None
         self._operation_manager = None
         self._module_manager = None
 
-	def get_core_config(self,obj):
-		"""
-		Passes the core config on to the Configuration class.
-		This is the only time in a scoville lifetime, that this happens.
-		"""
-		if obj.__class__.__name__ != "Configuration":
-			raise CoreException(CoreException.get_msg(1))
-		else:
-			return self._core_config
+    def get_core_config(self,obj):
+        """
+        Passes the core config on to the Configuration class.
+        This is the only time in a scoville lifetime, that this happens.
+        """
+        if obj.__class__.__name__ != "Configuration":
+            raise CoreException(CoreException.get_msg(1))
+        else:
+            return self._core_config
 
     def get_configuration(self):
-    	"""
-    	Returns the instance of Configuration
-    	"""
-    	return self._configuration
+        """
+        Returns the instance of Configuration
+        """
+        return self._configuration
 
-	def get_db(self):
-		return self._database
+    def get_db(self):
+        return self._database
 
-	def get_user_manager(self):
-		if self._user_manager is None:
-			self._user_manager = UserManager(self)
-	    return self._user_manager
+    def get_user_manager(self):
+        if self._user_manager is None:
+            self._user_manager = UserManager(self)
+        return self._user_manager
 
-	def get_permission_manager(self):
-		if self._permission_manager is None:
-			self._permission_manager = PermissionManager(self)
-		return self._permission_manager
+    def get_permission_manager(self):
+        if self._permission_manager is None:
+            self._permission_manager = PermissionManager(self)
+        return self._permission_manager
 
     def get_operation_manager(self):
         if self._operation_manager is None:
@@ -96,4 +96,4 @@ class Core(object):
         return self._module_manager
         
     def get_name(self):
-    	return "de.masterprogs.scoville.core"
+        return "de.masterprogs.scoville.core"
