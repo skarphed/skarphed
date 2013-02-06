@@ -239,31 +239,109 @@ class Database(object):
         return res[0]
 
     #MODULEINVOLVED
-    def remove_tables_for_module(module, module):
+    def remove_tables_for_module(self, module):
         """
         remove tables as part of module uninstallation
         """
-        pass #TODO Implement
-        # Discussion here is: How are modules loaded this time?
-        # And how can i talk to them
+        stmnt = "SELECT MDT_ID \
+                        FROM MODULETABLES \
+                        WHERE MDT_MOD_ID = ? ;"
+        cur = self.query(self._core,stmnt,(module.get_id(),))
+        rows = cur.fetchmapall()
+        for row in rows:
+            tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"]))+str(row["MDT_ID"])
+            stmnt = "DROP TABLE %s"%tab_id
+            self.query(self._core,stmnt)
 
     #MODULEINVOLVED
-    def create_tables_for_module(module, module):
-        """
-        create tables as part of module installation
-        """
-        pass #TODO Implement
-        # Discussion here is: How are modules loaded this time?
-        # And how can i talk to them
-
-    #MODULEINVOLVED
-    def update_tables_for_module(module, module):
+    def update_tables_for_module(self, module):
         """
         update tables as part of module update
         """
-        pass #TODO Implement
-        # Discussion here is: How are modules loaded this time?
-        # And how can i talk to them
+        tables = module.get_tables()
+        stmnt = "SELECT MDT_NAME FROM MODULETABLES WHERE MDT_MOD_ID = ? ;"
+        cur = self.query(self._core,stmnt,(module.get_id(),))
+        rows = cur.fetchmapall()
+        for row in rows:
+            if row["MDT_NAME"] not in [tbl["name"] for tbl in tables]:
+                self._remove_table_for_module(module,row["MDT_NAME"])
+        for table in tables:
+            if table["name"] not in [tbl["MDT_NAME"] for tbl in rows]:
+                self._create_table_for_module(module,table)
+
+    #MODULEINVOLVED
+    def create_tables_for_module(self, module):
+        """
+        create tables as part of module installation
+        """
+        tables = module.get_tables()
+
+        for table in tables:
+            self._create_table_for_module(module,table)
+    
+    def _remove_table_for_module(self, module, tablename):
+        """
+        remove tables as part of module uninstallation
+        """
+        stmnt = "SELECT MDT_ID \
+                        FROM MODULETABLES \
+                        WHERE MDT_MOD_ID = ? AND MDT_NAME = ? ;"
+        cur = self.query(self._core,stmnt,(module.get_id(),tablename))
+        rows = cur.fetchmapall()
+        row = rows[0]
+        tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"]))+str(row["MDT_ID"])
+        stmnt = "DROP TABLE %s"%tab_id
+        self.query(self._core,stmnt)
+
+    def _create_table_for_module(self, module, table):
+        """
+        creates a database table for a module
+        """
+        new_table_id = self.get_seq_next('MDT_GEN')
+        new_table_string = "TAB_"+"0"*(6-len(str(tableId))+str(tableId)
+        stmnt = "CREATE TABLE TAB_%s ( MOD_INSTANCE_ID INT "
+        autoincrement = None:
+        for col in table["columns"]:
+            stmnt += ", %s %s "%(col["name"],col["type"])
+            if col.has_key("primary"):
+                if type(col["primary"]) == bool and col["primary"]:
+                    stmnt+="primary key "
+                elif col.has_key("unique") and type(col["unique"])==bool and col["unique"]:
+                    stmnt+="unique "
+            else:
+                if col.has_key("unique") and type(col["unique"])==bool and col["unique"]:
+                    stmnt+="unique "
+            if col.has_key("notnull") and type(col["notnull"])==bool and col["notnull"]:
+                stmnt+="not null "
+            if col.has_key("autoincrement") and type(col["autoincrement"])==bool and col["autoincrement"]:
+                if autoincrement is None
+                    autoincrement = col["name"]
+        stmnt+=") ;"
+        
+        mst_stmnt = "INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?) ;"
+        self.query(self._core, mst_stmnt, (new_table_id, table["name"], module.get_id()))
+        self.query(self._core, stmnt)
+        if autoincrement is not None:
+            stmnt = "CREATE SEQUENCE SEQ_%s ;"%new_table_string
+            self.query(self._core, stmnt)
+            stmnt = """SET TERM ^ ;
+                    CREATE TRIGGER TRG_AUTO_%(nts)s FOR TAB_%(nts)s
+                    ACTIVE BEFORE INSERT POSITION 0
+                    AS
+                        DECLARE VARIABLE tmp DECIMAL(18,0);
+                    BEGIN
+                        IF (NEW.%(autoinc)s IS NULL) THEN
+                            NEW.%(autoinc)s = GEN_ID(, 1);
+                        ELSE BEGIN
+                            tmp = GEN_ID(SEQ_%(nts)s, 0);
+                            IF (tmp < new.%(autoinc)s) THEN
+                                tmp = GEN_ID(SEQ_%(nts)s, new.%(autoinc)s - tmp);
+                        END
+                    END^
+                    SET TERM ; ^"""%{'autoinc':autoincrement,'nts':new_table_string}
+            self.query(self._core,stmnt)
+
+
 
     def get_parent(self):
         """
