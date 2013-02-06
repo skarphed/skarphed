@@ -37,6 +37,7 @@ import os
 import tarfile
 import shutil
 
+from operation import ModuleInstallOperation, ModuleUninstallOperation, ModuleUpdateOperation, ModuleOperation
 
 class ModuleCoreException(Exception):
     ERRORS = {
@@ -89,7 +90,7 @@ class AbstractModule(object):
         """ 
         return self._tables
 
-    def get_permssions(self):
+    def get_permissions(self):
         """
         returns this module's permission-definitions
         """
@@ -207,6 +208,10 @@ class ModuleManager(object):
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(6))
 
+    def get_module_by_name(self,name):
+        nr = self._get_module_id_from_name(name)
+        return self.get_module(nr)
+
     def get_widget(self,widget_id):
         """
         returns an instance of thre requested module with a set instanceId
@@ -249,11 +254,6 @@ class ModuleManager(object):
         configuration = self._core.get_configuration()
         libpath = configuration.get_entry("global.libpath")
 
-        datapath = "/tmp/"+module_meta["name"]+"_v"+ \
-                                module_meta["version_major"]+"_"+ \
-                                module_meta["version_minor"]+"_"+ \
-                                module_meta["revision"]+".tar.gz"
-
         modulepath = libpath+"/"+module_meta["name"]+"/v"+\
                               module_meta["version_major"]+"_"+ \
                               module_meta["version_minor"]+"_"+ \
@@ -269,6 +269,8 @@ class ModuleManager(object):
             open(libpath+"/"+module_name["meta"]+"/__init__.py","w").close()
             os.mkdir(modulepath)
 
+        repo = self._core.get_repository()
+        datapath = repo.download_module(module_meta)
         tar = tarfile.open(datapath, "r:gz")
 
         tar.extractall(modulepath)
@@ -279,15 +281,18 @@ class ModuleManager(object):
         nr = self._register_module(manifest)
         module = self.get_module(nr)
 
-        permissionimanager = self._core.get_permission_manager()
+        permissionmanager = self._core.get_permission_manager()
         db = self._core.get_db()
 
+        permissionmanager.create_permissions_for_module(module)
         db.create_tables_for_module(module)
-        [permissionmanager.create_permission(permission,module.get_name()) for permission in module.get_permssions()]
-
+        
         os.remove(datapath)
 
-    def update_module(self,module_meta):
+    def update_module(self,module):
+        """
+        updates the given module
+        """
         # - neueste versionsnummer holen
         # - pruefen ob bereits auf fs vorhanden
         #   - wenn nein, holen
@@ -295,16 +300,58 @@ class ModuleManager(object):
         # - tabellen aendern
         # - permissions aendern
         # - datenbank-versionseintraege updaten
-        pass
+        if module.__class__.__name__ != "Module":
+            nr = self._get_module_id_from_name(module_meta["name"])
+            module = self.get_module(nr)
 
-    def uninstall_module(self,module_meta, hard=False):
-        nr = self._get_module_id_from_name(module_meta["name"])
-        module = self.get_module(nr)
+        configuration = self._core.get_configuration()
+        libpath = configuration.get_entry('global.libpath')
+
+        repo = self.get_repository()
+        latest_version = repo.get_latest_version(module)
+
+        latest_path = libpath+"/"+latest_version["name"]+"/v"+\
+                              latest_version["version_major"]+"_"+ \
+                              latest_version["version_minor"]+"_"+ \
+                              latest_version["revision"]
+
+        if self.compare_versions(latest_version, module) == 1:
+            if not os.path.exists(latest_path):
+                datapath = repo.download_module(latest_version)
+                os.mkdir(latest_path)
+                tar = tarfile.open(datapath, "r:gz")
+                tar.extractall(latest_path)
+            nr = self._get_module_id_from_name(latest_version["name"])
+
+            db = self._core.get_db()
+            stmnt = "UPDATE MODULES SET MOD_VERSIONMAJOR = ?, \
+                                        MOD_VERSIONMINOR = ?, \
+                                        MOD_VERSIONREV = ? \
+                        WHERE MOD_ID = ? ;"
+            db.query(self._core,stmnt,(latest_version["version_major"],
+                                       latest_version["version_minor"],
+                                       latest_version["revision"], 
+                                       nr))
+            updated_module = self.get_module(nr)
+            db.update_tables_for_module(updated_module)
+            permissionmanager = self._core.get_permission_manager()
+            permissionmanager.update_permissions_for_module(updated_module)
+
+
+    def uninstall_module(self,module, hard=False):
+        """
+        uninstall a module
+        the flag "hard" actually deletes the files of this module in libpath
+        module can be module or module meta
+        """
+        if module.__class__.__name__ != "Module":
+            nr = self._get_module_id_from_name(module_meta["name"])
+            module = self.get_module(nr)
 
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()
         db.remove_tables_for_module(module)
-        [permissionmanager.remove_permission(permission,module.get_name()) for permission in module.get_permissions()]
+        permissionmanager.remove_permissions_for_module(module)
 
         if hard:
             configuration = self._core.get_configuration()
@@ -358,6 +405,114 @@ class ModuleManager(object):
         repository = Repository(self._core, None, name, ip, port, None)
         repository.store()
         return repository
+
+    def compare_versions(self,module1,module2):
+        """
+        compares the versions of module1 and module2
+        if module 1 is newer, returns 1
+        if module 2 is newer, returns -1
+        if equal, returns 0
+        """
+        if type(module1) != dict:
+            module1 = module1.get_meta_from_module()
+        if type(module2) != dict:
+            module2 = module2.get_meta_from_module()
+        if module1["version_major"] > module2["version_major"]:
+            return 1
+        elif module1["version_major"] == module2["version_major"]:
+            if module1["version_minor"] > module2["version_minor"]:
+                return 1
+            elif module1["version_minor"] == module2["version_minor"]:
+                if module1["revision"] > module2["revision"]:
+                    return 1
+                elif module1["revision"] == module2["revision"]:
+                    return 0
+                else:
+                    return -1
+            else:
+                return -1
+        else:
+            return -1
+
+    def invoke_install(self, module_meta):
+        """
+        registers an operation, that installs a module
+        """
+        operationmanager = self._core.get_operation_manager()
+        op = ModuleInstallOperation(self._core)
+        op.set_values(module_meta)
+        op.store()
+
+    def invoke_update(self, module_meta):
+        """
+        registers an operation, that updates a module
+        """
+        operationmanager = self._core.get_operation_manager()
+        op = ModuleUpdateOperation(self._core)
+        op.set_values(module_meta)
+        op.store()
+
+    def invoke_uninstall(self, module_meta):
+        """
+        registers an operation, that uninstalls a module
+        """
+        operationmanager = self._core.get_operation_manager()
+        op = ModuleUninstallOperation(self._core)
+        op.set_values(module_meta)
+        op.store()
+
+    def update_modules(self):
+        """
+        update all modules of this instance
+        """
+        modules = self.get_modules()
+        for module in modules:
+            self.invoke_update(self.get_meta_from_module(module))
+
+    def get_modules(self):
+        db = self._core.get_db()
+        stmnt = "SELECT MOD_ID FROM MODULES ;"
+        cur = db.query(self._core,stmnt)
+        ids = cur.fetchmapall()
+        ids = ids.values()
+        return [self.get_module(i) for i in ids]
+
+    def get_module_info(self, only_installed=False):
+        """
+        get metalist of all installed modules with additional information
+         - is there a possible update
+        """
+        meta_records = []
+        for module in self.get_modules():
+            meta_record = self.get_meta_from_module(module)
+            meta_record.update({'installed':True,'serverModuleId':module.get_id()})
+            meta_records.append(meta_record)
+
+        repository_joblocks = ModuleOperation.get_currently_processed_modules()
+
+        if not only_installed:
+            repo = self.get_repository()
+            repomodules = repo.get_all_modules()
+            for repomodule in repomodules:
+                for meta_record in meta_records:
+                    if repomodule["name"] == meta_record["name"]:
+                        if self.compare_versions(repomodule, meta_record) == 1:
+                            meta_record["toUpdate"] == True
+                        for repository_joblock in repository_joblocks:
+                            if repository_joblock["name"] == meta_record["name"]:
+                                meta_record["processing"] = 'Uninstalling'
+                        break
+                for repository_joblock in repository_joblocks:
+                    if repository_joblock["name"] == repomodule["name"]:
+                        repomodule["processing"] = 'Installing'
+                meta_records.append(repomodule)
+
+        return meta_records
+
+
+
+
+
 
 
 class Repository(object):
@@ -481,12 +636,15 @@ class Repository(object):
         data = base64.decodestring(result["data"])
         if not self.verify_module(data, result["r"]["signature"]):
             raise ModuleCoreException(ModuleCoreException.get_msg(3))
-        datafile = open("/tmp/"+result["r"]["name"]+"_v"+ \
+
+        datapath = "/tmp/"+result["r"]["name"]+"_v"+ \
                                 result["r"]["version_major"]+"_"+ \
                                 result["r"]["version_minor"]+"_"+ \
-                                result["r"]["revision"]+".tar.gz")
+                                result["r"]["revision"]+".tar.gz"
+        datafile = open(datapath,"w")
         datafile.write(data)
         datafile.close()
+        return datapath
 
     def store(self):
         """

@@ -402,34 +402,34 @@ class ModuleManager extends Singleton {
 	 * @param Array $module2 A Module
 	 * @return int The compare value
 	 */
-	private function versionCompare($module1, $module2){
-		$core = Core::getInstance();
-		if (!is_object($module1)){
-			$module1 = $core->parseArrayToObject($module1);
-		}
-		if (!is_object($module2)){
-			$module2 = $core->parseArrayToObject($module2);
-		}		
-		if ($module1->version_major > $module2->version_major){
-			return 1;
-		}elseif($module1->version_major == $module2->version_major){
-			if ($module1->version_minor > $module2->version_minor){
-				return 1;
-			}elseif($module1->version_minor == $module2->version_minor){
-				if ($module1->revision > $module2->revision){
-					return 1;
-				}elseif($module1->revision == $module2->revision){
-					return 0;
-				}else{
-					return -1;
-				}
-			}else{
-				return -1;
-			}
-		}else{
-			return -1;
-		}
-	}
+	// private function versionCompare($module1, $module2){
+	// 	$core = Core::getInstance();
+	// 	if (!is_object($module1)){
+	// 		$module1 = $core->parseArrayToObject($module1);
+	// 	}
+	// 	if (!is_object($module2)){
+	// 		$module2 = $core->parseArrayToObject($module2);
+	// 	}		
+	// 	if ($module1->version_major > $module2->version_major){
+	// 		return 1;
+	// 	}elseif($module1->version_major == $module2->version_major){
+	// 		if ($module1->version_minor > $module2->version_minor){
+	// 			return 1;
+	// 		}elseif($module1->version_minor == $module2->version_minor){
+	// 			if ($module1->revision > $module2->revision){
+	// 				return 1;
+	// 			}elseif($module1->revision == $module2->revision){
+	// 				return 0;
+	// 			}else{
+	// 				return -1;
+	// 			}
+	// 		}else{
+	// 			return -1;
+	// 		}
+	// 	}else{
+	// 		return -1;
+	// 	}
+	// }
 	
 	public function updateModules(){
 		/*$core = Core::getInstance();
