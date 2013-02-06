@@ -531,11 +531,11 @@ class Permission(object):
         return result 
 
     @classmethod
-    """
-    Returns the database Id for a given right string identifier
-    returns None if not existing
-    """
     def get_id_for_permission(cls,permission):
+        """
+        Returns the database Id for a given right string identifier
+        returns None if not existing
+        """
         db = cls._core.get_db()
         stmnt = "SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ? ;"
         cur = db.query(cls._core,stmnt,(permission,))
@@ -544,6 +544,53 @@ class Permission(object):
             return res[0]["RIG_ID"]
         except IndexError:
             return None
+
+    @classmethod
+    def create_permissions_for_module(cls,module):
+        """
+        creates the permissions of a newly installed module
+        """
+        module_name = module.get_name()
+        permissions = module.get_permissions()
+        for permission in permissions:
+            cls.create_permission(permission,module_name)
+
+    @classmethod
+    def update_permissions_for_module(cls,module):
+        """
+        updates the permissions of a module
+        """
+        module_name = module.get_name()
+        permissions = module.get_permissions()
+        current = cls.get_permissions_for_module(module)
+        for permission in permissions:
+            if permission not in current:
+                cls.create_permission(permission, module_name)
+        for permission in current:
+            if permission not in permissions:
+                cls.remove_permission(permission, module_name)
+
+    @classmethod
+    def remove_permissions_for_module(cls,module):
+        """
+        removes the permissions of a module
+        """
+        module_name = module.get_name()
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
+        db.query(cls._core, stmnt, (module_name+".",))
+
+    @classmethod
+    def get_permissions_for_module(cls,module):
+        """
+        gets the permissions of a module
+        """
+        db = cls._core.get_db()
+        stmnt = "SELECT RIG_NAME FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
+        cur = db.query(cls._core,stmnt,(module.get_name()+".",))
+        rows = cur.fetchmapall()
+        rows = rows.values()
+        return rows
 
 
 class PermissionManager(object):
