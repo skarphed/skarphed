@@ -77,81 +77,81 @@ class ModuleManager extends Singleton {
 	
 	// protected function init(){}
 	
-	private function updateDatabaseTables($tables,$moduleId){
-		$core = Core::getInstance();
-		$core->getDB()->updateTablesForModule($tables,$moduleId);
-	}
+	// private function updateDatabaseTables($tables,$moduleId){
+	// 	$core = Core::getInstance();
+	// 	$core->getDB()->updateTablesForModule($tables,$moduleId);
+	// }
 	
-	private function createDatabaseTables($tables,$moduleId){
-		$core =  Core::getInstance();
-		$core->getDB()->createTablesForModule($tables,$moduleId);
-	}
+	// private function createDatabaseTables($tables,$moduleId){
+	// 	$core =  Core::getInstance();
+	// 	$core->getDB()->createTablesForModule($tables,$moduleId);
+	// }
 	
-	private function removeDatabaseTables($tables,$moduleId){
-		$core = Core::getInstance();
-		$core->getDB()->removeTablesForModule($tables,$moduleId);
-	}
+	// private function removeDatabaseTables($tables,$moduleId){
+	// 	$core = Core::getInstance();
+	// 	$core->getDB()->removeTablesForModule($tables,$moduleId);
+	// }
 	
-	/**
-	 * This function creates Rights that are necessary for
-	 * the module
-	 */
+	// /**
+	//  * This function creates Rights that are necessary for
+	//  * the module
+	//  */
 	
-	private function createRights($manifest, $moduleId){
-		$rights = $manifest->rights;
-		$core = Core::getInstance();
-		$rightsManager = $core->getRightsManager();
-		foreach($rights as $right){
-		  $rightsManager->createRight($right,$manifest->name);	
-		}
-		return;
-	}
+	// private function createRights($manifest, $moduleId){
+	// 	$rights = $manifest->rights;
+	// 	$core = Core::getInstance();
+	// 	$rightsManager = $core->getRightsManager();
+	// 	foreach($rights as $right){
+	// 	  $rightsManager->createRight($right,$manifest->name);	
+	// 	}
+	// 	return;
+	// }
 	
-	private function updateRights($manifest, $moduleId){
-		$rights = $manifest->rights;
-		$core = Core::getInstance();
-		$rightsManager = $core->getRightsManager();
-		foreach($rights as $right){
-		  try{
-		  $rightsManager->createRight($right,$manifest->name);
-		  } catch(Exception $e){}	
-		}
-		return;
-	}
+	// private function updateRights($manifest, $moduleId){
+	// 	$rights = $manifest->rights;
+	// 	$core = Core::getInstance();
+	// 	$rightsManager = $core->getRightsManager();
+	// 	foreach($rights as $right){
+	// 	  try{
+	// 	  $rightsManager->createRight($right,$manifest->name);
+	// 	  } catch(Exception $e){}	
+	// 	}
+	// 	return;
+	// }
 	
-	private function removeRights($manifest, $moduleId){
-		$rights = $manifest->rights;
-		$core = Core::getInstance();
-		$rightsManager = $core->getRightsManager();
-		foreach($rights as $right){
-		  $rightsManager->removeRight($right,$manifest->name);	
-		}
-		return;
-	}
+	// private function removeRights($manifest, $moduleId){
+	// 	$rights = $manifest->rights;
+	// 	$core = Core::getInstance();
+	// 	$rightsManager = $core->getRightsManager();
+	// 	foreach($rights as $right){
+	// 	  $rightsManager->removeRight($right,$manifest->name);	
+	// 	}
+	// 	return;
+	// }
 		
 	
 	/**
 	 * registerModule registers the Module and yields a unique moduleid
 	 */
-	public function registerModule($manifest){
-		$core =  Core::getInstance();
-		$db = $core->getDB();
-		$newModuleId = $db->getSeqNext("MOD_GEN");
-		$statement = "INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV)
-		              VALUES (?,?,?,?,?,?);";
-		$db->query($core,$statement,array($newModuleId, $manifest->name, $manifest->hrname, $manifest->version_major,
-		                                  $manifest->version_minor, $manifest->revision));
-	    return $newModuleId;
-	}
+	// public function registerModule($manifest){
+	// 	$core =  Core::getInstance();
+	// 	$db = $core->getDB();
+	// 	$newModuleId = $db->getSeqNext("MOD_GEN");
+	// 	$statement = "INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV)
+	// 	              VALUES (?,?,?,?,?,?);";
+	// 	$db->query($core,$statement,array($newModuleId, $manifest->name, $manifest->hrname, $manifest->version_major,
+	// 	                                  $manifest->version_minor, $manifest->revision));
+	//     return $newModuleId;
+	// }
 	
-	public function unregisterModule($manifest){
-		$core =  Core::getInstance();
-		$db = $core->getDB();
+	// public function unregisterModule($manifest){
+	// 	$core =  Core::getInstance();
+	// 	$db = $core->getDB();
 		
-		$statement = "DELETE FROM MODULES WHERE MOD_NAME = ?;";
-		$db->query($core,$statement,array($manifest->name,));
-	    return;
-	}
+	// 	$statement = "DELETE FROM MODULES WHERE MOD_NAME = ?;";
+	// 	$db->query($core,$statement,array($manifest->name,));
+	//     return;
+	// }
 	
 	public function updateModule($moduleId){
 		$core = Core::getInstance();
@@ -190,68 +190,68 @@ class ModuleManager extends Singleton {
 		$this->updateRights($manifest->rights, $moduleId);
 	}
 	
-	public  function installModule($moduleId){
-		$core = Core::getInstance();
-		$modulesPath = $core->getConfig()->getEntry("modules.path");
-		if (is_dir("../".$modulesPath.$moduleId)){
-			throw new ModuleException("InstallationError: This Module is already installed (Directory Exists)");
-		}
-		mkdir('../'.$modulesPath.$moduleId);
-		system('tar xfz /tmp/'.escapeshellarg($moduleId).'.tar.gz -C ../'.$modulesPath.escapeshellarg($moduleId).'/ > /dev/null');
+	// public  function installModule($moduleId){
+	// 	$core = Core::getInstance();
+	// 	$modulesPath = $core->getConfig()->getEntry("modules.path");
+	// 	if (is_dir("../".$modulesPath.$moduleId)){
+	// 		throw new ModuleException("InstallationError: This Module is already installed (Directory Exists)");
+	// 	}
+	// 	mkdir('../'.$modulesPath.$moduleId);
+	// 	system('tar xfz /tmp/'.escapeshellarg($moduleId).'.tar.gz -C ../'.$modulesPath.escapeshellarg($moduleId).'/ > /dev/null');
 		
-		$manifestRaw = file_get_contents('../'.$modulesPath.$moduleId.'/manifest.json');
-		if ($manifestRaw == false){
-			throw new ModuleException("InstallationError: $moduleId is not a valid Scoville Module");
-			return;
-		}
+	// 	$manifestRaw = file_get_contents('../'.$modulesPath.$moduleId.'/manifest.json');
+	// 	if ($manifestRaw == false){
+	// 		throw new ModuleException("InstallationError: $moduleId is not a valid Scoville Module");
+	// 		return;
+	// 	}
 		
-		$manifest = json_decode($manifestRaw);
+	// 	$manifest = json_decode($manifestRaw);
 		
-		if ($manifest == null){
-			throw new ModuleException("InstallationError: Manifest seems to be broken. Validate!");
-			return;
-		}
+	// 	if ($manifest == null){
+	// 		throw new ModuleException("InstallationError: Manifest seems to be broken. Validate!");
+	// 		return;
+	// 	}
 				
-		$moduleNumber = $this->registerModule($manifest);
-		$this->createDatabaseTables($manifest->tables, $moduleNumber);
-		$this->createRights($manifest, $moduleNumber); //TODO: Implementiere createRights
+	// 	$moduleNumber = $this->registerModule($manifest);
+	// 	$this->createDatabaseTables($manifest->tables, $moduleNumber);
+	// 	$this->createRights($manifest, $moduleNumber); //TODO: Implementiere createRights
 		
-		//Cleanup
-		unlink('/tmp/'.$moduleId.".tar.gz");
-	}
+	// 	//Cleanup
+	// 	unlink('/tmp/'.$moduleId.".tar.gz");
+	// }
 	
-	public function addRepository($ip, $port, $name = '') {
-		$repository = new Repository(null, $name, $ip, $port, null);
-		$repository->store(); //Wird ja in dem falle auch gleich gespeichert, ziga ;)
-		return $repository;
-	}
+	// public function addRepository($ip, $port, $name = '') {
+	// 	$repository = new Repository(null, $name, $ip, $port, null);
+	// 	$repository->store(); //Wird ja in dem falle auch gleich gespeichert, ziga ;)
+	// 	return $repository;
+	// }
 	
-	public function removeRepository($id) {
+	// public function removeRepository($id) {
 		
-	}
+	// }
 	
-	public function getRepository($id) {
-		$core = Core::getInstance();
-		$db = $core->getDB();
-		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories where rep_id = ?;", array($id));
-		if ($row = $db->fetchArray($result)){
-			$repository = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
-			return $repository;
-		}else{
-			throw new RepositoryException("No such Repository");
-		}
-	}
+	// public function getRepository($id) {
+	// 	$core = Core::getInstance();
+	// 	$db = $core->getDB();
+	// 	$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories where rep_id = ?;", array($id));
+	// 	if ($row = $db->fetchArray($result)){
+	// 		$repository = new Repository($row['REP_ID'],$row['REP_NAME'],$row['REP_IP'],$row['REP_PORT'],$row['REP_LASTUPDATE']);
+	// 		return $repository;
+	// 	}else{
+	// 		throw new RepositoryException("No such Repository");
+	// 	}
+	// }
 	
-	public function getRepositories(){
-		$core = Core::getInstance();
-		$db = $core->getDB();
-		$ret = array();
-		$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories;");
-		while($set = $db->fetchArray($result)){
-			$ret[] = new Repository($set['REP_ID'],$set['REP_NAME'],$set['REP_IP'],$set['REP_PORT'],$set['REP_LASTUPDATE']);
-		}
-		return $ret;
-	}
+	// public function getRepositories(){
+	// 	$core = Core::getInstance();
+	// 	$db = $core->getDB();
+	// 	$ret = array();
+	// 	$result = $db->query($core,"select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories;");
+	// 	while($set = $db->fetchArray($result)){
+	// 		$ret[] = new Repository($set['REP_ID'],$set['REP_NAME'],$set['REP_IP'],$set['REP_PORT'],$set['REP_LASTUPDATE']);
+	// 	}
+	// 	return $ret;
+	// }
 	
 	public function updateModuleFromRepository($repository, $module){
 		$core = Core::getInstance();
@@ -323,72 +323,72 @@ class ModuleManager extends Singleton {
 		
 	}
 	
-	public function uninstallModule($moduleId){
-		$core = Core::getInstance();
-		$modulesPath = $core->getConfig()->getEntry("modules.path");
-		if (!is_dir("../".$modulesPath.$moduleId)){
-			throw new ModuleException("InstallationError: This Module is not installed (Directory Exists)");
-		}
+	// public function uninstallModule($moduleId){
+	// 	$core = Core::getInstance();
+	// 	$modulesPath = $core->getConfig()->getEntry("modules.path");
+	// 	if (!is_dir("../".$modulesPath.$moduleId)){
+	// 		throw new ModuleException("InstallationError: This Module is not installed (Directory Exists)");
+	// 	}
 		
-		//TODO: Ueberpruefen, ob modul noch irgendwo verwendet wird.
+	// 	//TODO: Ueberpruefen, ob modul noch irgendwo verwendet wird.
 		
-		$db = $core->getDB();
+	// 	$db = $core->getDB();
 		
-		$result = $db->query($core,"SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ?;", array($moduleId));
-		$row = $db->fetchArray($result);
-		$moduleNumber = $row['MOD_ID'];
+	// 	$result = $db->query($core,"SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ?;", array($moduleId));
+	// 	$row = $db->fetchArray($result);
+	// 	$moduleNumber = $row['MOD_ID'];
 		 
 		
-		$manifestRaw = file_get_contents('../'.$modulesPath.$moduleId.'/manifest.json');
-		if ($manifestRaw == false){
-			throw new ModuleException("InstallationError: $moduleId is not a valid Scoville Module");
-			return;
-		}
+	// 	$manifestRaw = file_get_contents('../'.$modulesPath.$moduleId.'/manifest.json');
+	// 	if ($manifestRaw == false){
+	// 		throw new ModuleException("InstallationError: $moduleId is not a valid Scoville Module");
+	// 		return;
+	// 	}
 		
-		$manifest = json_decode($manifestRaw);
+	// 	$manifest = json_decode($manifestRaw);
 		
-		if ($manifest == null){
-			throw new ModuleException("InstallationError: Manifest seems to be broken. Validate!");
-			return;
-		}
+	// 	if ($manifest == null){
+	// 		throw new ModuleException("InstallationError: Manifest seems to be broken. Validate!");
+	// 		return;
+	// 	}
 				
-		$this->removeDatabaseTables($manifest->tables, $moduleNumber);
-		$this->removeRights($manifest, $moduleNumber); //TODO: Implementiere createRights
-		$moduleNumber = $this->unregisterModule($manifest);
+	// 	$this->removeDatabaseTables($manifest->tables, $moduleNumber);
+	// 	$this->removeRights($manifest, $moduleNumber); //TODO: Implementiere createRights
+	// 	$moduleNumber = $this->unregisterModule($manifest);
 		
-		//Delete module on file system
-		$core->recursiveDelete('../'.$modulesPath.$moduleId);
-	}
+	// 	//Delete module on file system
+	// 	$core->recursiveDelete('../'.$modulesPath.$moduleId);
+	// }
 	
-	public function loadModule($moduleName){
-		$core = Core::getInstance();
-		try{
-			require_once $moduleName."/module.php";
-			$moduleClass = str_replace(".","_", $moduleName);
-			//eval("\$module = new $moduleClass(\$core);");
-			$module = new $moduleClass($core);
-			return $module;
-		}catch(ModuleException $e){}
-	}
+	// public function loadModule($moduleName){
+	// 	$core = Core::getInstance();
+	// 	try{
+	// 		require_once $moduleName."/module.php";
+	// 		$moduleClass = str_replace(".","_", $moduleName);
+	// 		//eval("\$module = new $moduleClass(\$core);");
+	// 		$module = new $moduleClass($core);
+	// 		return $module;
+	// 	}catch(ModuleException $e){}
+	// }
 	
-	public function loadModuleById($moduleId){
-		$core = Core::getInstance();
-		$db = $core->getDB();
-		$stmnt = "SELECT MOD_NAME FROM MODULES WHERE MOD_ID = ? ;";
-		$res = $db->query($core,$stmnt,array($moduleId));
-		if ($set = $db->fetchArray($res)){
-			$moduleName = $set['MOD_NAME'];
-		}else{
-			throw new ModuleException("Load Module: Module with id $moduleId does not exist!");
-		}
-		try{
-			require_once $moduleName."/module.php";
-			$moduleClass = str_replace(".","_", $moduleName);
-			//eval("\$module = new $moduleClass(\$core);");
-			$module = new $moduleClass($core);
-			return $module;
-		}catch(ModuleException $e){}
-	}
+	// public function loadModuleById($moduleId){
+	// 	$core = Core::getInstance();
+	// 	$db = $core->getDB();
+	// 	$stmnt = "SELECT MOD_NAME FROM MODULES WHERE MOD_ID = ? ;";
+	// 	$res = $db->query($core,$stmnt,array($moduleId));
+	// 	if ($set = $db->fetchArray($res)){
+	// 		$moduleName = $set['MOD_NAME'];
+	// 	}else{
+	// 		throw new ModuleException("Load Module: Module with id $moduleId does not exist!");
+	// 	}
+	// 	try{
+	// 		require_once $moduleName."/module.php";
+	// 		$moduleClass = str_replace(".","_", $moduleName);
+	// 		//eval("\$module = new $moduleClass(\$core);");
+	// 		$module = new $moduleClass($core);
+	// 		return $module;
+	// 	}catch(ModuleException $e){}
+	// }
 	
 	/**
 	 * Module Version Compare

@@ -239,7 +239,7 @@ class Database(object):
         return res[0]
 
     #MODULEINVOLVED
-    def remove_tables_for_module(module, tables):
+    def remove_tables_for_module(module, module):
         """
         remove tables as part of module uninstallation
         """
@@ -248,7 +248,7 @@ class Database(object):
         # And how can i talk to them
 
     #MODULEINVOLVED
-    def create_tables_for_module(module, tables):
+    def create_tables_for_module(module, module):
         """
         create tables as part of module installation
         """
@@ -257,7 +257,7 @@ class Database(object):
         # And how can i talk to them
 
     #MODULEINVOLVED
-    def update_tables_for_module(module, tables):
+    def update_tables_for_module(module, module):
         """
         update tables as part of module update
         """

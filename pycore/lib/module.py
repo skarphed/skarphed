@@ -35,6 +35,7 @@ import base64
 import Crypto.PublicKey.RSA as RSA
 import os
 import tarfile
+import shutil
 
 
 class ModuleCoreException(Exception):
@@ -44,7 +45,9 @@ class ModuleCoreException(Exception):
         2:"""Module could not be downloaded""",
         3:"""Module signature is not valid! Packet may be compromised""",
         4:"""Can't delete Repo with null-id! """,
-        5:"""Module already exists!"""
+        5:"""Module already exists!""",
+        6:"""This module does not exist""",
+        6:"""This widget does not exist"""
     }
 
     @classmethod
@@ -83,7 +86,7 @@ class AbstractModule(object):
     def get_tables(self):
         """
         returns this module's table-definitions
-        """
+        """ 
         return self._tables
 
     def get_permssions(self):
@@ -193,7 +196,16 @@ class ModuleManager(object):
         """
         returns an instance of the requested module
         """
-        pass
+        module_id = int(module_id)
+        db = self._core.get_db()
+        stmnt = "SELECT MOD_NAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV FROM MODULES WHERE MOD_ID = ? ;"
+        cur = db.query(self._core,stmnt,(module_id))
+        row = cur.fetchmapone()
+        if row is not None:
+            exec "from %s.v%d_%d_%d import Module as ModuleImplementation"%(row["MOD_NAME"], row["MOD_VERSIONMAJOR"], row["MOD_VERSIONMINOR"], row["MOD_VERSIONREV"])
+            return ModuleImplementation(self._core) 
+        else:
+            raise ModuleCoreException(ModuleCoreException.get_msg(6))
 
     def get_widget(self,widget_id):
         """
@@ -206,22 +218,41 @@ class ModuleManager(object):
         """
         returns the module id of the given module_name
         """
-        pass
+        module_name = str(module_name)
+        db = self._core.get_db()
+        stmnt = "SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ;"
+        cur = db.query(self._core,stmnt,(module_name,))
+        row = cur.fetchmapone()
+        if is not None:
+            return int(row["MOD_ID"])
+        else:
+            raise ModuleCoreException(ModuleCoreException.get_msg(6))
 
     def _get_module_from_widget_id(self,widget_id):
         """
         returns the module that belongs to a widget with the given id
         """
-        pass
+        db = self._core.get_db()
+        stmnt = "SELECT WGT_MOD_ID FROM WIDGETS WHERE WGT_ID = ? ;"
+        cur = db.query(self._core,stmnt,(widget_id,))
+        row = cur.fetchmapone()
+        if row is not None:
+            return self.get_module(row["WGT_MOD_ID"])
+        else:
+            raise ModuleCoreException(ModuleCoreException.get_msg(7))            
+
 
     def install_module(self,module_meta):
+        """
+        actually installs the module
+        """
         configuration = self._core.get_configuration()
         libpath = configuration.get_entry("global.libpath")
 
-        datafile = open("/tmp/"+module_meta["name"]+"_v"+ \
+        datapath = "/tmp/"+module_meta["name"]+"_v"+ \
                                 module_meta["version_major"]+"_"+ \
                                 module_meta["version_minor"]+"_"+ \
-                                module_meta["revision"]+".tar.gz")
+                                module_meta["revision"]+".tar.gz"
 
         modulepath = libpath+"/"+module_meta["name"]+"/v"+\
                               module_meta["version_major"]+"_"+ \
@@ -238,21 +269,67 @@ class ModuleManager(object):
             open(libpath+"/"+module_name["meta"]+"/__init__.py","w").close()
             os.mkdir(modulepath)
 
-        tar = tarfile.open("/tmp/"+result["r"]["name"]+"_v"+ \
-                                result["r"]["version_major"]+"_"+ \
-                                result["r"]["version_minor"]+"_"+ \
-                                result["r"]["revision"]+".tar.gz", "r:gz")
-        
+        tar = tarfile.open(datapath, "r:gz")
 
-        #$version = v+$version_major+_+version_minor+_+revision
-        #install folder will be LIBPATH/module_name/$version/*
+        tar.extractall(modulepath)
+        manifest_file = open(modulepath+"/manifest.json","r")
+        manifest = JSONDecoder().decode(manifest_file.read())
+        manifest_file.close()
 
+        nr = self._register_module(manifest)
+        module = self.get_module(nr)
+
+        permissionimanager = self._core.get_permission_manager()
+        db = self._core.get_db()
+
+        db.create_tables_for_module(module)
+        [permissionmanager.create_permission(permission,module.get_name()) for permission in module.get_permssions()]
+
+        os.remove(datapath)
 
     def update_module(self,module_meta):
+        # - neueste versionsnummer holen
+        # - pruefen ob bereits auf fs vorhanden
+        #   - wenn nein, holen
+        # - neues modul laden
+        # - tabellen aendern
+        # - permissions aendern
+        # - datenbank-versionseintraege updaten
         pass
 
-    def uninstall_module(self,module_meta):
-        pass
+    def uninstall_module(self,module_meta, hard=False):
+        nr = self._get_module_id_from_name(module_meta["name"])
+        module = self.get_module(nr)
+
+        db = self._core.get_db()
+        permissionmanager = self._core.get_permission_manager()
+        db.remove_tables_for_module(module)
+        [permissionmanager.remove_permission(permission,module.get_name()) for permission in module.get_permissions()]
+
+        if hard:
+            configuration = self._core.get_configuration()
+            libpath = configuration.get_entry('global.libpath')
+            version = module.get_version()
+            shutil.rmtree(libpath+"/"+module.get_name()+"/v"+version[0]+"_"+version[1]+"_"+version[2])
+
+        self._unregister_module(module)
+
+    def _register_module(self,manifest):
+        """
+        registers a module into the database
+        """
+        db = self._core.get_db()
+        nr = db.get_seq_next("MOD_GEN")
+        stmnt = "INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV) \
+                      VALUES (?,?,?,?,?,?) ;"
+        db.query(self._core,stmnt,(nr,manifest["name"],manifest["hrname"],
+                                   manifest["version_major"],manifest["version_minor"],manifest["revision"]))
+        return nr
+
+    def _unregister_module(self,module):
+        db = self._core.get_db()
+        stmnt = "DELETE FROM MODULES WHERE MOD_NAME = ? ;" 
+        db.query(self._core,stmnt,(module.get_name(),))
 
     def get_meta_from_module(self,module):
         d = {
@@ -263,6 +340,25 @@ class ModuleManager(object):
             "revision".module.get_version("revision"),
         }
         return d
+
+    def get_repository(self):
+        """
+        returns this instance's repository
+        """
+        db = self._core.get_db()
+        stmnt = "select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories where rep_id = 1;"
+        cur = db.query(self._core,stmnt)
+        row = cur.fetchmapone()
+        return Repository(self._core,row["REP_ID"],row["REP_NAME"],row["REP_IP"],row["REP_PORT"],row["REP_LASTUPDATE"])
+
+    def set_repository(self, ip, port, name):
+        """
+        changes this instance's repository
+        """
+        repository = Repository(self._core, None, name, ip, port, None)
+        repository.store()
+        return repository
+
 
 class Repository(object):
     def __init__(self, core, nr=None, name=None, ip=None, port=80, lastupdate=None):
