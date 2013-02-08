@@ -76,7 +76,7 @@ class PermissionException(Exception):
 
     @classmethod
     def get_msg(cls,nr, info=""):
-        return "DB_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+        return "PERM_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
 
 
 class Role(object):

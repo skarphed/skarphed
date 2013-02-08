@@ -53,7 +53,7 @@ class ModuleCoreException(Exception):
 
     @classmethod
     def get_msg(cls,nr, info=""):
-        return "DB_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+        return "MOD_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
 
 class AbstractModule(object):
     def __init__(self,core):
