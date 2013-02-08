@@ -28,6 +28,7 @@ from user import UserManager
 from permissions import PermissionManager
 from operation import OperationManager
 from module import ModuleManager
+from session import SessionManager
 
 class CoreException(Exception):
     ERRORS = {
@@ -55,6 +56,7 @@ class Core(object):
         self._permission_manager = None
         self._operation_manager = None
         self._module_manager = None
+        self._session_manager = None
 
     def get_core_config(self,obj):
         """
@@ -84,6 +86,11 @@ class Core(object):
         if self._permission_manager is None:
             self._permission_manager = PermissionManager(self)
         return self._permission_manager
+
+    def get_session_manager(self):
+        if self._session_manager is None:
+            self._session_manager = SessionManager(self)
+        return self._session_manager
 
     def get_operation_manager(self):
         if self._operation_manager is None:

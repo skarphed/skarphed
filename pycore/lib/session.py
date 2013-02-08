@@ -44,6 +44,9 @@ class SessionManager(object):
 
         self.get_session = Session.get_session
         self.create_session = Session.create_session
+        self.get_current_session = Session.get_current_session
+        self.set_current_session = Session.set_current_session
+        self.get_current_session_user = Session.get_current_session_user
 
 class Session(object):
     ACTIVE_SESSIONS = {}
@@ -58,6 +61,7 @@ class Session(object):
             raise SessionException(SessionException.get_msg(2))
         session = cls.ACTIVE_SESSIONS[session_id]
         if session._expiration < datetime.now():
+            del(cls.ACTIVE_SESSIONS[session_id])
             raise SessionException(SessionException.get_msg(0))
         else:
             return session
@@ -66,11 +70,17 @@ class Session(object):
     def create_session(cls, user):
         return Session(cls._core,user)
 
+    @classmethod
     def set_current_session(cls, session):
         cls.CURRENT_SESSION = session
 
+    @classmethod
     def get_current_session(cls):
         return cls.CURRENT_SESSION
+
+    @classmethod
+    def get_current_session_user(cls):
+        return cls.CURRENT_SESSION.get_user()
 
     def _generateRandomString(self,length):
         ret = ""

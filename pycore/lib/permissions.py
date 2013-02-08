@@ -121,7 +121,7 @@ class Role(object):
         """
         Stores the current state of the role into the database
         """
-        usermanager = self._core.get_user_manager()
+        sessionmanager = self._core.get_session_manager()
 
         if self._id is None:
             raise PermissionException(PermissionException.get_msg(0))
@@ -129,8 +129,8 @@ class Role(object):
         if self._name == "":
             raise PermissionException(PermissionException.get_msg(1))
 
-        session_user = usermanager.get_session_user()
-        if check_permission and not session_user.check_permission('scoville.roles.create')
+        session_user = sessionmanager.get_current_session_user()
+        if check_permission and not session_user.check_permission('scoville.roles.create'):
             raise PermissionException(PermissionException.get_msg(2))
 
         db = self._core.get_db()
@@ -141,8 +141,8 @@ class Role(object):
         """
         adds a given permission to this role
         """
-        usermanager = self._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = self._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
 
         if check_permission and not session_user.check_permission('scoville.roles.modify'):
             raise PermissionException(PermissionException.get_msg(4),permission)
@@ -160,8 +160,8 @@ class Role(object):
         """
         removes a given permission from this role
         """
-        usermanager = self._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = self._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
 
         if check_permission and not session_user.check_permission('scoville.roles.modify'):
             raise PermissionException(PermissionException.get_msg(4),permission)
@@ -177,8 +177,8 @@ class Role(object):
         """
         returns all permissions assigned to this role as an array of strings
         """
-        usermanager = self._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = self._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
 
         if check_permission and not session_user.check_permission('scoville.roles.modify'):
             raise PermissionException(PermissionException.get_msg(4),permission)
@@ -194,8 +194,8 @@ class Role(object):
         """
         checks if this role has a specific permission
         """
-        usermanager = self._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = self._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
         
         if check_permission and not session_user.check_permission('scoville.roles.modify'):
             raise PermissionException(PermissionException.get_msg(4),permission)
@@ -218,8 +218,8 @@ class Role(object):
         """
         deletes this role from the database
         """
-        usermanager = self._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = self._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
 
         if check_permission and not session_user.check_permission('scoville.roles.delete'):
             raise PermissionException(PermissionException.get_msg(5))
@@ -232,8 +232,8 @@ class Role(object):
         """
         Assigns this role to a user
         """
-        usermanager = self._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = self._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
 
         if check_permission and not session_user.check_permission('scoville.users.grant_revoke'):
             raise PermissionException(PermissionException.get_msg(6))
@@ -266,8 +266,8 @@ class Role(object):
         """
         Revokes a role from a user 
         """
-        usermanager = self._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = self._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
 
         if check_permission and not session_user.check_permission('scoville.users.grant_revoke'):
             raise PermissionException(PermissionException.get_msg(6))
@@ -294,8 +294,8 @@ class Role(object):
 
         #HERE BE DRAGONS! Check algorithm
 
-        usermanager = cls._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = self._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
         session_permissions = session_user.get_permissions()
 
         ret = []
@@ -382,8 +382,8 @@ class Role(object):
             raise PermissionException(PermissionException.get_msg(11))
 
         db = cls._core.get_db()
-        usermanager = cls._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = cls._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
 
         if check_permission and not session_user.check_permission('scoville.roles.create'):
             raise PermissionException(PermissionException.get_msg(12))
@@ -497,8 +497,8 @@ class Permission(object):
         array('right'=>$sessionRight,'granted'=>true)
         """
         db = cls._core.get_db()
-        usermanager = cls._core.get_user_manager()
-        session_user = usermanager.get_session_user()
+        sessionmanager = cls._core.get_session_manager()
+        session_user = sessionmanager.get_current_session_user()
         session_permissions = Permission.get_permissions_for_user(session_user)
 
         result = []
