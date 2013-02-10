@@ -50,8 +50,8 @@ class Core(object):
         """
         self._core_config = core_config
 
-        self._configuration = Configuration()
-        self._database = Database()
+        self._configuration = Configuration(self)
+        self._database = Database(self)
         self._user_manager = None
         self._permission_manager = None
         self._operation_manager = None

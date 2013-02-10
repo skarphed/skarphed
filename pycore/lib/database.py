@@ -249,7 +249,7 @@ class Database(object):
         cur = self.query(self._core,stmnt,(module.get_id(),))
         rows = cur.fetchmapall()
         for row in rows:
-            tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"]))+str(row["MDT_ID"])
+            tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
             stmnt = "DROP TABLE %s"%tab_id
             self.query(self._core,stmnt)
 
@@ -289,7 +289,7 @@ class Database(object):
         cur = self.query(self._core,stmnt,(module.get_id(),tablename))
         rows = cur.fetchmapall()
         row = rows[0]
-        tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"]))+str(row["MDT_ID"])
+        tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
         stmnt = "DROP TABLE %s"%tab_id
         self.query(self._core,stmnt)
 
@@ -298,9 +298,9 @@ class Database(object):
         creates a database table for a module
         """
         new_table_id = self.get_seq_next('MDT_GEN')
-        new_table_string = "TAB_"+"0"*(6-len(str(tableId))+str(tableId)
+        new_table_string = "TAB_"+"0"*(6-len(str(tableId)))+str(tableId)
         stmnt = "CREATE TABLE TAB_%s ( MOD_INSTANCE_ID INT "
-        autoincrement = None:
+        autoincrement = None
         for col in table["columns"]:
             stmnt += ", %s %s "%(col["name"],col["type"])
             if col.has_key("primary"):
@@ -314,7 +314,7 @@ class Database(object):
             if col.has_key("notnull") and type(col["notnull"])==bool and col["notnull"]:
                 stmnt+="not null "
             if col.has_key("autoincrement") and type(col["autoincrement"])==bool and col["autoincrement"]:
-                if autoincrement is None
+                if autoincrement is None:
                     autoincrement = col["name"]
         stmnt+=") ;"
         

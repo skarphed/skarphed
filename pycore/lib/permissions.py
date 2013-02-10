@@ -241,8 +241,8 @@ class Role(object):
         db = self._core.get_db()
         
         #check if sessionuser has role
-        if check_permission 
-            has_role = session_user.has_role(self):
+        if check_permission:
+            has_role = session_user.has_role(self)
 
             stmnt = "SELECT COUNT(URI_RIG_ID) AS CNT FROM USERRIGHTS WHERE URI_RIG_ID IN \
                 (SELECT RRI_RIG_ID FROM ROLERIGHTS WHERE RRI_ROL_ID = ? ) ;"
@@ -353,7 +353,7 @@ class Role(object):
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES INNER JOIN USERROLES ON (ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ? ;"
         cur = db.query(cls._core,stmnt,(user.get_id()))
         ret = []
-        for row in cur.fetchmapall()
+        for row in cur.fetchmapall():
             role = Role()
             role.set_id(row["ROL_ID"])
             role.set_name(row["ROL_NAME"])

@@ -154,7 +154,7 @@ class User(object):
         Changes the password of a User
         """
         db = self._core.get_db()
-        if (sha512(old_password+self._salt).hexdigest() == self._password ) 
+        if (sha512(old_password+self._salt).hexdigest() == self._password ) \
                 != new_user: # != substituts xor
             pw, salt = self._generateSaltedPassword(new_password)
             self.set_password(pw)
@@ -215,7 +215,6 @@ class User(object):
             stmnt = "INSERT INTO USERS (USR_ID, USR_NAME, USR_PASSWORD, USR_SALT) \
                       VALUES (?,?,?,?);"
             self.set_id(db.get_seq_next('USR_GEN'))
-            try:
             db.query(self._core,stmnt,(self._id, self._name, self._password, self._salt))
         else:
             stmnt =  "UPDATE USERS SET \
@@ -398,7 +397,7 @@ class User(object):
         return users
 
     @classmethod
-    def create_user(cls, username, password, username, check_permission=True):
+    def create_user(cls, username, password, check_permission=True):
         """
         creates a new user
         """

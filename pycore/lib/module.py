@@ -143,7 +143,7 @@ class Widget(object):
             self._site_id = site.get_id()
 
     def set_space(self,space):
-        self._space = int(space):
+        self._space = int(space)
 
     def get_id(self):
         return self._id
@@ -228,7 +228,7 @@ class ModuleManager(object):
         stmnt = "SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ;"
         cur = db.query(self._core,stmnt,(module_name,))
         row = cur.fetchmapone()
-        if is not None:
+        if row is not None:
             return int(row["MOD_ID"])
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(6))
@@ -260,7 +260,7 @@ class ModuleManager(object):
                               module_meta["revision"]
 
         if os.path.exists(libpath+"/"+module_meta["name"]):
-            if os.path.exists(modulepath)
+            if os.path.exists(modulepath):
                 raise ModuleCoreException(ModuleCoreException.get_msg(5))
             else:
                 os.mkdir(modulepath)
@@ -382,9 +382,9 @@ class ModuleManager(object):
         d = {
             "name":module.get_name(),
             "hrname":module.get_hrname(),
-            "version_major".module.get_version("major"),
-            "version_minor".module.get_version("minor"),
-            "revision".module.get_version("revision"),
+            "version_major":module.get_version("major"),
+            "version_minor":module.get_version("minor"),
+            "revision":module.get_version("revision")
         }
         return d
 
