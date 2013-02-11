@@ -76,7 +76,7 @@ class Configuration(object):
         self._configuration["core.webpath"] = self._configuration["global.webpath"]+ self._configuration["core.instance_id"]
         self._state = self.CONF_LOAD_GLOBAL
 
-        configjson = open(self._configuration["core.webpath"]+"/web/config.json").read()
+        configjson = open(self._configuration["core.webpath"]+"/config.json").read()
         self._configuration.update(JSONDecoder().decode(configjson))
         self._state = self.CONF_LOAD_LOCAL
 

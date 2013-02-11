@@ -99,7 +99,7 @@ class Database(object):
         The class actually connects to the database and stores the 
         connection in _connection
         """
-        if None in (self.user, self.ip, self.dbname, self.password):
+        if None in (self._user, self._ip, self._dbname, self._password):
             raise DatabaseException(DatabaseException.get_msg(1))
             #TODO: Globally Definable DB-Path
         try:
@@ -122,7 +122,7 @@ class Database(object):
         """
         trivial
         """
-        self._dname = str(dbname)
+        self._dbname = str(dbname)
 
     def set_user(self, user):
         """
@@ -380,7 +380,7 @@ class QueryCache(object):
                 lowest = self._get_lowest_use_query()
                 del(self.queries[lowest])
             self.queries[query] = {self.RANK:0,self.PREP:cur.prep(query)}
-        self.queres[query][self.RANK] += 1
+        self.queries[query][self.RANK] += 1
         return self.queries[query]
 
 

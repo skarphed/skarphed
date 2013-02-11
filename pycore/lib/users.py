@@ -435,7 +435,7 @@ class UserManager(object):
         self.get_user_by_id = User.get_user_by_id
         self.get_user_by_name = User.get_user_by_name
         self.get_users = User.get_users
-        self.createUser = User.createUser
+        self.create_user = User.create_user
         self.get_users_for_admin_interface = User.get_users_for_admin_interface
 
     def get_parent(self):
