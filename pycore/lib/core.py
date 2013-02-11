@@ -24,7 +24,7 @@
 
 from configuration import Configuration
 from database import Database
-from user import UserManager
+from users import UserManager
 from permissions import PermissionManager
 from operation import OperationManager
 from module import ModuleManager

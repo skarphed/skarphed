@@ -11,14 +11,9 @@ else
 	
 	#external component installation
 
-	apt-get install -y apache2 libapache2-mod-python python-pip libfbclient2 python-dev
+	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev
 
 	pip install fdb pycrypto
-
-    cd ./python-jsonrpc/
-	python setup.py build
-	python setup.py install
-	cd ..
 
 	mkdir /etc/scoville
 	cp ./scoville.conf /etc/scoville/
@@ -41,15 +36,13 @@ instanceid=`cat /etc/scoville/GEN_INSTANCE`
 instanceid=`expr $instanceid + 1`
 
 mkdir $SCV_WEBPATH$instanceid
-cp -r ./web/ $SCV_WEBPATH$instanceid/
-touch $SCV_WEBPATH$instanceid/web/instanceconf.py
-sed s#//number//#$instanceid#g ./instanceconf.py $SCV_WEBPATH$instanceid/web/instanceconf.py > $SCV_WEBPATH$instanceid/web/instanceconf.py
+cp -r ./web/* $SCV_WEBPATH$instanceid/
+touch $SCV_WEBPATH$instanceid/instanceconf.py
+sed s#//number//#$instanceid#g ./instanceconf.py $SCV_WEBPATH$instanceid/instanceconf.py > $SCV_WEBPATH$instanceid/instanceconf.py
 
-cp ./index.php $SCV_WEBPATH$instanceid/
+cp ./scoville.py $SCV_WEBPATH$instanceid/
 
-cp ./config.json $SCV_WEBPATH$instanceid/web/
-cp -r ./rpc/ $SCV_WEBPATH$instanceid/
-cp $SCV_WEBPATH$instanceid/web/instanceconf.py $SCV_WEBPATH$instanceid/rpc/instanceconf.py
+cp ./config.json $SCV_WEBPATH$instanceid/
 
 mkdir /tmp/scv_$instanceid
 sed s#//SCVWEBROOT//#$SCV_WEBPATH$instanceid#g ./apache2.conf > /tmp/scv_$instanceid/replace

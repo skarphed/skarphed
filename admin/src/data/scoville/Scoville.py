@@ -158,7 +158,7 @@ class ScovilleInstaller(GenericScovilleObject):
         apacheconf = apache_template%(self.data['apache.ip'],
                                       self.data['apache.port'],
                         "ServerName "+self.data['apache.domain'],
-                       "ServerAlias "+self.data['apache.subdomain'],)
+                        "ServerAlias "+self.data['apache.subdomain'],)
 
         apacheconfresult = open(self.BUILDPATH+"apache2.conf","w")
         apacheconfresult.write(apacheconf)
@@ -188,11 +188,9 @@ class ScovilleInstaller(GenericScovilleObject):
         self.status = 30
         gobject.idle_add(self.updated)
 
-        shutil.copyfile("../../pycore/index.py",self.BUILDPATH+"index.py")
         shutil.copytree("../../pycore/web",self.BUILDPATH+"web")
-        shutil.copytree("../../pycore/rpc",self.BUILDPATH+"rpc")
         shutil.copytree("../../pycore/lib",self.BUILDPATH+"lib")
-        shutil.copytree("../../python-jsonrpc",self.BUILDPATH+"python-jsonrpc")
+        #shutil.copytree("../../python-jsonrpc",self.BUILDPATH+"python-jsonrpc")
 
         tar = tarfile.open(self.BUILDPATH+"scv_install.tar.gz","w:gz")
         tar.add(self.BUILDPATH+"apache2.conf")
@@ -201,10 +199,8 @@ class ScovilleInstaller(GenericScovilleObject):
         tar.add(self.BUILDPATH+"scoville.conf")
         tar.add(self.BUILDPATH+"install.sh")
         tar.add(self.BUILDPATH+"web")
-        tar.add(self.BUILDPATH+"rpc")
         tar.add(self.BUILDPATH+"lib")
-        tar.add(self.BUILDPATH+"python-jsonrpc")
-        tar.add(self.BUILDPATH+"index.py")
+        #tar.add(self.BUILDPATH+"python-jsonrpc")
         tar.close()
 
         self.status = 45
