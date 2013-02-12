@@ -368,7 +368,7 @@ class Role(object):
         db = cls._core.get_db()
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES WHERE ROL_ID = ? ;"
         cur = db.query(cls._core,stmnt,(role_id))
-        res = cur.fetchmapone()
+        res = cur.fetchonemap()
         role = Role()
         role.set_id(res["ROL_ID"])
         role.set_name(res["ROL_NAME"])

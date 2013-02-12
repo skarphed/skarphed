@@ -381,7 +381,7 @@ class QueryCache(object):
                 del(self.queries[lowest])
             self.queries[query] = {self.RANK:0,self.PREP:cur.prep(query)}
         self.queries[query][self.RANK] += 1
-        return self.queries[query]
+        return self.queries[query][self.PREP]
 
 
     def _get_lowest_use_query(self):

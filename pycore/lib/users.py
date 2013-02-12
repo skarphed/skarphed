@@ -341,7 +341,7 @@ class User(object):
 
         stmnt = "SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS WHERE USR_NAME= ? ;"
         cur = db.query(cls._core, stmnt, (username,))
-        res = cur.fetchmapone()
+        res = cur.fetchonemap()
 
         if res is None:
             raise UserException(UserException.get_msg(9,username))
@@ -361,7 +361,7 @@ class User(object):
 
         stmnt = "SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS WHERE USR_ID= ? ;"
         cur = db.query(cls._core, stmnt, (nr,))
-        res = cur.fetchmapone()
+        res = cur.fetchonemap()
 
         if res is None:
             raise UserException(UserException.get_msg(9,username))

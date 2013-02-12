@@ -201,7 +201,7 @@ class ModuleManager(object):
         db = self._core.get_db()
         stmnt = "SELECT MOD_NAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV FROM MODULES WHERE MOD_ID = ? ;"
         cur = db.query(self._core,stmnt,(module_id))
-        row = cur.fetchmapone()
+        row = cur.fetchonemap()
         if row is not None:
             exec "from %s.v%d_%d_%d import Module as ModuleImplementation"%(row["MOD_NAME"], row["MOD_VERSIONMAJOR"], row["MOD_VERSIONMINOR"], row["MOD_VERSIONREV"])
             return ModuleImplementation(self._core) 
@@ -227,7 +227,7 @@ class ModuleManager(object):
         db = self._core.get_db()
         stmnt = "SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ;"
         cur = db.query(self._core,stmnt,(module_name,))
-        row = cur.fetchmapone()
+        row = cur.fetchonemap()
         if row is not None:
             return int(row["MOD_ID"])
         else:
@@ -240,7 +240,7 @@ class ModuleManager(object):
         db = self._core.get_db()
         stmnt = "SELECT WGT_MOD_ID FROM WIDGETS WHERE WGT_ID = ? ;"
         cur = db.query(self._core,stmnt,(widget_id,))
-        row = cur.fetchmapone()
+        row = cur.fetchonemap()
         if row is not None:
             return self.get_module(row["WGT_MOD_ID"])
         else:
@@ -395,7 +395,7 @@ class ModuleManager(object):
         db = self._core.get_db()
         stmnt = "select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories where rep_id = 1;"
         cur = db.query(self._core,stmnt)
-        row = cur.fetchmapone()
+        row = cur.fetchonemap()
         return Repository(self._core,row["REP_ID"],row["REP_NAME"],row["REP_IP"],row["REP_PORT"],row["REP_LASTUPDATE"])
 
     def set_repository(self, ip, port, name):
