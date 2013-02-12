@@ -115,7 +115,7 @@ class User(object):
         """
         self._password = str(password)
 
-    def set_salt(salt):
+    def set_salt(self,salt):
         """
         trivial
         """
@@ -125,13 +125,13 @@ class User(object):
         """
         trivial
         """
-        return self._id
+        return self._name
 
     def get_id(self):
         """
         trivial
         """
-        return self._name
+        return self._id
 
     def check_permission(self,permission):
         """

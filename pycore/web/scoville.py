@@ -41,11 +41,11 @@ def application(environ, start_response):
                     '\nThe End']
 
 
-   if environ['PATH_INFO'].startswith("/static_"):
+   if environ['PATH_INFO'].startswith("/static/"):
       response_body.append("\nMust return static stuff!\n")
-   elif environ['PATH_INFO'].startswith("/rpc_"):
+   elif environ['PATH_INFO'].startswith("/rpc/"):
       response_body.append("\nDo RPC Request")
-   elif environ['PATH_INFO'].startswith("/v_"):
+   elif environ['PATH_INFO'].startswith("/web/"):
       response_body.append("\nRender View")
       core = Core(cfg)
 
