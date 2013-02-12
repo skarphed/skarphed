@@ -22,6 +22,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+import os
+
 from configuration import Configuration
 from database import Database
 from users import UserManager
@@ -57,6 +59,9 @@ class Core(object):
         self._operation_manager = None
         self._module_manager = None
         self._session_manager = None
+
+    def log(self, message):
+        os.system("echo %s >> scoville.log"%message)        
 
     def get_core_config(self,obj):
         """
