@@ -86,7 +86,7 @@ class Configuration(object):
         """
         db = self._core.get_db()
         cur = db.query(self._core, "SELECT PARAM,VAL FROM CONFIG ;")
-        for res in res.fetchmapall():
+        for res in res.fetchallmap():
             self._configuration.update(res)
         self._state = self.CONF_LOAD_DB
 

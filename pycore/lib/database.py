@@ -201,7 +201,7 @@ class Database(object):
         cur.execute(tableQuery,("'"+"','".join(modules)+"'","'"+"','".join(matches)+"'"))
 
         replacementsDone = []
-        for res in cur.fetchmapall():
+        for res in cur.fetchallmap():
             pattern = "${"+res["MOD_NAME"]+"."+res["MDT_NAME"]+"}"
             tableId = str(res["MDT_ID"])
             tableId = "TAB_"+"0"*(6-len(tableId))+tableId
@@ -247,7 +247,7 @@ class Database(object):
                         FROM MODULETABLES \
                         WHERE MDT_MOD_ID = ? ;"
         cur = self.query(self._core,stmnt,(module.get_id(),))
-        rows = cur.fetchmapall()
+        rows = cur.fetchallmap()
         for row in rows:
             tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
             stmnt = "DROP TABLE %s"%tab_id
@@ -261,7 +261,7 @@ class Database(object):
         tables = module.get_tables()
         stmnt = "SELECT MDT_NAME FROM MODULETABLES WHERE MDT_MOD_ID = ? ;"
         cur = self.query(self._core,stmnt,(module.get_id(),))
-        rows = cur.fetchmapall()
+        rows = cur.fetchallmap()
         for row in rows:
             if row["MDT_NAME"] not in [tbl["name"] for tbl in tables]:
                 self._remove_table_for_module(module,row["MDT_NAME"])
@@ -287,7 +287,7 @@ class Database(object):
                         FROM MODULETABLES \
                         WHERE MDT_MOD_ID = ? AND MDT_NAME = ? ;"
         cur = self.query(self._core,stmnt,(module.get_id(),tablename))
-        rows = cur.fetchmapall()
+        rows = cur.fetchallmap()
         row = rows[0]
         tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
         stmnt = "DROP TABLE %s"%tab_id

@@ -187,7 +187,7 @@ class Role(object):
         stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) \
                     WHERE RRI_ROL_ID = ? $checkstring;"         
         cur = db.query(self._core,stmnt,(self._id))
-        res = cur.fetchmapall()
+        res = cur.fetchallmap()
         return [row["RIG_NAME"] for row in res]
 
     def has_permission(self,permission,check_permission=True):
@@ -337,7 +337,7 @@ class Role(object):
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES ;"
         cur = db.query(cls._core,stmnt)
         ret = []
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             role = Role()
             role.set_id(row["ROL_ID"])
             role.set_name(row["ROL_NAME"])
@@ -353,7 +353,7 @@ class Role(object):
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES INNER JOIN USERROLES ON (ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ? ;"
         cur = db.query(cls._core,stmnt,(user.get_id()))
         ret = []
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             role = Role()
             role.set_id(row["ROL_ID"])
             role.set_name(row["ROL_NAME"])
@@ -511,13 +511,13 @@ class Permission(object):
             stmnt1 = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;"
             stmnt2 = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) INNER JOIN USERROLES ON (URO_ROL_ID = RRI_ROL_ID) WHERE URO_USR_ID = ? ;"
             cur = db.query(cls._core,stmnt1,(obj.get_id()))
-            res1 = list(set(cur.fetchmapall()))
+            res1 = list(set(cur.fetchallmap()))
             cur = db.query(cls._core,stmnt2,(obj.get_id()))
-            res2 = list(set(cur.fetchmapall()))
+            res2 = list(set(cur.fetchallmap()))
         elif obj.__class__.__name__ == "Role":
             stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;"
             cur = db.query(cls._core,stmnt,(obj.get_id()))
-            res1 = list(set(cur.fetchmapall()))
+            res1 = list(set(cur.fetchallmap()))
 
         result_permissions = [row['RIG_NAME'] for row in res1]
         if res2 is not None:
@@ -539,7 +539,7 @@ class Permission(object):
         db = cls._core.get_db()
         stmnt = "SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ? ;"
         cur = db.query(cls._core,stmnt,(permission,))
-        res = db.fetchmapall()
+        res = db.fetchallmap()
         try:
             return res[0]["RIG_ID"]
         except IndexError:
@@ -588,7 +588,7 @@ class Permission(object):
         db = cls._core.get_db()
         stmnt = "SELECT RIG_NAME FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
         cur = db.query(cls._core,stmnt,(module.get_name()+".",))
-        rows = cur.fetchmapall()
+        rows = cur.fetchallmap()
         rows = rows.values()
         return rows
 

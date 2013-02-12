@@ -112,7 +112,7 @@ class Operation(object):
 
         stmnt = "SELECT OPE_ID FROM OPERATIONS WHERE OPE_OPE_PARENT = ? AND OPE_STATUS IN (0, 2) ;"
         cur = db.query(cls._core,stmnt,(operation_id,))
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             cls.drop_operation(row["OPE_ID"])
 
         stmnt = "DELETE FROM OPERATIONS WHERE OPE_ID = ? AND OPE_STATUS IN (0, 2) ;"
@@ -128,7 +128,7 @@ class Operation(object):
 
         stmnt = "SELECT OPE_ID FROM OPERATIONS WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 2 ;"
         cur = db.query(cls._core,stmnt,(operation_id,))
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             cls.retry_operation(row["OPE_ID"])
 
         stmnt = "UPDATE OPERATIONS SET OPE_STATUS = 0 WHERE OPE_ID = ? AND OPE_STATUS = 2 ;"
@@ -145,7 +145,7 @@ class Operation(object):
 
         stmnt = "SELECT OPE_ID FROM OPERATIONS WHERE OPE_OPE_PARENT = ? AND OPE_STATUS = 0 ;"
         cur = db.query(cls._core,stmnt,(operation_id,))
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             cls.cancel_operation(row["OPE_ID"])
 
         stmnt = "DELETE FROM OPERATIONS WHERE OPE_ID = ? AND OPE_STATUS = 0 ;"
@@ -170,7 +170,7 @@ class Operation(object):
         db = cls._core.get_db()
         stmnt = "SELECT OPD_KEY, OPD_VALUE, OPD_TYPE FROM OPERATIONDATA WHERE OPD_OPE_ID = ? ;"
         cur = db.query(cls._core,stmnt,(operation_record["OPE_ID"]))
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             val = operation_record["OPE_VALUE"]
             exec """val = %s(val)"""%operation_record["OPE_TYPE"]
             operation.set_value(operation_record["OPE_KEY"], val)
@@ -190,7 +190,7 @@ class Operation(object):
         stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ? ORDER BY OPE_INVOKED ;"
         stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 WHERE OPE_ID = ? ;"
         cur = db.query(cls._core,stmnt,(operation.get_id()))
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             child_operation = cls.restore_operation(row)
             db.query(cls._core,stmnt_lock,(child_operation.get_id()))
             try:
@@ -229,7 +229,7 @@ class Operation(object):
         db.query(cls._core,stmnt_lock)
         db.commit()
         cur = db.query(cls._core,stmnt)
-        res = cur.fetchmapall()
+        res = cur.fetchallmap()
         if len(res) > 0:
             operation = cls.restore_operation(res[0])
             try:
@@ -268,7 +268,7 @@ class Operation(object):
             stmnt = "SELECT OPE_ID, OPE_OPE_PARENT, OPE_INVOKED, OPE_TYPE, OPE_STATUS FROM OPERATIONS ORDER BY OPE_INVOKED ;"
             cur = db.query(cls._core,stmnt)
         ret = {}
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             operation = cls.restore_operation(row)
             custom_values = operation.get_values()
 
@@ -440,7 +440,7 @@ class ModuleOperation(Operation):
                    or OPE_TYPE = 'ModuleUninstallOperation' ;"
         cur = db.query(cls._core,stmnt);
         ret = []
-        for row in cur.fetchmapall():
+        for row in cur.fetchallmap():
             ret.append(Operation.restore_operation(row).get_meta())
         return ret
 

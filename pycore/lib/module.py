@@ -473,7 +473,7 @@ class ModuleManager(object):
         db = self._core.get_db()
         stmnt = "SELECT MOD_ID FROM MODULES ;"
         cur = db.query(self._core,stmnt)
-        ids = cur.fetchmapall()
+        ids = cur.fetchallmap()
         ids = ids.values()
         return [self.get_module(i) for i in ids]
 

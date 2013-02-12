@@ -386,7 +386,7 @@ class User(object):
         stmnt = "SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS ;"
         cur = db.query(cls._core, stmnt)
         users = []
-        res = cur.fetchmapall()
+        res = cur.fetchallmap()
         for row in res:
             user = User(cls._core)
             user.set_id(row['USR_ID'])
