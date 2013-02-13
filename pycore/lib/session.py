@@ -30,7 +30,8 @@ class SessionException(Exception):
     ERRORS = {
         0:"""SessionError: Session Expired""",
         1:"""SessionError: Can only attach user to session""",
-        2:"""SessionError: This Session does not exist"""
+        2:"""SessionError: This Session does not exist""",
+        3:"""SessionError: Cannot Store a userless Session"""
     }
 
     @classmethod
@@ -57,7 +58,6 @@ class Session(object):
     TODO: Session saves environmental variablees
     TODO: Session takes env-vars in account when verifying the id of the client
     """
-    ACTIVE_SESSIONS = {}
     CURRENT_SESSION = None
     @classmethod
     def set_core(cls,core):
@@ -71,21 +71,35 @@ class Session(object):
         """
         returns the session if it's not expired or nonexistant
         """
-        if not cls.ACTIVE_SESSIONS.has_key(session_id):
-            raise SessionException(SessionException.get_msg(2))
-        session = cls.ACTIVE_SESSIONS[session_id]
-        if session._expiration < datetime.now():
-            del(cls.ACTIVE_SESSIONS[session_id])
-            raise SessionException(SessionException.get_msg(0))
+        db = cls._core.get_db()
+        stmnt = "SELECT SES_USR_ID, SES_EXPIRES FROM SESSIONS WHERE SES_ID = ? ;"
+
+        cur = db.query(cls._core,stmnt,(session_id,))
+        row = cur.fetchonemap()
+
+        session=None
+
+        if row is not None:
+            user_manager = cls._core.get_user_manager()
+            user = user_manager.get_user(row["SES_USR_ID"])
+            session = Session(cĺs._core,user)
+            session._id = session_id
+            expiration = row["SES_EXPIRES"]
+            if expiration < datetime.now():
+                raise SessionException(SessionException.get_msg(0))    
+            session._expiration = row["SES_EXPIRES"]
         else:
-            return session
+            raise SessionException(SessionException.get_msg(2))
+        return session
 
     @classmethod
     def create_session(cls, user):
         """
         creates a session for a given user
         """
-        return Session(cls._core,user)
+        s = Session(cls._core,user)
+        s.store()
+        return s
 
     @classmethod
     def set_current_session(cls, session):
@@ -131,7 +145,6 @@ class Session(object):
         self._id = sha256(self._generateRandomString(24)).hexdigest()
         self._user = user.get_id()
         self._expiration = datetime.now()+timedelta(0,int(configuration.get_entry("core.session_duration"))*3600)
-        Session.ACTIVE_SESSIONS[self._id] = self
 
     def extend(self):
         """
@@ -157,3 +170,24 @@ class Session(object):
             self._user = user.get_id()
         else:
             raise SessionException(SessionException.get_msg(1))
+
+    def store(self):
+        """
+        stores this session in database
+        """
+        if self._user is None:
+            raise SessionException(SessionException.get_msg(3))
+        else:
+            db = self._core.get_db()
+            stmnt = "UPDATE OR INSERT INTO SESSIONS (SES_ID, SES_USR_ID, SES_EXPIRES) VALUES (?,?,?) MATCHING (SES_ID) ;"
+            
+            db.query(self._core,stmnt,(self._id,self._user.get_id(),self._expiration))
+
+    def delete(self):
+        """
+        deletes this session
+        """
+        db = self._core.get_db()
+        stmnt = "DELETE FROM SESSIONS WHERE SES_ID = ? ;"
+        db.query(self._core,stmnt,(self._id,))
+        
