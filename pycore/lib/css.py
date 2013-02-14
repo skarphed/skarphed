@@ -73,7 +73,21 @@ class CSSException(Exception):
         return "CSS_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
 
 class CSSManager(object):
-    pass
+    """
+    Manages CssPropertySets
+    """
+    def __init__(self, core):
+        self._core = core
+        CSSPropertySet.set_core(core)
+
+        self.create_csspropertyset_from_serial = CSSPropertySet.create_csspropertyset_from_serial
+        self.create_csspropertyset_from_css = CSSPropertySet.create_csspropertyset_from_css
+        self.create_csspropertyset_from_file = CSSPropertySet.create_csspropertyset_from_file
+        self.get_csspropertyset = CSSPropertySet.get_csspropertyset
+        self.render = CSSPropertySet.render
+        self.get_css_file = CSSPropertySet.get_css_file
+        self.cleanup_css_sessiontable = CSSPropertySet.cleanup_css_sessiontable
+
 
 class CSSPropertySet(object):
     ALL = -1
@@ -84,6 +98,13 @@ class CSSPropertySet(object):
     SESSION = 3
 
     SPLIT="?"
+
+    @classmethod
+    def set_core(cls,core):
+        """
+        trivial
+        """
+        cls._core=core
 
     @classmethod
     def create_csspropertyset_from_serial(cls, serial):
