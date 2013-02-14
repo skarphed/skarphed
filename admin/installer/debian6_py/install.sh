@@ -13,7 +13,7 @@ else
 
 	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev
 
-	pip install fdb pycrypto
+	pip install fdb pycrypto tinycss
 
 	mkdir /etc/scoville
 	cp ./scoville.conf /etc/scoville/

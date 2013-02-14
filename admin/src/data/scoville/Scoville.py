@@ -176,6 +176,16 @@ class ScovilleInstaller(GenericScovilleObject):
                     continue
                 scv_config[key] = val
 
+        scv_config_defaults = {
+            "core.session_duration":2,
+            "core.session_extend":1,
+            "core.cookielaw":1,
+            "core.rendermode":"pure",
+            "core.css_folder":"/_css"
+        }
+
+        scv_config.update(scv_config_defaults)
+
         jenc = jayson.JSONEncoder()
         config_json = open(self.BUILDPATH+"config.json","w")
         config_json.write(jenc.encode(scv_config))
