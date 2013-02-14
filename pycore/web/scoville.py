@@ -31,32 +31,39 @@ def application(environ, start_response):
 
    response_body = ['%s: %s' % (key, value)
                     for key, value in sorted(environ.items())]
-   response_body = '\n'.join(response_body)
+   response_body = ['\n'.join(response_body)]
 
    # Response_body has now more than one string
-   response_body = ['The Beggining\n',
-                    '*' * 30 + '\n',
-                    response_body,
-                    '\n' + '*' * 30 ,
-                    '\nThe End']
+   
+   response_headers = []
 
+   session_id = ""
 
    if environ['PATH_INFO'].startswith("/static/"):
       response_body.append("\nMust return static stuff!\n")
    elif environ['PATH_INFO'].startswith("/rpc/"):
-      response_body.append("\nDo RPC Request")
-   elif environ['PATH_INFO'].startswith("/web/"):
-      response_body.append("\nRender View")
       core = Core(cfg)
+      ret = core.web_call(environ, session_id)
+      response_body.append(ret["body"])
+      response_headers.extend(ret["header"])
+      response_headers.append(('Content-Type', 'application/json'))
+   elif environ['PATH_INFO'].startswith("/web/"):
+      core = Core(cfg)
+      ret = core.web_call(environ, session_id)
+      response_body.append(ret["body"])
+      response_headers.extend(ret["header"])
+      response_headers.append(('Content-Type', 'text/plain'))
+
 
    # So the content-lenght is the sum of all string's lengths
    content_length = 0
    for s in response_body:
       content_length += len(s)
 
+   response_headers.append(('Content-Length', str(content_length)))
+
    status = '200 OK'
-   response_headers = [('Content-Type', 'text/plain'),
-                  ('Content-Length', str(content_length))]
+   
    start_response(status, response_headers)
 
    return response_body

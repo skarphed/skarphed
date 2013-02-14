@@ -109,3 +109,28 @@ class Core(object):
         
     def get_name(self):
         return "de.masterprogs.scoville.core"
+
+    def rpc_call(self, environment, session_id):
+        self.reponse_body = []
+        self.response_header = []
+        if environment.has_key("HTTP_COOKIE"):
+            session_manager =  self.get_session_manager()
+            cookies = environment["HTTP_COOKIE"].split("; ")
+            sessioncookie = cookies[0].split("=")
+            if sessioncookie[0] == "session_id":
+                session_manager.set_current_session(session_manager.get_session(sessioncookie[1]))
+
+        return {"body":self.reponse_body, "header":self.response_header}
+
+    def web_call(self, environment, session_id):
+        self.reponse_body = []
+        self.response_header = []
+        if environment.has_key("HTTP_COOKIE"):
+            session_manager =  self.get_session_manager()
+            cookies = environment["HTTP_COOKIE"].split("; ")
+            sessioncookie = cookies[0].split("=")
+            if sessioncookie[0] == "session_id":
+                session_manager.set_current_session(session_manager.get_session(sessioncookie[1]))
+
+        return {"body":self.reponse_body, "header":self.response_header}
+

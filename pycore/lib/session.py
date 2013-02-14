@@ -25,6 +25,7 @@
 from hashlib import sha256
 from datetime import datetime, timedelta
 from random import randrange
+from cookie import SimpleCookie
 
 class SessionException(Exception):
     ERRORS = {
@@ -98,6 +99,11 @@ class Session(object):
         creates a session for a given user
         """
         s = Session(cls._core,user)
+        cookie = SimpleCookie()
+        cookie["session_id"] = s.get_id()
+        cls._core.response_header.append(
+                ("Set-Cookie", cookie.output().replace("Set-Cookie: ","",1))
+            )
         s.store()
         return s
 
@@ -146,6 +152,12 @@ class Session(object):
         self._user = user.get_id()
         self._expiration = datetime.now()+timedelta(0,int(configuration.get_entry("core.session_duration"))*3600)
 
+    def get_id(self):
+        """
+        returns the current session session id, a 64byte string
+        """
+        return self._id
+
     def extend(self):
         """
         extends this session by a timespan defined as "core.session_extend" in hours in configuration
@@ -190,4 +202,3 @@ class Session(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM SESSIONS WHERE SES_ID = ? ;"
         db.query(self._core,stmnt,(self._id,))
-        
