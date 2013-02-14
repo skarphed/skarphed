@@ -48,7 +48,7 @@ class ModuleCoreException(Exception):
         4:"""Can't delete Repo with null-id! """,
         5:"""Module already exists!""",
         6:"""This module does not exist""",
-        6:"""This widget does not exist"""
+        7:"""This widget does not exist"""
     }
 
     @classmethod
@@ -120,6 +120,14 @@ class AbstractModule(object):
             return self._revision
         else:
             return (self._version_major,self._version_minor,self._revision)
+
+    def create_widget(self, name=""):
+        """
+        cretes a widget of this module and returns it
+        """
+        w = Widget(self._core, self)
+        w.set_name(name)
+        w.store()# TODO: Implement
 
 class Widget(object):
     def __init__(self, core, module, nr=None):
@@ -211,7 +219,7 @@ class ModuleManager(object):
     def get_module_by_name(self,name):
         nr = self._get_module_id_from_name(name)
         return self.get_module(nr)
-
+    
     def get_widget(self,widget_id):
         """
         returns an instance of thre requested module with a set instanceId

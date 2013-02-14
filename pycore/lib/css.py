@@ -86,6 +86,7 @@ class CSSManager(object):
         self.get_csspropertyset = CSSPropertySet.get_csspropertyset
         self.render = CSSPropertySet.render
         self.get_css_file = CSSPropertySet.get_css_file
+        self.get_css_url = CSSPropertySet.get_css_url
         self.cleanup_css_sessiontable = CSSPropertySet.cleanup_css_sessiontable
 
 
@@ -310,6 +311,17 @@ class CSSPropertySet(object):
             cls.render(filename)
 
         cls.cleanup_css_sessiontable()
+        return filename
+
+    @classmethod
+    def get_css_url(cls):
+        """
+        Gets the cssFile as URL for the current user
+        """
+        configuration = cls._core.get_configuration()
+        filename = filename.replace(configuration.get_entry("global.webpath"),"",1)
+        filename = filename.replace(configuration.get_entry("core.instance_id"),"",1)
+        filename = filename.replace(configuration.get_entry("/"),"",1)
         return filename
 
     @classmethod
