@@ -32,6 +32,7 @@ from operation import OperationManager
 from module import ModuleManager
 from session import SessionManager
 from css import CSSManager
+from action import ActionManager
 
 class CoreException(Exception):
     ERRORS = {
@@ -61,6 +62,7 @@ class Core(object):
         self._module_manager = None
         self._session_manager = None
         self._css_manager = None
+        self._action_manager = None
 
     def log(self, message):
         os.system("echo %s >> scoville.log"%message)        
@@ -113,6 +115,11 @@ class Core(object):
         if self._css_manager is None:
             self._css_manager = CSSManager(self)
         return self._css_manager
+
+    def get_action_manager(self):
+        if self._action_manager is None:
+            self._action_manager = ActionManager(self)
+        return self._action_manager
 
     def get_name(self):
         return "de.masterprogs.scoville.core"
