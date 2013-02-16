@@ -33,6 +33,7 @@ from module import ModuleManager
 from session import SessionManager
 from css import CSSManager
 from action import ActionManager
+from binary import BinaryManager
 
 class CoreException(Exception):
     ERRORS = {
@@ -63,6 +64,7 @@ class Core(object):
         self._session_manager = None
         self._css_manager = None
         self._action_manager = None
+        self._binary_manager = None
 
     def log(self, message):
         os.system("echo %s >> scoville.log"%message)        
@@ -120,6 +122,11 @@ class Core(object):
         if self._action_manager is None:
             self._action_manager = ActionManager(self)
         return self._action_manager
+
+    def get_binary_manager(self):
+        if self._binary_manager is None:
+            self._binary_manager = BinaryManager(self)
+        return self._binary_manager
 
     def get_name(self):
         return "de.masterprogs.scoville.core"
