@@ -63,6 +63,8 @@
 ###########################################################
 
 import os
+from daemon import Daemon
+from time import sleep
 
 class OperationException(Exception):
     """
@@ -385,6 +387,9 @@ class OperationManager(object):
         self.process_next = Operation.process_next
         self.get_current_operations_for_gui = Operation.get_current_operations_for_gui
 
+    def get_operation_daemon(self):
+        return OperationDaemon
+
     def get_parent(self):
         """
         returns PermissionManager's coreobject
@@ -555,4 +560,25 @@ class TestOperation(Operation):
         simply succeed
         """
         pass
+
+class OperationDaemon(Daemon):
+    """
+    This is the deamon that runs to actually execute the scheduled operations
+    """
+    def __init__(self, core, pidfile):
+        """
+        Initialize the deamon
+        """
+        Daemon.__init__(self,pidfile)
+        self._core = core
+
+    def run(self):
+        """
+        Do work if there is work to do, otherwise check every two seconds for new work.
+        """
+        operation_manager = self._core.get_operation_manager()
+        while True:
+            while operation_manager.process_next():
+                pass
+            sleep(2)
 
