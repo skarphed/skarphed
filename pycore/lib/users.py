@@ -145,7 +145,7 @@ class User(object):
         checks if the given password fits to this user
         """
         if sha512(password+self._salt).hexdigest() == self._password:
-            return true
+            return True
         else:
             raise UserException(UserException.get_msg(2))
 
@@ -405,7 +405,7 @@ class User(object):
         user.set_name(username)
         user.set_password("")
         user.store()
-        user.alterPassword(password, "", true)
+        user.alterPassword(password, "", True)
         return user
 
     @classmethod
