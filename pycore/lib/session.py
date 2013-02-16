@@ -25,7 +25,7 @@
 from hashlib import sha256
 from datetime import datetime, timedelta
 from random import randrange
-from cookie import SimpleCookie
+from Cookie import SimpleCookie
 
 class SessionException(Exception):
     ERRORS = {
@@ -83,7 +83,7 @@ class Session(object):
         if row is not None:
             user_manager = cls._core.get_user_manager()
             user = user_manager.get_user(row["SES_USR_ID"])
-            session = Session(cĺs._core,user)
+            session = Session(cls._core,user)
             session._id = session_id
             expiration = row["SES_EXPIRES"]
             if expiration < datetime.now():

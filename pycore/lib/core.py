@@ -34,6 +34,7 @@ from session import SessionManager
 from css import CSSManager
 from action import ActionManager
 from binary import BinaryManager
+from rpc import Rpc
 
 class CoreException(Exception):
     ERRORS = {
@@ -132,7 +133,7 @@ class Core(object):
         return "de.masterprogs.scoville.core"
 
     def rpc_call(self, environment, session_id):
-        self.reponse_body = []
+        self.response_body = []
         self.response_header = []
         if environment.has_key("HTTP_COOKIE"):
             session_manager =  self.get_session_manager()
@@ -141,10 +142,19 @@ class Core(object):
             if sessioncookie[0] == "session_id":
                 session_manager.set_current_session(session_manager.get_session(sessioncookie[1]))
 
-        return {"body":self.reponse_body, "header":self.response_header}
+        try:
+            request_body_size = int(environment.get('CONTENT_LENGTH', 0))
+        except (ValueError):
+            request_body_size = 0
+        request_body = environment['wsgi.input'].read(request_body_size)
+
+        rpc = Rpc(self)
+        rpc(request_body)
+
+        return {"body":self.response_body, "header":self.response_header}
 
     def web_call(self, environment, session_id):
-        self.reponse_body = []
+        self.response_body = []
         self.response_header = []
         if environment.has_key("HTTP_COOKIE"):
             session_manager =  self.get_session_manager()
@@ -153,5 +163,5 @@ class Core(object):
             if sessioncookie[0] == "session_id":
                 session_manager.set_current_session(session_manager.get_session(sessioncookie[1]))
 
-        return {"body":self.reponse_body, "header":self.response_header}
+        return {"body":self.response_body, "header":self.response_header}
 

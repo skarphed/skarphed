@@ -307,7 +307,7 @@ class CSSPropertySet(object):
                 stmnt = "INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,0) ;"
                 db.query(cls._core,stmnt,(filename,))
 
-        if not os.path.exists(filename)
+        if not os.path.exists(filename):
             cls.render(filename)
 
         cls.cleanup_css_sessiontable()
