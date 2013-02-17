@@ -119,7 +119,7 @@ class Rpc(object):
         session_user = session_manager.get_current_session_user()
         if session_user.check_permission('scoville.users.create'):
             user_manager = self._core.get_user_manager()
-            user_manager.create_user(username,password, None)
+            user_manager.create_user(username,password)
         return True
 
     def grantRightToUser(self,params):

@@ -132,7 +132,7 @@ class Role(object):
 
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID) ;"
-        db.query(self._core,stmnt,(self._id,self._name))
+        db.query(self._core,stmnt,(self._id,self._name),commit=True)
 
     def add_permission(self, permission):
         """
@@ -148,7 +148,7 @@ class Role(object):
         stmnt = "UPDATE OR INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) \
                         VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) \
                       MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
-        db.query(self._core,stmnt,(self._id, permission))
+        db.query(self._core,stmnt,(self._id, permission),commit=True)
 
     def remove_permission(self, permission):
         """
@@ -162,7 +162,7 @@ class Role(object):
 
         db = self._core.get_db()
         stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ?); "
-        db.query(self._core,stmnt,(self._id,permission))
+        db.query(self._core,stmnt,(self._id,permission),commit=True)
 
     def get_permissions(self):
         """
@@ -208,7 +208,7 @@ class Role(object):
 
         db = self._core.get_db()
         stmnt = "DELETE FROM ROLES WHERE ROL_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,))
+        db.query(self._core,stmnt,(self._id,),commit=True)
 
     def assign_to(self,user):
         """
@@ -237,7 +237,7 @@ class Role(object):
             if role.get_name() == self._name:
                 stmnt = "UPDATE OR INSERT INTO USERROLES (URO_USR_ID, URO_ROL_ID) \
                     VALUES (?,?) MATCHING (URO_USR_ID, URO_ROL_ID) ;";
-                db.query(self._core,stmnt, (user.get_id(),self._id))
+                db.query(self._core,stmnt, (user.get_id(),self._id),commit=True)
                 return
         raise PermissionException(PermissionException.get_msg(8))
 
@@ -250,7 +250,7 @@ class Role(object):
 
         db = self._core.get_db()
         stmnt = "DELETE FROM USERROLES WHERE URO_USR_ID = ? AND URO_ROL_ID = ? ;";
-        db.query(self._core,stmnt,(user.get_id(),self._id))
+        db.query(self._core,stmnt,(user.get_id(),self._id),commit=True)
 
     @classmethod
     def set_core(cls, core):
@@ -424,7 +424,7 @@ class Permission(object):
         db = cls._core.get_db()
         new_id = db.get_seq_next('RIG_GEN')
         stmnt = "INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (?,?) ;"
-        db.query(cls._core,stmnt,(new_id,module+"."+permission))
+        db.query(cls._core,stmnt,(new_id,module+"."+permission),commit=True)
 
     @classmethod
     def remove_permission(cls, permission, module=""):
@@ -433,7 +433,7 @@ class Permission(object):
         """
         db = cls._core.get_db()
         stmnt = "DELETE FROM RIGHTS WHERE RIG_NAME = ? ;"
-        db.query(cls._core, stmnt, (permission,))
+        db.query(cls._core, stmnt, (permission,),commit=True)
 
     @classmethod
     def get_permissions_for_user(cls, user):
@@ -551,7 +551,7 @@ class Permission(object):
         module_name = module.get_name()
         db = cls._core.get_db()
         stmnt = "DELETE FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
-        db.query(cls._core, stmnt, (module_name+".",))
+        db.query(cls._core, stmnt, (module_name+".",),commit=True)
 
     @classmethod
     def get_permissions_for_module(cls,module):

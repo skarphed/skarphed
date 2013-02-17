@@ -185,7 +185,7 @@ class Widget(object):
 
         stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_SPACE) \
                     VALUES (?,?,?,?,?) MATCHING (WGT_ID) ;"
-        db.query(self._core,stmnt,(self._id,self._name, self._site_id,self._module.get_id(), self._space ))
+        db.query(self._core,stmnt,(self._id,self._name, self._site_id,self._module.get_id(), self._space ),commit=True)
 
     def delete(self):
         db = self._core.get_db()
@@ -194,7 +194,7 @@ class Widget(object):
             raise ModuleCoreException(ModuleCoreException.get_msg(2))
 
         stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,))
+        db.query(self._core,stmnt,(self._id,),commit=True)
 
 
 class ModuleManager(object):
@@ -339,7 +339,7 @@ class ModuleManager(object):
             db.query(self._core,stmnt,(latest_version["version_major"],
                                        latest_version["version_minor"],
                                        latest_version["revision"], 
-                                       nr))
+                                       nr),commit=True)
             updated_module = self.get_module(nr)
             db.update_tables_for_module(updated_module)
             permissionmanager = self._core.get_permission_manager()
@@ -378,13 +378,13 @@ class ModuleManager(object):
         stmnt = "INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV) \
                       VALUES (?,?,?,?,?,?) ;"
         db.query(self._core,stmnt,(nr,manifest["name"],manifest["hrname"],
-                                   manifest["version_major"],manifest["version_minor"],manifest["revision"]))
+                                   manifest["version_major"],manifest["version_minor"],manifest["revision"]),commit=True)
         return nr
 
     def _unregister_module(self,module):
         db = self._core.get_db()
         stmnt = "DELETE FROM MODULES WHERE MOD_NAME = ? ;" 
-        db.query(self._core,stmnt,(module.get_name(),))
+        db.query(self._core,stmnt,(module.get_name(),),commit=True)
 
     def get_meta_from_module(self,module):
         d = {
@@ -660,7 +660,7 @@ class Repository(object):
         """
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (?,?,?,?,?,?) MATCHING (REP_ID) ;"
-        db.query(self._core,stmnt,(self._id, self._name, self._ip, self._port, self._lastupdate, self.get_public_key()))
+        db.query(self._core,stmnt,(self._id, self._name, self._ip, self._port, self._lastupdate, self.get_public_key()),commit=True)
 
 
     def delete(self):
@@ -672,4 +672,4 @@ class Repository(object):
         db = self._core.get_db()
 
         stmnt = "DELETE FROM REPOSITORIES WHERE REP_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,))
+        db.query(self._core,stmnt,(self._id,),commit=True)

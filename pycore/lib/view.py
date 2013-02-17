@@ -230,17 +230,17 @@ class View(object):
         stmnt = "UPDATE OR INSERT INTO VIEWWIDGETS (VIW_VIE_ID, VIW_SPA_ID, VIW_WGT_ID) \
                   VALUES (?,?,?) MATCHING (VIW_VIE_ID, VIW_SPA_ID) ;"
         for space_id, widget_id in self._space_widget_mapping['v'].items():
-            db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)))
+            db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
 
         stmnt = "UPDATE OR INSERT INTO VIEWWIDGETPARAMS (VWP_VIE_ID, VWP_WGT_ID, VWP_KEY, VWP_VALUE) \
                   VALUES (?,?,?,?) MATCHING (VWP_VIE_ID, VWP_WGT_ID) ;"
         for widget_id, propdict in self._space_widget_mapping['c'].items():
             for key, value in propdict.items():
-                db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)))
+                db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)),commit=True)
 
         stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
                   VALUES (?,?,?,?) MATCHING (VIE_ID) ;"
-        db.query(self._core, stmnt, (self._id, self._page.get_id(), self._name, int(self._default)))
+        db.query(self._core, stmnt, (self._id, self._page.get_id(), self._name, int(self._default)),commit=True)
 
     def delete(self):
         """
@@ -249,11 +249,11 @@ class View(object):
 
         db = self._core.get_db()
         stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ;"
-        db.query(self._core, stmnt, (self._id,))
+        db.query(self._core, stmnt, (self._id,),commit=True)
         stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
-        db.query(self._core, stmnt, (self._id,))
+        db.query(self._core, stmnt, (self._id,),commit=True)
         stmnt = "DELETE FROM VIEWS WHERE VIE_ID = ? ;"
-        db.query(self._core, stmnt, (self._id,))
+        db.query(self._core, stmnt, (self._id,),commit=True)
 
 
 class Page(object):

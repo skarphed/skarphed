@@ -128,7 +128,7 @@ class Binary(object):
                        BIN_USR_ID_LASTCHANGE, \
                        BIN_DATE_LASTCHANGE, BIN_RIG_ID, BIN_MD5, BIN_DATA) \
                      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?) ;"
-            db.query(self._core,stmnt, (self._id, self._mime, user_id, user_id, self._permission, md5, self._data))
+            db.query(self._core,stmnt, (self._id, self._mime, user_id, user_id, self._permission, md5, self._data),commit=True)
         else:
             if self._permission is None:
                 stmnt = "SELECT 1 FROM BINARYS WHERE BIN_MD5 = ? AND BIN_MIME = ? AND BIN_RIG_ID IS NULL ;"
@@ -139,7 +139,7 @@ class Binary(object):
             row = cur.fetchonemap()
             if row is None:
                 stmnt = "UPDATE BINARYS SET BIN_MD5 = ?, BIN_MIME = ?, BIN_RIG_ID = ?, BIN_DATA = ? WHERE BIN_ID = ? ;"
-                db.query(self._core,stmnt, (md5,self._mime,self._permission, data, self._id))
+                db.query(self._core,stmnt, (md5,self._mime,self._permission, data, self._id),commit=True)
             else:
                 raise BinaryException(BinaryException.get_msg(2))
 

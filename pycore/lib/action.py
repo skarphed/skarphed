@@ -124,7 +124,7 @@ class Action(object):
         stmnt = "INSERT INTO ACTIONS VALUES (?,?,?,?,?,?,?,?) ;"
         db.query(cls._core , stmnt, (action.get_id(), action.get_name(), action.get_action_list_id(),
                                      action.get_page_id(), action.get_url(), action.get_space(), 
-                                     action.get_widget_id(), action.get_order()))
+                                     action.get_widget_id(), action.get_order()),commit=True)
         return action
 
     @classmethod
@@ -202,9 +202,9 @@ class Action(object):
                 return
             temp_order = self.get_order()
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ORDER = ? AND ACT_ATL_ID = ? ;"
-            db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_action_list_id()))
+            db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_action_list_id()),commit=True)
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ? ;"
-            db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+            db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
             db.commit()
 
     def decrease_order(self):
@@ -221,9 +221,9 @@ class Action(object):
                 return
             temp_order = self.get_order()
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ORDER = ? AND ACT_ATL_ID = ? ;"
-            db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_action_list_id()))
+            db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_action_list_id()),commit=True)
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ? ;"
-            db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+            db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
             db.commit()
 
     def move_to_top_order(self):
@@ -239,9 +239,9 @@ class Action(object):
                 return
             temp_order = self.get_order()
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ORDER = ? AND ACT_ATL_ID = ? ;"
-            db.query(self._core, stmnt, (temp_order, row["NEWORDER"], self.get_action_list_id()))
+            db.query(self._core, stmnt, (temp_order, row["NEWORDER"], self.get_action_list_id()),commit=True)
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ? ;"
-            db.query(self._core, stmnt, (row["NEWORDER"], self.get_id()))
+            db.query(self._core, stmnt, (row["NEWORDER"], self.get_id()),commit=True)
             db.commit()
 
     def move_to_bottom_order(self):
@@ -257,9 +257,9 @@ class Action(object):
                 return
             temp_order = self.get_order()
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ORDER = ? AND ACT_ATL_ID = ? ;"
-            db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_action_list_id()))
+            db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_action_list_id()),commit=True)
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ? ;"
-            db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+            db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
             db.commit()
 
     def set_action_list_id(self, action_list_id):
@@ -277,7 +277,7 @@ class Action(object):
         if not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_NAME = ? WHERE ACT_ID = ? ;"
-            db.query(self._core, stmnt, (self._name, self.get_id()))
+            db.query(self._core, stmnt, (self._name, self.get_id()),commit=True)
 
     def get_name(self):
         """
@@ -326,7 +326,7 @@ class Action(object):
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_URL = ?, ACT_SIT_ID = NULL, \
                      ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ?;"
-            db.query(self._core, stmnt, (self.get_url(),self.get_id()))
+            db.query(self._core, stmnt, (self.get_url(),self.get_id()),commit=True)
 
     def delete(self):
         """
@@ -334,7 +334,7 @@ class Action(object):
         """
         db = self._core.get_db()
         stmnt = "DELETE FROM ACTIONS WHERE ACT_ID = ? ;"
-        db.query(self._core,stmnt, (self.get_id(),))
+        db.query(self._core,stmnt, (self.get_id(),),commit=True)
 
     def set_widget_space_constellation(self, widget_id, space_id, ignore_db=False):
         """
@@ -354,7 +354,7 @@ class Action(object):
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = NULL, \
                      ACT_WGT_ID = ?, ACT_SPACE = ? WHERE ACT_ID = ? ;"
-            db.query(self._core,stmnt, (self.get_widget_id(), self.get_space(), self.get_id()))
+            db.query(self._core,stmnt, (self.get_widget_id(), self.get_space(), self.get_id()),commit=True)
 
     def set_page_id(self, page_id, ignore_db = False):
         """
@@ -374,7 +374,7 @@ class Action(object):
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = ?, \
                      ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ? ;"
-            db.query(self._core,stmnt,(self.get_page_id(),self.get_id()))
+            db.query(self._core,stmnt,(self.get_page_id(),self.get_id()),commit=True)
 
     def unset_links(self):
         """
@@ -455,7 +455,7 @@ class ActionList(object):
         db = cls._core.get_db()
         action_list.set_id(db.get_seq_next('ATL_GEN'))
         stmnt = "INSERT INTO ACTIONLISTS VALUES (?,?);"
-        db.query(cls._core, smtnt, (action_list.get_id(), action_list.get_name()))
+        db.query(cls._core, smtnt, (action_list.get_id(), action_list.get_name()),commit=True)
         return action_list
 
     @classmethod 
@@ -490,7 +490,7 @@ class ActionList(object):
         """
         db = self._core.get_db()
         stmnt = "DELETE FROM ACTIONLISTS WHERE ATL_ID = ? ;"
-        db.query(self._core,stmnt, (self.get_id(),))
+        db.query(self._core,stmnt, (self.get_id(),),commit=True)
 
     def set_name(self, name, ignore_db=False):
         """
@@ -500,7 +500,7 @@ class ActionList(object):
         if self._id is not None and not ignore_db:
             db= self._core.get_db()
             stmnt= "UPDATE ACTIONLISTS SET ATL_NAME = ? WHERE ATL_ID = ? ;"
-            db.query(self._core,stmnt, (self._name, self.get_id()))
+            db.query(self._core,stmnt, (self._name, self.get_id()),commit=True)
 
     def get_name(self):
         """
@@ -535,7 +535,7 @@ class ActionList(object):
             self._children.append(action)
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_ATL_ID = ? WHERE ACT_ID = ? ;"
-            db.query(self._core,stmnt, (self.get_id(),action.get_id()))
+            db.query(self._core,stmnt, (self.get_id(),action.get_id()),commit=True)
 
     def has_action(self,action):
         """
@@ -559,7 +559,7 @@ class ActionList(object):
                 break
         db = self._core.get_db()
         stmnt = "UPDATE ACTIONS SET ACT_ATL_ID = NULL WHERE ACT_ID = ? ;"
-        db.query(self._core,stmnt, (action.get_id(),))
+        db.query(self._core,stmnt, (action.get_id(),),commit=True)
 
     def load_actions(self):
         """
@@ -639,7 +639,7 @@ class MenuItem(object):
         stmnt = "INSERT INTO MENUITEMS VALUES (?,?,?,?,?,?) ;"
         db.query(cls._core,stmnt,(menu_item.get_id(), menu_item.get_name(),
                                   menu_item.get_menu_id(), menu_item.get_parent_menu_item_id(),
-                                  None, menu_item.get_order()))
+                                  None, menu_item.get_order()),commit=True)
         db.commit()
         actionlist = cls.create_action_list()
         menu_item.assign_action_list(action_list)
@@ -691,7 +691,7 @@ class MenuItem(object):
         """        
         db = self._core.get_db()
         stmnt = "DELETE FROM MENUITEMS WHERE MNI_ID = ? ;"
-        db.query(self._core,stmnt, (self.get_id(),))
+        db.query(self._core,stmnt, (self.get_id(),),commit=True)
 
     def set_order(self, order):
         """
@@ -724,9 +724,9 @@ class MenuItem(object):
                     return
                 temp_order = self.get_order()
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNU_ID = ? ;"
-                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_menu_id()))
+                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_menu_id()),commit=True)
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
-                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
         elif self.get_parent_menu_item_id() is not None:
             stmnt = "SELECT MIN(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? AND MNI_ORDER > ? ;"
@@ -737,9 +737,9 @@ class MenuItem(object):
                     return
                 temp_order = self.get_order()
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNI_ID = ? ;"
-                db.query(self._core, stmnt, (temp_order, row["NEWORDER"], self.get_parent_menu_item_id()))
+                db.query(self._core, stmnt, (temp_order, row["NEWORDER"], self.get_parent_menu_item_id()),commit=True)
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
-                db.query(self._core, stmnt, (row["NEWORDER"], self.get_id()))
+                db.query(self._core, stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
 
     def decrease_order(self):
@@ -756,9 +756,9 @@ class MenuItem(object):
                     return
                 temp_order = self.get_order()
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNU_ID = ? ;"
-                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_menu_id()))
+                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_menu_id()),commit=True)
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
-                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
         elif self.get_parent_menu_item_id() is not None:
             stmnt = "SELECT MAX(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? AND MNI_ORDER < ? ;"
@@ -769,9 +769,9 @@ class MenuItem(object):
                     return
                 temp_order = self.get_order()
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNI_ID = ? ;"
-                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_parent_menu_item_id()))
+                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_parent_menu_item_id()),commit=True)
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
-                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
     
     def move_to_top_order(self):
@@ -788,9 +788,9 @@ class MenuItem(object):
                     return
                 temp_order = self.get_order()
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNU_ID = ? ;"
-                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_menu_id()))
+                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_menu_id()),commit=True)
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
-                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
         elif self.get_parent_menu_item_id() is not None:
             stmnt = "SELECT MAX(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? ;"
@@ -801,9 +801,9 @@ class MenuItem(object):
                     return
                 temp_order = self.get_order()
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNI_ID = ? ;"
-                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_parent_menu_item_id()))
+                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_parent_menu_item_id()),commit=True)
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
-                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
 
     def move_to_bottom_order(self):
@@ -820,9 +820,9 @@ class MenuItem(object):
                     return
                 temp_order = self.get_order()
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNU_ID = ? ;"
-                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_menu_id()))
+                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_menu_id()),commit=True)
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
-                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
         elif self.get_parent_menu_item_id() is not None:
             stmnt = "SELECT MIN(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNI_ID = ? ;"
@@ -833,9 +833,9 @@ class MenuItem(object):
                     return
                 temp_order = self.get_order()
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ORDER = ? AND MNI_MNI_ID = ? ;"
-                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_parent_menu_item_id()))
+                db.query(self._core,stmnt, (temp_order, row["NEWORDER"], self.get_parent_menu_item_id()),commit=True)
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
-                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()))
+                db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
 
     def set_action_list_id(self,action_list_id):
@@ -892,7 +892,7 @@ class MenuItem(object):
         if self._get_id() is not None and not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_MNI_ID = ?, MNI_MNU_ID = NULL WHERE MNI_ID = ? ;"
-            db.query(self._core,stmnt, (self._parent_menu_item_id, self.get_id()))
+            db.query(self._core,stmnt, (self._parent_menu_item_id, self.get_id()),commit=True)
 
     def get_parent_menu_item(self):
         """
@@ -918,7 +918,7 @@ class MenuItem(object):
         if self.get_id() is None and not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_NAME = ? WHERE MNI_ID = ? ;"
-            db.query(self._core,stmnt, (self._name, self.get_id()))
+            db.query(self._core,stmnt, (self._name, self.get_id()),commit=True)
 
     def get_name(self):
         """
@@ -947,7 +947,7 @@ class MenuItem(object):
         self.set_action_list_id(action_list_id)
         db = self._core.get_db()
         stmnt = "UPDATE MENUITEMS SET MNI_ATL_ID = ? WHERE MNI_ID = ? ;"
-        db.query(self._core,stmnt, (action_list_id, self.get_id()))
+        db.query(self._core,stmnt, (action_list_id, self.get_id()),commit=True)
 
     def add_menu_item(self, menu_item):
         """
@@ -957,7 +957,7 @@ class MenuItem(object):
         menu_item.set_parent_menu_item_id(self.get_id())
         db = self._core.get_db()
         stmnt = "UPDATE MENUITEMS SET MNI_MNI_ID = ? WHERE MNI_ID = ? ;"
-        db.query(self._core,stmnt, (self.get_id(), menu_item_id))
+        db.query(self._core,stmnt, (self.get_id(), menu_item_id),commit=True)
 
     def remove_menu_item(self, menu_item):
         """
@@ -967,7 +967,7 @@ class MenuItem(object):
         menu_item.set_parent_menu_item_id(None)
         db = self._core.get_db()
         stmnt = "UPDATE MENUITEMS SET MNI_MNI_ID = NULL WHERE MNI_ID = ? ;"
-        db.query(self._core,stmnt, (self.get_id(), menu_item_id))
+        db.query(self._core,stmnt, (self.get_id(), menu_item_id),commit=True)
 
     def get_menu_items(self):
         """
@@ -1006,7 +1006,7 @@ class Menu(object):
         menu.set_id(db.get_seq_next('MNU_GEN'))
         menu.set_name(name)
         stmnt = "INSERT INTO MENUS (MNU_ID,MNU_NAME, MNU_SIT_ID) VALUES (?,?, ?) ;"
-        db.query(cls._core,stmnt, (menu.get_id(), menu.get_name(), page.get_id()))
+        db.query(cls._core,stmnt, (menu.get_id(), menu.get_name(), page.get_id()),commit=True)
         return menu 
 
     @classmethod
@@ -1065,7 +1065,7 @@ class Menu(object):
         if self.get_id() is None and not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE MENUS SET MNU_NAME = ? WHERE MNU_ID = ? ;"
-            db.query(self._core,stmnt, (self._name, self.get_id()))
+            db.query(self._core,stmnt, (self._name, self.get_id()),commit=True)
 
     def get_name(self):
         """
@@ -1095,7 +1095,7 @@ class Menu(object):
             self._chilren.append(menu_item)
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_MNU_ID = ? WHERE MNI_ID = ? ;"
-            db.query(self._core,stmnt, (self.get_id(),menu_item.get_id()))
+            db.query(self._core,stmnt, (self.get_id(),menu_item.get_id()),commit=True)
 
     def load_menu_items(self):
         """
@@ -1140,7 +1140,7 @@ class Menu(object):
 
         db = self._core.get_db()
         stmnt = "UPDATE MENUITEMS SET MNI_MNU_ID = NULL WHERE MNI_ID = ? ;"
-        db.query(self._core,stmnt, (self.get_id(), menu_item_id))
+        db.query(self._core,stmnt, (self.get_id(), menu_item_id),commit=True)
 
     def delete(self):
         """
@@ -1148,7 +1148,7 @@ class Menu(object):
         """
         db = self._core.get_db()
         stmnt = "DELETE FROM MENUS WHERE MNU_ID = ? ;"
-        db.query(self._core,stmnt, (self.get_id(),))
+        db.query(self._core,stmnt, (self.get_id(),),commit=True)
         db.commit()
 
 

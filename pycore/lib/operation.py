@@ -118,7 +118,7 @@ class Operation(object):
             cls.drop_operation(row["OPE_ID"])
 
         stmnt = "DELETE FROM OPERATIONS WHERE OPE_ID = ? AND OPE_STATUS IN (0, 2) ;"
-        db.query(cls._core,stmnt,(operation_id,))
+        db.query(cls._core,stmnt,(operation_id,),commit=True)
 
     @classmethod
     def retry_operation(cls,operation_id):
@@ -134,7 +134,7 @@ class Operation(object):
             cls.retry_operation(row["OPE_ID"])
 
         stmnt = "UPDATE OPERATIONS SET OPE_STATUS = 0 WHERE OPE_ID = ? AND OPE_STATUS = 2 ;"
-        db.query(cls._core,stmnt,(operation_id,))
+        db.query(cls._core,stmnt,(operation_id,),commit=True)
 
     @classmethod
     def cancel_operation(cls,operation_id):
@@ -151,7 +151,7 @@ class Operation(object):
             cls.cancel_operation(row["OPE_ID"])
 
         stmnt = "DELETE FROM OPERATIONS WHERE OPE_ID = ? AND OPE_STATUS = 0 ;"
-        db.query(cls._core,stmnt,(operation_id,))
+        db.query(cls._core,stmnt,(operation_id,),commit=True)
 
     @classmethod
     def restore_operation(cls, operation_record):
@@ -194,17 +194,17 @@ class Operation(object):
         cur = db.query(cls._core,stmnt,(operation.get_id()))
         for row in cur.fetchallmap():
             child_operation = cls.restore_operation(row)
-            db.query(cls._core,stmnt_lock,(child_operation.get_id()))
+            db.query(cls._core,stmnt_lock,(child_operation.get_id()),commit=True)
             try:
                 cls.process_children(child_operation)
                 child_operation.do_workload()
             except Exception,e:
                 stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;"
-                db.query(cls._core,stmnt_err,(int(row["OPE_ID"])))
+                db.query(cls._core,stmnt_err,(int(row["OPE_ID"])),commit=True)
                 #TODO GENERATE ERROR IN LOG
                 raise e
             stmnt_delete = "DELETE FROM OPERATIONS WHERE OPE_ID = ?;"
-            db.query(cls._core,stmnt_delete,(child_operation.get_id()))
+            db.query(cls._core,stmnt_delete,(child_operation.get_id()),commit=True)
 
     @classmethod
     def process_next(cls):
@@ -228,7 +228,7 @@ class Operation(object):
                                 WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 0) \
                             ) ;"
         stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 1 ;"
-        db.query(cls._core,stmnt_lock)
+        db.query(cls._core,stmnt_lock,commit=True)
         db.commit()
         cur = db.query(cls._core,stmnt)
         res = cur.fetchallmap()
@@ -239,13 +239,13 @@ class Operation(object):
                 operation.do_workload()
             except Exception, e:
                 stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;"
-                db.query(cls._core,stmnt_err,(operation.get_id()))
+                db.query(cls._core,stmnt_err,(operation.get_id()),commit=True)
                 #TODO GENERATE ERROR IN LOG
             ret = True
         else:
             ret = False
         stmnt_delete = "DELETE FROM OPERATIONS WHERE OPE_STATUS = 1 ;"
-        db.query(cls._core,stmnt_delete)
+        db.query(cls._core,stmnt_delete,commit=True)
         db.commit()
         try:
             os.unlink(configuration.get_entry("core.webpath")+"/scv_operating.lck")
@@ -349,7 +349,7 @@ class Operation(object):
 
         stmnt = "UPDATE OR INSERT INTO OPERATIONS (OPE_ID, OPE_OPE_PARENT, OPE_INVOKED, OPE_TYPE) \
                       VALUES (?,?,CURRENT_TIMESTAMP,?) MATCHING (OPE_ID);"
-        db.query(self._core,stmnt,(self._id,self._parent,self.__class__.__name__))
+        db.query(self._core,stmnt,(self._id,self._parent,self.__class__.__name__),commit=True)
 
         stmnt = "UPDATE OR INSERT INTO OPERATIONDATA (OPD_OPE_ID, OPD_KEY, OPD_VALUE, OPD_TYPE) \
                       VALUES ( ?, ?, ?, ?) MATCHING(OPD_OPE_ID,OPD_KEY);"
@@ -357,7 +357,7 @@ class Operation(object):
             typ = str(type(value))
             if typ not in Operation.VALID_STORAGE_TYPES:
                 continue
-            db.query(self._core,stmnt,(self._id,key,value,typ))
+            db.query(self._core,stmnt,(self._id,key,value,typ),commit=True)
 
     def do_workload(self):
         """

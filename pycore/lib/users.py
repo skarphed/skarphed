@@ -198,9 +198,9 @@ class User(object):
         stmnt_uri="DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? ;"
         stmnt_uro="DELETE FROM USERROLES WHERE URO_USR_ID = ? ;"
         stmnt_usr="DELETE FROM USERS WHERE USR_ID = ? ;"
-        res = db.query(self._core, stmnt_uri, (self._id,))
-        res = db.query(self._core, stmnt_uro, (self._id,))
-        res = db.query(self._core, stmnt_usr, (self._id,))
+        res = db.query(self._core, stmnt_uri, (self._id,),commit=True)
+        res = db.query(self._core, stmnt_uro, (self._id,),commit=True)
+        res = db.query(self._core, stmnt_usr, (self._id,),commit=True)
 
     def store(self):
         """
@@ -211,14 +211,14 @@ class User(object):
             stmnt = "INSERT INTO USERS (USR_ID, USR_NAME, USR_PASSWORD, USR_SALT) \
                       VALUES (?,?,?,?);"
             self.set_id(db.get_seq_next('USR_GEN'))
-            db.query(self._core,stmnt,(self._id, self._name, self._password, self._salt))
+            db.query(self._core,stmnt,(self._id, self._name, self._password, self._salt),commit=True)
         else:
             stmnt =  "UPDATE USERS SET \
                         USR_NAME = ?, \
                         USR_PASSWORD = ?, \
                         USR_SALT = ? \
                       WHERE USR_ID = ?"
-            db.query(self._core,stmnt,(self._name, self._password, self._salt, self._id))
+            db.query(self._core,stmnt,(self._name, self._password, self._salt, self._id),commit=True)
 
     def has_role(self, role):
         """
@@ -255,7 +255,7 @@ class User(object):
         if check_permission and not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(6))
         stmnt = "UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;"
-        db.query(self._core,stmnt,(self._id,permission_id))
+        db.query(self._core,stmnt,(self._id,permission_id),commit=True)
 
     def revoke_permission(self,permission):
         """
@@ -271,7 +271,7 @@ class User(object):
         if check_permission and not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(8))            
         stmnt = "DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,permission_id))
+        db.query(self._core,stmnt,(self._id,permission_id),commit=True)
 
     def get_grantable_permissions(self):
         """
@@ -380,8 +380,9 @@ class User(object):
         user = User(cls._core)
         user.set_name(username)
         user.set_password("")
+        user.set_salt("")
         user.store()
-        user.alterPassword(password, "", True)
+        user.alter_password(password, "", True)
         return user
 
     @classmethod

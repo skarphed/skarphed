@@ -204,4 +204,4 @@ class Session(object):
         """
         db = self._core.get_db()
         stmnt = "DELETE FROM USERSESSIONS WHERE SES_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,))
+        db.query(self._core,stmnt,(self._id,),commit=True)

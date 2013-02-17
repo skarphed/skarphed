@@ -163,7 +163,7 @@ class Database(object):
         try:
             cur.execute(prepared,args)
         except fdb.fbcore.DatabaseError,e:
-            raise DatabaseException(e.value)
+            raise e
         if commit:
             self.commit()
         return cur
@@ -224,7 +224,7 @@ class Database(object):
         and increments it
         """
         cur = self._connection.cursor()
-        statement = "SELECT GEN_ID ( %s , 1) FROM DUAL ;"%str(sequenceId)
+        statement = "SELECT GEN_ID ( %s , 1) FROM RDB$DATABASE ;"%str(sequenceId)
         cur.execute(statement)
         res = cur.fetchone()
         return res[0]
@@ -235,7 +235,7 @@ class Database(object):
         without incrementing it
         """
         cur = self._connection.cursor()
-        statement = "SELECT GEN_ID ( %s , 0) FROM DUAL ;"%str(sequenceId)
+        statement = "SELECT GEN_ID ( %s , 0) FROM RDB$DATABASE ;"%str(sequenceId)
         cur.execute(statement)
         res = cur.fetchone()
         return res[0]
@@ -321,8 +321,8 @@ class Database(object):
         stmnt+=") ;"
         
         mst_stmnt = "INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?) ;"
-        self.query(self._core, mst_stmnt, (new_table_id, table["name"], module.get_id()))
-        self.query(self._core, stmnt)
+        self.query(self._core, mst_stmnt, (new_table_id, table["name"], module.get_id()),commit=True)
+        self.query(self._core, stmnt,commit=True)
         if autoincrement is not None:
             stmnt = "CREATE SEQUENCE SEQ_%s ;"%new_table_string
             self.query(self._core, stmnt)
@@ -341,7 +341,7 @@ class Database(object):
                         END
                     END^
                     SET TERM ; ^"""%{'autoinc':autoincrement,'nts':new_table_string}
-            self.query(self._core,stmnt)
+            self.query(self._core,stmnt,commit=True)
 
 
 

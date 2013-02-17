@@ -295,7 +295,7 @@ class CSSPropertySet(object):
             else:
                 filename= css_folder+current_session.get_id()+".css"
                 stmnt = "INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES (?,?,0) ;"
-                db.query(cls._core,stmnt,(current_session.get_id(),filename))
+                db.query(cls._core,stmnt,(current_session.get_id(),filename),commit=True)
         else:
             stmnt = "SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SES_ID = 'GENERAL' AND CSE_OUTDATED = 0 ;"
             cur = db.query(cls._core,stmnt,(current_session.get_id(),))
@@ -305,7 +305,7 @@ class CSSPropertySet(object):
             else:
                 filename= css_folder+"general.css"
                 stmnt = "INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,0) ;"
-                db.query(cls._core,stmnt,(filename,))
+                db.query(cls._core,stmnt,(filename,),commit=True)
 
         if not os.path.exists(filename):
             cls.render(filename)
@@ -331,7 +331,7 @@ class CSSPropertySet(object):
         """
         db = cls._core.get_db()
         stmnt = "DELETE FROM CSSSESSION WHERE CSE_OUTDATED = 1 ;"
-        db.query(cls._core,stmnt)
+        db.query(cls._core,stmnt,commit=True)
         return
 
 
@@ -457,14 +457,14 @@ class CSSPropertySet(object):
                    VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION) ;"
         for key, value in values_to_store.items():
             selector, tag = key.split(cssPropertySet.SPLIT)
-            db.query(self._core,stmnt,(selector,tag,value['v'],self.get_module_id(),self.get_widget_id(),self.get_session_id()))
+            db.query(self._core,stmnt,(selector,tag,value['v'],self.get_module_id(),self.get_widget_id(),self.get_session_id()),commit=True)
 
         if self._typ == cssPropertySet.SESSION and current_session is not None:
             stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1 WHERE CSE_SES_ID = ? ;"
-            db.query(self._core,stmnt,(current_session.get_id()))
+            db.query(self._core,stmnt,(current_session.get_id()),commit=True)
         else:
             stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1;"
-            db.query(self._core,stmnt)
+            db.query(self._core,stmnt,commit=True)
 
     def delete(self):
         """
@@ -475,24 +475,24 @@ class CSSPropertySet(object):
 
         if self._typ == CSSPropertySet.GENERAL:
             stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SES_ID IS NULL;";
-            db.query(self._core,stmnt)
+            db.query(self._core,stmnt,commit=True)
         elif self._typ == CSSPropertySet.MODULE:
             stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID = ? AND CSS_WGT_ID IS NULL AND CSS_SES_ID IS NULL;";
-            db.query(self._core,stmnt,(self.get_module_id(),))
+            db.query(self._core,stmnt,(self.get_module_id(),),commit=True)
         elif self._typ == CSSPropertySet.WIDGET:
             stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID = ? AND CSS_SES_ID IS NULL;";
-            db.query(self._core,stmnt,(self.get_widget_id(),))
+            db.query(self._core,stmnt,(self.get_widget_id(),),commit=True)
         elif self._typ == CSSPropertySet.SESSION:
             stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SES_ID = ? ;"
-            db.query(self._core,stmnt,(self.get_session_id(),))
+            db.query(self._core,stmnt,(self.get_session_id(),),commit=True)
 
         if self._typ == CSSPropertySet.SESSION:
             if current_session is not None:
                 stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1 WHERE CSE_SES_ID = ? ;";
-                db.query(self._core,stmnt,(current_session.get_id(),))
+                db.query(self._core,stmnt,(current_session.get_id(),),commit=True)
         else:
             stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1 ;"
-            db.query(self._core,stmnt)
+            db.query(self._core,stmnt,commit=True)
 
     def render(self):
         """
