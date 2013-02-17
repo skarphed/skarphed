@@ -23,6 +23,9 @@
 ###########################################################
 
 from json import JSONDecoder, JSONEncoder
+from traceback import print_exc
+from StringIO import StringIO
+
 
 class Rpc(object):
     def __init__(self, core):
@@ -43,12 +46,14 @@ class Rpc(object):
         params = instructions['params']
         try:
             exec "res = self.%s(params)"%method
-        except AttributeError,e :
-            answer['error'] = "The Rpc-backed does not support this method %s"%method
-            self._core.response_body.append(je.encode(answer))
-            return
+        #except AttributeError,e :
+        #    answer['error'] = "The Rpc-backed does not support this method %s"%method
+        #    self._core.response_body.append(je.encode(answer))
+        #    return
         except Exception, e:
-            answer['error'] = "Exception: %s"%repr(e)
+            error = StringIO()
+            print_exc(None,error)
+            answer['error'] = error.getvalue()
             self._core.response_body.append(je.encode(answer))
             return
         else:
