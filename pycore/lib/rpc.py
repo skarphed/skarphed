@@ -77,8 +77,7 @@ class Rpc(object):
         user = user_manager.get_user_by_name(username)
 
         if user.authenticate(password):
-            session = session_manager.create_session()
-            session.set_user(user)
+            session = session_manager.create_session(user)
             return user.get_permissions()
         else:
             session = session_manager.get_current_session()
@@ -102,7 +101,7 @@ class Rpc(object):
         if session_user.check_permission('scoville.roles.view'):
             ret = []
             permission_manager = self._core.get_permission_manager()
-            for role in permission_manager.get_roles()
+            for role in permission_manager.get_roles():
                 ret.append({"id":role.get_id(), "name": role.get_name()})
             return ret
         return False
@@ -279,6 +278,7 @@ class Rpc(object):
     def installModule(self, params):
 
         #TODO: Implement .. Look what operation_id does
+        pass
 
     def dropOperation(self, params):
         operation_id = int(params[0])
@@ -431,7 +431,7 @@ class Rpc(object):
             menu = action_manager.get_menu_by_id(parent_id)
             action_manager.create_menu_item(menu)
             return 0
-        elif parent_type = "menuItem":
+        elif parent_type == "menuItem":
             action_manager = self._core.get_action_manager()
             menu_item = action_manager.get_menu_item_by_id(parent_id)
             action_manager.create_menu_item(None,menu_item)
