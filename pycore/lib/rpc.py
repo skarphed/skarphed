@@ -265,7 +265,7 @@ class Rpc(object):
 
     def getRepository(self, params):
         module_manager = self._core.get_module_manager()
-        repo = moudle_manager.get_repository()
+        repo = module_manager.get_repository()
         return {"id":repo.get_id(), "ip":repo.get_ip(), 
                 "port":repo.get_port(), "name": repo.get_name()}
 

@@ -74,7 +74,7 @@ class Session(object):
         returns the session if it's not expired or nonexistant
         """
         db = cls._core.get_db()
-        stmnt = "SELECT SES_USR_ID, SES_EXPIRES FROM SESSIONS WHERE SES_ID = ? ;"
+        stmnt = "SELECT SES_USR_ID, SES_EXPIRES FROM USERSESSIONS WHERE SES_ID = ? ;"
 
         cur = db.query(cls._core,stmnt,(session_id,))
         row = cur.fetchonemap()
@@ -83,7 +83,7 @@ class Session(object):
 
         if row is not None:
             user_manager = cls._core.get_user_manager()
-            user = user_manager.get_user(row["SES_USR_ID"])
+            user = user_manager.get_user_by_id(row["SES_USR_ID"])
             session = Session(cls._core,user)
             session._id = session_id
             expiration = row["SES_EXPIRES"]
@@ -171,7 +171,7 @@ class Session(object):
         returns this session's user
         """
         usermanager = self._core.get_user_manager()
-        return usermanager.get_user(self._user)
+        return usermanager.get_user_by_id(self._user)
 
     def set_user(self,user):
         """
@@ -192,16 +192,16 @@ class Session(object):
             raise SessionException(SessionException.get_msg(3))
         else:
             db = self._core.get_db()
-            stmnt = "UPDATE OR INSERT INTO SESSIONS (SES_ID, SES_USR_ID, SES_EXPIRES) VALUES (?,?,?) MATCHING (SES_ID) ;"
+            stmnt = "UPDATE OR INSERT INTO USERSESSIONS (SES_ID, SES_USR_ID, SES_EXPIRES) VALUES (?,?,?) MATCHING (SES_ID) ;"
             
             exp = datetime2fdbTimestamp(self._expiration)
 
-            db.query(self._core,stmnt,(self._id,self._user.get_id(),exp))
+            db.query(self._core,stmnt,(self._id,self._user,exp),commit=True)
 
     def delete(self):
         """
         deletes this session
         """
         db = self._core.get_db()
-        stmnt = "DELETE FROM SESSIONS WHERE SES_ID = ? ;"
+        stmnt = "DELETE FROM USERSESSIONS WHERE SES_ID = ? ;"
         db.query(self._core,stmnt,(self._id,))

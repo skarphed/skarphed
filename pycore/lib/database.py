@@ -149,7 +149,7 @@ class Database(object):
         self._connection.commit()
 
     #MODULEINVOLVED
-    def query(self, module, statement, args=(), forceNoCache=False):
+    def query(self, module, statement, args=(), forceNoCache=False, commit=False):
         """
         execute a query on the database. be sure to deliver the module.
         it is necessary to determine tablenames
@@ -159,11 +159,13 @@ class Database(object):
         if module.get_name() != "de.masterprogs.scoville.core":
             statement = self._replace_module_tables(module,statement)
         cur = self._connection.cursor()    
-        prepared = self._queryCache(cur, statement)
+        prepared, cur = self._queryCache(cur, statement)
         try:
             cur.execute(prepared,args)
         except fdb.fbcore.DatabaseError,e:
             raise DatabaseException(e.value)
+        if commit:
+            self.commit()
         return cur
 
     #MODULEINVOLVED
@@ -362,6 +364,7 @@ class QueryCache(object):
     """
     RANK = 0
     PREP = 1
+    CUR = 2
     MAX_QUERIES = 20
     def __init__(self):
         """
@@ -379,9 +382,9 @@ class QueryCache(object):
             if len(self.queries) >= self.MAX_QUERIES:
                 lowest = self._get_lowest_use_query()
                 del(self.queries[lowest])
-            self.queries[query] = {self.RANK:0,self.PREP:cur.prep(query)}
+            self.queries[query] = {self.RANK:0,self.PREP:cur.prep(query), self.CUR: cur}
         self.queries[query][self.RANK] += 1
-        return self.queries[query][self.PREP]
+        return (self.queries[query][self.PREP] , self.queries[query][self.CUR])
 
 
     def _get_lowest_use_query(self):

@@ -423,7 +423,7 @@ class Permission(object):
             raise PermissionException(PermissionException.get_msg(9))
 
         db = cls._core.get_db()
-        stmnt = "select 1 as RESULT from RDB\$DATABASE  where ? in(select rig_name \
+        stmnt = "select 1 as RESULT from RDB$DATABASE  where CAST( ? AS VARCHAR(64)) in(select rig_name \
                 from USERROLES \
                 left join ROLES \
                   on rol_id = uro_rol_id \

@@ -67,9 +67,6 @@ class Core(object):
         self._action_manager = None
         self._binary_manager = None
 
-    def log(self, message):
-        os.system("echo %s >> scoville.log"%message)        
-
     def get_core_config(self,obj):
         """
         Passes the core config on to the Configuration class.
@@ -134,7 +131,7 @@ class Core(object):
 
     def log(self, message):
         if hasattr(self,"environment"):
-            print >> self.environment["wsgi.errors"] , message
+            print >> self.environment["wsgi.errors"] , "SCVDEBUG>>>"+str(message)
 
     def rpc_call(self, environment):
         if self.get_configuration().get_entry("core.debug") == True:
@@ -163,7 +160,7 @@ class Core(object):
     def web_call(self, environmen):
         if self.get_configuration().get_entry("core.debug") == True:
             self.environment = environment
-            
+
         self.response_body = []
         self.response_header = []
         if environment.has_key("HTTP_COOKIE"):
