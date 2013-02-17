@@ -189,15 +189,11 @@ class User(object):
             ret+=chr(x)
         return ret
 
-    def delete(self, check_permission=True):
+    def delete(self):
         """
         deletes this user from database
         """
-        session_user = User.get_session_user()
         db = self._core.get_db()
-
-        if check_permission and not session_user.check_permission('scoville.users.delete'):
-            raise UserException(UserException.get_msg(3))
 
         stmnt_uri="DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? ;"
         stmnt_uro="DELETE FROM USERROLES WHERE URO_USR_ID = ? ;"
@@ -206,7 +202,7 @@ class User(object):
         res = db.query(self._core, stmnt_uro, (self._id,))
         res = db.query(self._core, stmnt_usr, (self._id,))
 
-    def store(self, check_permission=True):
+    def store(self):
         """
         stores this user into database
         """
@@ -245,15 +241,14 @@ class User(object):
         permissionmanager = self._core.get_permission_manager()
         return permissionmanager.get_roles_for_user(self)        
 
-    def grant_permission(self, permission, check_permission=True):
+    def grant_permission(self, permission):
         """
         grants a permission to the user
         """
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()
-        session_user = User.get_session_user()
-        if check_permission and not session_user.check_permission('scoville.users.grant_revoke'):
-            raise UserException(UserException.get_msg(4))
+        session_user = self._core.get_session_manager().get_current_session_user()
+
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
@@ -262,15 +257,14 @@ class User(object):
         stmnt = "UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;"
         db.query(self._core,stmnt,(self._id,permission_id))
 
-    def revoke_permission(self,permission, check_permission=True):
+    def revoke_permission(self,permission):
         """
         revokes a permission from the user
         """
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()
-        session_user = User.get_session_user()
-        if check_permission and not session_user.check_permission('scoville.users.grant_revoke'):
-            raise UserException(UserException.get_msg(7))
+        session_user = self._core.get_session_manager().get_current_session_user()
+
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
@@ -297,19 +291,19 @@ class User(object):
         permissionmanager = self._core.get_permission_manager()
         return permissionmanager.get_grantable_roles(self)
 
-    def assign_role(self,role,check_permission=True):
+    def assign_role(self,role):
         """
         assign a role to this user
         needs role object
         """
-        return role.assign_to(self, check_permission)
+        return role.assign_to(self)
 
-    def revoke_role(self,role,check_permission=True):
+    def revoke_role(self,role):
         """
         revoke a role from this user
         needs role object
         """
-        return role.revoke_from(self, check_permission)
+        return role.revoke_from(self)
 
     @classmethod
     def set_core(cls, core):
@@ -317,20 +311,6 @@ class User(object):
         sets the core of User 
         """
         cls._core = core
-
-    @classmethod
-    def get_session_user(cls):
-        """
-        Returns the user of this session
-        """
-        return cls.get_user(User.get_session_user_id)
-
-    @classmethod
-    def get_session_user_id(cls):
-        """
-        Returns the id of the user of this session
-        """
-        pass #TODO IMPLEMENT SESSIONSYSTEM FIRST
 
     @classmethod
     def get_user_by_name(cls,username):
@@ -373,15 +353,11 @@ class User(object):
         return user
 
     @classmethod
-    def get_users(cls,check_permission=True):
+    def get_users(cls):
         """
         returns all users as array of User-objects
         """
         db = cls._core.get_db()
-        session_user = User.get_session_user()
-
-        if check_permission and not session_user.check_permission('scoville.users.view'):
-            raise UserException(UserException.get_msg(10))
 
         stmnt = "SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS ;"
         cur = db.query(cls._core, stmnt)
@@ -397,7 +373,7 @@ class User(object):
         return users
 
     @classmethod
-    def create_user(cls, username, password, check_permission=True):
+    def create_user(cls, username, password):
         """
         creates a new user
         """
@@ -430,8 +406,6 @@ class UserManager(object):
         self._core = core
         User.set_core(core)
 
-        self.get_session_user = User.get_session_user
-        self.get_session_user_id = User.get_session_user_id
         self.get_user_by_id = User.get_user_by_id
         self.get_user_by_name = User.get_user_by_name
         self.get_users = User.get_users

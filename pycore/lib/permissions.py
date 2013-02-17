@@ -117,7 +117,7 @@ class Role(object):
         """
         self._name = str(name)
 
-    def store(self,check_permission=True):
+    def store(self):
         """
         Stores the current state of the role into the database
         """
@@ -129,25 +129,19 @@ class Role(object):
         if self._name == "":
             raise PermissionException(PermissionException.get_msg(1))
 
-        session_user = sessionmanager.get_current_session_user()
-        if check_permission and not session_user.check_permission('scoville.roles.create'):
-            raise PermissionException(PermissionException.get_msg(2))
 
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID) ;"
         db.query(self._core,stmnt,(self._id,self._name))
 
-    def add_permission(self, permission, check_permission=True):
+    def add_permission(self, permission):
         """
         adds a given permission to this role
         """
         sessionmanager = self._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
 
-        if check_permission and not session_user.check_permission('scoville.roles.modify'):
-            raise PermissionException(PermissionException.get_msg(4),permission)
-
-        if check_permission and not session_user.check_permission(permission):
+        if not session_user.check_permission(permission):
             raise PermissionException(PermissionException.get_msg(3))
 
         db = self._core.get_db()
@@ -156,33 +150,27 @@ class Role(object):
                       MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
         db.query(self._core,stmnt,(self._id, permission))
 
-    def remove_permission(self, permission, check_permission=True):
+    def remove_permission(self, permission):
         """
         removes a given permission from this role
         """
         sessionmanager = self._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
-
-        if check_permission and not session_user.check_permission('scoville.roles.modify'):
-            raise PermissionException(PermissionException.get_msg(4),permission)
         
-        if check_permission and not session_user.check_permission(permission):
+        if not session_user.check_permission(permission):
             raise PermissionException(PermissionException.get_msg(3))
 
         db = self._core.get_db()
         stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ?); "
         db.query(self._core,stmnt,(self._id,permission))
 
-    def get_permissions(self, check_permission=True):
+    def get_permissions(self):
         """
         returns all permissions assigned to this role as an array of strings
         """
         sessionmanager = self._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
 
-        if check_permission and not session_user.check_permission('scoville.roles.modify'):
-            raise PermissionException(PermissionException.get_msg(4),permission)
-        
         db = self._core.get_db()
         stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) \
                     WHERE RRI_ROL_ID = ? $checkstring;"         
@@ -190,15 +178,12 @@ class Role(object):
         res = cur.fetchallmap()
         return [row["RIG_NAME"] for row in res]
 
-    def has_permission(self,permission,check_permission=True):
+    def has_permission(self,permission):
         """
         checks if this role has a specific permission
         """
         sessionmanager = self._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
-        
-        if check_permission and not session_user.check_permission('scoville.roles.modify'):
-            raise PermissionException(PermissionException.get_msg(4),permission)
         
         db = self._core.get_db()
         stmnt = "SELECT RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) \
@@ -207,52 +192,46 @@ class Role(object):
         res = cur.fetchone()
         return len(res) > 0
 
-    def get_grantable_permissions(self,check_permission=True):
+    def get_grantable_permissions(self):
         """
         returns the permissions that are grantable to this role
         """
         permissionmanager = self._core.get_permission_manager()
         return permissionmanager.get_grantable_permissions(self)
 
-    def delete(self,check_permission=True):
+    def delete(self):
         """
         deletes this role from the database
         """
         sessionmanager = self._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
 
-        if check_permission and not session_user.check_permission('scoville.roles.delete'):
-            raise PermissionException(PermissionException.get_msg(5))
-
         db = self._core.get_db()
         stmnt = "DELETE FROM ROLES WHERE ROL_ID = ? ;"
         db.query(self._core,stmnt,(self._id,))
 
-    def assign_to(self,user,check_permission=True):
+    def assign_to(self,user):
         """
         Assigns this role to a user
         """
         sessionmanager = self._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
 
-        if check_permission and not session_user.check_permission('scoville.users.grant_revoke'):
-            raise PermissionException(PermissionException.get_msg(6))
-
         db = self._core.get_db()
         
         #check if sessionuser has role
-        if check_permission:
-            has_role = session_user.has_role(self)
+        
+        has_role = session_user.has_role(self)
 
-            stmnt = "SELECT COUNT(URI_RIG_ID) AS CNT FROM USERRIGHTS WHERE URI_RIG_ID IN \
-                (SELECT RRI_RIG_ID FROM ROLERIGHTS WHERE RRI_ROL_ID = ? ) ;"
-            cur = db.query(self._core,stmnt,(self._id))
-            res = cur.fetchone()[0]
+        stmnt = "SELECT COUNT(URI_RIG_ID) AS CNT FROM USERRIGHTS WHERE URI_RIG_ID IN \
+            (SELECT RRI_RIG_ID FROM ROLERIGHTS WHERE RRI_ROL_ID = ? ) ;"
+        cur = db.query(self._core,stmnt,(self._id))
+        res = cur.fetchone()[0]
 
-            has_all_permissions_of_role = res == len(self.get_permissions())
+        has_all_permissions_of_role = res == len(self.get_permissions())
 
-            if not has_role and not has_all_permissions_of_role:
-                raise PermissionException(PermissionException.get_msg(7))
+        if not has_role and not has_all_permissions_of_role:
+            raise PermissionException(PermissionException.get_msg(7))
 
         for role in user.get_grantable_roles():
             if role.get_name() == self._name:
@@ -262,15 +241,12 @@ class Role(object):
                 return
         raise PermissionException(PermissionException.get_msg(8))
 
-    def revoke_from(self, user, check_permission=True):
+    def revoke_from(self, user):
         """
         Revokes a role from a user 
         """
         sessionmanager = self._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
-
-        if check_permission and not session_user.check_permission('scoville.users.grant_revoke'):
-            raise PermissionException(PermissionException.get_msg(6))
 
         db = self._core.get_db()
         stmnt = "DELETE FROM USERROLES WHERE URO_USR_ID = ? AND URO_ROL_ID = ? ;";
@@ -375,7 +351,7 @@ class Role(object):
         return role 
 
     @classmethod
-    def create_role(cls, data=None, check_permission=True):
+    def create_role(cls, data=None):
         if data is None:
             raise PermissionException(PermissionException.get_msg(10))
         if data["name"] is None:
@@ -384,9 +360,6 @@ class Role(object):
         db = cls._core.get_db()
         sessionmanager = cls._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
-
-        if check_permission and not session_user.check_permission('scoville.roles.create'):
-            raise PermissionException(PermissionException.get_msg(12))
 
         role_id = db.get_seq_next("ROL_GEN")
         role = Role()
@@ -397,9 +370,9 @@ class Role(object):
         if data["rights"]:
             for permission in data["rights"]:
                 if permission["granted"]:
-                    role.add_permission(permission["name"], check_permission)
+                    role.add_permission(permission["name"])
                 else:
-                    role.remove_permission(permission["name"], check_permission)
+                    role.remove_permission(permission["name"])
             role.store()
 
         return role

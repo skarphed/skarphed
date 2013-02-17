@@ -122,7 +122,7 @@ class Binary(object):
         md5 = md5hash(self._data).hexdigest()
         if self._id is None:
             self._id = db.get_seq_next("BIN_GEN")
-            user_id = self._core.get_user_manager().get_session_user().get_id()
+            user_id = self._core.get_session_manager().get_current_session_user().get_id()
             #TODO: Anonymous user muss datei hochladen koennen
             stmnt = "INSERT INTO BINARYS (BIN_ID, BIN_MIME, BIN_USR_ID_OWNER, \
                        BIN_USR_ID_LASTCHANGE, \
