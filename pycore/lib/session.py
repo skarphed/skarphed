@@ -26,6 +26,7 @@ from hashlib import sha256
 from datetime import datetime, timedelta
 from random import randrange
 from Cookie import SimpleCookie
+from helper import datetime2fdbTimestamp
 
 class SessionException(Exception):
     ERRORS = {
@@ -193,7 +194,9 @@ class Session(object):
             db = self._core.get_db()
             stmnt = "UPDATE OR INSERT INTO SESSIONS (SES_ID, SES_USR_ID, SES_EXPIRES) VALUES (?,?,?) MATCHING (SES_ID) ;"
             
-            db.query(self._core,stmnt,(self._id,self._user.get_id(),self._expiration))
+            exp = datetime2fdbTimestamp(self._expiration)
+
+            db.query(self._core,stmnt,(self._id,self._user.get_id(),exp))
 
     def delete(self):
         """
