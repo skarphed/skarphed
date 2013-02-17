@@ -252,7 +252,7 @@ class User(object):
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
-        if check_permission and not session_user.check_permission(permission):
+        if not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(6))
         stmnt = "UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;"
         db.query(self._core,stmnt,(self._id,permission_id),commit=True)
@@ -268,7 +268,7 @@ class User(object):
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
-        if check_permission and not session_user.check_permission(permission):
+        if not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(8))            
         stmnt = "DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? ;"
         db.query(self._core,stmnt,(self._id,permission_id),commit=True)

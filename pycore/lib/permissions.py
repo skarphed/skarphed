@@ -173,8 +173,8 @@ class Role(object):
 
         db = self._core.get_db()
         stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) \
-                    WHERE RRI_ROL_ID = ? $checkstring;"         
-        cur = db.query(self._core,stmnt,(self._id))
+                    WHERE RRI_ROL_ID = ? ;"         
+        cur = db.query(self._core,stmnt,(self._id,))
         res = cur.fetchallmap()
         return [row["RIG_NAME"] for row in res]
 
@@ -225,7 +225,7 @@ class Role(object):
 
         stmnt = "SELECT COUNT(URI_RIG_ID) AS CNT FROM USERRIGHTS WHERE URI_RIG_ID IN \
             (SELECT RRI_RIG_ID FROM ROLERIGHTS WHERE RRI_ROL_ID = ? ) ;"
-        cur = db.query(self._core,stmnt,(self._id))
+        cur = db.query(self._core,stmnt,(self._id,))
         res = cur.fetchone()[0]
 
         has_all_permissions_of_role = res == len(self.get_permissions())
@@ -234,7 +234,7 @@ class Role(object):
             raise PermissionException(PermissionException.get_msg(7))
 
         for role in user.get_grantable_roles():
-            if role.get_name() == self._name:
+            if role["name"] == self._name:
                 stmnt = "UPDATE OR INSERT INTO USERROLES (URO_USR_ID, URO_ROL_ID) \
                     VALUES (?,?) MATCHING (URO_USR_ID, URO_ROL_ID) ;";
                 db.query(self._core,stmnt, (user.get_id(),self._id),commit=True)
@@ -270,7 +270,7 @@ class Role(object):
 
         #HERE BE DRAGONS! Check algorithm
 
-        sessionmanager = self._core.get_session_manager()
+        sessionmanager = cls._core.get_session_manager()
         session_user = sessionmanager.get_current_session_user()
         session_permissions = session_user.get_permissions()
 
@@ -314,7 +314,7 @@ class Role(object):
         cur = db.query(cls._core,stmnt)
         ret = []
         for row in cur.fetchallmap():
-            role = Role()
+            role = Role(cls._core)
             role.set_id(row["ROL_ID"])
             role.set_name(row["ROL_NAME"])
             ret.append(role)
@@ -343,9 +343,9 @@ class Role(object):
         """
         db = cls._core.get_db()
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES WHERE ROL_ID = ? ;"
-        cur = db.query(cls._core,stmnt,(role_id))
+        cur = db.query(cls._core,stmnt,(role_id,))
         res = cur.fetchonemap()
-        role = Role()
+        role = Role(cls._core)
         role.set_id(res["ROL_ID"])
         role.set_name(res["ROL_NAME"])
         return role 
@@ -480,16 +480,16 @@ class Permission(object):
 
         res2 = None
 
-        if obj.__class__.__name__ == "User:":
+        if obj.__class__.__name__ == "User":
             stmnt1 = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;"
             stmnt2 = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) INNER JOIN USERROLES ON (URO_ROL_ID = RRI_ROL_ID) WHERE URO_USR_ID = ? ;"
-            cur = db.query(cls._core,stmnt1,(obj.get_id()))
+            cur = db.query(cls._core,stmnt1,(obj.get_id(),))
             res1 = list(set(cur.fetchallmap()))
-            cur = db.query(cls._core,stmnt2,(obj.get_id()))
+            cur = db.query(cls._core,stmnt2,(obj.get_id(),))
             res2 = list(set(cur.fetchallmap()))
         elif obj.__class__.__name__ == "Role":
             stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;"
-            cur = db.query(cls._core,stmnt,(obj.get_id()))
+            cur = db.query(cls._core,stmnt,(obj.get_id(),))
             res1 = list(set(cur.fetchallmap()))
 
         result_permissions = [row['RIG_NAME'] for row in res1]
@@ -512,7 +512,7 @@ class Permission(object):
         db = cls._core.get_db()
         stmnt = "SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ? ;"
         cur = db.query(cls._core,stmnt,(permission,))
-        res = db.fetchallmap()
+        res = cur.fetchallmap()
         try:
             return res[0]["RIG_ID"]
         except IndexError:
