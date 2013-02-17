@@ -48,14 +48,14 @@ def application(environ, start_response):
 
     elif environ['PATH_INFO'].startswith("/rpc/"):
         core = Core(cfg)
-        ret = core.rpc_call(environ, session_id)
+        ret = core.rpc_call(environ)
         response_body.extend(ret["body"])
         response_headers.extend(ret["header"])
         response_headers.append(('Content-Type', 'application/json'))
 
     elif environ['PATH_INFO'].startswith("/web/"):
         core = Core(cfg)
-        ret = core.web_call(environ, session_id)
+        ret = core.web_call(environ)
         response_body.extend(ret["body"])
         response_headers.extend(ret["header"])
         response_headers.append(('Content-Type', 'text/html'))

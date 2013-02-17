@@ -181,7 +181,8 @@ class ScovilleInstaller(GenericScovilleObject):
             "core.session_extend":1,
             "core.cookielaw":1,
             "core.rendermode":"pure",
-            "core.css_folder":"/static/css"
+            "core.css_folder":"/static/css",
+            "core.debug":True
         }
 
         scv_config.update(scv_config_defaults)

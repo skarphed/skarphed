@@ -132,7 +132,14 @@ class Core(object):
     def get_name(self):
         return "de.masterprogs.scoville.core"
 
-    def rpc_call(self, environment, session_id):
+    def log(self, message):
+        if hasattr(self,"environment"):
+            print >> self.environment["wsgi.errors"] , message
+
+    def rpc_call(self, environment):
+        if self.get_configuration().get_entry("core.debug") == True:
+            self.environment = environment
+
         self.response_body = []
         self.response_header = []
         if environment.has_key("HTTP_COOKIE"):
@@ -153,7 +160,10 @@ class Core(object):
 
         return {"body":self.response_body, "header":self.response_header}
 
-    def web_call(self, environment, session_id):
+    def web_call(self, environmen):
+        if self.get_configuration().get_entry("core.debug") == True:
+            self.environment = environment
+            
         self.response_body = []
         self.response_header = []
         if environment.has_key("HTTP_COOKIE"):
