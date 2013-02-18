@@ -26,7 +26,6 @@ from json import JSONDecoder, JSONEncoder
 from traceback import print_exc
 from StringIO import StringIO
 
-
 class Rpc(object):
     def __init__(self, core):
         self._core = core
@@ -44,12 +43,13 @@ class Rpc(object):
 
         method = instructions['method']
         params = instructions['params']
+
+        if not hasattr(self,method):
+            answer['error'] = "The Rpc-backed does not support this method %s"%method
+            self._core.response_body.append(je.encode(answer))
+            return
         try:
             exec "res = self.%s(params)"%method
-        #except AttributeError,e :
-        #    answer['error'] = "The Rpc-backed does not support this method %s"%method
-        #    self._core.response_body.append(je.encode(answer))
-        #    return
         except Exception, e:
             error = StringIO()
             print_exc(None,error)
@@ -193,7 +193,7 @@ class Rpc(object):
         session_user = session_manager.get_current_session_user()
         if session_user.check_permission('scoville.roles.delete'):
             permission_manager = self._core.get_permission_manager()
-            role = permission_manager.get_role(data)
+            role = permission_manager.get_role(role_id)
             role.delete()
 
     def getRolesForUserPage(self, params):
@@ -572,30 +572,3 @@ class Rpc(object):
         menu = action_manager.get_menu_by_id(menu_id)
         menu.set_name(new_name)
         return 0
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -330,7 +330,7 @@ class Role(object):
         cur = db.query(cls._core,stmnt,(user.get_id()))
         ret = []
         for row in cur.fetchallmap():
-            role = Role()
+            role = Role(cls._core)
             role.set_id(row["ROL_ID"])
             role.set_name(row["ROL_NAME"])
             ret.append(role)
@@ -362,12 +362,12 @@ class Role(object):
         session_user = sessionmanager.get_current_session_user()
 
         role_id = db.get_seq_next("ROL_GEN")
-        role = Role()
+        role = Role(cls._core)
         role.set_id(role_id)
         role.set_name(data["name"])
         role.store()
 
-        if data["rights"]:
+        if data.has_key("rights"):
             for permission in data["rights"]:
                 if permission["granted"]:
                     role.add_permission(permission["name"])
