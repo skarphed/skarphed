@@ -29,9 +29,10 @@ class BinaryException(Exception):
     Exceptions for Database-Module
     """
     ERRORS = {
-        0:"""Load: The Binary with this ID does not exist: """,
-        1:"""LoadMD5: No Binary found with the hash: """,
-        2:"""Store: Not allowed to store this binary"""
+        0:"""Get By Id: The Binary with this ID does not exist: """,
+        1:"""Get By MD5: No Binary found with the hash: """,
+        2:"""Store: Not allowed to store this binary""",
+        3:"""Get By Filename: No Binary found with the filename: """
     }
 
     @classmethod
@@ -45,10 +46,9 @@ class BinaryManager(object):
         Binary.set_core(core)
 
         self.create = Binary.create
-        self.load = Binary.load
-        self.load_md5 = Binary.load_md5
-
-
+        self.get_by_id = Binary.get_by_id
+        self.get_by_md5 = Binary.get_by_md5
+        self.get_by_filename = Binary.get_by_filename
 
 class Binary(object):
     """
@@ -60,41 +60,79 @@ class Binary(object):
         self._core = core
 
     @classmethod
-    def create(cls, mime, data, permission):
-        return Binary(cls._core, None, mime,data, permission)
+    def create(cls, mime, data, filename=""):
+        bin = Binary(self._core)
+        
+        filename = md5hash(data).hexdigest()[:6]+"_"+filename
+
+        bin.set_filename(filename)
+        bin.set_mime(mime)
+        bin.set_data(data)
+
+        return bin
 
     @classmethod
-    def load(cls, nr):
+    def get_by_filename(cls, filename):
         db = cls._core.get_db()
-        stmnt = "SELECT BIN_MIME, BIN_RIG_ID, BIN_DATA FROM BINARYS WHERE BIN_ID = ? ;"
-        cur = db.query(cls._core , stmnt, (nr,))
+        stmnt = "SELECT BIN_FILENAME, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? ;"
+        cur = db.query(cls._core , stmnt, (filename,))
         row = cur.fetchonemap()
         if row is not None:
-            return Binary(cls._core, nr, row["BIN_MIME"], row["BIN_DATA"], row["BIN_RIG_ID"])
+            bin = Binary(self._core)
+            bin.set_id(row["BIN_ID"])
+            bin.set_filename(row["BIN_FILENAME"])
+            bin.set_mime(row["BIN_MIME"])
+            bin.set_data(row["BIN_DATA"])
+            return bin
         else:
             raise BinaryException(BinaryException.get_msg(0, nr))
 
     @classmethod
-    def load_md5(cls, md5):
+    def get_by_id(cls, nr):
         db = cls._core.get_db()
-        stmnt = "SELECT BIN_ID, BIN_MIME, BIN_DATA, BIN_RIG_ID FROM BINARYS WHERE BIN_MD5 = ? ;"
+        stmnt = "SELECT BIN_FILENAME, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_ID = ? ;"
+        cur = db.query(cls._core , stmnt, (nr,))
+        row = cur.fetchonemap()
+        if row is not None:
+            bin = Binary(self._core)
+            bin.set_id(row["BIN_ID"])
+            bin.set_filename(row["BIN_FILENAME"])
+            bin.set_mime(row["BIN_MIME"])
+            bin.set_data(row["BIN_DATA"])
+            return bin
+        else:
+            raise BinaryException(BinaryException.get_msg(0, nr))
+
+    @classmethod
+    def get_by_md5(cls, md5):
+        db = cls._core.get_db()
+        stmnt = "SELECT BIN_FILENAME, BIN_ID, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_MD5 = ? ;"
         cur = db.query(cls._core , stmnt, (md5,))
         row = cur.fetchonemap()
         if row is not None:
-            return Binary(cls._core, row["BIN_ID"], row["BIN_MIME"], row["BIN_DATA"], row["BIN_RIG_ID"])
+            bin = Binary(self._core)
+            bin.set_id(row["BIN_ID"])
+            bin.set_filename(row["BIN_FILENAME"])
+            bin.set_mime(row["BIN_MIME"])
+            bin.set_data(row["BIN_DATA"])
+            return bin
         else:
             raise BinaryException(BinaryException.get_msg(1, md5))
 
-    def __init__(self, core, nr, mime, data, permission_id):
+    def __init__(self, core):
         self._core = core
 
         self._id = None
+        self._filename = filename
         self._mime = mime
         self._data = data
         self._permission = permission_id
 
     def get_id(self):
         return self._id
+
+    def set_id(self, nr):
+        self._id = int(nr)
 
     def get_mime(self):
         return self._mime
@@ -108,6 +146,12 @@ class Binary(object):
     def set_data(self, data):
         self._data = data
 
+    def get_filename(self):
+        return self._filename
+
+    def set_filename(self, filename):
+        self._filename = str(filename)
+
     def get_permission(self):
         return self._permission
 
@@ -119,29 +163,24 @@ class Binary(object):
         Stores this binary into the database
         """
         db = self._core.get_db()
+        data_io = StringIO(self._data)
         md5 = md5hash(self._data).hexdigest()
         if self._id is None:
-            self._id = db.get_seq_next("BIN_GEN")
-            user_id = self._core.get_session_manager().get_current_session_user().get_id()
-            #TODO: Anonymous user muss datei hochladen koennen
-            stmnt = "INSERT INTO BINARYS (BIN_ID, BIN_MIME, BIN_USR_ID_OWNER, \
-                       BIN_USR_ID_LASTCHANGE, \
-                       BIN_DATE_LASTCHANGE, BIN_RIG_ID, BIN_MD5, BIN_DATA) \
-                     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?) ;"
-            db.query(self._core,stmnt, (self._id, self._mime, user_id, user_id, self._permission, md5, self._data),commit=True)
-        else:
-            if self._permission is None:
-                stmnt = "SELECT 1 FROM BINARYS WHERE BIN_MD5 = ? AND BIN_MIME = ? AND BIN_RIG_ID IS NULL ;"
-                cur = db.query(self._core,stmnt, (md5,self._mime))
-            else:
-                stmnt = "SELECT 1 FROM BINARYS WHERE BIN_MD5 = ? AND BIN_MIME = ? AND BIN_RIG_ID = ? ;"
-                cur = db.query(self._core,stmnt, (md5, self._mime, self._permission))
-            row = cur.fetchonemap()
-            if row is None:
-                stmnt = "UPDATE BINARYS SET BIN_MD5 = ?, BIN_MIME = ?, BIN_RIG_ID = ?, BIN_DATA = ? WHERE BIN_ID = ? ;"
-                db.query(self._core,stmnt, (md5,self._mime,self._permission, data, self._id),commit=True)
-            else:
-                raise BinaryException(BinaryException.get_msg(2))
+            self.set_id(db.get_seq_next("BIN_GEN"))
+
+        user_id = self._core.get_session_manager().get_current_session_user().get_id()
+        stmnt = "INSERT OR UPDATE INTO BINARIES (BIN_ID, BIN_MIME, BIN_USR_ID_OWNER, \
+                   BIN_USR_ID_LASTCHANGE, \
+                   BIN_DATE_LASTCHANGE, BIN_MD5, BIN_DATA) \
+                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?) MATCHING (BIN_ID) ;"
+        db.query(self._core,stmnt, (self._id, self._mime, user_id, user_id, self._permission, md5, data_io),commit=True)
+        data_io.close()
+
+    def delete(self):
+        db = self._core.get_db()
+        stmnt = "DELETE FROM BINARIES WHERE BIN_ID = ? ;"
+        db.query(self._core, stmnt, (self.get_id(),), commit=True)
+        
 
 class Image(Binary):
     def resize(self, w, h):
