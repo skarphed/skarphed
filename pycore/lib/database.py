@@ -240,6 +240,16 @@ class Database(object):
         res = cur.fetchone()
         return res[0]
 
+    def set_seq_to(self,sequenceId, value):
+        """
+        Yields the current value of a given sequence (e.g. 'MOD_GEN') 
+        without incrementing it
+        """
+        cur = self._connection.cursor()
+        statement = "SET GENERATOR %s TO %d ;"%(str(sequenceId), int(value))
+        cur.execute(statement)
+        self.commit()
+
     #MODULEINVOLVED
     def remove_tables_for_module(self, module):
         """
