@@ -60,11 +60,19 @@ def application(environ, start_response):
         response_headers.extend(ret["header"])
         response_headers.append(('Content-Type', 'text/html'))
 
-    else:
+    elif environ['PATH_INFO'].startswith("/debug/"):
         response_body = ['%s: %s' % (key, value)
                     for key, value in sorted(environ.items())]
         response_body = ['\n'.join(response_body)]
         response_headers.append(('Content-Type', 'text/plain'))
+        core = Core(cfg)
+
+    else:
+        core = Core(cfg)
+        ret = core.web_call(environ)
+        response_body.extend(ret["body"])
+        response_headers.extend(ret["header"])
+        response_headers.append(('Content-Type', 'text/html'))
 
 
     # So the content-lenght is the sum of all string's lengths

@@ -23,11 +23,24 @@
 ###########################################################
 
 from json import JSONDecoder, JSONEncoder
+import StringIO
 import re
 
 class ViewException(Exception):
     ERRORS = {
-        0:"""Get By Name: No such view"""
+        0:"""Get By Name: No such view""",
+        1:"""Invalid input type to specify Space""",
+        2:"""Invalid input type to specify Widget"""
+    }
+
+    @classmethod
+    def get_msg(cls,nr, info=""):
+        return "VIE_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+
+class PageException(Exception):
+    ERRORS = {
+        0:"""Create: This Page has no spaces. As useless as you.""",
+        1:"""Space: There is no space with that name."""
         
     }
 
@@ -44,13 +57,19 @@ class View(object):
         cls._core = core
 
     @classmethod
+    def get_default_view(cls):
+        db = cls._core.get_db()
+        stmnt = "SELECT VIE_NAME FROM VIEWS WHERE VIE_DEFAULT = 1 ;"
+        res
+
+    @classmethod
     def get_from_name(cls, name):
         """
         Searches in the database if there is a View
         with the given name. If there is, creates it
         with the data that can be retrieved from the database
         """
-        db = self._core.get_db()
+        db = cls._core.get_db()
         stmnt = "SELECT VIE_ID, VIE_SIT_ID, VIE_DEFAULT FROM VIEWS WHERE VIE_NAME = ? ;"
         cur = db.query(cls._core, stmnt, (str(name),))
         row = cur.fetchonemap()
@@ -104,7 +123,7 @@ class View(object):
 
     @classmethod
     def create(cls, page, name, json):
-        view = View(self._core)
+        view = View(cls._core)
 
     def __init__(self,core):
         """
@@ -143,10 +162,38 @@ class View(object):
     def set_space_widget_mapping(self, mapping):
         self._space_widget_mapping = mapping
 
+    def place_widget_in_space(self, space, widget):
+        if type(space) == int:
+            pass
+        elif type(space) == str:
+            space = self._page.get_space_id_by_name(space)
+        else:
+            raise ViewException(ViewException.get_msg(1))
+
+        if type(widget) != int:
+            widget = widget.get_id()
+
+        self._space_widget_mapping[space] = widget
+
+    def set_params_for_widget(self, widget, params):
+        if type(widget) != int:
+            widget = widget.get_id()
+        
+        if type(params) != dict:
+            raise ViewException(ViewException.get_msg(2))
+
+        self._widget_param_mapping[widget] = params
+
 
     def generate_link_from_action(self,action):
         """
         returns a link that describes a call to a view that result of the action 
+        """
+        pass
+
+    def generate_link_from_actionlist(self,actionlist):
+        """
+        returns a link that describes a call to a view that results of the actionlist
         """
         pass
 
@@ -174,7 +221,7 @@ class View(object):
         module_manager = self._core.get_module_manager()
 
         # Find placeholders to substitute
-        placeholders = re.findall(r"<%[^%>]+%>",a)
+        
         space_name_map = self._page.get_space_names()
         for space, widget_id in self._space_widget_mapping:
             space_name = space_name_map[space]
@@ -195,7 +242,7 @@ class View(object):
         css_manager = self._core.get_css_manager()
         css_url = css_manager.get_css_url()
 
-        configuration = self._core.get_css_manager()
+        configuration = self._core.get_configuration()
         title = configuration.get_entry("core.name")
 
         return frame%{'title':title,
@@ -213,7 +260,7 @@ class View(object):
         render this view
         """
         configuration = self._core.get_configuration()
-        render_mode = configuration.get_entry("core.rendermode")
+        rendermode = configuration.get_entry("core.rendermode")
         if rendermode == "pure":
             return self.render_pure()
         elif rendermode == "ajax":
@@ -256,11 +303,119 @@ class View(object):
         db.query(self._core, stmnt, (self._id,),commit=True)
 
 
+class ViewManager(object):
+    def __init__(self, core):
+        self._core = core
+
+        View.set_core(core)
+        self.get_from_name = View.get_from_name
+        self.get_from_json = View.get_from_json
+        self.create = View.create
+
+
 class Page(object):
+    """
+    The Page represents one HTML-Document that contains
+    Placeholders to be filled with Widgets.
+    Those placeholders are called Spaces. One Page has n
+    Spaces
+    """
+    @classmethod
+    def set_core(cls, core):
+        cls._core = core
+
+    @classmethod
+    def get_page(cls, nr):
+        """
+        Returns a Page in the Database that has the given id
+        """
+        db = cls._core.get_db()
+        stmnt = "SELECT SIT_NAME, SIT_DESCRIPTION, SIT_HTML, SIT_HTML_HEAD, SIT_BIN_MINIMAP, SIT_BIN_CSS \
+                 FROM SITES WHERE SIT_ID = ? ;"
+        cur = db.query(cls._core, stmnt, (int(nr),))
+        res = cur.fetchonemap()
+        if res:
+            page = Page()
+            page._name = res["SIT_NAME"]
+            page._description = res["SIT_DESCRIPTION"]
+            page._id = int(nr)
+            page._html_body = res["SIT_HTML"]
+            page._html_head = res["SIT_HTML_HEAD"]
+            page._minimap_id = res["SIT_BIN_MINIMAP"]
+            page._css_id = res["SIT_BIN_CSS"]
+            return page
+        else:
+            raise Exception("No such Page %d"%(nr,))
+
+    @classmethod
+    def delete_all_pages(cls):
+        """
+        Deletes all Pages
+
+        Pages are not something, that are to be edited one by one. 
+        Pages are delivered as a package by templates. And They are all
+        to be removed at Template uninstallation
+        """
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM SITES ;"
+        db.query(cls._core, stmnt, commit=True)
+        stmnt = "DELETE FROM SPACES ;"
+        db.query(cls._core, stmnt, commit=True)
+
+    @classmethod
+    def create(cls, name, internal_name, description, html_body, html_head, css, minimap=None):
+        """
+        Creates A Page (normally as a part of the installation process of a Template)
+        in Database
+        """
+
+        placeholders = re.findall(r"<%[^%>]+%>",html_body)
+        placeholders = [p.replace("<%","",1) for p in placeholders]
+        placeholders = [p.replace("%>","",1) for p in placeholders]
+        placeholders = [p.strip() for p in placeholders]
+
+        if len(placeholders) < 1:
+            pass # Eventually we need to check for Pages with no spaces. Not an error yet
+
+        html_head_io = StringIO.StringIO(html_head)
+        html_body_io = StringIO.StringIO(html_body)
+
+        binary_manager = cls._core.get_binary_manager()
+        
+        minimap_id = None
+        if minimap is not None:
+            minimap_binary = binary_manager.create("image/png", minimap)
+            minimap_binary.set_filename(internal_name+"_minimap.png")
+            minimap_binary.store()
+            minimap_id = minimap_binary.get_id()
+
+        css_binary = binary_manager.create("text/css", css)
+        css_binary.set_filename(internal_name+".css")
+        css_binary.store()
+        css_id = css_binary.get_id()
+
+        stmnt = "INSERT INTO SITES (SIT_ID, SIT_HTML, SIT_HTML_HEAD, SIT_DESCRIPTION, SIT_NAME, SIT_BIN_MINIMAP, SIT_BIN_CSS) \
+                 VALUES (?,?,?,?,?,?,?) ;"
+
+        db = cls._core.get_db()
+        new_sit_id = db.get_seq_next("SIT_GEN")
+
+        db.query(cls._core, stmnt , (new_sit_id, html_body_io, html_head_io, description, name, minimap_id, css_id), commit=True)
+
+        stmnt= "INSERT INTO SPACES (SPA_ID, SPA_SIT_ID, SPA_NAME ) VALUES (?,?,?) ; "
+
+        for placeholder in placeholders:
+            new_space_id = db.get_seq_next("SPA_GEN")
+            db.query(cls._core, stmnt, (new_space_id, new_sit_id, placeholder ), commit=True )
+
+
     def __init__(self,core):
         self._core = core
 
         self._id = None
+        self._name = None
+        self._description = None
+        self._minimap_id = None
 
         self._html_head = None
         self._html_body = None
@@ -282,5 +437,35 @@ class Page(object):
         rows = cur.fetchallmap()
         for row in rows:
             ret[row["SPA_ID"]] = row["SPA_NAME"]
+    
+    def get_space_id_by_name(self, name):
+        sn = self.get_space_names()
+        for key, value in sn.items():
+            if value == name:
+                return key
+        raise PageException(PageException.get_msg(1))  
+
+    def delete(self):
+        binary_manager = self._core.get_binary_manager()
+        minimap_bin = binary_manager.get_by_id(self._minimap_id)
+        minimap_bin.delete()
+
+        css_bin = binary_manager.get_by_id(self._css_id)
+        css_bin.delete()
+
+        db = self._core.get_db()
+        stmnt = "DELETE FROM SPACES WHERE SPA_SIT_ID = ? ;"
+        db.query(self._core, stmnt, (self.get_id(),), commit=True)
+
+        stmnt = "DELETE FROM SITES WHERE SIT_ID = ? ;"
+        db.query(self._core, stmnt, (self.get_id(),), commit=True)
+        
+class PageManager(object):
+    def __init__(self, core):
+        self._core = core
+
+        Page.set_core(core)
+        self.get_page = View.get_page
+        self.create = View.create
 
 
