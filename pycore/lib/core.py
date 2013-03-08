@@ -34,6 +34,7 @@ from session import SessionManager
 from css import CSSManager
 from action import ActionManager
 from binary import BinaryManager
+from view import ViewManager, PageManager, ViewException
 from rpc import Rpc
 
 class CoreException(Exception):
@@ -66,6 +67,8 @@ class Core(object):
         self._css_manager = None
         self._action_manager = None
         self._binary_manager = None
+        self._view_manager = None
+        self._page_manager = None
 
     def get_core_config(self,obj):
         """
@@ -126,6 +129,16 @@ class Core(object):
             self._binary_manager = BinaryManager(self)
         return self._binary_manager
 
+    def get_view_manager(self):
+        if self._view_manager is None:
+            self._view_manager = ViewManager(self)
+        return self._view_manager
+
+    def get_page_manager(self):
+        if self._page_manager is None:
+            self._page_manager = PageManager(self)
+        return self._page_manager
+
     def get_name(self):
         return "de.masterprogs.scoville.core"
 
@@ -157,7 +170,7 @@ class Core(object):
 
         return {"body":self.response_body, "header":self.response_header}
 
-    def web_call(self, environmen):
+    def web_call(self, environment):
         if self.get_configuration().get_entry("core.debug") == True:
             self.environment = environment
 
@@ -169,6 +182,28 @@ class Core(object):
             sessioncookie = cookies[0].split("=")
             if sessioncookie[0] == "session_id":
                 session_manager.set_current_session(session_manager.get_session(sessioncookie[1]))
+
+        if environment["PATH_INFO"] == "":
+            view = view_manager.get_default_view()
+        else:
+            view = None
+
+        viewname = environment["PATH_INFO"].replace("/web/","",1)
+
+        view_manager = self.get_view_manager()
+        if len(viewname) > 0 and view is None:
+            try:
+                view = view_manager.get_from_name(viewname)
+            except ViewException:
+                view = None
+        
+        if view is not None:
+            try:
+                view = view_manager.get_from_json(environment["QUERY_STRING"])
+            except ViewException:
+                view = None # Maybe get some cool error-view in the future
+
+        self.response_body.append(view.render())
 
         return {"body":self.response_body, "header":self.response_header}
 
