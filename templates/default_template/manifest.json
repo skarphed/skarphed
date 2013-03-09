@@ -1,0 +1,14 @@
+{
+    "name": "The Scoville default-template",
+    "description" : "Templates for freshly installed scoville-Websites",
+    "author" : "Daniel 'grindhold' Brendle",
+    
+    "pages":[
+      {
+        "name":"MainSite",
+        "desc":"Mainsite for Content",
+        "filename":"mainsite.html",
+        "default":true
+      }
+    ]
+  }
