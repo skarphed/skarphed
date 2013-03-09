@@ -190,27 +190,30 @@ class Core(object):
             if sessioncookie[0] == "session_id":
                 session_manager.set_current_session(session_manager.get_session(sessioncookie[1]))
 
-        if environment["PATH_INFO"] == "":
+        view_manager = self.get_view_manager()
+
+        if environment["PATH_INFO"] in ("/",""):
             view = view_manager.get_default_view()
         else:
             view = None
 
         viewname = environment["PATH_INFO"].replace("/web/","",1)
 
-        view_manager = self.get_view_manager()
         if len(viewname) > 0 and view is None:
             try:
                 view = view_manager.get_from_name(viewname)
             except ViewException:
                 view = None
         
-        if view is not None:
+        if view is None:
             try:
                 view = view_manager.get_from_json(environment["QUERY_STRING"])
             except ViewException:
                 view = None # Maybe get some cool error-view in the future
 
-        self.response_body.append(view.render())
+        ext = view.render()
+        self.log(type(ext))
+        self.response_body.append(ext.encode('utf-8'))
 
         return {"body":self.response_body, "header":self.response_header}
 

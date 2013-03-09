@@ -63,11 +63,11 @@ def application(environ, start_response):
         response_body = ['\n'.join(response_body)]
         response_headers.append(('Content-Type', 'text/plain'))
 
-    else:
+    else: #call default view
         ret = core.web_call(environ)
         response_body.extend(ret["body"])
         response_headers.extend(ret["header"])
-        response_headers.append(('Content-Type', 'text/html'))
+        response_headers.append(('Content-Type', 'text/html; charset=utf-8'))
 
 
     # So the content-lenght is the sum of all string's lengths

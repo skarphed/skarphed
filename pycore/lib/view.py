@@ -30,7 +30,8 @@ class ViewException(Exception):
     ERRORS = {
         0:"""Get By Name: No such view""",
         1:"""Invalid input type to specify Space""",
-        2:"""Invalid input type to specify Widget"""
+        2:"""Invalid input type to specify Widget""",
+        3:"""There is no default view"""
     }
 
     @classmethod
@@ -60,7 +61,12 @@ class View(object):
     def get_default_view(cls):
         db = cls._core.get_db()
         stmnt = "SELECT VIE_NAME FROM VIEWS WHERE VIE_DEFAULT = 1 ;"
-        res
+        cur = db.query(cls._core, stmnt)
+        row = cur.fetchonemap()
+        if row is not None:
+            return cls.get_from_name(row["VIE_NAME"])
+        else:
+            raise ViewException(ViewException.get_msg(3))
 
     @classmethod
     def get_from_name(cls, name):
@@ -90,7 +96,7 @@ class View(object):
             space_widget_mapping[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
         view.set_space_widget_mapping(space_widget_mapping)
 
-        stmnt = "SELECT VWP_KEY, VWP_VALUE, VWP_WGT_ID FROM VIEWWIDGETPARAMS WHERE VIW_VIE_ID = ? ORDER BY VIW_WGT_ID;"
+        stmnt = "SELECT VWP_KEY, VWP_VALUE, VWP_WGT_ID FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ORDER BY VWP_WGT_ID;"
         cur = db.query(cls._core, stmnt, (view.get_id(),))
         rows = cur.fetchallmap()
         widget_param_mapping = {}
@@ -131,6 +137,8 @@ class View(object):
         """
         self._core = core
 
+        self._id = None
+
         self._space_widget_mapping = {}
         self._widget_param_mapping = {}
         self._page = None
@@ -143,6 +151,9 @@ class View(object):
         trivial
         """
         self._name = str(name)
+
+    def get_id(self):
+        return self._id
 
     def set_page(self, page):
         """
@@ -207,6 +218,7 @@ class View(object):
           <head>
             <title>%(title)s</title>
             <link href="%(scv_css)s" rel="stylesheet" type="text/css">
+            <link href="static/%(page_css)s" rel="stylesheet" type="text/css">
             %(head)s
           </head>
           <body>
@@ -214,15 +226,18 @@ class View(object):
           </body>
         </html>
         """
+        
+        page_manager = self._core.get_page_manager()
+        page = page_manager.get_page(self._page) 
 
-        head = self._page.get_html_head()
-        body = self._page.get_html_body()
+        head = page.get_html_head()
+        body = page.get_html_body()
 
         module_manager = self._core.get_module_manager()
 
         # Find placeholders to substitute
         
-        space_name_map = self._page.get_space_names()
+        space_name_map = page.get_space_names()
         for space, widget_id in self._space_widget_mapping:
             space_name = space_name_map[space]
             widget = module_manager.get_widget(widget_id)
@@ -240,13 +255,16 @@ class View(object):
         body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
 
         css_manager = self._core.get_css_manager()
-        css_url = css_manager.get_css_url()
+        #css_url = css_manager.get_css_url()
 
         configuration = self._core.get_configuration()
         title = configuration.get_entry("core.name")
 
+        page_css = page.get_css_filename()
+
         return frame%{'title':title,
-                      'scv_css':css_url,
+                      'scv_css':"css_url",
+                      'page_css':page_css,
                       'head':head,
                       'body':body}
 
@@ -310,6 +328,7 @@ class ViewManager(object):
         View.set_core(core)
         self.get_from_name = View.get_from_name
         self.get_from_json = View.get_from_json
+        self.get_default_view = View.get_default_view
         self.create = View.create
 
 
@@ -335,7 +354,7 @@ class Page(object):
         cur = db.query(cls._core, stmnt, (int(nr),))
         res = cur.fetchonemap()
         if res:
-            page = Page()
+            page = Page(cls._core)
             page._name = res["SIT_NAME"]
             page._description = res["SIT_DESCRIPTION"]
             page._id = int(nr)
@@ -416,6 +435,7 @@ class Page(object):
         self._name = None
         self._description = None
         self._minimap_id = None
+        self._css_id = None
 
         self._html_head = None
         self._html_body = None
@@ -427,7 +447,7 @@ class Page(object):
         return self._html_head
 
     def get_html_body(self):
-        return self._html_head
+        return self._html_body
 
     def get_space_names(self):
         db = self._core.get_db()
@@ -444,6 +464,11 @@ class Page(object):
             if value == name:
                 return key
         raise PageException(PageException.get_msg(1))  
+
+    def get_css_filename(self):
+        binary_manager = self._core.get_binary_manager()
+        binary_css = binary_manager.get_by_id(self._css_id)
+        return binary_css.get_filename()
 
     def delete(self):
         binary_manager = self._core.get_binary_manager()
