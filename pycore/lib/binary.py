@@ -23,7 +23,9 @@
 ###########################################################
 
 from hashlib import md5 as md5hash
+from hashlib import sha256 as sha256hash
 from StringIO import StringIO
+import base64 #TODO: The whole thing should work without base64. find out why it doesnt here
 
 class BinaryException(Exception):
     """
@@ -38,6 +40,8 @@ class BinaryException(Exception):
 
     @classmethod
     def get_msg(cls,nr, info=""):
+        if type(info) != str:
+            info=str(info)
         return "BIN_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
 
 class BinaryManager(object):
@@ -75,18 +79,18 @@ class Binary(object):
     @classmethod
     def get_by_filename(cls, filename):
         db = cls._core.get_db()
-        stmnt = "SELECT BIN_FILENAME, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? ;"
+        stmnt = "SELECT BIN_ID, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? ;"
         cur = db.query(cls._core , stmnt, (filename,))
         row = cur.fetchonemap()
         if row is not None:
             bin = Binary(cls._core)
             bin.set_id(row["BIN_ID"])
-            bin.set_filename(row["BIN_FILENAME"])
+            bin.set_filename(filename)
             bin.set_mime(row["BIN_MIME"])
-            bin.set_data(row["BIN_DATA"])
+            bin.set_data(base64.decodestring(row["BIN_DATA"]))
             return bin
         else:
-            raise BinaryException(BinaryException.get_msg(0, nr))
+            raise BinaryException(BinaryException.get_msg(0, filename))
 
     @classmethod
     def get_by_id(cls, nr):
@@ -99,7 +103,7 @@ class Binary(object):
             bin.set_id(nr)
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
-            bin.set_data(row["BIN_DATA"])
+            bin.set_data(base64.decodestring(row["BIN_DATA"]))
             return bin
         else:
             raise BinaryException(BinaryException.get_msg(0, nr))
@@ -115,7 +119,7 @@ class Binary(object):
             bin.set_id(row["BIN_ID"])
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
-            bin.set_data(row["BIN_DATA"])
+            bin.set_data(base64.decodestring(row["BIN_DATA"]))
             return bin
         else:
             raise BinaryException(BinaryException.get_msg(1, md5))
@@ -157,17 +161,18 @@ class Binary(object):
         Stores this binary into the database
         """
         db = self._core.get_db()
-        data_io = StringIO(self._data)
+        data_io = StringIO(base64.encodestring(self._data))
         md5 = md5hash(self._data).hexdigest()
+        sha256 = sha256hash(self._data).hexdigest()
         if self._id is None:
             self.set_id(db.get_seq_next("BIN_GEN"))
 
         user_id = self._core.get_session_manager().get_current_session_user().get_id()
-        stmnt = "UPDATE OR INSERT INTO BINARIES (BIN_ID, BIN_MIME, BIN_USR_OWNER, \
+        stmnt = "UPDATE OR INSERT INTO BINARIES (BIN_ID, BIN_FILENAME, BIN_MIME, BIN_USR_OWNER, \
                    BIN_USR_LASTCHANGE, \
-                   BIN_DATE_LASTCHANGE, BIN_MD5, BIN_DATA) \
-                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ? ) MATCHING (BIN_ID) ;"
-        db.query(self._core,stmnt, (self._id, self._mime, user_id, user_id, md5, data_io),commit=True)
+                   BIN_DATE_LASTCHANGE, BIN_SHA256, BIN_MD5, BIN_DATA) \
+                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ? ) MATCHING (BIN_ID) ;"
+        db.query(self._core,stmnt, (self._id, self._filename, self._mime, user_id, user_id, sha256, md5, data_io),commit=True)
         data_io.close()
 
     def delete(self):

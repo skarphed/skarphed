@@ -171,7 +171,7 @@ class Template(object):
                 continue
 
             try:
-                f = open(temp_installpath+"/"+name+"_head.html")
+                f = open(temp_installpath+"/"+name+"_head.html","r")
                 html_head = f.read()
                 f.close()
             except IOError,e:
@@ -191,9 +191,10 @@ class Template(object):
                 continue
 
             try:
-                f = open(temp_installpath+"/static/"+name+"_minimap.png")
+                f = open(temp_installpath+"/static/"+name+"_minimap.png","rb")
                 minimap = f.read()
                 f.close()
+                os.unlink(temp_installpath+"/static/"+name+"_minimap.png")
             except IOError,e:
                 errorlog.append({'severity':0,
                                'type':'PageFile',
@@ -244,18 +245,21 @@ class Template(object):
 
         #put binary into database
         for bin_filename in os.listdir(temp_installpath+"/static"):
+            cls._core.log(bin_filename)
+            binary=None
             try:
-                bin_file = open(temp_installpath+"/static/"+bin_filename)
+                bin_file = open(temp_installpath+"/static/"+bin_filename,"rb")
                 bin_data = bin_file.read()
                 bin_file.close()
                 if bin_filename.endswith(".png"):
                     binary = binary_manager.create("image/png", bin_data)
                 if bin_filename.endswith(".jpeg") or bin_filename.endswith(".jpg"):
                     binary = binary_manager.create("image/jpeg", bin_data)
-                binary.set_filename(bin_filename)
-                binary.store()
+                if binary is not None:
+                    binary.set_filename(bin_filename)
+                    binary.store()
 
-                new_template.add_binary(binary.get_id())
+                    new_template.add_binary(binary.get_id())
 
             except IOError, e:
                 errorlog.append({'severity':0,
@@ -339,17 +343,20 @@ class Template(object):
         """
         Uninstalls this template
         """
+        db = self._core.get_db()
+
         binary_manager = self._core.get_binary_manager()
         for bin_id in self._binaries:
             bin = binary_manager.get_by_id(bin_id)
             bin.delete()
-
+        stmnt = "DELETE FROM TEMPLATE_BINARIES ;"
+        db.query(self._core, stmnt, commit=True)
+        
         #Destroy Pages
         page_manager = self._core.get_page_manager()
         page_manager.delete_all_pages()
 
         #Set Page ID-Generator to 1
-        db = self._core.get_db()
         db.set_seq_to('SIT_GEN',1)
 
         stmnt = "DELETE FROM TEMPLATE_INFO ;"

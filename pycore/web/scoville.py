@@ -33,28 +33,25 @@ def application(environ, start_response):
 
     session_id = ""
 
+    core = Core(cfg)
+
     if environ['PATH_INFO'].startswith("/static/"):
-        path = pathinfo.replace("/static/","",1)
-        f = open(cfg["SCV_WEBPATH"]+cfg["SCV_INSTANCE_SCOPE_ID"]+path)
-        data = f.read()
-        r.close()
+        path = environ['PATH_INFO'].replace("/static/","",1)
+
+        binary_manager = core.get_binary_manager()
+        binary = binary_manager.get_by_filename(path)
+        data = binary.get_data()
+        
         response_body=[data]
-        if path.endswith(".css"):
-            response_headers.append(('Content-Type', 'text/css'))
-        elif path.endswith(".png"):
-            response_headers.append(('Content-Type', 'image/png'))
-        elif path.endswith(".jpg"):
-            response_headers.append(('Content-Type', 'image/jpeg'))
+        response_headers.append(('Content-Type', binary.get_mime()))
 
     elif environ['PATH_INFO'].startswith("/rpc/"):
-        core = Core(cfg)
         ret = core.rpc_call(environ)
         response_body.extend(ret["body"])
         response_headers.extend(ret["header"])
         response_headers.append(('Content-Type', 'application/json'))
 
     elif environ['PATH_INFO'].startswith("/web/"):
-        core = Core(cfg)
         ret = core.web_call(environ)
         response_body.extend(ret["body"])
         response_headers.extend(ret["header"])
@@ -65,10 +62,8 @@ def application(environ, start_response):
                     for key, value in sorted(environ.items())]
         response_body = ['\n'.join(response_body)]
         response_headers.append(('Content-Type', 'text/plain'))
-        core = Core(cfg)
 
     else:
-        core = Core(cfg)
         ret = core.web_call(environ)
         response_body.extend(ret["body"])
         response_headers.extend(ret["header"])
