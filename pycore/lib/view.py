@@ -465,7 +465,8 @@ class PageManager(object):
         self._core = core
 
         Page.set_core(core)
-        self.get_page = View.get_page
-        self.create = View.create
+        self.get_page = Page.get_page
+        self.create = Page.create
+        self.delete_all_pages = Page.delete_all_pages
 
 

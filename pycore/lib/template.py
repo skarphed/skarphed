@@ -24,7 +24,9 @@
 
 import os
 import tarfile
+import shutil
 from StringIO import StringIO
+from json import JSONDecoder
 
 class TemplateException(Exception):
     """
@@ -75,7 +77,7 @@ class Template(object):
         cur = db.query(cls._core, stmnt)
         tpldata = cur.fetchonemap()
 
-        tpl = Template()
+        tpl = Template(cls._core)
         tpl.set_name(tpldata['TPL_NAME'])
         tpl.set_description(tpldata['TPL_DESC'])
         tpl.set_author(tpldata['TPL_AUTHOR'])
@@ -89,7 +91,7 @@ class Template(object):
         return tpl
 
     @classmethod
-    def install_from_data(cls, data):+
+    def install_from_data(cls, data):
         """
         Receives .tar.gz'ed data and generates templatedata from it
         First validates the data. While validating it tracks all occuring
@@ -116,7 +118,7 @@ class Template(object):
         tar.close()
 
         tar = tarfile.open(temp_installpath+"/tpl.tar.gz","r:gz")
-        tar.extract(temp_installpath)
+        tar.extractall(temp_installpath)
         tar.close()
 
         os.unlink(temp_installpath+"/tpl.tar.gz")
@@ -132,15 +134,17 @@ class Template(object):
             general_css = f.read()
             f.close()
         except IOError,e:
-            errorlog.push({'severity':1,
+            errorlog.append({'severity':1,
                            'type':'PackageFile',
                            'msg':'File not in Package general.css'})
+        
         css_manager = cls._core.get_css_manager()
+        general_csspropertyset = None
         try:
             general_csspropertyset = css_manager.create_csspropertyset_from_css(general_css)
-            general_csspropertyset.set_type(0)
+            general_csspropertyset.set_type_general()
         except Exception, e:
-            errorlog.push({'severity':1,
+            errorlog.append({'severity':1,
                            'type':'CSS-Data',
                            'msg':'General CSS File does not Contain Valid CSS '+str(e)})
         
@@ -149,10 +153,10 @@ class Template(object):
         for page in manifest['pages']:
             if page['filename'].endswith(".html"):
                 name = page['filename'].replace(".html","",1)
-            elif if page['filename'].endswith(".htm"):
+            elif page['filename'].endswith(".htm"):
                 name = page['filename'].replace(".htm","",1)
             else:
-                errorlog.push({'severity':1,
+                errorlog.append({'severity':1,
                                'type':'PageData',
                                'msg':'Invalid format (allowed is .html and .htm: '+page['filename']})
 
@@ -161,7 +165,7 @@ class Template(object):
                 html = f.read()
                 f.close()
             except IOError,e:
-                errorlog.push({'severity':1,
+                errorlog.append({'severity':1,
                                'type':'PageFile',
                                'msg':'File not in Package '+page['filename']})
                 continue
@@ -171,7 +175,7 @@ class Template(object):
                 html_head = f.read()
                 f.close()
             except IOError,e:
-                errorlog.push({'severity':0,
+                errorlog.append({'severity':0,
                                'type':'PageFile',
                                'msg':'File not in Package '+name+"_head.html"})
                 html_head = ""
@@ -181,7 +185,7 @@ class Template(object):
                 css = f.read()
                 f.close()
             except IOError,e:
-                errorlog.push({'severity':1,
+                errorlog.append({'severity':1,
                                'type':'PageFile',
                                'msg':'File not in Package static/'+name+".css"})
                 continue
@@ -191,7 +195,7 @@ class Template(object):
                 minimap = f.read()
                 f.close()
             except IOError,e:
-                errorlog.push({'severity':0,
+                errorlog.append({'severity':0,
                                'type':'PageFile',
                                'msg':'File not in Package static/'+name+"_minimap.png"})
                 minimap = None
@@ -201,13 +205,13 @@ class Template(object):
                              'html_body':html,
                              'html_head':html_head,
                              'css':css,
-                             'minimap':minimap},
-                             'internal_name':name)
+                             'minimap':minimap,
+                             'internal_name':name})
         
         if len(errorlog) > 0:
             is_severe_error = False
             for error in errorlog:
-                if error['severity'] > 1:
+                if error['severity'] >= 1:
                     is_severe_error = True
                     break
             if is_severe_error:
@@ -217,8 +221,9 @@ class Template(object):
         # BEGIN TO WRITE DATA
 
         #uninstall old template
-        old_template = cls.get_current_template()
-        old_template.uninstall()
+        if cls.is_template_installed():
+            old_template = cls.get_current_template()
+            old_template.uninstall()
 
         new_template = Template(cls._core)
         new_template.set_name(manifest['name'])
@@ -250,10 +255,10 @@ class Template(object):
                 binary.set_filename(bin_filename)
                 binary.store()
 
-                new_template.binaries.append(binary.get_id())
+                new_template.add_binary(binary.get_id())
 
             except IOError, e:
-                errorlog.push({'severity':0,
+                errorlog.append({'severity':0,
                                'type':'PageFile',
                                'msg':'File seems broken static/'+bin_filename})
 
@@ -262,7 +267,7 @@ class Template(object):
         general_csspropertyset.store()
 
         new_template.store()
-
+        cleanup(temp_installpath)
         return errorlog
 
 
@@ -311,7 +316,8 @@ class Template(object):
         return self._author
 
     def add_binary(self, bin_id):
-        self._binaries.append(bin_id)
+        if bin_id not in self._binaries:
+            self._binaries.append(bin_id)
 
     def remove_binary(self, bin_id):
         self._binaries.remove(bin_id)
@@ -329,7 +335,7 @@ class Template(object):
         for bin_id in self._binaries:
             db.query(self._core, stmnt, (0, bin_id), commit=True)
 
-    def uninstall(self, data):
+    def uninstall(self):
         """
         Uninstalls this template
         """

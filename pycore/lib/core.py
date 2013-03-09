@@ -36,6 +36,7 @@ from action import ActionManager
 from binary import BinaryManager
 from view import ViewManager, PageManager, ViewException
 from rpc import Rpc
+from template import TemplateManager
 
 class CoreException(Exception):
     ERRORS = {
@@ -69,6 +70,7 @@ class Core(object):
         self._binary_manager = None
         self._view_manager = None
         self._page_manager = None
+        self._template_manager = None
 
     def get_core_config(self,obj):
         """
@@ -138,6 +140,11 @@ class Core(object):
         if self._page_manager is None:
             self._page_manager = PageManager(self)
         return self._page_manager
+
+    def get_template_manager(self):
+        if self._template_manager is None:
+            self._template_manager = TemplateManager(self)
+        return self._template_manager
 
     def get_name(self):
         return "de.masterprogs.scoville.core"

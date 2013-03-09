@@ -112,7 +112,7 @@ class CSSPropertySet(object):
         """
         creates a propertyset from a serialized dataformat
         """
-        css_property_set = CSSPropertySet()
+        css_property_set = CSSPropertySet(cls._core)
         css_property_set.build_serialized(serial)
         return css_property_set
 
@@ -122,17 +122,18 @@ class CSSPropertySet(object):
         creates a csspropertyset from css-code
         """
         parser = CSS21Parser()
+        stylesheet = None
         try:
-            parser.parse_stylesheet_bytes(css)
+            stylesheet = parser.parse_stylesheet_bytes(css)
         except Exception,e :
             raise e # implement correct error handling
-        propertyset = CSSPropertySet()
-        for rule in parser.rules:
-            selector = ",".join(rule.selectors)
+        propertyset = CSSPropertySet(cls._core)
+        for rule in stylesheet.rules:
+            selector = ",".join([s.as_css() for s in rule.selector])
             for declaration in rule.declarations:
                 values = [val.value for val in declaration.value]
                 propertyset.edit_value(selector, declaration.name, ",".join(values))
-        return csspropertyset
+        return propertyset
 
 
     @classmethod
@@ -341,7 +342,7 @@ class CSSPropertySet(object):
         """
         self._core = core
 
-        self._properties = []
+        self._properties = {}
 
         self._typ = None
         self._module_id = None
@@ -414,14 +415,14 @@ class CSSPropertySet(object):
         """
         if self.get_type() == CSSPropertySet.GENERAL and inherited:
             raise CSSException(CSSException.get_msg(1))
-        self._properties[selector+cssPropertySet.SPLIT+tag] = {'v':value,'i':False}
+        self._properties[selector+CSSPropertySet.SPLIT+tag] = {'v':value,'i':False}
 
     def get_value(self,selector,tag):
         """
         Returns a value determined by selector and tag
         """
-        if self._properties.has_key(selector+cssPropertySet.SPLIT+tag):
-            return self._properties[selector+cssPropertySet.SPLIT+tag]
+        if self._properties.has_key(selector+CSSPropertySet.SPLIT+tag):
+            return self._properties[selector+CSSPropertySet.SPLIT+tag]
         else:
             return None
 
@@ -456,10 +457,10 @@ class CSSPropertySet(object):
         stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SESSION) \
                    VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION) ;"
         for key, value in values_to_store.items():
-            selector, tag = key.split(cssPropertySet.SPLIT)
+            selector, tag = key.split(CSSPropertySet.SPLIT)
             db.query(self._core,stmnt,(selector,tag,value['v'],self.get_module_id(),self.get_widget_id(),self.get_session_id()),commit=True)
 
-        if self._typ == cssPropertySet.SESSION and current_session is not None:
+        if self._typ == CSSPropertySet.SESSION and current_session is not None:
             stmnt = "UPDATE CSSSESSION SET CSE_OUTDATED = 1 WHERE CSE_SES_ID = ? ;"
             db.query(self._core,stmnt,(current_session.get_id()),commit=True)
         else:

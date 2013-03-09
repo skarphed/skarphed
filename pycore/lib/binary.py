@@ -23,6 +23,7 @@
 ###########################################################
 
 from hashlib import md5 as md5hash
+from StringIO import StringIO
 
 class BinaryException(Exception):
     """
@@ -57,11 +58,11 @@ class Binary(object):
     """
     @classmethod
     def set_core(cls, core):
-        self._core = core
+        cls._core = core
 
     @classmethod
     def create(cls, mime, data, filename=""):
-        bin = Binary(self._core)
+        bin = Binary(cls._core)
         
         filename = md5hash(data).hexdigest()[:6]+"_"+filename
 
@@ -78,7 +79,7 @@ class Binary(object):
         cur = db.query(cls._core , stmnt, (filename,))
         row = cur.fetchonemap()
         if row is not None:
-            bin = Binary(self._core)
+            bin = Binary(cls._core)
             bin.set_id(row["BIN_ID"])
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
@@ -94,8 +95,8 @@ class Binary(object):
         cur = db.query(cls._core , stmnt, (nr,))
         row = cur.fetchonemap()
         if row is not None:
-            bin = Binary(self._core)
-            bin.set_id(row["BIN_ID"])
+            bin = Binary(cls._core)
+            bin.set_id(nr)
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
             bin.set_data(row["BIN_DATA"])
@@ -110,7 +111,7 @@ class Binary(object):
         cur = db.query(cls._core , stmnt, (md5,))
         row = cur.fetchonemap()
         if row is not None:
-            bin = Binary(self._core)
+            bin = Binary(cls._core)
             bin.set_id(row["BIN_ID"])
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
@@ -123,10 +124,9 @@ class Binary(object):
         self._core = core
 
         self._id = None
-        self._filename = filename
-        self._mime = mime
-        self._data = data
-        self._permission = permission_id
+        self._filename = None
+        self._mime = None
+        self._data = None
 
     def get_id(self):
         return self._id
@@ -152,12 +152,6 @@ class Binary(object):
     def set_filename(self, filename):
         self._filename = str(filename)
 
-    def get_permission(self):
-        return self._permission
-
-    def set_permission(self, permission):
-        self._permission = permission
-
     def store(self):
         """
         Stores this binary into the database
@@ -169,11 +163,11 @@ class Binary(object):
             self.set_id(db.get_seq_next("BIN_GEN"))
 
         user_id = self._core.get_session_manager().get_current_session_user().get_id()
-        stmnt = "INSERT OR UPDATE INTO BINARIES (BIN_ID, BIN_MIME, BIN_USR_ID_OWNER, \
-                   BIN_USR_ID_LASTCHANGE, \
+        stmnt = "UPDATE OR INSERT INTO BINARIES (BIN_ID, BIN_MIME, BIN_USR_OWNER, \
+                   BIN_USR_LASTCHANGE, \
                    BIN_DATE_LASTCHANGE, BIN_MD5, BIN_DATA) \
-                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?) MATCHING (BIN_ID) ;"
-        db.query(self._core,stmnt, (self._id, self._mime, user_id, user_id, self._permission, md5, data_io),commit=True)
+                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ? ) MATCHING (BIN_ID) ;"
+        db.query(self._core,stmnt, (self._id, self._mime, user_id, user_id, md5, data_io),commit=True)
         data_io.close()
 
     def delete(self):

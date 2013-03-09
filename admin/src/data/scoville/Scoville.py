@@ -35,7 +35,8 @@ from Template import Template
 from Operation import OperationManager
 
 from threading import Thread
-import json as jayson #HERE BE DRAGONS
+import json 
+import base64
 import os
 import os.path
 import shutil
@@ -93,7 +94,7 @@ class ScovilleInstaller(GenericScovilleObject):
                     continue
                 scv_config[key] = val
 
-        jenc = jayson.JSONEncoder()
+        jenc = json.JSONEncoder()
         config_json = open(self.BUILDPATH+"config.json","w")
         config_json.write(jenc.encode(scv_config))
         config_json.close()
@@ -187,7 +188,7 @@ class ScovilleInstaller(GenericScovilleObject):
 
         scv_config.update(scv_config_defaults)
 
-        jenc = jayson.JSONEncoder()
+        jenc = json.JSONEncoder()
         config_json = open(self.BUILDPATH+"config.json","w")
         config_json.write(jenc.encode(scv_config))
         config_json.close()
@@ -384,46 +385,49 @@ class Scoville(Instance):
         else:
             return "Unknown ScovilleServer"
     
-    def loadTemplateCallback(self,json):
+    def loadTemplateCallback(self,res):
         if self.template is None:
-            self.template = Template(self,json)
+            self.template = Template(self,res)
             self.children.append(self.template)
         else:
-            self.template.refresh(json)
+            self.template.refresh(res)
     
     
     def loadTemplate(self):
         self.getApplication().doRPCCall(self,self.loadTemplateCallback, "getCurrentTemplate")
     
-    def uploadTemplateCallback(self,res):
-        if res != ScovilleUpload.RESULT_ERROR:
-            self.loadTemplate()
-    
     def getRepository(self):
         return self.repo
     
-    def loadRepositoryCallback(self,json):
-        repo = Repository(self,json['ip'],json['port'],json['name'])
+    def loadRepositoryCallback(self,res):
+        repo = Repository(self,res['ip'],res['port'],res['name'])
         self.repo = repo
         self.updated()
     
     def loadRepository(self):
         self.getApplication().doRPCCall(self,self.loadRepositoryCallback, "getRepository")
     
-    def setRepositoryCallback(self,json):
+    def setRepositoryCallback(self,res):
         self.loadRepository()
         
     def setRepository(self,host,port):
         self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [host,port])
     
+    def uploadTemplateCallback(self,res):
+        severe_error_happened = False
+        for error in res:
+            if error['severity'] > 0:
+                severe_error_happened = True
+                break
+        #TODO: SOMEHOW DISPLAY ERRORLOG
+        if not severe_error_happened:
+            self.loadTemplate()
+    
     def uploadTemplate(self, filepath):
-        form = MultiPartForm()
-        templateHandle = open(filepath,'r')
-        filename = os.path.basename(filepath)
-        form.add_file('uploadfile',filename,templateHandle,'application/x-gzip')
-        upload = ScovilleUpload(self, ScovilleUpload.TYPE_TEMPLATE, form, self.uploadTemplateCallback)
-        upload.start()
-        templateHandle.close()
+        template_file = open(filepath,'r')
+        templatedata = base64.encodestring(template_file.read())
+        self.getApplication().doRPCCall(self,self.uploadTemplateCallback, "installTemplate", [templatedata])
+        template_file.close()
         
     def loadProfileInfo(self,profileInfo):
         pass
@@ -434,8 +438,8 @@ class Scoville(Instance):
     def isOnline(self):
         return self.state==self.STATE_ONLINE
     
-    def loadCssPropertySetCallback(self,json):
-        self.cssPropertySet = jayson.JSONDecoder().decode(json)
+    def loadCssPropertySetCallback(self,res):
+        self.cssPropertySet = json.JSONDecoder().decode(res)
         self.updated()
     
     def loadCssPropertySet(self):
@@ -453,7 +457,7 @@ class Scoville(Instance):
     def setCssPropertySet(self,cssPropertySet):
         self.cssPropertySet['properties'] = cssPropertySet
     
-    def saveCssPropertySetCallback(self,json):
+    def saveCssPropertySetCallback(self,res):
         self.loadCssPropertySet()
     
     def saveCssPropertySet(self):

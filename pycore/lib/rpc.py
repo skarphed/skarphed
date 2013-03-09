@@ -25,6 +25,7 @@
 from json import JSONDecoder, JSONEncoder
 from traceback import print_exc
 from StringIO import StringIO
+import base64
 
 class Rpc(object):
     def __init__(self, core):
@@ -339,8 +340,26 @@ class Rpc(object):
         return True
 
     def getCurrentTemplate(self, params):
-        #TODO: Implement after rewrite
-        return True
+        template_manager = self._core.get_template_manager()
+
+        if template_manager.is_template_installed():
+            current_template = template_manager.get_current_template()
+            return {'name': current_template.get_name(),
+                    'description': current_template.get_description(),
+                    'author': current_template.get_author()}
+        else:
+            return {'name': '(No Template)',
+                    'description': '(Currently no Template Installed)',
+                    'author': '(No Author)',}
+
+    def installTemplate(self, params):
+        templatedata = base64.decodestring(params[0])
+
+        #TODO check for permission
+
+        template_manager = self._core.get_template_manager()
+        errorlog = template_manager.install_from_data(templatedata)
+        return errorlog
 
     def createWidget(self,params):
         #TODO: Implement after rewrite
