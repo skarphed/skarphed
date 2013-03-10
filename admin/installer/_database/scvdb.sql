@@ -66,7 +66,7 @@ CREATE TABLE BINARIES
   BIN_MIME Varchar(32),
   BIN_SHA256 Varchar(64),
   BIN_MD5 Varchar(32),
-  BIN_DATA Blob sub_type 0,
+  BIN_DATA Blob sub_type 1,
   BIN_REMOTE varchar(256),
   CONSTRAINT PK_BIN PRIMARY KEY (BIN_ID)
 );
