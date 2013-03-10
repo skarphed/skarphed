@@ -21,6 +21,7 @@ else
 	
 	mkdir $SCV_LIBPATH
 	cp -r ./lib/* $SCV_LIBPATH/
+	chown -R www-data:www-data $SCV_LIBPATH
 
 	touch /etc/scoville/GEN_INSTANCE
 	echo -1 > /etc/scoville/GEN_INSTANCE
