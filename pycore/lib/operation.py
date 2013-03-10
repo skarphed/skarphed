@@ -65,6 +65,8 @@
 import os
 from daemon import Daemon
 from time import sleep
+from StringIO import StringIO
+from traceback import print_exc
 
 class OperationException(Exception):
     """
@@ -87,7 +89,7 @@ class Operation(object):
     STATUS_ACTIVE = 1
     STATUS_FAILED = 2
 
-    VALID_STORAGE_TYPES = ['int','bool','str']
+    VALID_STORAGE_TYPES = ('int','bool','str','unicode')
 
     def __init__(self,core, parent_id = None):
         """
@@ -164,18 +166,29 @@ class Operation(object):
         """
         classname = operation_record["OPE_TYPE"]
         module = "" #TODO Implement modulename from database if Operation belongs to Module
-        exec """if type(%(class)s) != type:
-                    from %(module)s import %(class)s
-                operation = %(class)s(cls._core)"""%{'class':classname,'module':module}
+        is_operation_of_module = False
+        exec """
+try:
+    type(%(class)s)
+except NameError,e:
+    is_operation_of_module = True"""%{'class':classname}
+
+        if is_operation_of_module:
+            exec """
+from %(module)s import %(class)s
+operation = %(class)s(cls._core)"""%{'class':classname,'module':module}
+        else:
+            exec """
+operation = %(class)s(cls._core)"""%{'class':classname}
 
         operation.set_id(operation_record['OPE_ID'])
         db = cls._core.get_db()
         stmnt = "SELECT OPD_KEY, OPD_VALUE, OPD_TYPE FROM OPERATIONDATA WHERE OPD_OPE_ID = ? ;"
-        cur = db.query(cls._core,stmnt,(operation_record["OPE_ID"]))
+        cur = db.query(cls._core,stmnt,(operation_record["OPE_ID"],))
         for row in cur.fetchallmap():
-            val = operation_record["OPE_VALUE"]
-            exec """val = %s(val)"""%operation_record["OPE_TYPE"]
-            operation.set_value(operation_record["OPE_KEY"], val)
+            val = row["OPD_VALUE"]
+            exec """val = %s(val)"""%row["OPD_TYPE"]
+            operation.set_value(row["OPD_KEY"], val)
         return operation
 
     @classmethod
@@ -191,20 +204,20 @@ class Operation(object):
 
         stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT = ? ORDER BY OPE_INVOKED ;"
         stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 WHERE OPE_ID = ? ;"
-        cur = db.query(cls._core,stmnt,(operation.get_id()))
+        cur = db.query(cls._core,stmnt,(operation.get_id(),))
         for row in cur.fetchallmap():
             child_operation = cls.restore_operation(row)
-            db.query(cls._core,stmnt_lock,(child_operation.get_id()),commit=True)
+            db.query(cls._core,stmnt_lock,(child_operation.get_id(),),commit=True)
             try:
                 cls.process_children(child_operation)
                 child_operation.do_workload()
             except Exception,e:
                 stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;"
-                db.query(cls._core,stmnt_err,(int(row["OPE_ID"])),commit=True)
+                db.query(cls._core,stmnt_err,(int(row["OPE_ID"]),),commit=True)
                 #TODO GENERATE ERROR IN LOG
                 raise e
             stmnt_delete = "DELETE FROM OPERATIONS WHERE OPE_ID = ?;"
-            db.query(cls._core,stmnt_delete,(child_operation.get_id()),commit=True)
+            db.query(cls._core,stmnt_delete,(child_operation.get_id(),),commit=True)
 
     @classmethod
     def process_next(cls):
@@ -216,11 +229,11 @@ class Operation(object):
         db = cls._core.get_db()
         configuration = cls._core.get_configuration()
         if os.path.exists(configuration.get_entry("core.webpath")+"/scv_operating.lck"):
-            return
+            return False
         lockfile = open(configuration.get_entry("core.webpath")+"/scv_operating.lck","w")
         lockfile.close()
         stmnt_lock = "UPDATE OPERATIONS SET OPE_STATUS = 1 \
-                            WHERE OPE_ID IN (¸\
+                            WHERE OPE_ID IN ( \
                               SELECT OPE_ID FROM OPERATIONS \
                               WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 0 \
                               AND OPE_INVOKED = ( \
@@ -229,7 +242,6 @@ class Operation(object):
                             ) ;"
         stmnt = "SELECT OPE_ID, OPE_TYPE FROM OPERATIONS WHERE OPE_OPE_PARENT IS NULL AND OPE_STATUS = 1 ;"
         db.query(cls._core,stmnt_lock,commit=True)
-        db.commit()
         cur = db.query(cls._core,stmnt)
         res = cur.fetchallmap()
         if len(res) > 0:
@@ -239,8 +251,10 @@ class Operation(object):
                 operation.do_workload()
             except Exception, e:
                 stmnt_err = "UPDATE OPERATIONS SET OPE_STATUS = 2 WHERE OPE_ID = ? ;"
-                db.query(cls._core,stmnt_err,(operation.get_id()),commit=True)
-                #TODO GENERATE ERROR IN LOG
+                db.query(cls._core,stmnt_err,(operation.get_id(),),commit=True)
+                error = StringIO()
+                print_exc(None,error)
+                cls._core.log(error.getvalue())
             ret = True
         else:
             ret = False
@@ -276,7 +290,7 @@ class Operation(object):
 
             ret[row["OPE_ID"]] = {"id":row["OPE_ID"],
                                   "parent":row["OPE_OPE_PARENT"],
-                                  "invoked":row["OPE_INVOKED"],
+                                  "invoked":str(row["OPE_INVOKED"]),
                                   "type":row["OPE_TYPE"],
                                   "status":row["OPE_STATUS"],
                                   "data":custom_values}
@@ -354,7 +368,7 @@ class Operation(object):
         stmnt = "UPDATE OR INSERT INTO OPERATIONDATA (OPD_OPE_ID, OPD_KEY, OPD_VALUE, OPD_TYPE) \
                       VALUES ( ?, ?, ?, ?) MATCHING(OPD_OPE_ID,OPD_KEY);"
         for key, value in self._values.items():
-            typ = str(type(value))
+            typ = str(type(value)).replace("<type '","",1).replace("'>","",1)
             if typ not in Operation.VALID_STORAGE_TYPES:
                 continue
             db.query(self._core,stmnt,(self._id,key,value,typ),commit=True)
@@ -571,6 +585,12 @@ class OperationDaemon(Daemon):
         """
         Daemon.__init__(self,pidfile)
         self._core = core
+
+    def stop(self):
+        configuration = self._core.get_configuration()
+        if os.path.exists(configuration.get_entry("core.webpath")+"/scv_operating.lck"):
+            os.remove(configuration.get_entry("core.webpath")+"/scv_operating.lck") 
+        Daemon.stop(self)
 
     def run(self):
         """

@@ -57,7 +57,7 @@
 				!isset($this->subject->m->version_major) or 
 				!isset($this->subject->m->version_minor) or
 				!isset($this->subject->m->revision) or
-				!isset($this->subject->m->md5) ){
+				!isset($this->subject->m->signature) ){
 				throw new Exception('Not a valid Module!');
 			}
 			

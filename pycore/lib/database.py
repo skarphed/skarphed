@@ -148,7 +148,6 @@ class Database(object):
         """
         self._connection.commit()
 
-    #MODULEINVOLVED
     def query(self, module, statement, args=(), forceNoCache=False, commit=False):
         """
         execute a query on the database. be sure to deliver the module.
@@ -168,7 +167,6 @@ class Database(object):
             self.commit()
         return cur
 
-    #MODULEINVOLVED
     def _replace_module_tables(self, module, query):
         """
         replaces module-based tablenames like
@@ -250,7 +248,6 @@ class Database(object):
         cur.execute(statement)
         self.commit()
 
-    #MODULEINVOLVED
     def remove_tables_for_module(self, module):
         """
         remove tables as part of module uninstallation
@@ -265,7 +262,6 @@ class Database(object):
             stmnt = "DROP TABLE %s"%tab_id
             self.query(self._core,stmnt)
 
-    #MODULEINVOLVED
     def update_tables_for_module(self, module):
         """
         update tables as part of module update
@@ -281,7 +277,6 @@ class Database(object):
             if table["name"] not in [tbl["MDT_NAME"] for tbl in rows]:
                 self._create_table_for_module(module,table)
 
-    #MODULEINVOLVED
     def create_tables_for_module(self, module):
         """
         create tables as part of module installation
@@ -301,17 +296,21 @@ class Database(object):
         cur = self.query(self._core,stmnt,(module.get_id(),tablename))
         rows = cur.fetchallmap()
         row = rows[0]
-        tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
-        stmnt = "DROP TABLE %s"%tab_id
-        self.query(self._core,stmnt)
+        tab_string = "0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
+        stmnt = "DROP TABLE TAB_%s"%tab_string
+        self.query(self._core,stmnt,commit=True)
+        stmnt = "DROP GENERATOR SEQ_%s"%tab_string
+        self.query(self._core,stmnt,commit=True)
+        stmnt = "DELETE FROM MODULETABLES WHERE MDT_ID = ? ;"
+        self.query(self._core,stmnt,(row["MDT_ID"],),commit=True)
 
     def _create_table_for_module(self, module, table):
         """
         creates a database table for a module
         """
         new_table_id = self.get_seq_next('MDT_GEN')
-        new_table_string = "TAB_"+"0"*(6-len(str(tableId)))+str(tableId)
-        stmnt = "CREATE TABLE TAB_%s ( MOD_INSTANCE_ID INT "
+        new_table_string = "0"*(6-len(str(new_table_id)))+str(new_table_id)
+        stmnt = "CREATE TABLE TAB_%s ( MOD_INSTANCE_ID INT "%new_table_string
         autoincrement = None
         for col in table["columns"]:
             stmnt += ", %s %s "%(col["name"],col["type"])
@@ -333,25 +332,26 @@ class Database(object):
         mst_stmnt = "INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?) ;"
         self.query(self._core, mst_stmnt, (new_table_id, table["name"], module.get_id()),commit=True)
         self.query(self._core, stmnt,commit=True)
-        if autoincrement is not None:
-            stmnt = "CREATE SEQUENCE SEQ_%s ;"%new_table_string
-            self.query(self._core, stmnt)
-            stmnt = """SET TERM ^ ;
-                    CREATE TRIGGER TRG_AUTO_%(nts)s FOR TAB_%(nts)s
-                    ACTIVE BEFORE INSERT POSITION 0
-                    AS
-                        DECLARE VARIABLE tmp DECIMAL(18,0);
-                    BEGIN
-                        IF (NEW.%(autoinc)s IS NULL) THEN
-                            NEW.%(autoinc)s = GEN_ID(, 1);
-                        ELSE BEGIN
-                            tmp = GEN_ID(SEQ_%(nts)s, 0);
-                            IF (tmp < new.%(autoinc)s) THEN
-                                tmp = GEN_ID(SEQ_%(nts)s, new.%(autoinc)s - tmp);
-                        END
-                    END^
-                    SET TERM ; ^"""%{'autoinc':autoincrement,'nts':new_table_string}
-            self.query(self._core,stmnt,commit=True)
+        #if autoincrement is not None:
+        #    stmnt = "CREATE SEQUENCE SEQ_%s ;"%new_table_string
+        #    self.query(self._core, stmnt)
+        #    stmnt = """SET TERM ^ ;
+        #            CREATE TRIGGER TRG_AUTO_%(nts)s FOR TAB_%(nts)s
+        #            ACTIVE BEFORE INSERT POSITION 0
+        #            AS
+        #                DECLARE VARIABLE tmp DECIMAL(18,0);
+        #            BEGIN
+        #                IF (NEW.%(autoinc)s IS NULL) THEN
+        #                    NEW.%(autoinc)s = GEN_ID(SEQ_%(nts)s, 1);
+        #                ELSE BEGIN
+        #                    tmp = GEN_ID(SEQ_%(nts)s, 0);
+        #                    IF (tmp < new.%(autoinc)s) THEN
+        #                        tmp = GEN_ID(SEQ_%(nts)s, new.%(autoinc)s - tmp);
+        #                END
+        #            END^
+        #            SET TERM ; ^"""%{'autoinc':autoincrement,'nts':new_table_string}
+        #    self._core.log(stmnt)
+        #    self.query(self._core,stmnt,commit=True)
 
 
 

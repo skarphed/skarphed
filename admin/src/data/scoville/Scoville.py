@@ -32,7 +32,7 @@ from Roles import Roles
 from Sites import Sites
 from Repository import Repository
 from Template import Template
-from Operation import OperationManager
+from Operation import OperationManager, OperationDaemon
 
 from threading import Thread
 import json 
@@ -295,6 +295,7 @@ class Scoville(Instance):
         self.sites = None
         self.repo = None
         self.operationManager = None
+        self.operationDaemon = None
         
         self.cssPropertySet = None
         
@@ -465,6 +466,11 @@ class Scoville(Instance):
     
     def getOperationManager(self):
         return self.operationManager
+
+    def getOperationDaemon(self):
+        if self.operationDaemon is None:
+            self.operationDaemon = OperationDaemon(self)
+        return self.operationDaemon
     
     def getModules(self):
         return self.modules

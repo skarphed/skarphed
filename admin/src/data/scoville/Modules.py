@@ -26,8 +26,6 @@
 from data.Generic import GenericScovilleObject
 
 from Module import Module
-import json
-
 
 class Modules(GenericScovilleObject):
     def __init__(self,parent):
@@ -37,8 +35,6 @@ class Modules(GenericScovilleObject):
         self.refresh()
     
     def refreshCallback(self,data):
-        #HERE BE DRAGONS!
-        data = json.JSONDecoder().decode(data)
         modulenames = [m.getModuleName() for m in self.children]
         for module in data:
             if module['name'] not in modulenames:
@@ -67,6 +63,7 @@ class Modules(GenericScovilleObject):
         return "Modules"
     
     def getAllModules(self):
+        print "\n\n\n"+str([u.getName() for u in self.children])+"\n\n\n"
         return self.children
     
     def getAllWidgets(self):
@@ -81,10 +78,10 @@ class Modules(GenericScovilleObject):
         self.getScoville().getOperationManager().refresh()
     
     def installModule(self, module):
-        self.getApplication().doRPCCall(self.getScoville(),self.moduleOperationCallback, "installModule",[module.data,0])       
+        self.getApplication().doRPCCall(self.getScoville(),self.moduleOperationCallback, "installModule",[module.data])       
     
     def uninstallModule(self, module):
-        self.getApplication().doRPCCall(self.getScoville(),self.moduleOperationCallback, "uninstallModule",[module.data,0])
+        self.getApplication().doRPCCall(self.getScoville(),self.moduleOperationCallback, "uninstallModule",[module.data])
     
     def getPar(self):
         return self.par

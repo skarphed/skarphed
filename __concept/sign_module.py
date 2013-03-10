@@ -51,7 +51,7 @@ def main():
         hash = SHA256.new(moduleData)
         signer = PKCS1_v1_5.new(key)
         signature = signer.sign(hash)
-        
+        print type(signature)
         import base64
         signature = base64.encodestring(signature)
         
@@ -80,15 +80,20 @@ def main():
             sys.exit(1)
         import json
         try:
-            signature = tuple(json.loads(open(filename+'.sig','r').read()))
+            import base64
+            signature = base64.decodestring(open(filename+'.sig','r').read())
         except IOError:
             print "Could not load signature"
             sys.exit(1)
         import Crypto.Hash.SHA256 as SHA256
-        print signature
+        import Crypto.Signature.PKCS1_v1_5 as PKCS1_v1_5
         key = RSA.importKey(keyraw)
-        hash = SHA256.new(moduleData).hexdigest()
-        if key.verify(hash,signature):
+        verifier = PKCS1_v1_5.new(key)
+        hash = SHA256.new(moduleData)
+        print "key: "+keyraw
+        print "hash: "+hash.hexdigest()
+
+        if verifier.verify(hash,signature):
             print "This Module is safe"
         else:
             print "Someone fucked around with this Module"

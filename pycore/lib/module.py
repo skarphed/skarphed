@@ -30,7 +30,7 @@
 ###########################################################
 
 from json import JSONDecoder, JSONEncoder
-from urllib2 import urlopen
+from urllib2 import urlopen, quote
 import base64
 import Crypto.PublicKey.RSA as RSA
 import os
@@ -59,6 +59,7 @@ class AbstractModule(object):
     def __init__(self,core):
         self._core=core
 
+        self._id = None
         self._name = None
         self._hrname = None
         self._version_major = None
@@ -67,6 +68,11 @@ class AbstractModule(object):
         self._permissions = [] 
         self._tables = []
 
+    def set_id(self, nr):
+        self._id = nr
+
+    def get_id(self):
+        return self._id
 
     def _load_manifest(self):
         """
@@ -81,7 +87,7 @@ class AbstractModule(object):
         self._version_major = manifest["version_major"]
         self._version_minor = manifest["version_minor"]
         self._revision = manifest["revision"]
-        self._permissions = manifest["rights"]
+        self._permissions = manifest["permissions"]
         self._tables = manifest["tables"]
 
     def get_tables(self):
@@ -127,7 +133,37 @@ class AbstractModule(object):
         """
         w = Widget(self._core, self)
         w.set_name(name)
-        w.store()# TODO: Implement
+        w.store()
+
+    def get_widget(self,widget_id):
+        """
+        returns an instance of thre requested module with a set instanceId
+        """
+        db = self._core.get_db()
+        stmnt = "SELECT WGT_ID, WGT_NAME FROM WIDGETS WHERE WGT_MOD_ID = ? AND WGT_ID = ? ;"
+        cur = db.query(self._core, stmnt, (self._id,widget_id))
+
+        row = cur.fetchonemap()
+        if row is not None:
+            widget = Widget(self._core, self, row["WGT_ID"])
+            widget.set_name(row["WGT_NAME"])
+        else:
+            raise ModuleCoreException(ModuleCoreException.get_msg(7))
+
+    def get_widgets(self):
+        """
+        returns an instance of thre requested module with a set instanceId
+        """
+        db = self._core.get_db()
+        stmnt = "SELECT WGT_ID, WGT_NAME FROM WIDGETS WHERE WGT_MOD_ID = ? ;"
+        cur = db.query(self._core, stmnt, (self._id,))
+
+        widgets = []
+        for row in cur.fetchallmap():
+            widget = Widget(self._core, self, row["WGT_ID"])
+            widget.set_name(row["WGT_NAME"])
+            widgets.append(widget)        
+        return widgets
 
 class Widget(object):
     def __init__(self, core, module, nr=None):
@@ -208,11 +244,13 @@ class ModuleManager(object):
         module_id = int(module_id)
         db = self._core.get_db()
         stmnt = "SELECT MOD_NAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV FROM MODULES WHERE MOD_ID = ? ;"
-        cur = db.query(self._core,stmnt,(module_id))
+        cur = db.query(self._core,stmnt,(module_id,))
         row = cur.fetchonemap()
         if row is not None:
             exec "from %s.v%d_%d_%d import Module as ModuleImplementation"%(row["MOD_NAME"], row["MOD_VERSIONMAJOR"], row["MOD_VERSIONMINOR"], row["MOD_VERSIONREV"])
-            return ModuleImplementation(self._core) 
+            module = ModuleImplementation(self._core) 
+            module.set_id(module_id)
+            return module
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(6))
 
@@ -224,7 +262,8 @@ class ModuleManager(object):
         """
         returns an instance of thre requested module with a set instanceId
         """
-        widget = Widget(self._core, self._get_module_from_widget(widget_id), widget_id)
+        module = self._get_module_from_widget_id(widget_id)
+        widget = module.get_widget(widget_id)
         return widget
 
     def _get_module_id_from_name(self,module_name):
@@ -263,9 +302,9 @@ class ModuleManager(object):
         libpath = configuration.get_entry("global.libpath")
 
         modulepath = libpath+"/"+module_meta["name"]+"/v"+\
-                              module_meta["version_major"]+"_"+ \
-                              module_meta["version_minor"]+"_"+ \
-                              module_meta["revision"]
+                              str(module_meta["version_major"])+"_"+ \
+                              str(module_meta["version_minor"])+"_"+ \
+                              str(module_meta["revision"])
 
         if os.path.exists(libpath+"/"+module_meta["name"]):
             if os.path.exists(modulepath):
@@ -274,10 +313,10 @@ class ModuleManager(object):
                 os.mkdir(modulepath)
         else:
             os.mkdir(libpath+"/"+module_meta["name"])
-            open(libpath+"/"+module_name["meta"]+"/__init__.py","w").close()
+            open(libpath+"/"+module_meta["name"]+"/__init__.py","w").close()
             os.mkdir(modulepath)
-
-        repo = self._core.get_repository()
+        
+        repo = self.get_repository()
         datapath = repo.download_module(module_meta)
         tar = tarfile.open(datapath, "r:gz")
 
@@ -482,8 +521,7 @@ class ModuleManager(object):
         stmnt = "SELECT MOD_ID FROM MODULES ;"
         cur = db.query(self._core,stmnt)
         ids = cur.fetchallmap()
-        ids = ids.values()
-        return [self.get_module(i) for i in ids]
+        return [self.get_module(i["MOD_ID"]) for i in ids]
 
     def get_module_info(self, only_installed=False):
         """
@@ -495,6 +533,8 @@ class ModuleManager(object):
             meta_record = self.get_meta_from_module(module)
             meta_record.update({'installed':True,'serverModuleId':module.get_id()})
             meta_records.append(meta_record)
+
+        operation_manager = self._core.get_operation_manager() # To initialize cls._core of operations
 
         repository_joblocks = ModuleOperation.get_currently_processed_modules()
 
@@ -517,12 +557,6 @@ class ModuleManager(object):
 
         return meta_records
 
-
-
-
-
-
-
 class Repository(object):
     def __init__(self, core, nr=None, name=None, ip=None, port=80, lastupdate=None):
         self._core = core
@@ -533,6 +567,9 @@ class Repository(object):
         self._port = port
         self._lastupdate = lastupdate
         self._public_key = None
+
+        self._jsonencoder = None
+        self._jsondecoder = None
 
     def get_ip(self):
         """
@@ -580,7 +617,7 @@ class Repository(object):
             self._jsondecoder = JSONDecoder()
         if self._jsonencoder is None:
             self._jsonencoder = JSONEncoder()
-        url = self.get_host()+"?j="+self._jsonencoder.encode(msg)
+        url = self.get_host()+"?j="+quote(self._jsonencoder.encode(msg).encode('utf-8'))
         http = urlopen(url)
         return self._jsondecoder.decode(http.read())
 
@@ -626,9 +663,12 @@ class Repository(object):
         verifies if the data has been signed by this repository
         """
         import Crypto.Hash.SHA256 as SHA256
+        import Crypto.Signature.PKCS1_v1_5 as PKCS1_v1_5
         k = RSA.importKey(self.get_public_key())
-        h = SHA256.new(data).hexdigest()
-        return k.verify(h,signature)
+        verifier = PKCS1_v1_5.new(k)
+        h = SHA256.new(data)
+        signature = base64.decodestring(signature)
+        return verifier.verify(h,signature)
 
     def download_module(self,module):
         """
@@ -646,9 +686,9 @@ class Repository(object):
             raise ModuleCoreException(ModuleCoreException.get_msg(3))
 
         datapath = "/tmp/"+result["r"]["name"]+"_v"+ \
-                                result["r"]["version_major"]+"_"+ \
-                                result["r"]["version_minor"]+"_"+ \
-                                result["r"]["revision"]+".tar.gz"
+                                str(result["r"]["version_major"])+"_"+ \
+                                str(result["r"]["version_minor"])+"_"+ \
+                                str(result["r"]["revision"])+".tar.gz"
         datafile = open(datapath,"w")
         datafile.write(data)
         datafile.close()

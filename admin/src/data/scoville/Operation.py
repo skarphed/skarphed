@@ -156,3 +156,39 @@ class Operation(GenericScovilleObject):
             return par.getOperationManager()
         else: # OperationManager
             return par
+
+class OperationDaemon(GenericScovilleObject):
+    def __init__(self,par):
+        GenericScovilleObject.__init__(self)
+        self.par = par
+        self.status = False
+        self.refresh()
+
+    def getStatus(self):
+        return self.status
+
+    def refreshCallback(self, res):
+        self.status = res
+        self.updated()
+
+    def refresh(self):
+        self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getOperationDaemonStatus")
+
+    def opCallback(self, res):
+        self.refresh()
+
+    def start(self):
+        self.getApplication().doRPCCall(self.getScoville(),self.opCallback, "startOperationDaemon")
+
+    def stop(self):
+        self.getApplication().doRPCCall(self.getScoville(),self.opCallback, "stopOperationDaemon")
+
+    def restart(self):
+        self.getApplication().doRPCCall(self.getScoville(),self.opCallback, "restartOperationDaemon")
+
+    def getPar(self):
+        return self.par
+    
+    def getScoville(self):
+        return self.getPar()
+        

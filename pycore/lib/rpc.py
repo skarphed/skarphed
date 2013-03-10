@@ -25,6 +25,7 @@
 from json import JSONDecoder, JSONEncoder
 from traceback import print_exc
 from StringIO import StringIO
+from operation import OperationDaemon
 import base64
 
 class Rpc(object):
@@ -254,7 +255,7 @@ class Rpc(object):
         get_installed_only = bool(params[0])
 
         module_manager = self._core.get_module_manager()
-        modules = module_manager.get_modules(get_installed_only)
+        modules = module_manager.get_module_info(get_installed_only)
         return modules
 
     def setRepository(self, params):
@@ -277,14 +278,17 @@ class Rpc(object):
 
     def uninstallModule(self, params):
         module = params[0]
-        operation_id = int(params[1])
 
-        #TODO: Implement .. Look what operation_id does
+        module_manager = self._core.get_module_manager()
+        module_manager.invoke_uninstall()
+        return 0
 
     def installModule(self, params):
+        module_meta = params[0]
 
-        #TODO: Implement .. Look what operation_id does
-        pass
+        module_manager = self._core.get_module_manager()
+        module_manager.invoke_install(module_meta)
+        return 0        
 
     def dropOperation(self, params):
         operation_id = int(params[0])
@@ -321,6 +325,7 @@ class Rpc(object):
 
         operation_manager = self._core.get_operation_manager()
         operations = operation_manager.get_current_operations_for_gui(operationtypes)
+
         return operations
 
     def getSites(self, params):
@@ -362,16 +367,30 @@ class Rpc(object):
         return errorlog
 
     def createWidget(self,params):
-        #TODO: Implement after rewrite
-        return True
+        module_id = int(params[0])
+        new_widget_name = str(params[1])
+
+        module_manager = self._core.get_module_manager()
+        module = module_manager.get_module(module_id)
+        module.create_widget(new_widget_name)
+        return
 
     def deleteWidget(self, params):
-        #TODO : Implement after rewrite
-        return True
+        widget_id = int(params[0])
+
+        module_manager = self._core.get_module_manager()
+        widget = module_manager.get_widget(widget_id)
+        widget.delete()
+        return
 
     def getWidgetsOfModule(self, params):
-        #TODO : Implement after rewrite
-        return True
+        module_id = int(params[0])
+
+        module_manager = self._core.get_module_manager()
+        module = module_manager.get_module(module_id)
+        widgets = module.get_widgets()
+
+        return [{'id':widget.get_id(), 'name':widget.get_name()} for widget in widgets]
 
     def getMenusOfSite(self,params):
         #TODO: Implement after rewrite
@@ -591,3 +610,40 @@ class Rpc(object):
         menu = action_manager.get_menu_by_id(menu_id)
         menu.set_name(new_name)
         return 0
+
+    def startOperationDaemon(self,params):
+        #TODO: implement permissioncheck
+        configuration = self._core.get_configuration()
+        pidfile = configuration.get_entry("global.webpath")+\
+                  configuration.get_entry("core.instance_id")+\
+                  "/operationd.pid"
+
+        opd = OperationDaemon(self._core,pidfile)
+        opd.start()
+
+    def stopOperationDaemon(self,params):
+        configuration = self._core.get_configuration()
+        pidfile = configuration.get_entry("global.webpath")+\
+                  configuration.get_entry("core.instance_id")+\
+                  "/operationd.pid"
+
+        opd = OperationDaemon(self._core,pidfile)
+        opd.stop()
+
+    def restartOperationDaemon(self,params):
+        configuration = self._core.get_configuration()
+        pidfile = configuration.get_entry("global.webpath")+\
+                  configuration.get_entry("core.instance_id")+\
+                  "/operationd.pid"
+
+        opd = OperationDaemon(self._core,pidfile)
+        opd.restart()
+
+    def getOperationDaemonStatus(self,params):
+        configuration = self._core.get_configuration()
+        pidfile = configuration.get_entry("global.webpath")+\
+                  configuration.get_entry("core.instance_id")+\
+                  "/operationd.pid"
+
+        opd = OperationDaemon(self._core,pidfile)
+        return opd.is_running()
