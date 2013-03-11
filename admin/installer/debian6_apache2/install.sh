@@ -11,12 +11,9 @@ else
 	
 	#external component installation
 
-	apt-get install -y apache2 php5-interbase php-pear
+	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev
 
-	wget http://phpseclib.sourceforge.net/channel.xml -O /dev/null -o /dev/null # HOTFIX for broken pear channel
-	pear channel-discover phpseclib.sourceforge.net
-	pear remote-list -c phpseclib
-	pear install phpseclib/Crypt_RSA-0.3.1 #version unbedingt noetig?
+	pip install fdb pycrypto tinycss
 
 	mkdir /etc/scoville
 	cp ./scoville.conf /etc/scoville/
@@ -24,6 +21,7 @@ else
 	
 	mkdir $SCV_LIBPATH
 	cp -r ./lib/* $SCV_LIBPATH/
+	chown -R www-data:www-data $SCV_LIBPATH
 
 	touch /etc/scoville/GEN_INSTANCE
 	echo -1 > /etc/scoville/GEN_INSTANCE
@@ -39,15 +37,13 @@ instanceid=`cat /etc/scoville/GEN_INSTANCE`
 instanceid=`expr $instanceid + 1`
 
 mkdir $SCV_WEBPATH$instanceid
-cp -r ./web/ $SCV_WEBPATH$instanceid/
-touch $SCV_WEBPATH$instanceid/web/instance.conf.php
-sed s#//number//#$instanceid#g ./instance.conf.php $SCV_WEBPATH$instanceid/web/instance.conf.php > $SCV_WEBPATH$instanceid/web/instance.conf.php
+cp -r ./web/* $SCV_WEBPATH$instanceid/
+touch $SCV_WEBPATH$instanceid/instanceconf.py
+sed s#//number//#$instanceid#g ./instanceconf.py $SCV_WEBPATH$instanceid/instanceconf.py > $SCV_WEBPATH$instanceid/instanceconf.py
 
-cp ./index.php $SCV_WEBPATH$instanceid/
+cp ./scoville.py $SCV_WEBPATH$instanceid/
 
-cp ./config.json $SCV_WEBPATH$instanceid/web/
-cp -r ./rpc/ $SCV_WEBPATH$instanceid/
-cp $SCV_WEBPATH$instanceid/web/instance.conf.php $SCV_WEBPATH$instanceid/rpc/instance.conf.php
+cp ./config.json $SCV_WEBPATH$instanceid/
 
 mkdir /tmp/scv_$instanceid
 sed s#//SCVWEBROOT//#$SCV_WEBPATH$instanceid#g ./apache2.conf > /tmp/scv_$instanceid/replace

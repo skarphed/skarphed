@@ -5,24 +5,13 @@ Schriftart  "News Cycle"  ::  OFL (SIL Open Font License)
 
 Abhaengigkeiten: 
 
-Qooxdoo :: LGPL
-
-Load-Image im Adminmodul ist momentan irgendeine ausm internet
-
-
-
-PHP-Dependencies (apt-get paketnamen):
-
-
-
-
-Functoins parseArrayToObject parseObjectToArray sind aus http://www.wozia.pt/blog/php-convert-array-to-object-and-vice-versa/
-
+fdb -> Firebird Python Client
+PyCrypto -> Cryptography for python
+python-jsonrpc -> jsonrpc for python [LGPL]
+python-paramiko -> SSH-library for python [LGPL]
 
 /admin_gui/src/gui/ExceptHook.py
 # (c) 2003 Gustavo J A M Carneiro gjc at inescporto.pt
 #     2004-2005 Filip Van Raemdonck
 Public Domain
 
-PyCrypto >= 2.2
-phpseclib

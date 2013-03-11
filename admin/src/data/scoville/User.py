@@ -25,8 +25,6 @@
 
 from data.Generic import GenericScovilleObject
 
-import json
-
 class User(GenericScovilleObject):
     def __init__(self,parent, data = {}):
         GenericScovilleObject.__init__(self)
@@ -53,8 +51,6 @@ class User(GenericScovilleObject):
             return None
         
     def fetchRightsDataCallback(self,data):
-        # HERE BE DRAGONS
-        data = json.JSONDecoder().decode(data)
         self.permissiondata = data
         self.updated()
     
@@ -62,12 +58,10 @@ class User(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.fetchRightsDataCallback,
                                       "getRightsForUserPage",
-                                      [self.getName()]
+                                      [self.getId()]
                                       )
     
     def fetchRoleDataCallback(self,data):
-        # HERE BE DRAGONS
-        data = json.JSONDecoder().decode(data)
         self.roledata = data
         self.updated()
     
@@ -107,7 +101,7 @@ class User(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.assignPermissionCallback,
                                       "grantRightToUser",
-                                      [self.getName(),right]
+                                      [self.getId(),right]
                                       )
     
     def removePermissionCallback(self,data):
@@ -117,7 +111,7 @@ class User(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getUsers().getScoville(),
                                       self.removePermissionCallback,
                                       "revokeRightFromUser",
-                                      [self.getName(),role]
+                                      [self.getId(),role]
                                       )
     def deleteCallback(self,json):
         self.destroy()

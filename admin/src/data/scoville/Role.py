@@ -49,7 +49,7 @@ class Role(GenericScovilleObject):
     
     def fetchPermissionsCallback(self,data):
         #dragons
-        data = json.JSONDecoder().decode(data)
+
         self.permissiondata=data
         self.updated()
     

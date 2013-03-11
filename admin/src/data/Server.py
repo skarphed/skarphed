@@ -44,7 +44,7 @@ class Server(GenericScovilleObject):
      
     instanceTypesLoaded=False
      
-    INSTALLATION_TARGETS = ("Debian6",)
+    INSTALLATION_TARGETS = ("Debian6/Apache2",)
 
     def __init__(self):
         if not Server.instanceTypesLoaded:

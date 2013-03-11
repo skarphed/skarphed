@@ -32,10 +32,11 @@ from Roles import Roles
 from Sites import Sites
 from Repository import Repository
 from Template import Template
-from Operation import OperationManager
+from Operation import OperationManager, OperationDaemon
 
 from threading import Thread
-import json as jayson #HERE BE DRAGONS
+import json 
+import base64
 import os
 import os.path
 import shutil
@@ -52,9 +53,8 @@ class ScovilleInstaller(GenericScovilleObject):
             self.installer = installer
 
         def run(self):
-            if self.installer.target=="Debian6":
+            if self.installer.target=="Debian6/Apache2":
                 self.installer.installDebian6()
-
 
     def __init__(self,data,server,target):
         GenericScovilleObject.__init__(self)
@@ -69,12 +69,17 @@ class ScovilleInstaller(GenericScovilleObject):
     def installDebian6(self):
         os.mkdir(self.BUILDPATH)
 
-        apache_template = open("../installer/debian6/apache2.conf","r").read()
+        apache_template = open("../installer/debian6_apache2/apache2.conf","r").read()
+        apache_domain = ""
+        if self.data['apache.domain'] != "":
+            apache_domain = "ServerName "+self.data['apache.domain']
+        apache_subdomain = ""
+        if self.data['apache.subdomain'] != "":
+            apache_subdomain = "ServerAlias "+self.data['apache.subdomain']
         apacheconf = apache_template%(self.data['apache.ip'],
                                       self.data['apache.port'],
-                        "ServerName "+self.data['apache.domain'],
-                       "ServerAlias "+self.data['apache.subdomain'],)
-
+                                      apache_domain,
+                                      apache_subdomain)
         apacheconfresult = open(self.BUILDPATH+"apache2.conf","w")
         apacheconfresult.write(apacheconf)
         apacheconfresult.close()
@@ -91,33 +96,42 @@ class ScovilleInstaller(GenericScovilleObject):
                     continue
                 scv_config[key] = val
 
-        jenc = jayson.JSONEncoder()
+        scv_config_defaults = {
+            "core.session_duration":2,
+            "core.session_extend":1,
+            "core.cookielaw":1,
+            "core.rendermode":"pure",
+            "core.css_folder":"/static/css",
+            "core.debug":True
+        }
+
+        scv_config.update(scv_config_defaults)
+
+        jenc = json.JSONEncoder()
         config_json = open(self.BUILDPATH+"config.json","w")
         config_json.write(jenc.encode(scv_config))
         config_json.close()
 
-        shutil.copyfile("../installer/debian6/instance.conf.php",self.BUILDPATH+"instance.conf.php")
-        shutil.copyfile("../installer/debian6/scoville.conf",self.BUILDPATH+"scoville.conf")
-        shutil.copyfile("../installer/debian6/install.sh", self.BUILDPATH+"install.sh")
+        shutil.copyfile("../installer/debian6_apache2/instanceconf.py",self.BUILDPATH+"instanceconf.py")
+        shutil.copyfile("../installer/debian6_apache2/scoville.conf",self.BUILDPATH+"scoville.conf")
+        shutil.copyfile("../installer/debian6_apache2/install.sh", self.BUILDPATH+"install.sh")
 
         self.status = 30
         gobject.idle_add(self.updated)
 
-        shutil.copyfile("../../core/index.php",self.BUILDPATH+"index.php")
         shutil.copytree("../../core/web",self.BUILDPATH+"web")
-        shutil.copytree("../../core/rpc",self.BUILDPATH+"rpc")
         shutil.copytree("../../core/lib",self.BUILDPATH+"lib")
+        #shutil.copytree("../../python-jsonrpc",self.BUILDPATH+"python-jsonrpc")
 
         tar = tarfile.open(self.BUILDPATH+"scv_install.tar.gz","w:gz")
         tar.add(self.BUILDPATH+"apache2.conf")
         tar.add(self.BUILDPATH+"config.json")
-        tar.add(self.BUILDPATH+"instance.conf.php")
+        tar.add(self.BUILDPATH+"instanceconf.py")
         tar.add(self.BUILDPATH+"scoville.conf")
         tar.add(self.BUILDPATH+"install.sh")
         tar.add(self.BUILDPATH+"web")
-        tar.add(self.BUILDPATH+"rpc")
         tar.add(self.BUILDPATH+"lib")
-        tar.add(self.BUILDPATH+"index.php")
+        #tar.add(self.BUILDPATH+"python-jsonrpc")
         tar.close()
 
         self.status = 45
@@ -200,6 +214,7 @@ class Scoville(Instance):
         self.sites = None
         self.repo = None
         self.operationManager = None
+        self.operationDaemon = None
         
         self.cssPropertySet = None
         
@@ -290,46 +305,49 @@ class Scoville(Instance):
         else:
             return "Unknown ScovilleServer"
     
-    def loadTemplateCallback(self,json):
+    def loadTemplateCallback(self,res):
         if self.template is None:
-            self.template = Template(self,json)
+            self.template = Template(self,res)
             self.children.append(self.template)
         else:
-            self.template.refresh(json)
+            self.template.refresh(res)
     
     
     def loadTemplate(self):
         self.getApplication().doRPCCall(self,self.loadTemplateCallback, "getCurrentTemplate")
     
-    def uploadTemplateCallback(self,res):
-        if res != ScovilleUpload.RESULT_ERROR:
-            self.loadTemplate()
-    
     def getRepository(self):
         return self.repo
     
-    def loadRepositoryCallback(self,json):
-        repo = Repository(self,json['ip'],json['port'],json['name'])
+    def loadRepositoryCallback(self,res):
+        repo = Repository(self,res['ip'],res['port'],res['name'])
         self.repo = repo
         self.updated()
     
     def loadRepository(self):
         self.getApplication().doRPCCall(self,self.loadRepositoryCallback, "getRepository")
     
-    def setRepositoryCallback(self,json):
+    def setRepositoryCallback(self,res):
         self.loadRepository()
         
     def setRepository(self,host,port):
         self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [host,port])
     
+    def uploadTemplateCallback(self,res):
+        severe_error_happened = False
+        for error in res:
+            if error['severity'] > 0:
+                severe_error_happened = True
+                break
+        #TODO: SOMEHOW DISPLAY ERRORLOG
+        if not severe_error_happened:
+            self.loadTemplate()
+    
     def uploadTemplate(self, filepath):
-        form = MultiPartForm()
-        templateHandle = open(filepath,'r')
-        filename = os.path.basename(filepath)
-        form.add_file('uploadfile',filename,templateHandle,'application/x-gzip')
-        upload = ScovilleUpload(self, ScovilleUpload.TYPE_TEMPLATE, form, self.uploadTemplateCallback)
-        upload.start()
-        templateHandle.close()
+        template_file = open(filepath,'r')
+        templatedata = base64.encodestring(template_file.read())
+        self.getApplication().doRPCCall(self,self.uploadTemplateCallback, "installTemplate", [templatedata])
+        template_file.close()
         
     def loadProfileInfo(self,profileInfo):
         pass
@@ -340,8 +358,8 @@ class Scoville(Instance):
     def isOnline(self):
         return self.state==self.STATE_ONLINE
     
-    def loadCssPropertySetCallback(self,json):
-        self.cssPropertySet = jayson.JSONDecoder().decode(json)
+    def loadCssPropertySetCallback(self,res):
+        self.cssPropertySet = json.JSONDecoder().decode(res)
         self.updated()
     
     def loadCssPropertySet(self):
@@ -359,7 +377,7 @@ class Scoville(Instance):
     def setCssPropertySet(self,cssPropertySet):
         self.cssPropertySet['properties'] = cssPropertySet
     
-    def saveCssPropertySetCallback(self,json):
+    def saveCssPropertySetCallback(self,res):
         self.loadCssPropertySet()
     
     def saveCssPropertySet(self):
@@ -367,6 +385,11 @@ class Scoville(Instance):
     
     def getOperationManager(self):
         return self.operationManager
+
+    def getOperationDaemon(self):
+        if self.operationDaemon is None:
+            self.operationDaemon = OperationDaemon(self)
+        return self.operationDaemon
     
     def getModules(self):
         return self.modules

@@ -6,37 +6,41 @@ Das Templateformat ist eine gepackte Ordnerstruktur folgenden Aufbaus:
 
 ./
  |
- +- img   (Ordner fuer alle bilder)
+ +- static   (Ordner fuer alle bilder)
  |   +- bild1.png
  |   +- bildX.png
  |   +- adsfadfasf.png
  |   +- adsfad.jpg
+ |   +- site1.css
+ |   +- [site1_minimap.png]
+ |   +- [blubb.css]
+ |   +- [warhgaarbl.css]
+ |   +- [blubb_minimap.png]
+ |   +- [warhgaarbl_minimap.png]
  +- site1.html
+ +- site1_head.html
  +- [blubb.html]
+ +- [blubb_head.html]
  +- [warhgaarbl.html]
- +- site1.css
- +- [blubb.css]
- +- [warhgaarbl.css]
- +- [minimap_site1.png]
- +- [minimap_blubb.png]
- +- [minimap_warhgaarbl.png]
+ +- [warhgaarbl_head.html]
  +- general.css
  
 Dateien im Archiv:
 
-*.png/*.jpeg/*.jpg  --> Bilder fuer das Design (alle im ordner img)
+*.png/*.jpeg/*.jpg  --> Bilder fuer das Design (alle im ordner static)
 *.html              --> Seitenlayouts
-*.css               --> Die Css-File, die Siterelevanten sachen formatiert.
-minimap_*.png       --> Die Minimap ist eine uebergangsloesung und optional:
+*_head.html         --> Dinge, die in den <head>-tag der seite muessen
+*.css               --> Die Css-File, die Siterelevanten sachen formatiert. (static)
+*_minimap.png       --> Die Minimap ist eine uebergangsloesung und optional:
                         Sie wird dazu verwendet, die Spaces einer Seite im 
                         Admininterface graphisch zu veranschaulichen.
                         Sie wird nur solange im Standard enthalten sein, bis
-                        Scoville das seitenlayout selbst umreissen 
+                        Scoville das seitenlayout selbst umreissen (static)
 general.css         --> Diese Datei enthaelt alle css-formatierungen, die in die
                         Serverweite CSS-Config eingetragen werden sollen.
  
 Die Dateinamen sind beliebig. Hauptsache, Seiten befinden sich im root des
-Archivs und bilder in einem Ordner namens img .
+Archivs und bilder, seiten-css und minimaps in einem Ordner namens static .
 
 !!ACHTUNG!!: Die CSS-Dateien muessen die namen ihrer zugehoerigen seiten tragen!
              Die CSS-Files uebernehmen die grundlegenden formatierungen ihrer
@@ -159,7 +163,7 @@ Archivs und bilder in einem Ordner namens img .
     "description" : "Ein knallbuntes Template zu Debuggingzwecken",
     "author" : "Daniel 'zigapeda' Elstner",
     
-    "sites":[
+    "pages":[
       {
         "name":"Hauptseite",
         "desc":"Die Hauptseite fuer den Content",

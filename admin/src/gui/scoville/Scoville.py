@@ -30,6 +30,7 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
+from OperationDaemonControl import OperationDaemonControl
 import gui.IconStock
 
 class ScovillePage(GenericObjectPage):
@@ -57,7 +58,11 @@ class ScovillePage(GenericObjectPage):
         self.repoHBox.pack_start(self.repotable,False)
         self.repoHBox.pack_start(self.repoDummy,True)
         self.repo.add(self.repoHBox)
+
         self.pack_start(self.repo,False)
+
+        self.opd = OperationDaemonControl(self,scoville.getOperationDaemon())
+        self.pack_start(self.opd,False)
             
         self.show_all()
         

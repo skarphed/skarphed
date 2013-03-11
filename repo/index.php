@@ -27,10 +27,10 @@
 		try{
 			$protocolHandler = new ProtocolHandler($_REQUEST['j']);
 			$protocolHandler->execute();
+			echo $protocolHandler->getResult();
 		} catch (Exception $e) {
 			echo '{"error": "'.$e->getMessage().'"}';
 		}
-		echo $protocolHandler->getResult();
 	}else{
 		require_once('repository.php');
 		$repository = Repository::getInstance();

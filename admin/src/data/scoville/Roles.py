@@ -26,8 +26,6 @@
 from data.Generic import GenericScovilleObject
 
 from Role import Role
-import json
-
 
 class Roles(GenericScovilleObject):
     def __init__(self,parent):
@@ -37,7 +35,6 @@ class Roles(GenericScovilleObject):
         self.refresh()
     
     def refreshCallback(self,data):
-        data = json.JSONDecoder().decode(data)
         roleIds = [r.getId() for r in self.children]
         for role in data:
             if role['id'] not in roleIds:
