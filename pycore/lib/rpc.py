@@ -277,10 +277,10 @@ class Rpc(object):
         return 0
 
     def uninstallModule(self, params):
-        module = params[0]
+        module_meta = params[0]
 
         module_manager = self._core.get_module_manager()
-        module_manager.invoke_uninstall()
+        module_manager.invoke_uninstall(module_meta)
         return 0
 
     def installModule(self, params):

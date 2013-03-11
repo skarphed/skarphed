@@ -63,7 +63,6 @@ class Modules(GenericScovilleObject):
         return "Modules"
     
     def getAllModules(self):
-        print "\n\n\n"+str([u.getName() for u in self.children])+"\n\n\n"
         return self.children
     
     def getAllWidgets(self):

@@ -272,6 +272,11 @@ class Template(object):
 
         new_template.store()
         cleanup(temp_installpath)
+
+        #create a defaultview if there isnt
+        view_manager = cls._core.get_view_manager()
+        view_manager.create_default_view()
+
         return errorlog
 
 

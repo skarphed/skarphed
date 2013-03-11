@@ -83,7 +83,7 @@ class AbstractModule(object):
         manifest_file.close()
         manifest = JSONDecoder().decode(manifest_data)
         self._name = manifest["name"]
-        self._hrname = manifest["name"]
+        self._hrname = manifest["hrname"]
         self._version_major = manifest["version_major"]
         self._version_minor = manifest["version_minor"]
         self._revision = manifest["revision"]
@@ -147,6 +147,7 @@ class AbstractModule(object):
         if row is not None:
             widget = Widget(self._core, self, row["WGT_ID"])
             widget.set_name(row["WGT_NAME"])
+            return widget
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(7))
 
@@ -307,9 +308,7 @@ class ModuleManager(object):
                               str(module_meta["revision"])
 
         if os.path.exists(libpath+"/"+module_meta["name"]):
-            if os.path.exists(modulepath):
-                raise ModuleCoreException(ModuleCoreException.get_msg(5))
-            else:
+            if not os.path.exists(modulepath):
                 os.mkdir(modulepath)
         else:
             os.mkdir(libpath+"/"+module_meta["name"])
@@ -542,14 +541,18 @@ class ModuleManager(object):
             repo = self.get_repository()
             repomodules = repo.get_all_modules()
             for repomodule in repomodules:
+                module_on_system = False
                 for meta_record in meta_records:
                     if repomodule["name"] == meta_record["name"]:
+                        self._core.log("REPO>"+repomodule['name']+" META>"+meta_record["name"])
                         if self.compare_versions(repomodule, meta_record) == 1:
                             meta_record["toUpdate"] == True
                         for repository_joblock in repository_joblocks:
                             if repository_joblock["name"] == meta_record["name"]:
                                 meta_record["processing"] = 'Uninstalling'
-                        break
+                        module_on_system = True
+                if module_on_system:
+                    continue
                 for repository_joblock in repository_joblocks:
                     if repository_joblock["name"] == repomodule["name"]:
                         repomodule["processing"] = 'Installing'

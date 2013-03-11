@@ -437,7 +437,8 @@ class ModuleOperation(Operation):
             self.set_value("version_major",module["version_major"])
             self.set_value("version_minor",module["version_minor"])
             self.set_value("revision",module["revision"])
-            self.set_value("signature",module["signature"])
+            if module.has_key("signature"):
+                self.set_value("signature",module["signature"])
         elif module.__class__.__name__ == "Module":
             pass #TODO IMPLEMENT / DISCUSS AFTER IMPLEMENTING MODULE-SUBSYSTEM
 

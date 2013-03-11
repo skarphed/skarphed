@@ -131,6 +131,18 @@ class View(object):
     def create(cls, page, name, json):
         view = View(cls._core)
 
+    @classmethod
+    def create_default_view(cls):
+        db = cls._core.get_db()
+        stmnt = "SELECT VIE_ID FROM VIEWS WHERE VIE_DEFAULT = 1 ;"
+        cur = db.query(cls._core, stmnt)
+        row = cur.fetchonemap()
+        if row is None:
+            view_id = db.get_seq_next("VIE_GEN")
+            stmnt = "INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
+                       VALUES (?,2,'default',1) ;"
+            db.query(cls._core, stmnt, (view_id,), commit=True)
+
     def __init__(self,core):
         """
         initializes View for rendering
@@ -329,6 +341,7 @@ class ViewManager(object):
         self.get_from_name = View.get_from_name
         self.get_from_json = View.get_from_json
         self.get_default_view = View.get_default_view
+        self.create_default_view = View.create_default_view
         self.create = View.create
 
 

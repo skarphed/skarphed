@@ -258,9 +258,13 @@ class Database(object):
         cur = self.query(self._core,stmnt,(module.get_id(),))
         rows = cur.fetchallmap()
         for row in rows:
-            tab_id = "TAB_"+"0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
-            stmnt = "DROP TABLE %s"%tab_id
-            self.query(self._core,stmnt)
+            tab_id = "0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
+            stmnt = "DROP TABLE TAB_%s ;"%tab_id
+            self.query(self._core,stmnt,commit=True)
+            stmnt = "DROP GENERATOR SEQ_%s ;"%tab_id
+            self.query(self._core,stmnt,commit=True)
+            stmnt = "DELETE FROM MODULETABLES WHERE MDT_ID = ? ;"
+            self.query(self._core,stmnt,(row["MDT_ID"],),commit=True)
 
     def update_tables_for_module(self, module):
         """
@@ -329,12 +333,17 @@ class Database(object):
                     autoincrement = col["name"]
         stmnt+=") ;"
         
+
         mst_stmnt = "INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?) ;"
         self.query(self._core, mst_stmnt, (new_table_id, table["name"], module.get_id()),commit=True)
         self.query(self._core, stmnt,commit=True)
+        stmnt = "CREATE GENERATOR SEQ_%s ;"%new_table_string
+        self.query(self._core, stmnt,commit=True)
+        stmnt = "SET GENERATOR SEQ_%s TO 1 ;"%new_table_string
+        self.query(self._core, stmnt,commit=True)
+
         #if autoincrement is not None:
-        #    stmnt = "CREATE SEQUENCE SEQ_%s ;"%new_table_string
-        #    self.query(self._core, stmnt)
+        #    
         #    stmnt = """SET TERM ^ ;
         #            CREATE TRIGGER TRG_AUTO_%(nts)s FOR TAB_%(nts)s
         #            ACTIVE BEFORE INSERT POSITION 0
