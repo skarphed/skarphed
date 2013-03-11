@@ -22,38 +22,6 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-###########################################################
-# Rewrite from PHP status
-# 
-# Class Role
-# - public getId()                  --done
-# - public getName()                --done
-# - public setId()                  --done
-# - public setNAme()                --done
-# - public store()                  --done
-# - public addRight()               --done
-# - public removeRight()            --done
-# - public getRights()              --done
-# - public hasRight()               --done
-# - public getGrantableRights()     --done
-# - public delete()                 --done
-# - public assignTo()               --done
-# - public revokeFrom()             --done
-# Class RightsManager  
-# - public checkRight()             --done  
-# - public createRight()            --done
-# - public removeRight()            --done
-# - public getRightsForUser()       --done
-# - public getGrantableRights()     --done
-# - public getGrantableRoles()      --done
-# - public hasRoleUser()            --done
-# - public getIdForRight()          --done
-# - public getRoles()               --done
-# - public getrolesForUser()        --done
-# - public getRole()                --done
-# - public createRole()             --done
-###########################################################
-
 class PermissionException(Exception):
     """
     Exceptions for Permission-Module

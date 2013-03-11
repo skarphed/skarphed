@@ -22,35 +22,6 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-###########################################################
-# Rewrite from PHP status
-# 
-# Class Database
-# - private  functio __construct               --done 
-# - public function setIp                      --done  
-# - public function setDbName                  --done  
-# - public function setUser                    --done
-# - public function setPassword                --done
-# - public function connect                    --done
-# - private function getLowestUseQuery         --done QueryCache
-# - private function generateZeros             --obsolete
-# - private function replaceModuleTables       --done
-# - private function createQueryInCache        --obsolete QueryCache
-# - public function getConnection              --done
-# - public function fetchArray                 --obsolete
-# - public function fetchObject                --obsolete
-# - public function commit                     --done
-# - public function createTablesForModule      TODO
-# - public function updateTablesForModule      TODO
-# - public function createTableForModule       TODO
-# - public function removeTableForModule       TODO
-# - public function removeTablesForModule      TODO
-# - public function getSeqNext                 --done
-# - public function getSeqCurrent              --done
-# - public function createBlob                 --obsolete
-# - public function getInfo                    TODO
-###########################################################
-
 import re
 import fdb
 

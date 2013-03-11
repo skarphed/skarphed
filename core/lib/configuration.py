@@ -22,16 +22,6 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-###########################################################
-# PHP-Rewrite Log
-# Class ConfigException                --done
-# Class Config                         --done
-# - public function __construct        --done
-# - public function initFromDb()       --done
-# - public function getConfigState()   --done
-# - public function getEntry()         --done
-###########################################################
-
 from json import JSONDecoder
 
 class ConfigurationException(Exception):

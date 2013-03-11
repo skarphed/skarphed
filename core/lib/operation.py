@@ -22,46 +22,6 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-###########################################################
-# Rewrite from PHP status
-# 
-# class OperationException                    
-# class OperationManager                    
-# - public dropOperation()  done
-# - public retryOperation()  done
-# - public cancelOperation()  done
-# - public restoreOperation() done
-# - public processChildren()  done
-# - public processNext() done
-# - public getCurrentOperationsForGUI() done
-# class Operation done
-# - constructor() done
-# - public getValue() done
-# - public getValues() done
-# - public setValue() done
-# - public setParent() done
-# - public getParent() done
-# - public setDBID() done
-# - public setId() done
-# - public getId() done
-# - public abstract doWorkload() done
-# class ModuleOperation() done
-# - public setValuesFromMeta() done
-# - public getMeta() done
-# - public getCurrentlyProcessedModules() done
-# - public abstract optimizeQueue() done
-# class ModuleUninstallOperation done
-# - public doWorkload done
-# - public optimizeQueue done
-# class ModuleInstallOperation done
-# - public doWorkload done
-# - public optimizeQueue done
-# class FailOperation done
-# - public doWorkload done
-# class TestOperation done
-# - public doWorkload done
-###########################################################
-
 import os
 from daemon import Daemon
 from time import sleep

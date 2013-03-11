@@ -22,13 +22,6 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-###########################################################
-#
-#    document process by commenting out overtaken PHP-
-#    functions. Too much stuff is going to change here.
-#
-###########################################################
-
 from json import JSONDecoder, JSONEncoder
 from urllib2 import urlopen, quote
 import base64

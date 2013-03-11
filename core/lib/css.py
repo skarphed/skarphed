@@ -22,39 +22,6 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-###########################################################
-# class CSSException
-# class CSSManager
-# - public createCssPropertySetFromSerial
-# - public getCssPropertySet()
-# - public render()
-# - public getCssFile()
-# - public cleanUpCssSessionTable()
-# class CSSPropertySet
-# - public setModuleId()
-# - public setWidgetId()
-# - public setSessionId()
-# - public setTypeGeneral()
-# - public getType()
-# - public getModuleId()
-# - public getWidgetId()
-# - public getSessionId()
-# - public editValue()
-# - public setAllInherited()
-# - public getNonInherited()
-# - public store()
-# - public delete()
-# - public render()
-# - public serializeSet()
-# - public buildSerialized()
-# - public setFromParser()
-# class CSSParser
-# - public __construct()
-# - public parseData()
-# - private parse()
-# - public getValue()
-###########################################################
-
 from tinycss.css21 import CSS21Parser
 
 class CSSException(Exception):

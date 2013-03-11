@@ -22,41 +22,6 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-###########################################################
-# Rewrite from PHP status
-#
-# Class UserException                            --done
-# Class User                                     
-# - public function setId()                      --done
-# - public function setName()                    --done
-# - public function setPassword()                --done
-# - public function checkRight()                 --done
-# - public function setSalt()                    --done
-# - public function alterPAssword()              --done
-# - private function generateNewSalt()           --done
-# - public function getNAme()                    --done
-# - public function getId()                      --done
-# - public function authenticate()               --done
-# - public function delete()                     --done
-# - public function store()                      --done
-# - public function hasRole()                    --done
-# - public function getRights()                  --done
-# - public function getRoles()                   --done
-# - public function grantRight()                 --done
-# - public function revokeRight()                --done
-# - public function getGrantableRights()         --done
-# - public function getGrantableRoles()          --done
-# - public function assignRole()                 --done
-# Class UserManager                              
-# - public function getSessionUser()             --done
-# - public function getSessionUserId()           --done
-# - public function getUserById()                --done
-# - public function getUserByName()              --done
-# - public function getUsers()                   --done
-# - public function createUser()                 --done
-# - public function getUsersForAdminInterface()  --done
-###########################################################
-
 from hashlib import sha512
 from random import randrange
 

@@ -1,4 +1,6 @@
-<?php
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
@@ -19,6 +21,31 @@
 # License along with Scoville. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
-header( "HTTP/1.1 301 Moved Permanently" );
-header( "Location: web/index.php" );
-?>
+
+def datetime2fdbTimestamp(datetime):
+    y = str(datetime.year)
+    if datetime.month < 10:
+        m = "0"+str(datetime.month)
+    else:
+        m = str(datetime.month)
+    if datetime.day < 10:
+        d = "0"+str(datetime.day)
+    else:
+        d = str(datetime.day)
+    if datetime.hour < 10:
+        h = "0"+str(datetime.hour)
+    else:
+        h = str(datetime.hour)
+    if datetime.minute < 10:
+        mi = "0"+str(datetime.minute)
+    else:
+        mi = str(datetime.minute)
+    if datetime.second < 10:
+        s = "0"+str(datetime.second)
+    else:
+        s = str(datetime.second)
+
+    return "%s-%s-%s %s:%s:%s"%(y,m,d,h,mi,s)
+
+def fdbTimestamp2datetime(fdb_timestamp):
+    pass
