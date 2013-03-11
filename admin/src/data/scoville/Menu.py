@@ -25,6 +25,24 @@
 
 from data.Generic import GenericScovilleObject
 
+class Menus(GenericScovilleObject):
+    def __init__(self, par):
+        self.par = par
+        GenericScovilleObject.__init__(self)
+
+    def getName(self):
+        return "Menus"
+    
+    def getPar(self):
+        return self.par
+    
+    def getScoville(self):
+        return self.getPar()
+    
+    def getServer(self):
+        return self.getPar().getServer()
+
+
 class Menu(GenericScovilleObject):
     def __init__(self,par, data = {}):
         GenericScovilleObject.__init__(self)
