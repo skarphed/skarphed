@@ -73,10 +73,16 @@ class ScovilleInstaller(GenericScovilleObject):
         os.mkdir(self.BUILDPATH)
 
         apache_template = open("../installer/debian6/apache2.conf","r").read()
+        apache_domain = ""
+        if self.data['apache.domain'] != "":
+            apache_domain = "ServerName "+self.data['apache.domain']
+        apache_subdomain = ""
+        if self.data['apache.subdomain'] != "":
+            apache_subdomain"ServerAlias "+self.data['apache.subdomain']
         apacheconf = apache_template%(self.data['apache.ip'],
-                                      self.data['apache.port'],
-                        "ServerName "+self.data['apache.domain'],
-                       "ServerAlias "+self.data['apache.subdomain'],)
+                                      self.data['apache.port'])
+                                      apache_domain,
+                                      apache_subdomain)
 
         apacheconfresult = open(self.BUILDPATH+"apache2.conf","w")
         apacheconfresult.write(apacheconf)
