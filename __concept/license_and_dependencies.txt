@@ -5,10 +5,10 @@ Schriftart  "News Cycle"  ::  OFL (SIL Open Font License)
 
 Abhaengigkeiten: 
 
-fdb -> Firebird Python Client
-PyCrypto -> Cryptography for python
-python-jsonrpc -> jsonrpc for python [LGPL]
+fdb -> Firebird Python Client [BSD-Style]
+PyCrypto -> Cryptography for python [Public Domain]
 python-paramiko -> SSH-library for python [LGPL]
+tinycss -> CSS-Parser for python [BSD-Style]
 
 /admin_gui/src/gui/ExceptHook.py
 # (c) 2003 Gustavo J A M Carneiro gjc at inescporto.pt
