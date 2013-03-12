@@ -54,6 +54,7 @@ class ActionManager(object):
         self.get_action_list_by_id = ActionList.get_action_list_by_id
         self.get_menu_item_by_id = MenuItem.get_menu_item_by_id
         self.get_menu_by_id = Menu.get_menu_by_id
+        self.get_menus_of_page = Menu.get_menus_of_page
 
 class Action(object):
     """
@@ -92,7 +93,7 @@ class Action(object):
         """
         if actionlist is None:
             return None
-        action = Action()
+        action = Action(cls._core)
         action.set_action_list_id(actionlist.get_id())
         if page_id is not None:
             page =cls._core.get_composite_manager().get_page(page_id)
@@ -115,16 +116,18 @@ class Action(object):
         stmnt = "SELECT MAX(ACT_ORDER) AS MAXORDER FROM ACTIONS WHERE ACT_ATL_ID = ? ;"
         cur = db.query(cls._core, stmnt, (action.get_action_list_id(),))
         row = cur.fetchonemap()
-        if row is not None:
+        if row["MAXORDER"] is not None:
             new_order = row["MAXORDER"]+1
         else:
             new_order = 0
         action.set_id(new_id)
         action.set_order(new_order)
-        stmnt = "INSERT INTO ACTIONS VALUES (?,?,?,?,?,?,?,?) ;"
+        stmnt = "INSERT INTO ACTIONS (ACT_ID, ACT_NAME, ACT_ATL_ID, \
+                                      ACT_SIT_ID, ACT_SPA_ID, ACT_WGT_ID, ACT_URL, ACT_ORDER) \
+                              VALUES (?,?,?,?,?,?,?,?) ;"
         db.query(cls._core , stmnt, (action.get_id(), action.get_name(), action.get_action_list_id(),
-                                     action.get_page_id(), action.get_url(), action.get_space(), 
-                                     action.get_widget_id(), action.get_order()),commit=True)
+                                     action.get_page_id(), action.get_space(), action.get_widget_id(),
+                                     action.get_url(), action.get_order()),commit=True)
         return action
 
     @classmethod
@@ -136,19 +139,19 @@ class Action(object):
         """
         db = cls._core.get_db()
         stmnt = "SELECT ACT_NAME, ACT_ATL_ID, ACT_SIT_ID, \
-                     ACT_SPACE, ACT_WGT_ID, ACT_URL, ACT_ORDER \
+                     ACT_SPA_ID, ACT_WGT_ID, ACT_URL, ACT_ORDER \
                  FROM ACTIONS WHERE ACT_ID = ?;"
         cur = db.query(cls._core,stmnt, (action_id,))
         row = cur.fetchonemap()
         if row is not None:
-            action = Action()
-            if row.has_key("ACT_SIT_ID"):
+            action = Action(cls._core)
+            if row["ACT_SIT_ID"] is not None:
                 action.set_page_id(row["ACT_SIT_ID"],True)
-            if row.has_key("ACT_URL"):
+            if row["ACT_URL"] is not None:
                 action.set_url(row["ACT_URL"], True)
-            if row.has_key("ACT_WGT_ID") and row.has_key("ACT_SPACE"):
-                action.set_widget_space_constellation(row["ACT_WGT_ID"], row["ACT_SPACE"], True)
-            action.set_id(row["ACT_ID"])
+            if row["ACT_WGT_ID"] is not None and row["ACT_SPA_ID"] is not None:
+                action.set_widget_space_constellation(row["ACT_WGT_ID"], row["ACT_SPA_ID"], True)
+            action.set_id(action_id)
             action.set_name(row["ACT_NAME"],True)
             action.set_action_list_id(row["ACT_ATL_ID"])
             action.set_order(row["ACT_ORDER"])
@@ -325,7 +328,7 @@ class Action(object):
         if not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_URL = ?, ACT_SIT_ID = NULL, \
-                     ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ?;"
+                     ACT_WGT_ID = NULL, ACT_SPA_ID = NULL WHERE ACT_ID = ?;"
             db.query(self._core, stmnt, (self.get_url(),self.get_id()),commit=True)
 
     def delete(self):
@@ -353,7 +356,7 @@ class Action(object):
         if not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = NULL, \
-                     ACT_WGT_ID = ?, ACT_SPACE = ? WHERE ACT_ID = ? ;"
+                     ACT_WGT_ID = ?, ACT_SPA_ID = ? WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt, (self.get_widget_id(), self.get_space(), self.get_id()),commit=True)
 
     def set_page_id(self, page_id, ignore_db = False):
@@ -373,7 +376,7 @@ class Action(object):
         if not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = ?, \
-                     ACT_WGT_ID = NULL, ACT_SPACE = NULL WHERE ACT_ID = ? ;"
+                     ACT_WGT_ID = NULL, ACT_SPA_ID = NULL WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt,(self.get_page_id(),self.get_id()),commit=True)
 
     def unset_links(self):
@@ -450,12 +453,12 @@ class ActionList(object):
         """
         This function creates a new ActionList
         """
-        action_list = ActionList()
+        action_list = ActionList(cls._core)
         action_list.set_name(action_list_name)
         db = cls._core.get_db()
         action_list.set_id(db.get_seq_next('ATL_GEN'))
         stmnt = "INSERT INTO ACTIONLISTS VALUES (?,?);"
-        db.query(cls._core, smtnt, (action_list.get_id(), action_list.get_name()),commit=True)
+        db.query(cls._core, stmnt, (action_list.get_id(), action_list.get_name()),commit=True)
         return action_list
 
     @classmethod 
@@ -470,7 +473,7 @@ class ActionList(object):
         cur = db.query(cls._core,stmnt,(action_list_id,))
         row = cur.fetchonemap()
         if row is not None:
-            action_list = ActionList()
+            action_list = ActionList(cls._core)
             action_list.set_id(action_list_id)
             action_list.set_name(row["ATL_NAME"],True)
             return action_list
@@ -619,7 +622,7 @@ class MenuItem(object):
         if menu is None and menu_item_parent is None:
             return None
         db = cls._core.get_db()
-        menu_item = MenuItem()
+        menu_item = MenuItem(cls._core)
         menu_item.set_name(name)
         if menu is not None:
             menu_item.set_menu_id(menu.get_id())
@@ -631,7 +634,7 @@ class MenuItem(object):
             cur = db.query(cls._core, stmnt, (menu_item_parent.get_id(),))
         menu_item.set_id(db.get_seq_next('MNI_GEN'))
         row = cur.fetchonemap()
-        if row is not None:
+        if row["MAXORDER"] is not None:
             new_order = row["MAXORDER"]+1
         else:
             new_order = 0
@@ -641,7 +644,8 @@ class MenuItem(object):
                                   menu_item.get_menu_id(), menu_item.get_parent_menu_item_id(),
                                   None, menu_item.get_order()),commit=True)
         db.commit()
-        actionlist = cls.create_action_list()
+        action_manager = cls._core.get_action_manager()
+        action_list = action_manager.create_action_list()
         menu_item.assign_action_list(action_list)
         return menu_item
 
@@ -658,15 +662,15 @@ class MenuItem(object):
         cur = db.query(cls._core,stmnt,(menu_item_id,))
         row = cur.fetchonemap()
         if row is not None:
-            menu_item = MenuItem()
+            menu_item = MenuItem(cls._core)
             menu_item.set_id(menu_item_id)
             menu_item.set_name(row["MNI_NAME"],True)
             menu_item.set_order(row["MNI_ORDER"])
-            if row.has_key("MNI_MNU_ID"):
+            if row["MNI_MNU_ID"] is not None:
                 menu_item.set_menu_id(row["MNI_MNU_ID"],True)
-            if row.has_key("MNI_MNI_ID"):
+            if row["MNI_MNI_ID"] is not None:
                 menu_item.set_parent_menu_item_id(row["MNI_MNI_ID"],True)
-            if row.has_key("MNI_ATL_ID"):
+            if row["MNI_ATL_ID"] is not None:
                 menu_item.set_action_list_id(row["MNI_ATL_ID"])
 
             return menu_item
@@ -881,6 +885,18 @@ class MenuItem(object):
         """
         return self._menu_id
 
+    def set_menu_id(self, parent_menu_id, ignore_db=False):
+        """
+        Sets the menu_id of this menu
+        """
+        self._menu_id = parent_menu_id
+        self._parent_menu_item = None
+        self._parent_menu_item_id = None
+        if self.get_id() is not None and not ignore_db:
+            db = self._core.get_db()
+            stmnt = "UPDATE MENUITEMS SET MNI_MNU_ID = ?, MNI_MNI_ID = NULL WHERE MNI_ID = ? ;"
+            db.query(self._core,stmnt, (self._menu_id, self.get_id()),commit=True)
+
     def set_parent_menu_item_id(self, parent_menu_item_id, ignore_db=False):
         """
         Assigns this MenuItem to a parent MenuItem
@@ -889,7 +905,7 @@ class MenuItem(object):
         self._parent_menu_item_id = parent_menu_item_id
         self._menu = None
         self._menu_id = None
-        if self._get_id() is not None and not ignore_db:
+        if self.get_id() is not None and not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_MNI_ID = ?, MNI_MNU_ID = NULL WHERE MNI_ID = ? ;"
             db.query(self._core,stmnt, (self._parent_menu_item_id, self.get_id()),commit=True)
@@ -915,7 +931,7 @@ class MenuItem(object):
         Sets the name of this MenuItem
         """
         self._name = str(name)
-        if self.get_id() is None and not ignore_db:
+        if self.get_id() is not None and not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_NAME = ? WHERE MNI_ID = ? ;"
             db.query(self._core,stmnt, (self._name, self.get_id()),commit=True)
@@ -1002,7 +1018,7 @@ class Menu(object):
         This function creates a menu.
         """
         db = cls._core.get_db()
-        menu = Menu()
+        menu = Menu(cls._core)
         menu.set_id(db.get_seq_next('MNU_GEN'))
         menu.set_name(name)
         stmnt = "INSERT INTO MENUS (MNU_ID,MNU_NAME, MNU_SIT_ID) VALUES (?,?, ?) ;"
@@ -1021,11 +1037,25 @@ class Menu(object):
         cur = db.query(cls._core,stmnt, (menu_id,))
         row = cur.fetchonemap()
         if row is not None:
-            menu = Menu()
+            menu = Menu(cls._core)
             menu.set_id(menu_id)
             menu.set_name(row["MNU_NAME"],True)
             return menu
         return None
+
+    @classmethod
+    def get_menus_of_page(cls, page):
+        """
+        Returns all Menus that belong to the given Site
+        """
+        db = cls._core.get_db()
+        stmnt = "SELECT MNU_ID FROM MENUS WHERE MNU_SIT_ID = ? ;"
+        cur = db.query(cls._core,stmnt, (page.get_id(),))
+        res = cur.fetchallmap()
+        ret = []
+        for row in res:
+            ret.append(cls.get_menu_by_id(row["MNU_ID"]))
+        return ret
 
     def __init__(self, core):
         self._core = core
@@ -1035,6 +1065,8 @@ class Menu(object):
         self._name = None
         self._page_id = None
         self._page = None
+
+        self._menu_items_initialized = False
 
     def set_page_id(self, page_id):
         """
@@ -1062,7 +1094,7 @@ class Menu(object):
         Sets the name of this menu
         """
         self._name = str(name)
-        if self.get_id() is None and not ignore_db:
+        if self.get_id() is not None and not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE MENUS SET MNU_NAME = ? WHERE MNU_ID = ? ;"
             db.query(self._core,stmnt, (self._name, self.get_id()),commit=True)

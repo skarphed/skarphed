@@ -357,6 +357,17 @@ class Page(object):
         cls._core = core
 
     @classmethod
+    def get_pages(cls):
+        db = cls._core.get_db()
+        stmnt = "SELECT SIT_ID FROM SITES ;"
+        cur = db.query(cls._core, stmnt)
+        res = cur.fetchallmap()
+        ret = []
+        for row in res:
+            ret.append(cls.get_page(row["SIT_ID"]))
+        return ret
+
+    @classmethod
     def get_page(cls, nr):
         """
         Returns a Page in the Database that has the given id
@@ -456,11 +467,25 @@ class Page(object):
     def get_id(self):
         return self._id
 
+    def get_name(self):
+        return self._name
+
+    def get_description(self):
+        return self._description
+
     def get_html_head(self):
         return self._html_head
 
     def get_html_body(self):
         return self._html_body
+
+    def get_menus(self):
+        """
+        gets the menus that belong to this page from action_manager
+        and returns them
+        """
+        action_manager = self._core.get_action_manager()
+        return action_manager.get_menus_of_page(self)
 
     def get_space_names(self):
         db = self._core.get_db()
@@ -470,6 +495,7 @@ class Page(object):
         rows = cur.fetchallmap()
         for row in rows:
             ret[row["SPA_ID"]] = row["SPA_NAME"]
+        return ret
     
     def get_space_id_by_name(self, name):
         sn = self.get_space_names()
@@ -504,6 +530,7 @@ class PageManager(object):
 
         Page.set_core(core)
         self.get_page = Page.get_page
+        self.get_pages = Page.get_pages
         self.create = Page.create
         self.delete_all_pages = Page.delete_all_pages
 

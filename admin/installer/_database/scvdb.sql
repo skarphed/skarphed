@@ -48,7 +48,7 @@ CREATE TABLE ACTIONS
   ACT_NAME Varchar(64),
   ACT_ATL_ID Integer,
   ACT_SIT_ID Integer,
-  ACT_SPACE Integer,
+  ACT_SPA_ID Integer,
   ACT_WGT_ID Integer,
   ACT_URL Varchar(1024),
   ACT_ORDER Integer NOT NULL,

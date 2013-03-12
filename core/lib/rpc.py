@@ -329,12 +329,35 @@ class Rpc(object):
         return operations
 
     def getSites(self, params):
-        #TODO: Implement after rewrite
-        return True
+        page_manager = self._core.get_page_manager()
+
+        pages = page_manager.get_pages()
+        ret = []
+        for page in pages:
+            spaces = page.get_space_names()
+            self._core.log(spaces)
+            ret.append({
+                    'id':page.get_id(),
+                    'name':page.get_name(),
+                    'description':page.get_description(),
+                    'spaces':spaces
+                })
+        return ret
 
     def getSite(self, params):
-        #TODO : Implement after rewrite
-        return True
+        page_id = int(params[0])
+        
+        page_manager = self._core.get_page_manager()
+        page = page_manager.get_page(page_id)
+        spaces = page.get_space_names()
+        self._core.log(spaces)
+        ret = {
+            'id':page.get_id(),
+            'name':page.get_name(),
+            'description':page.get_description(),
+            'spaces':spaces
+        }
+        return ret
 
     def assignWidgetToSpace(self,params):
         #TODO: Implement after rewrite
@@ -393,8 +416,18 @@ class Rpc(object):
         return [{'id':widget.get_id(), 'name':widget.get_name()} for widget in widgets]
 
     def getMenusOfSite(self,params):
-        #TODO: Implement after rewrite
-        return True
+        page_id = int(params[0])
+
+        page_manager = self._core.get_page_manager()
+        page = page_manager.get_page(page_id)
+        menus = page.get_menus()
+        ret = []
+        for menu in menus:
+            ret.append({
+                    'id':menu.get_id(),
+                    'name':menu.get_name()
+                })
+        return ret
 
     def getMenuItemsOfMenu(self, params):
         menu_id = int(params[0])
@@ -455,8 +488,13 @@ class Rpc(object):
         return 0
 
     def createMenuForSite(self, params):
-        #TODO: Implement after rewrite
-        return True
+        page_id = int(params[0])
+
+        page_manager = self._core.get_page_manager()
+        page = page_manager.get_page(page_id)
+
+        action_manager = self._core.get_action_manager()
+        action_manager.create_menu(page)
 
     def deleteMenu(self, params):
         menu_id = int(params[0])
@@ -492,7 +530,7 @@ class Rpc(object):
 
     def renameMenuItem(self, params):
         menu_item_id = int(params[0])
-        new_name = string(params[1])
+        new_name = str(params[1])
 
         action_manager = self._core.get_action_manager()
         menu_item = action_manager.get_menu_item_by_id(menu_item_id)
@@ -522,7 +560,7 @@ class Rpc(object):
         action_list_id = int(params[0])
 
         action_manager = self._core.get_action_manager()
-        action_list = action_manager.get_action_list_by_id()
+        action_list = action_manager.get_action_list_by_id(action_list_id)
         action_manager.create_action(action_list, None, "")
         return 0
 
@@ -576,7 +614,7 @@ class Rpc(object):
 
     def setActionUrl(self, params):
         action_id = int(params[0])
-        url = string(params[1])
+        url = str(params[1])
 
         action_manager = self._core.get_action_manager()
         action = action_manager.get_action_by_id(action_id)
