@@ -64,6 +64,7 @@ SERVER_ONLINE_SSH_SCV   = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 SITE                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/site.png",16,16)
 TEMPLATE                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/template.png",16,16)
 USER                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/user.png",16,16)
+VIEW                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/view.png",16,16)
 WEB                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/web.png",16,16)
 WIDGET                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/widget.png",16,16)
 
@@ -87,7 +88,9 @@ icon_object_map = {
                    "Menu"             : MENU,
                    "MenuItem"         : MENUITEM,
                    "Database"         : DATABASE,
-                   "Schema"           : SCHEMA   
+                   "Schema"           : SCHEMA,
+                   "View"             : VIEW,
+                   "Views"            : VIEW  
                    }
 
 def getServerIcon(server):
