@@ -62,14 +62,27 @@ class ObjectStore(object):
         for cb in ObjectStore.callbacks:
             cb()
     
-    def getAllOfClass(self, obj):
+    def getAllOfClass(self, obj, parent=None):
         if type(obj) != str:
             obj = obj.__class__.__name__
         res = []
         for element in ObjectStore.localObjects.values():
             if element.__class__.__name__ == obj:
+                if parent is not None and not element.isChildOf(parent):
+                    continue
                 res.append(element)
         return res
+
+    def isChildOf(self, obj):
+        par = None
+        try:
+            par = self.getPar()
+        except GenericObjectStoreException:
+            return False
+        if self.getPar() == obj:
+            return True
+        else:
+            return self.getPar().isChildOf(obj)
 
     def getServers(self):
         return self.getAllOfClass("Server")
