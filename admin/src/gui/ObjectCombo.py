@@ -30,12 +30,13 @@ import gtk
 import IconStock
 
 class ObjectCombo(gtk.ComboBox):
-    def __init__(self, par, objectType, selectedObject=None, selectFirst=False, virtualRootObject=None):
+    def __init__(self, par, objectType, selectedObject=None, selectFirst=False, virtualRootObject=None, noneElement=False):
         gtk.ComboBox.__init__(self)
         self.par = par
 
         self.selectFirst = selectFirst
         self.firstSelected = False
+        self.showNoneElement = noneElement
 
         if type(objectType) != str:
             self.objectType = objectType.__class__.__name__
@@ -75,6 +76,7 @@ class ObjectCombo(gtk.ComboBox):
 
 
         processedObjectIds = []
+
         for obj in objs:
             rowiter = self.getIterById(self.model, obj.getLocalId()) 
             if rowiter is None:
@@ -92,6 +94,9 @@ class ObjectCombo(gtk.ComboBox):
         self.model.foreach(search, processedObjectIds)
         for rowiter in self.model.itersToRemove:
             self.model.remove(rowiter)
+
+        if self.showNoneElement:
+            self.model.append((None, "(Nothing)", -3))
 
     def getIterById(self, objlist, objectId):
         def search(model, path, rowiter, objectId):
@@ -114,15 +119,26 @@ class ObjectCombo(gtk.ComboBox):
     def getSelected(self):
         active_iter = self.get_active_iter()
         objId = self.model.get_value(active_iter,2)
-        obj = self.getApplication().getObjectStore().getLocalObjectById(objId)
-        return obj
+        if objId == -3:
+            return None
+        else:
+            obj = self.getApplication().getObjectStore().getLocalObjectById(objId)
+            return obj
 
     def setSelected(self, obj):
-        if obj.__class__.__name__ != self.objectType:
+        if obj is None and not self.showNoneElement:
+            raise Exception("Cannot Select None when Noneelement is inactive")
+        if obj is not None and obj.__class__.__name__ != self.objectType:
             raise TypeError()
-        activeiter = self.getIterById(self.model, obj.getLocalId()) 
+        if obj is None:
+            activeiter = self.getIterById(self.model, -3) 
+            self.selectedObjectId = -3
+        else:
+            activeiter = self.getIterById(self.model, obj.getLocalId()) 
+            self.selectedObjectId = obj.getLocalId()
+
         self.set_active_iter(activeiter)
-        self.selectedObjectId = obj.getLocalId()
+        
 
     def getPar(self):
         return self.par
