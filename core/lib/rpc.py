@@ -92,6 +92,10 @@ class Rpc(object):
                 session.delete()
             return False
 
+    def getPublicKey(self, params):
+        pki_manager = self._core.get_pki_manager()
+        return pki_manager.get_public_key(as_string=True)
+
 
     def getUsers(self,params):
         session_manager = self._core.get_session_manager()

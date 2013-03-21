@@ -37,6 +37,7 @@ from binary import BinaryManager
 from view import ViewManager, PageManager, ViewException
 from rpc import Rpc
 from template import TemplateManager
+from pki import PkiManager
 
 class CoreException(Exception):
     ERRORS = {
@@ -71,6 +72,7 @@ class Core(object):
         self._view_manager = None
         self._page_manager = None
         self._template_manager = None
+        self._pki_manager = None
 
     def get_core_config(self,obj):
         """
@@ -145,6 +147,11 @@ class Core(object):
         if self._template_manager is None:
             self._template_manager = TemplateManager(self)
         return self._template_manager
+
+    def get_pki_manager(self):
+        if self._pki_manager is None:
+            self._pki_manager = PkiManager(self)
+        return self._pki_manager
 
     def get_name(self):
         return "de.masterprogs.scoville.core"
