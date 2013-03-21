@@ -196,13 +196,13 @@ class Widget(object):
         return self._site_id
 
     def render_pure_html(self,args={}):
-        self._module.render_pure_html(self._id,args)
+        return self._module.render_pure_html(self._id,args)
 
     def render_html(self,args={}):
-        self._module.render_html(self._id,args)
+        return self._module.render_html(self._id,args)
 
     def render_javascript(self,args={}):
-        self._module.render_javascript(self._id,args)
+        return self._module.render_javascript(self._id,args)
 
     def store(self):
         db = self._core.get_db()
@@ -537,7 +537,6 @@ class ModuleManager(object):
                 module_on_system = False
                 for meta_record in meta_records:
                     if repomodule["name"] == meta_record["name"]:
-                        self._core.log("REPO>"+repomodule['name']+" META>"+meta_record["name"])
                         if self.compare_versions(repomodule, meta_record) == 1:
                             meta_record["toUpdate"] == True
                         for repository_joblock in repository_joblocks:

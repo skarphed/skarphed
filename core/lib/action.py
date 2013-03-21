@@ -992,7 +992,7 @@ class MenuItem(object):
         action_manager = self._core.get_action_manager()
         db = self._core.get_db()
         stmnt = "SELECT MNI_ID FROM MENUITEMS WHERE MNI_MNI_ID = ? ;"
-        cur = db.query(self._core,stmnt, (self.get_id()))
+        cur = db.query(self._core,stmnt, (self.get_id(),))
         ret = []
         rows = cur.fetchallmap()
         for row in rows:

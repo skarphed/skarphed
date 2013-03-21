@@ -53,6 +53,7 @@ class FrameLabel(gtk.HBox):
     def __init__(self,parent, text, icon=None):
         self.par = parent
         gtk.HBox.__init__(self)
+        self.set_spacing(10)
         assert type(text) == str, "text must be string"
         
         self.icon = gtk.Image()
@@ -64,7 +65,10 @@ class FrameLabel(gtk.HBox):
         self.pack_start(self.icon,False)
         self.pack_start(self.label,True)
         self.show_all()
-        
+    
+    def setText(self,text):
+        self.label.set_text(text)
+
     def getPar(self):
         return self.par
 
