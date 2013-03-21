@@ -207,6 +207,7 @@ class Scoville(Instance):
         self.url = url
         self.username = username
         self.password = password
+        self.publickey = None
         
         self.users = None
         self.template = None
@@ -216,6 +217,7 @@ class Scoville(Instance):
         self.repo = None
         self.operationManager = None
         self.operationDaemon = None
+
         
         self.cssPropertySet = None
         
@@ -249,6 +251,24 @@ class Scoville(Instance):
     
     def setPassword(self,password):
         return self.setScvPass(password)
+
+    def setPublicKey(self, publickey):
+        self.publickey = publickey
+
+    def getPublicKey(self):
+        return self.publickey
+
+    def loadPublicKeyCallback(self, result):
+        if self.publickey == None:
+            self.publickey = result
+        else:
+            if self.publickey == result:
+                return
+            else:
+                pass #TODO Implement Error behaviour. this means, the publickey changed since last login
+
+    def loadPublicKey(self):
+        self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getPublicKey")
     
     def getServerInfoCallback(self, result):
         self.data['name'] = result

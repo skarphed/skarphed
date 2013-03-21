@@ -118,6 +118,8 @@ class Profile(object):
                     if instance['typename'] == "database":
                         for schema in instance['schemas']:
                             createdInstance.registerSchema(schema['name'], schema['user'], schema['pass'])
+                    elif instance['typename'] == "scoville":
+                        createdInstance.setPublicKey(instance['publickey'])
                  
         else:
             profilefile.close()
@@ -151,6 +153,13 @@ class Profile(object):
                             'schemas':schemas,
                             'username':instance.getUsername(),
                             'password':instance.getPassword()})
+                elif instance.instanceTypeName == "scoville":
+                    instances.append({'typename':instance.instanceTypeName,
+                            'typedisp':instance.displayName,
+                            'url':instance.getUrl(),
+                            'username':instance.getUsername(),
+                            'password':instance.getPassword(),
+                            'publickey':instance.getPublicKey()})
                 else:
                     instances.append({'typename':instance.instanceTypeName,
                             'typedisp':instance.displayName,
