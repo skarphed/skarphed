@@ -59,12 +59,16 @@ class ObjectCombo(gtk.ComboBox):
         self.add_attribute(self.namerenderer, "text", 1)
 
         self.getApplication().getObjectStore().addCallback(self.render)
+
+        if self.showNoneElement:
+            self.model.append((None, "(Nothing)", -3))
+
         self.render()
 
     def render(self):
         def search(model, path, rowiter, processed):
             val = model.get_value(rowiter,2)
-            if val not in processed:
+            if val not in processed and val != -3:
                 model.itersToRemove.append(rowiter)
         
         objs = self.getApplication().getObjectStore().getAllOfClass(self.objectType, self.virtualRootObject)
@@ -86,7 +90,6 @@ class ObjectCombo(gtk.ComboBox):
                 self.model.set_value(rowiter,1,obj.getName())
             processedObjectIds.append(obj.getLocalId())
 
-
         if self.selectedObjectId is not None:
             activeiter = self.getIterById(self.model, self.selectedObjectId) 
             self.set_active_iter(activeiter)
@@ -95,8 +98,7 @@ class ObjectCombo(gtk.ComboBox):
         for rowiter in self.model.itersToRemove:
             self.model.remove(rowiter)
 
-        if self.showNoneElement:
-            self.model.append((None, "(Nothing)", -3))
+        
 
     def getIterById(self, objlist, objectId):
         def search(model, path, rowiter, objectId):
@@ -118,6 +120,8 @@ class ObjectCombo(gtk.ComboBox):
 
     def getSelected(self):
         active_iter = self.get_active_iter()
+        if active_iter is None:
+            return None
         objId = self.model.get_value(active_iter,2)
         if objId == -3:
             return None
