@@ -26,39 +26,85 @@
 from data.Generic import GenericScovilleObject
 
 class View(GenericScovilleObject):
-    def __init__(self,parent):
+    def __init__(self,parent, data):
         GenericScovilleObject.__init__(self)
         self.par = parent
-        self.updated()
-        self.refresh()
-    
-    def refreshCallback(self,data):
-        viewIds = [s.getId() for s in self.children]
-        for view in data:
-            if view['id'] not in viewIds:
-                self.addChild(View(self,view))
-            else:
-                self.getviewById(view['id']).refresh(view)                
-    
-    def getViewById(self,nr):
-        for view in self.children:
-            if view.getId() == nr:
-                return view
-        return None
-    
-    def refresh(self,data):
         self.data = data
+        self.loaded_fully = False
+        if not self.data.has_key('space_widget_mapping'):
+            self.data['space_widget_mapping'] = {}
+        if not self.data.has_key('widget_param_mapping'):
+            self.data['widget_param_mapping'] = {}
+        if not self.data.has_key('page_id'):
+            self.data['page_id'] = None
+        self.updated()
+        
+    def loadFullCallback(self,data):
+        self.data = data
+        self.loaded_fully = True
+        self.updated()
+
+    def loadFull(self):
+        self.getApplication().doRPCCall(self.getViews().getScoville(),self.loadFullCallback, "getView", [self.getId()])
+
+    def isFullyLoaded(self):
+        return self.loaded_fully
+
+    def getId(self):
+        if self.data.has_key('id'):
+            return self.data['id']
+        else:
+            return None
+    
+    def getPage(self):
+        if self.data.has_key('site'):
+            page = self.getViews().getScoville().getSites().getSiteById(self.data['site'])
+            return page
+        else:
+            return None
+
+    def refresh(self,data):
+        self.data.update(data)
     
     def getName(self):
         if self.data.has_key('name'):
             return self.data['name']
         else:
             return "Unknown View"
+
+    def getSpaceWidgetMapping(self, widget=None):
+        if self.data.has_key('space_widget_mapping'):
+            return self.data['space_widget_mapping']
+        else:
+            self.loadFull()
+
+    def getWidgetParamMapping(self, widget=None):
+        if self.data.has_key('widget_param_mapping'):
+            if widget is not None:
+                if self.data['widget_param_mapping'].has_key(str(widget.getId())):
+                    return self.data['widget_param_mapping'][str(widget.getId())]
+                else:
+                    return {}
+            return self.data['widget_param_mapping']
+        else:
+            self.loadFull()
+
+    def changeWidgetCallback(self, json):
+        self.loadFull()
+
+    def setWidgetParamMapping(self, widget, mapping):
+        self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "setWidgetParamMapping", [self.getId(), widget.getId(), mapping])
+
+    def setWidgetIntoSpace(self, space_id, widget):
+        self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "assignWidgetToSpace", [self.getId(), space_id, widget.getId()])
+
+    def removeWidgetFromSpace(self, space_id):
+        self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "removeWidgetToFrom", [self.getId(), space_id])
     
     def getPar(self):
         return self.par
     
-    def getScoville(self):
+    def getViews(self):
         return self.getPar()
     
     def getServer(self):
@@ -77,7 +123,8 @@ class Views(GenericScovilleObject):
             if view['id'] not in viewIds:
                 self.addChild(View(self,view))
             else:
-                self.getviewById(view['id']).refresh(view)                
+                existing_view = self.getviewById(view['id'])
+                existing_view.refresh(view)                
     
     def getViewById(self,nr):
         for view in self.children:
@@ -88,8 +135,7 @@ class Views(GenericScovilleObject):
     def refresh(self):
         self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getViews")
     
-    def getViews
-    (self):
+    def getViews(self):
         return self.children
     
     def getName(self):

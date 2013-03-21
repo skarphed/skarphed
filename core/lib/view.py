@@ -31,7 +31,8 @@ class ViewException(Exception):
         0:"""Get By Name: No such view""",
         1:"""Invalid input type to specify Space""",
         2:"""Invalid input type to specify Widget""",
-        3:"""There is no default view"""
+        3:"""There is no default view""",
+        4:"""Cannot set Parameters for Widget that is not in this view!"""
     }
 
     @classmethod
@@ -56,6 +57,67 @@ class View(object):
         trivial
         """
         cls._core = core
+
+    @classmethod
+    def get_viewlist(cls):
+        """
+        returns a list of available views for the GUI
+        in a heavily used scoville environment there 
+        will be a huge amount of views so it makes
+        more sense to load them on demand than to load
+        them on every scoville start
+        """
+        db = cls._core.get_db()
+        stmnt = "SELECT VIE_ID, VIE_NAME, VIE_DEFAULT FROM VIEWS ;"
+        cur = db.query(cls._core, stmnt)
+        res = cur.fetchallmap()
+        ret = []
+        for row in res:
+            ret.append({
+                  'id': row["VIE_ID"],
+                  'name': row["VIE_NAME"],
+                  'default': bool(row["VIE_DEFAULT"])
+                })
+        return ret
+
+    @classmethod
+    def get_from_id(cls, nr):
+        """
+        returns the view that is given by this id
+        """
+        db = cls._core.get_db()
+        stmnt = "SELECT VIE_NAME, VIE_SIT_ID, VIE_DEFAULT FROM VIEWS WHERE VIE_ID = ? ;"
+        cur = db.query(cls._core, stmnt, (int(nr),))
+        row = cur.fetchonemap()
+        if row is None:
+            raise ViewException(ViewException.get_msg(0))
+        else:
+            view = View(cls._core)
+            view.set_name(row["VIE_NAME"])
+            view.set_default(row["VIE_DEFAULT"])
+            view.set_page(row["VIE_SIT_ID"])
+            view.set_id(nr)
+
+        stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
+        cur = db.query(cls._core, stmnt, (view.get_id(),))
+        rows = cur.fetchallmap()
+        space_widget_mapping = {}
+        for row in rows:
+            space_widget_mapping[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
+        view.set_space_widget_mapping(space_widget_mapping)
+
+        stmnt = "SELECT VWP_KEY, VWP_VALUE, VWP_WGT_ID FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ORDER BY VWP_WGT_ID;"
+        cur = db.query(cls._core, stmnt, (view.get_id(),))
+        rows = cur.fetchallmap()
+        widget_param_mapping = {}
+        for row in rows:
+            if not widget_param_mapping.has_key(row["VWP_WGT_ID"]):
+                widget_param_mapping[row["VWP_WGT_ID"]] = {}
+            widget_param_mapping["VWP_WGT_ID"][row["VWP_KEY"]]= row["VWP_VALUE"]
+        view.set_widget_param_mapping(widget_param_mapping)
+
+        return view
+
 
     @classmethod
     def get_default_view(cls):
@@ -86,7 +148,7 @@ class View(object):
             view.set_name(str(name))
             view.set_default(row["VIE_DEFAULT"])
             view.set_page(row["VIE_SIT_ID"])
-            view.set_id = (row["VIE_ID"])
+            view.set_id(row["VIE_ID"])
 
         stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
         cur = db.query(cls._core, stmnt, (view.get_id(),))
@@ -164,6 +226,12 @@ class View(object):
         """
         self._name = str(name)
 
+    def get_name(self):
+        return self._name
+
+    def set_id(self, nr):
+        self._id = nr
+
     def get_id(self):
         return self._id
 
@@ -176,14 +244,26 @@ class View(object):
             page = page
         self._page = page
 
+    def get_page(self):
+        return self._page
+
     def set_default(self, default):
         self._default = bool(default)
+
+    def get_default(self):
+        return self._default
 
     def set_widget_param_mapping(self, mapping):
         self._widget_param_mapping = mapping
 
     def set_space_widget_mapping(self, mapping):
         self._space_widget_mapping = mapping
+
+    def get_space_widget_mapping(self):
+        return self._space_widget_mapping
+
+    def get_widget_param_mapping(self):
+        return self._widget_param_mapping
 
     def place_widget_in_space(self, space, widget):
         if type(space) == int:
@@ -198,12 +278,25 @@ class View(object):
 
         self._space_widget_mapping[space] = widget
 
+    def remove_widget_from_space(self, space):
+        if type(space) == int:
+            pass
+        elif type(space) == str:
+            space = self._page.get_space_id_by_name(space)
+        else:
+            raise ViewException(ViewException.get_msg(1))
+
+        del(self._space_widget_mapping[space])
+
     def set_params_for_widget(self, widget, params):
         if type(widget) != int:
             widget = widget.get_id()
         
         if type(params) != dict:
             raise ViewException(ViewException.get_msg(2))
+
+        if widget not in self._space_widget_mapping.values():
+            raise ViewException(ViewException.get_msg(4))
 
         self._widget_param_mapping[widget] = params
 
@@ -250,7 +343,7 @@ class View(object):
         # Find placeholders to substitute
         
         space_name_map = page.get_space_names()
-        for space, widget_id in self._space_widget_mapping:
+        for space, widget_id in self._space_widget_mapping.items():
             space_name = space_name_map[space]
             widget = module_manager.get_widget(widget_id)
 
@@ -262,6 +355,9 @@ class View(object):
                 pass
 
             widget_html = widget.render_pure_html(args)
+            self._core.log("SPACENAME: "+space_name)
+            self._core.log("WIDGETHTM: "+widget_html)
+            self._core.log("BODY     : "+body)
             body = re.sub(r"<%%\s?%s\s?%%>"%space_name,widget_html,body)
 
         body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
@@ -303,21 +399,50 @@ class View(object):
         db = self._core.get_db()
         if self._id is None:
             self._id = db.get_seq_next("VIE_GEN")
+        
+        #Get current space-widgetmapping to determine, which mappings to delete
+        stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
+        cur = db.query(self._core, stmnt, (self.get_id(),))
+        dbSpaceWidgetMap = {}
+        for row in cur.fetchallmap():
+            dbSpaceWidgetMap[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
 
         stmnt = "UPDATE OR INSERT INTO VIEWWIDGETS (VIW_VIE_ID, VIW_SPA_ID, VIW_WGT_ID) \
                   VALUES (?,?,?) MATCHING (VIW_VIE_ID, VIW_SPA_ID) ;"
-        for space_id, widget_id in self._space_widget_mapping['v'].items():
+        for space_id, widget_id in self._space_widget_mapping.items():
             db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
+            try:
+                del(dbSpaceWidgetMap[space_id])
+            except KeyError, e: pass
+
+        #delete Removed Widgets
+        stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? AND VIW_SPA_ID = ? ;"
+        for space_id in dbSpaceWidgetMap.keys():
+            db.query(self._core, stmnt, (self.get_id(), space_id), commit=True)
+
+        stmnt = "SELECT VWP_WGT_ID, VWP_KEY FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ;"
+        cur = db.query(self._core, stmnt, (self.get_id(),))
+        dbWidgetParamMap = {}
+        for row in cur.fetchallmap():
+            dbWidgetParamMap[(row["VPT_WGT_ID"],row["VWP_KEY"])] = 1
+
 
         stmnt = "UPDATE OR INSERT INTO VIEWWIDGETPARAMS (VWP_VIE_ID, VWP_WGT_ID, VWP_KEY, VWP_VALUE) \
                   VALUES (?,?,?,?) MATCHING (VWP_VIE_ID, VWP_WGT_ID) ;"
-        for widget_id, propdict in self._space_widget_mapping['c'].items():
+        for widget_id, propdict in self._widget_param_mapping.items():
             for key, value in propdict.items():
                 db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)),commit=True)
+                try:
+                    del(dbWidgetParamMap[(widget_id,key)])
+                except KeyError, e: pass
+
+        stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VPW_VIE_ID = ? AND VWP_WGT_ID = ? AND VWP_KEY = ? ;"
+        for widget_id, key in dbWidgetParamMap.keys():
+            db.query(self._core, stmnt, (self.get_id(), widget_id, key), commit=True)
 
         stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
                   VALUES (?,?,?,?) MATCHING (VIE_ID) ;"
-        db.query(self._core, stmnt, (self._id, self._page.get_id(), self._name, int(self._default)),commit=True)
+        db.query(self._core, stmnt, (self._id, self._page, self._name, int(self._default)),commit=True)
 
     def delete(self):
         """
@@ -338,6 +463,8 @@ class ViewManager(object):
         self._core = core
 
         View.set_core(core)
+        self.get_viewlist = View.get_viewlist
+        self.get_from_id = View.get_from_id
         self.get_from_name = View.get_from_name
         self.get_from_json = View.get_from_json
         self.get_default_view = View.get_default_view

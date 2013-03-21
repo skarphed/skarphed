@@ -73,17 +73,6 @@ class ObjectStore(object):
                 res.append(element)
         return res
 
-    def isChildOf(self, obj):
-        par = None
-        try:
-            par = self.getPar()
-        except GenericObjectStoreException:
-            return False
-        if self.getPar() == obj:
-            return True
-        else:
-            return self.getPar().isChildOf(obj)
-
     def getServers(self):
         return self.getAllOfClass("Server")
     
@@ -139,6 +128,17 @@ class GenericScovilleObject(object):
     
     def setPar(self,parent):
         self.par = parent
+
+    def isChildOf(self, obj):
+        par = None
+        try:
+            par = self.getPar()
+        except GenericObjectStoreException:
+            return False
+        if self.getPar() == obj:
+            return True
+        else:
+            return self.getPar().isChildOf(obj)
     
     def addCallback(self, callback):
         if callback not in self.updateCallbacks:

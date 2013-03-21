@@ -69,19 +69,24 @@ class Site(GenericScovilleObject):
         else:
             modules = self.getSites().getScoville().modules.getModuleById(self.data['spaces'][str(spaceId)]['moduleId'])
             return modules.getWidgetById(self.data['spaces'][str(spaceId)]['id'])
-                
     
-    def removeWidgetFromSpaceCallback(self, json):
-        self.update()
+    def getNameOfSpace(self, spaceId):
+        return self.data['spaces'][spaceId]
+
+    def getSpaces(self):
+        return self.data['spaces']
     
-    def removeWidgetFromSpace(self, spaceId):
-        self.getApplication().doRPCCall(self.getScoville(),self.removeWidgetFromSpaceCallback, "removeWidgetFromSpace", [self.getId(), spaceId])
+    # def removeWidgetFromSpaceCallback(self, json):
+    #     self.update()
     
-    def addWidgetToSpaceCallback(self,json):
-        self.getSites().refresh()
+    # def removeWidgetFromSpace(self, spaceId):
+    #     self.getApplication().doRPCCall(self.getScoville(),self.removeWidgetFromSpaceCallback, "removeWidgetFromSpace", [self.getId(), spaceId])
     
-    def addWidgetToSpace(self,spaceId, widget):
-        self.getApplication().doRPCCall(self.getScoville(),self.addWidgetToSpaceCallback , "assignWidgetToSpace", [self.getId(), spaceId, widget.getId()])
+    # def addWidgetToSpaceCallback(self,json):
+    #     self.getSites().refresh()
+    
+    # def addWidgetToSpace(self,spaceId, widget):
+    #     self.getApplication().doRPCCall(self.getScoville(),self.addWidgetToSpaceCallback , "assignWidgetToSpace", [self.getId(), spaceId, widget.getId()])
         
     def getUsedWidgetIds(self):
         ret = []
@@ -109,7 +114,7 @@ class Site(GenericScovilleObject):
                 return '/tmp/scoville'+tempfilename
             try:
                 os.mkdir('/tmp/scoville/')
-            except:
+            except OSError,e :
                 pass
             tempfile = open('/tmp/scoville/'+tempfilename,'w')
             tempfile.write(raw)

@@ -33,6 +33,7 @@ from Sites import Sites
 from Repository import Repository
 from Template import Template
 from Operation import OperationManager, OperationDaemon
+from View import Views
 
 from threading import Thread
 import json 
@@ -272,10 +273,16 @@ class Scoville(Instance):
             self.sites = Sites(self)
             self.addChild(self.sites)
         self.loadRepository()
+        if True:
+            self.views = Views(self)
+            self.addChild(self.views)
         if True: #'scoville.template.modify' in self.serverRights
             self.loadTemplate()
         if True: #'scoville.operation.modify' in self.serverRights
             self.operationManager = OperationManager(self)
+        # if True: # 'scoville.compositing' in self.serverRights
+        #     self.compositing = Compositing(self)
+        #     self.addChild(self.compositing)
         
         #TODO: restliche implementieren
     
@@ -393,6 +400,12 @@ class Scoville(Instance):
     
     def getModules(self):
         return self.modules
+
+    def getSites(self):
+        return self.sites
+
+    def getViews(self):
+        return self.views
     
     def getServer(self):
         pass

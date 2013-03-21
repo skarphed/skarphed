@@ -335,7 +335,6 @@ class Rpc(object):
         ret = []
         for page in pages:
             spaces = page.get_space_names()
-            self._core.log(spaces)
             ret.append({
                     'id':page.get_id(),
                     'name':page.get_name(),
@@ -350,7 +349,6 @@ class Rpc(object):
         page_manager = self._core.get_page_manager()
         page = page_manager.get_page(page_id)
         spaces = page.get_space_names()
-        self._core.log(spaces)
         ret = {
             'id':page.get_id(),
             'name':page.get_name(),
@@ -360,12 +358,23 @@ class Rpc(object):
         return ret
 
     def assignWidgetToSpace(self,params):
-        #TODO: Implement after rewrite
-        return True
+        view_id = int(params[0])
+        space_id = int(params[1])
+        widget_id = int(params[2])
+
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_from_id(view_id)
+        view.place_widget_in_space(space_id, widget_id)
+        view.store()
 
     def removeWidgetFromSpace(self, params):
-        #TODO: Implement after rewrite
-        return True
+        view_id = int(params[0])
+        space_id = int(params[1])
+
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_from_id(view_id)
+        view.remove_widget_from_space(space_id)
+        view.store()
 
     def getCurrentTemplate(self, params):
         template_manager = self._core.get_template_manager()
@@ -685,3 +694,33 @@ class Rpc(object):
 
         opd = OperationDaemon(self._core,pidfile)
         return opd.is_running()
+
+    def getViews(self, params):
+        view_manager = self._core.get_view_manager()
+        viewlist = view_manager.get_viewlist()
+        return viewlist
+    
+    def getView(self, params):
+        view_id = int(params[0])
+
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_from_id(view_id)
+        ret = {
+            'id' : view.get_id(),
+            'name' : view.get_name(),
+            'site' : view.get_page(),
+            'default' : view.get_default(),
+            'space_widget_mapping' : view.get_space_widget_mapping(),
+            'widget_param_mapping' : view.get_widget_param_mapping()
+        }
+        return ret
+
+    def setWidgetParamMapping(self, params):
+        view_id = int(params[0])
+        widget_id = int(params[1])
+        mapping = int(params[2])
+
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_from_id(view_id)
+        view.set_params_for_widget(widget_id, mapping)
+        view.store()

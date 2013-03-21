@@ -70,6 +70,13 @@ class Modules(GenericScovilleObject):
         for module in self.getAllModules():
             ret.extend(module.getAllWidgets())
         return ret
+
+    def getWidgetById(self, nr):
+        for module in self.getAllModules():
+            widget = module.getWidgetById(nr)
+            if widget is not None:
+                return widget
+        return None
     
     def moduleOperationCallback(self,json=None):
         self.updated()

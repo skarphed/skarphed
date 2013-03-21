@@ -62,6 +62,7 @@ SERVER_ONLINE_SSH       = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 SERVER_ONLINE_SCV       = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/server_online_scv.png",16,16)
 SERVER_ONLINE_SSH_SCV   = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/server_online_ssh_scv.png",16,16)
 SITE                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/site.png",16,16)
+SPACE                   = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/space.png",16,16)
 TEMPLATE                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/template.png",16,16)
 USER                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/user.png",16,16)
 VIEW                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/view.png",16,16)
