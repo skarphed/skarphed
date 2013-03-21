@@ -51,7 +51,10 @@ class Application(object):
         from data import scoville
     
     def run(self):
-        gui.run()
+        try:
+            gui.run()
+        except KeyboardInterrupt, e:
+            self.mainwin.cb_Close()
         
     def logout(self):
         if self.state == self.STATE_LOGGEDIN:
