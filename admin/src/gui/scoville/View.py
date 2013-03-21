@@ -167,7 +167,7 @@ class SpaceWidget(gtk.Frame):
             self.destroy()
             return
         widget = self.widget_combo.getSelected()
-        if (widget is None and self.widgetId is None) or (widget.getId() == self.widgetId):
+        if (widget is None and self.widgetId is None) or (widget is not None and widget.getId() == self.widgetId):
             return
         if widget is not None:
             view.setWidgetIntoSpace(self.spaceId, widget)

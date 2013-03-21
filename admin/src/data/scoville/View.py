@@ -99,7 +99,7 @@ class View(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "assignWidgetToSpace", [self.getId(), space_id, widget.getId()])
 
     def removeWidgetFromSpace(self, space_id):
-        self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "removeWidgetToFrom", [self.getId(), space_id])
+        self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "removeWidgetFromSpace", [self.getId(), space_id])
     
     def getPar(self):
         return self.par
