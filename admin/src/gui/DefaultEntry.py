@@ -56,3 +56,8 @@ class DefaultEntry(gtk.Entry):
             return gtk.Entry.get_text(self)
         else:
             return ""
+
+    def set_text(self,text):
+        gtk.Entry.set_text(self,text)
+        self.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#000000"))
+        self._isDefaultMessage = False
