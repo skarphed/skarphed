@@ -30,6 +30,8 @@ import gtk
 from threading import Thread
 from time import sleep
 
+from data.Generic import GenericObjectStoreException
+
 class NewSchema(gtk.Window):
     class Pulse(Thread):
         def __init__(self, window):
@@ -93,8 +95,9 @@ class NewSchema(gtk.Window):
         self.destroy()
 
     def render(self):
-        database = self.getApplication().getLocalObjectById(self.databaseId)
-        if database is None:
+        try:
+            database = self.getApplication().getLocalObjectById(self.databaseId)
+        except GenericObjectStoreException, e:
             self.destroy()
         if database.installFinished is not None and database.installFinished:
             self.working=False

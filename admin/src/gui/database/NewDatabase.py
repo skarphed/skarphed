@@ -26,6 +26,8 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from data.Generic import GenericObjectStoreException
+
 class NewDatabase(gtk.Window):
     def __init__(self,par,server):
         self.par = par
@@ -72,8 +74,9 @@ class NewDatabase(gtk.Window):
         self.destroy()
 
     def render(self):
-        server = self.getApplication().getLocalObjectById(self.serverId)
-        if server is None:
+        try:
+            server = self.getApplication().getLocalObjectById(self.serverId)
+        except GenericObjectStoreException, e:
             self.destroy()
 
     def getPar(self):
