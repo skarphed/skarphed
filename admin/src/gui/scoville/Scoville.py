@@ -63,7 +63,18 @@ class ScovillePage(GenericObjectPage):
 
         self.opd = OperationDaemonControl(self,scoville.getOperationDaemon())
         self.pack_start(self.opd,False)
-            
+        
+        self.pki = PageFrame(self, "Public Key", gui.IconStock.CREDENTIAL)
+        self.pki_label = gtk.Label("Instance Public Key:")
+        self.pki_textview = gtk.TextView()
+        self.pki_textbuffer = gtk.TextBuffer()
+        self.pki_textview.set_buffer(self.pki_textbuffer)
+        self.pki_vbox = gtk.VBox()
+        self.pki_vbox.pack_start(self.pki_label,False)
+        self.pki_vbox.pack_start(self.pki_textview,True)
+        self.pki.add(self.pki_vbox)
+        self.pack_start(self.pki, False)
+
         self.show_all()
         
         self.render()
@@ -76,6 +87,11 @@ class ScovillePage(GenericObjectPage):
             self.repoEntry.set_text(repo.getURL())
         except AttributeError:
             pass
+        public_key = scoville.getPublicKey()
+        if public_key is not None:
+            self.pki_textbuffer.set_text(public_key)
+        else:
+            self.pki_textbuffer.set_text("")    
         
     def cb_changeRepo(self, widget=None, data=None):
         scoville = self.getApplication().getLocalObjectById(self.scovilleId)

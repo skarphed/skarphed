@@ -53,7 +53,7 @@ class Pki(object):
 
         db = cls._core.get_db()
         stmnt = "SELECT PKI_HAS_PKI FROM PKI WHERE PKI_ID = 3 ;"
-        cur = db.query(self._core, stmnt)
+        cur = db.query(cls._core, stmnt)
         row = cur.fetchonemap()
         if row is not None:
             cls._pki_is_present = bool(row["PKI_HAS_PKI"])
@@ -83,10 +83,8 @@ class Pki(object):
         """
         key = RSA.generate(1024, os.urandom)
         pubkey = key.publickey()
-        key_io = StringIO()
-        pubkey_io = StringIO()
-        key_io.write(key.exportKey())
-        pubkey_io.write(pubkey.exportKey())
+        key_io = StringIO(key.exportKey())
+        pubkey_io = StringIO(pubkey.exportKey())
 
         db = cls._core.get_db()
         stmnt = "INSERT INTO PKI (PKI_ID, PKI_KEY, PKI_HAS_PKI) VALUES (?,?, NULL) ;"
@@ -104,7 +102,7 @@ class Pki(object):
         if not cls._pki_is_present:
             cls._generate_pki()
             cls._load_keys()
-
+        
         if as_string:
             return cls._public_key.exportKey()
         else:

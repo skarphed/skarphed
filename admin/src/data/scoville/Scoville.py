@@ -268,7 +268,7 @@ class Scoville(Instance):
                 pass #TODO Implement Error behaviour. this means, the publickey changed since last login
 
     def loadPublicKey(self):
-        self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getPublicKey")
+        self.getApplication().doRPCCall(self,self.loadPublicKeyCallback, "getPublicKey")
     
     def getServerInfoCallback(self, result):
         self.data['name'] = result
@@ -280,6 +280,7 @@ class Scoville(Instance):
         self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getServerInfo")
     
     def loadScovilleChildren(self):
+        self.loadPublicKey()
         if 'scoville.users.view' in self.serverRights:
             self.users = Users(self)
             self.addChild(self.users)
