@@ -48,7 +48,7 @@ class DefaultEntry(gtk.Entry):
     def cb_focus_out(self, widget=None, data=None):
         if gtk.Entry.get_text(self) == "":
             gtk.Entry.set_text(self, self._defaultMessage)
-            self.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#555555"))
+            self.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAAAA"))
             self._isDefaultMessage = True
     
     def get_text(self):
