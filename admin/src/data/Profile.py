@@ -48,8 +48,8 @@ class Profile(object):
         self.data = {}
         
     def create(self):
-        if not os.path.exists(os.path.expanduser('~/.scovilleadmin/')):
-            os.mkdir('~/.scovilleadmin')
+        if not os.path.exists(os.path.expanduser('~/.scovilleadmin')):
+            os.mkdir(os.path.expanduser('~/.scovilleadmin'))
         if os.path.exists(os.path.expanduser('~/.scovilleadmin/'+self.username)):
             raise ProfileException("Profile exists")
         assert len(self.password)%16 == 0 , "Password not divisible by 16"
@@ -128,6 +128,8 @@ class Profile(object):
     def save(self):
         if self.state == self.STATE_LOADED:
             self.updateProfile()
+            if not os.path.exists(os.path.expanduser('~/.scovilleadmin')):
+                os.mkdir(os.path.expanduser('~/.scovilleadmin'))
             profilefile = open(os.path.expanduser('~/.scovilleadmin/'+self.username),'w')
             aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
             js = json.encoder.JSONEncoder()
