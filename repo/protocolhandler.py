@@ -29,9 +29,10 @@ class ProtocolHandler(object):
 
     def verify_module(self):
         try:
+            #TODO fix errors
             module = self.subject['m']
-            if None in [val for (key,val) in module if key not in ['name', 'hrname', 'version_major', 'version_minor', 'revision', 'signature']]:
-                raise Exception('Not a valid module!')
+#            if None in [val for (key,val) in module if key not in ['name', 'hrname', 'version_major', 'version_minor', 'revision', 'signature']]:
+ #               raise Exception('Not a valid module!')
         except KeyError, e:
             raise Exception('Not a valid module!')
 
