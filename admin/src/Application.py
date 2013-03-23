@@ -58,6 +58,7 @@ class Application(object):
         
     def logout(self):
         if self.state == self.STATE_LOGGEDIN:
+            self.activeProfile.updateProfile()
             self.activeProfile.save()
             data.Generic.ObjectStore().clear()
             del(self.activeProfile)
