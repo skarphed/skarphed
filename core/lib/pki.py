@@ -122,6 +122,19 @@ class Pki(object):
         else:
             return cls._private_key
 
+    @classmethod
+    def sign(cls, data):
+        if not cls._pki_is_present:
+            cls._generate_pki()
+            cls._load_keys()
+        
+        import Crypto.Hash.SHA256 as SHA256
+        import Crypto.Signature.PKCS1_v1_5 as PKCS1_v1_5
+        hashed = SHA256.new(data)
+        signer = PKCS1_v1_5.new(cls._private_key)
+        signature = signer.sign(hashed)
+        return signature
+
 
 
 
@@ -132,4 +145,5 @@ class PkiManager(object):
 
         self.get_public_key = Pki.get_public_key
         self.get_private_key = Pki.get_private_key
+        self.sign = Pki.sign
 

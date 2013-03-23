@@ -159,6 +159,26 @@ class AbstractModule(object):
             widgets.append(widget)        
         return widgets
 
+    def get_guidata(self):
+        configuration = self._core.get_configuration()
+        libpath = configuration.get_entry("global.libpath")
+
+        modulepath = libpath+"/"+self._name+"/v"+\
+                              str(self._version_major)+"_"+ \
+                              str(self._version_minor)+"_"+ \
+                              str(self._revision)
+        tar = tarfile.open(modulepath+"/gui.tar.gz","w:gz")
+        tar.add(modulepath+"/gui")
+        tar.close()
+
+        f = open(modulepath+"/gui.tar.gz","r")
+        data = f.read()
+        f.close()
+
+        os.unlink(modulepath+"/gui.tar.gz")
+        return data
+
+
 class Widget(object):
     def __init__(self, core, module, nr=None):
         self._core= core

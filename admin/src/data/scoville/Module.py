@@ -22,11 +22,19 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+import os
 
 from data.Generic import GenericScovilleObject
 from Widget import Widget
 
-import json as jayson
+import tarfile
+import shutil
+import glob
+import base64
+
+import Crypto.PublicKey.RSA as RSA
+import Crypto.Hash.SHA256 as SHA256
+import Crypto.Signature.PKCS1_v1_5 as PKCS1_v1_5
 
 class Module(GenericScovilleObject):
     def __init__(self,parent, data = {}):
@@ -35,7 +43,11 @@ class Module(GenericScovilleObject):
         self.data = data
         self.updated()
         self.loadWidgets()
-    
+
+        if not os.path.exists(os.path.expanduser("~/.scovilleadmin/modulegui")):
+            os.mkdir(os.path.expanduser("~/.scovilleadmin/modulegui"))
+            open(os.path.expanduser("~/.scovilleadmin/modulegui")+"/__init__.py","w").close()
+
     def getName(self):
         if self.data.has_key('hrname'):
             return self.data['hrname']+" ["+self.getPrintableVersion()+"]"
@@ -51,6 +63,9 @@ class Module(GenericScovilleObject):
     def getPrintableVersion(self):
         return str(self.data['version_major'])+"."+str(self.data['version_minor'])+"."+str(self.data['revision'])
     
+    def getVersionFolderString(self):
+        return "v"+str(self.data['version_major'])+"_"+str(self.data['version_minor'])+"_"+str(self.data['revision'])
+
     def getModuleName(self):
         if self.data.has_key('name'):
             return self.data['name']
@@ -61,8 +76,8 @@ class Module(GenericScovilleObject):
         self.data = data
         self.updated()
     
-    def loadCssPropertySetCallback(self,json):
-        self.cssPropertySet = jayson.JSONDecoder().decode(json)
+    def loadCssPropertySetCallback(self,result):
+        self.cssPropertySet = result
         self.updated()
     
     def loadCssPropertySet(self):
@@ -100,6 +115,47 @@ class Module(GenericScovilleObject):
     def loadWidgets(self):
         self.getApplication().doRPCCall(self.getModules().getScoville(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getId()])
     
+    def loadGuiCallback(self, result):
+        modulepath = os.path.expanduser("~/.scovilleadmin/modulegui/")
+        if not os.path.exists(modulepath+self.getModuleName()):
+            os.mkdir(modulepath+self.getModuleName())
+
+        open(modulepath+self.getModuleName()+"/__init__.py","w").close()
+
+        if not os.path.exists(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()):
+            os.mkdir(modulepath+self.getModuleName()+"/"+self.getVersionFolderString())
+
+        data = result['data']
+        signature = base64.decodestring(result['signature'])
+        libstring = result['libstring']
+
+        publickeyraw = self.getModules().getScoville().getPublicKey()
+        publickey = RSA.importKey(publickeyraw)
+        hashed = SHA256.new(data)
+        verifier = PKCS1_v1_5.new(publickey)
+        if verifier.verify(hashed, signature):
+            f = open(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui.tar.gz","w")
+            f.write(base64.decodestring(data))
+            f.close()
+            tar = tarfile.open(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui.tar.gz","r:gz")
+            tar.extractall(modulepath+self.getModuleName()+"/"+self.getVersionFolderString())
+            tar.close()
+            os.unlink(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui.tar.gz")
+            for filename in glob.glob(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+libstring+"/"+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui/*"):
+                shutil.move(filename, modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/")
+            shutil.rmtree(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/"+libstring.split("/")[1])
+            self.updated()
+        else:
+            raise Exception("GuiData did not validate against Signature!")
+            
+
+    def loadGui(self):
+        self.getApplication().doRPCCall(self.getModules().getScoville(),self.loadGuiCallback, "getGuiForModule", [self.getId()])
+
+    def isGuiAvailable(self):
+        return os.path.exists(os.path.expanduser("~/.scovilleadmin/modulegui/"+self.getModuleName()+\
+                                                 "/"+self.getVersionFolderString()))
+
     def createWidgetCallback(self, json):
         self.loadWidgets()
     

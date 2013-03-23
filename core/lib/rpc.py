@@ -262,6 +262,20 @@ class Rpc(object):
         modules = module_manager.get_module_info(get_installed_only)
         return modules
 
+    def getGuiForModule(self, params):
+        module_id = int(params[0])
+
+        module_manager = self._core.get_module_manager()
+        module = module_manager.get_module(module_id)
+        moduleguidata = base64.encodestring(module.get_guidata())
+        pki_manager = self._core.get_pki_manager()
+        signature = pki_manager.sign(moduleguidata)
+        configuration = self._core.get_configuration()
+
+        return {'data':moduleguidata,
+                'signature':base64.encodestring(signature),
+                'libstring':configuration.get_entry('global.libpath')}
+
     def setRepository(self, params):
         ip = str(params[0])
         port = int(params[1])
@@ -728,3 +742,4 @@ class Rpc(object):
         view = view_manager.get_from_id(view_id)
         view.set_params_for_widget(widget_id, mapping)
         view.store()
+
