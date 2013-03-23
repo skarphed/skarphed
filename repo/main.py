@@ -2,7 +2,7 @@
 
 from urlparse import parse_qs
 
-import protocolhandler
+from protocolhandler import ProtocolHandler
 
 def application(environ, start_response):
     response_body = []
@@ -13,9 +13,10 @@ def application(environ, start_response):
     try:
         jsonstr = args['j']
         try:
-            handler = ProtocolHandler(jsonstr)
+            handler = ProtocolHandler(jsonstr[0])
             response_body = [handler.execute()]
         except Exception, e:
+            raise e
             response_body = ['{error:%s}' % str(e)]
 
         response_headers.append(('Content-Type', 'application/json'))
