@@ -1,3 +1,4 @@
+import base64
 import json
 
 from repository import Repository
@@ -29,10 +30,9 @@ class ProtocolHandler(object):
 
     def verify_module(self):
         try:
-            #TODO fix errors
             module = self.subject['m']
-#            if None in [val for (key,val) in module if key not in ['name', 'hrname', 'version_major', 'version_minor', 'revision', 'signature']]:
- #               raise Exception('Not a valid module!')
+            if not all([module[key] != None for key in ['name', 'hrname', 'version_major', 'version_minor', 'revision', 'signature']]):
+                raise Exception('Not a valid module!')
         except KeyError, e:
             raise Exception('Not a valid module!')
 
@@ -46,11 +46,17 @@ class ProtocolHandler(object):
             modules = self.repository.get_versions_of_module(self.subject['m'])
             return json.dumps({'r' : modules})
         elif c == CommandType.RESOLVE_DEPENDENCIES_DOWNWARDS:
-            pass
+            self.verify_module()
+            modules = self.repository.resolve_dependencies_downwards(self.subject['m'])
+            return json.dumps({'r' : modules})
         elif c == CommandType.RESOLVE_DEPENDENCIES_UPWARDS:
-            pass
+            self.verify_module()
+            modules = self.repository.resolve_dependencies_upwards(self.subject['m'])
+            return json.dumps({'r' : modules})
         elif c == CommandType.DOWNLOAD_MODULE:
-            pass
+            self.verify_module()
+            (module, data) = self.repository.download_module(self.subject['m'])
+            return json.dumps({'r' : module, 'data' : base64.b64encode(data)})
         elif c == CommandType.GET_PUBLICKEY:
             pass
         elif c == CommandType.GET_LATEST_VERSION:

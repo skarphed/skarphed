@@ -21,6 +21,10 @@ class DatabaseConnection(object):
         except fdb.fbcore.DatabaseError, e:
             raise DatabaseException(str(e))
         return
+    
+    def disconnect(self):
+        if self.connection:
+            self.connection.close()
 
     def execute(self, statement, commit = False):
         if self.connection is None:
@@ -30,7 +34,8 @@ class DatabaseConnection(object):
             cursor.execute(statement)
             if commit:
                 self.connection.commit()
-            return cursor.fetchallmap()
+            result = cursor.fetchallmap()
+            cursor.close()
+            return result
         except fdb.fbcore.DatabaseError, e:
             raise DatabaseException(str(e))
-

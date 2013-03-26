@@ -3,6 +3,7 @@
 from urlparse import parse_qs
 
 from protocolhandler import ProtocolHandler
+from repository import Repository
 
 def application(environ, start_response):
     response_body = []
@@ -12,19 +13,20 @@ def application(environ, start_response):
 
     try:
         jsonstr = args['j']
-        try:
-            handler = ProtocolHandler(jsonstr[0])
-            response_body = [handler.execute()]
-        except Exception, e:
-            raise e
-            response_body = ['{error:%s}' % str(e)]
+#        try:
+        handler = ProtocolHandler(jsonstr[0])
+        response_body = [handler.execute()]
+ #       except Exception, e:
+  #          raise e
+   #         response_body = ['{error:%s}' % str(e)]
 
         response_headers.append(('Content-Type', 'application/json'))
     except KeyError, e:
         try:
             with open("template.html") as f:
                 template = f.read()
-                template = template.replace('{{publickey}}', 'THIS SHOULD BE A PUBLIC KEY') #get public key from repo
+                repository = Repository()
+                template = template.replace('{{publickey}}', repository.get_public_key())
                 response_body = [template]
             response_headers.append(('Content-Type', 'text/html'))
         except IOError, ie:
