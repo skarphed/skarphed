@@ -195,6 +195,31 @@ class Repository(object):
             raise Exception('Module does not exist: %s' % module['name'])
 
 
+    def get_latest_version(self, module):
+        self.establish_connection()
+        result = self.connection.execute('SELECT mod_displayname, mod_signature, mod_name, ' +
+                'mod_versionmajor, mod_versionminor, mod_versionrev ' +
+                'FROM modules JOIN (SELECT mod_name vername, ' +
+                'max(mod_versionmajor*10000000+mod_versionminor*100000+mod_versionrev) ver ' + 
+                'FROM modules' + 
+                'GROUP BY mod_name) ' +  
+                'ON vername = mod_name ' + 
+                'AND ver = mod_versionmajor*10000000+mod_versionminor*100000+mod_versionrev ' +
+                'WHERE mod_name = %s;' % module['name']);
+        if result:
+            mod = result[0]
+            result_mod = {'name' : mod['mod_name'],
+                        'hrname' : mod['mod_displayname'],
+                        'version_major' : mod['mod_versionmajor'],
+                        'version_minor' : mod['mod_versionminor'],
+                        'revision' : mod['mod_versionrev'],
+                        'signature' : mod['mod_signature']}
+            return result_mod
+        else:
+            self.close_connection()
+            raise Exception('Module does not exist: %s' % module['name'])
+
+
     def login(self, password):
         pass
 
@@ -243,7 +268,30 @@ class Repository(object):
 
 
     def delete_module(self, identifier, major=None, minor=None, revision=None):
-        pass
+        self.verify_admin()
+
+        self.establish_connection()
+        if major:
+            if minor:
+                if revision:
+					self.connection.execute('DELETE FROM modules ' +
+                            'WHERE mod_name = %s AND mod_versionmajor = %d AND ' +
+                            'mod_versionminor = %d AND mod_versionrev = %d;' %
+                            (identifier, major, minor, revision))
+                else:
+                    self.connection.execute('DELETE FROM modules ' +
+                            'WHERE mod_name = %s AND mod_versionmajor = %d AND ' +
+                            'mod_versionminor = %d;' %
+                            (identifier, major, minor))	
+            else:
+                self.connection.execute('DELETE FROM modules ' +
+                        'WHERE mod_name = %s AND mod_versionmajor = %d;' %
+                        (identifier, major))	
+        else:
+            self.connection.execute('DELETE FROM modules ' +
+                    'WHERE mod_name = %s;' %
+                    (identifier))	
+        self.close_connection()
 
 
     def get_developers(self):
