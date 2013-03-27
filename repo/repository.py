@@ -1,7 +1,13 @@
 import base64
+import cStringIO
 import hashlib
 import json
 import random
+import tarfile
+
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
 
 from database import DatabaseConnection
 
@@ -255,13 +261,62 @@ class Repository(object):
         self.verify_admin()
 
         self.establish_connection()
-        self.connection.update('UPDATE developer SET dev_publickey = \'\' '
+        self.connection.update('UPDATE developer SET dev_publickey = \'\' ' +
                 'WHERE dev_id = %d;' % dev_id)
         self.close_connection()
 
 
     def upload_module(self, data, signature):
-        pass
+        self.establish_connection()
+
+        result = self.connection.query('SELECT dev_id, dev_name, dev_publickey ' +
+                'FROM developer;')
+        valid = False
+        hashobj = SHA256.new(data)
+        for dev in result:
+            key = RSA.importKey(dev['dev_publickey'])
+            verifier = PKCS1_v1_5.new(key)
+            valid = verifier.verify(hashobj, signature)
+            if valid:
+                dev_id = dev['dev_id']
+                break;
+        if not valid:
+            raise Exception('Signature verification failed')
+        
+        print ("DEVID: " + str(dev_id))
+
+        datafile = cStringIO.StringIO(data)
+        tar = tarfile.open(fileobj = datafile, mode = 'r:gz') 
+        try:
+            manifestdata = tar.extractfile('manifest.json').read()
+        except Exception, e:
+            raise Exception('Error while reading manifest')
+        manifest = json.loads(manifestdata)
+
+        result = self.connection.query('SELECT MAX(mod_versionrev) AS maxrevision ' +
+                'FROM modules ' +
+                'WHERE mod_name = %s;' % manifest['name'])
+        if result:
+            revision = result['maxrevision'] + 1
+        else:
+            revision = 0
+        mod_id = self.connection.get_sequence_next('mod_gen')
+        md5 = hashlib.md5(data).hexdigest()
+
+        key = RSA.importKey(self.get_private_key())
+        hashobj = SHA256.new(data)
+        signer = PKCS1_v1_5.new(key)
+        repo_signature = base64.b64_encode(signer.sign(hashobj))
+        
+        # TODO blob working?
+        self.connection.query('INSERT INTO mdoules (mod_id, mod_name, mod_displayname, ' +
+                'mod_versionmajor, mod_versionminor, mod_versionrev, mod_md5, mod_signature, ' +
+                'mod_data VALUE (%d, \'%s\', \'%s\', %d, %d, %d, \'%s\', \'%s\', \'%s\');' %
+                (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
+                manifest['version_minor'], revision, md5, repo_signature, data))
+
+        self.close_connection()
+
 
     def delete_module(self, identifier, major=None, minor=None, revision=None):
         self.verify_admin()
@@ -270,7 +325,7 @@ class Repository(object):
         if major:
             if minor:
                 if revision:
-					self.connection.update('DELETE FROM modules ' +
+                    self.connection.update('DELETE FROM modules ' +
                             'WHERE mod_name = %s AND mod_versionmajor = %d AND ' +
                             'mod_versionminor = %d AND mod_versionrev = %d;' %
                             (identifier, major, minor, revision))
@@ -278,15 +333,15 @@ class Repository(object):
                     self.connection.update('DELETE FROM modules ' +
                             'WHERE mod_name = %s AND mod_versionmajor = %d AND ' +
                             'mod_versionminor = %d;' %
-                            (identifier, major, minor))	
+                            (identifier, major, minor))    
             else:
                 self.connection.update('DELETE FROM modules ' +
                         'WHERE mod_name = %s AND mod_versionmajor = %d;' %
-                        (identifier, major))	
+                        (identifier, major))    
         else:
             self.connection.update('DELETE FROM modules ' +
                     'WHERE mod_name = %s;' %
-                    (identifier))	
+                    (identifier))    
         self.close_connection()
 
 
