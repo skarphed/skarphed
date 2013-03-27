@@ -21,6 +21,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+from mimetypes import guess_type
 from urlparse import parse_qs
 
 from beaker.middleware import SessionMiddleware
@@ -32,33 +33,42 @@ from repository import Repository
 def application(environ, start_response):
     response_body = []
     response_headers = []
-    
-    args = parse_qs(environ['QUERY_STRING']) # TODO: exception handling
 
-    try:
-        jsonstr = args['j']
-        try:
-            repository = Repository(environ)
-            handler = ProtocolHandler(repository, jsonstr[0])
-            response_body = [handler.execute()]
-        except Exception, e:
-            response_body = ['{error:%s}' % str(e)]
+    if environ['PATH_INFO'].startswith('/static/'):
+        path = environ['PATH_INFO'][1:]
+        status = '200 OK'  
+        (mime, encoding) = guess_type(path)
+        with open(path, 'r') as f:
+            data = f.read()
+        response_body = [data]
+        response_headers.append(('Content-Type', mime))
+    else:
+        args = parse_qs(environ['QUERY_STRING']) # TODO: exception handling
 
-        response_headers.append(('Content-Type', 'application/json'))
-    except KeyError, e:
         try:
-            with open("template.html") as f:
-                template = f.read()
+            jsonstr = args['j']
+            try:
                 repository = Repository(environ)
-                template = template.replace('{{publickey}}', repository.get_public_key())
-                response_body = [template]
-            response_headers.append(('Content-Type', 'text/html'))
-        except IOError, ie:
-            response_body = ['Error reading template'] # TODO: improve error message
-            response_headers.append(('Content-Type', 'text/plain'))
-            
+                handler = ProtocolHandler(repository, jsonstr[0])
+                response_body = [handler.execute()]
+            except Exception, e:
+                response_body = ['{error:%s}' % str(e)]
 
-    status = '200 OK'
+            response_headers.append(('Content-Type', 'application/json'))
+        except KeyError, e:
+            try:
+                with open("template.html") as f:
+                    template = f.read()
+                    repository = Repository(environ)
+                    template = template.replace('{{publickey}}', repository.get_public_key())
+                    response_body = [template]
+                response_headers.append(('Content-Type', 'text/html'))
+            except IOError, ie:
+                response_body = ['Error reading template'] # TODO: improve error message
+                response_headers.append(('Content-Type', 'text/plain'))
+
+        status = '200 OK'
+    
     start_response(status, response_headers)
     return response_body
 
