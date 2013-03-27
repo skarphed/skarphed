@@ -36,6 +36,8 @@ class Template(GenericScovilleObject):
     
     def refresh(self,data):
         self.data = data
+        self.getScoville().getSites().refresh()
+        self.getScoville().getViews().refresh()
         self.updated()
     
     def getPar(self):
