@@ -35,12 +35,17 @@ from database import DatabaseConnection
 
 class Repository(object):
     __INSTANCE = None
+    environ = None
 
     @classmethod
     def instance(cls):
         if not cls.__INSTANCE:
             cls.__INSTANCE = Repository()
         return cls.__INSTANCE
+
+    @classmethod
+    def set_environ(cls, environ):
+        cls.environ = environ
 
 
     def __init__(self):
@@ -66,8 +71,11 @@ class Repository(object):
 
 
     def verify_admin(self):
-        # TODO check for admin
-        pass
+        try:
+            if not self.environ['beaker.session']['privileged']:
+                raise Exception('You are no admin')
+        except Exception, e:
+            raise Exception('You are no admin')
 
 
     def generate_salt(self):
@@ -240,11 +248,28 @@ class Repository(object):
 
 
     def login(self, password):
-        pass
+        result = self.connection.query('SELECT val ' +
+                'FROM config ' +
+                'WHERE param = \'password\' OR param = \'salt\' ORDER BY param ASC;')
+        db_hash = result[0]['val']
+        salt = base64.b64decode(result[1]['val'])
+        print type(password)
+        print type(salt)
+        s = password + unicode(salt, 'utf-8')
+        hashvalue = hashlib.sha512(s).hexdigest()
+        is_valid = hashvalue == db_hash
+        
+        session = self.environ['beaker.session']
+        session['privileged'] = is_valid
+        session.save()
+        return is_valid
 
 
-    def logout(self, password):
-        pass
+    def logout(self):
+        try:
+            self.environ['beaker.session'].delete()
+        except KeyError, e:
+            pass
 
 
     def change_password(self, password):

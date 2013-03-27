@@ -23,10 +23,14 @@
 
 from urlparse import parse_qs
 
+from beaker.middleware import SessionMiddleware
+
 from protocolhandler import ProtocolHandler
 from repository import Repository
 
+
 def application(environ, start_response):
+    Repository.instance().set_environ(environ)
     response_body = []
     response_headers = []
     
@@ -34,11 +38,11 @@ def application(environ, start_response):
 
     try:
         jsonstr = args['j']
-        try:
-            handler = ProtocolHandler(jsonstr[0], environ, response_headers)
-            response_body = [handler.execute()]
-        except Exception, e:
-            response_body = ['{error:%s}' % str(e)]
+#        try:
+        handler = ProtocolHandler(jsonstr[0], response_headers)
+        response_body = [handler.execute()]
+ #       except Exception, e:
+  #          response_body = ['{error:%s}' % str(e)]
 
         response_headers.append(('Content-Type', 'application/json'))
     except KeyError, e:
@@ -57,3 +61,6 @@ def application(environ, start_response):
     status = '200 OK'
     start_response(status, response_headers)
     return response_body
+
+
+wsgi_app = SessionMiddleware(application, type='dbm', data_dir='./.sessions')

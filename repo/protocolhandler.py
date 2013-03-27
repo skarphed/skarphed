@@ -45,10 +45,9 @@ class CommandType:
     GET_DEVELOPERS = 107
 
 class ProtocolHandler(object):
-    def __init__(self, jsonstr, environ, response_headers):
+    def __init__(self, jsonstr, response_headers):
         self.repository = Repository.instance()
         self.subject = json.loads(jsonstr)
-        self.environ = environ
         self.response_headers = response_headers
 
 
@@ -105,11 +104,12 @@ class ProtocolHandler(object):
             return json.dumps({'r' : module})
         
         elif c == CommandType.LOGIN:
-            #TODO fix
-            return json.dumps({'r' : 0})
+            self.check_set(['dxd'], 'Password not set')
+            result = self.repository.login(self.subject['dxd'])
+            return json.dumps({'r' : result})
         
         elif c == CommandType.LOGOUT:
-            #TODO fix
+            self.repository.logout()
             return json.dumps({'r' : 0})
 
         elif c == CommandType.CHANGE_PASSWORD:
