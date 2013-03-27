@@ -30,7 +30,6 @@ from repository import Repository
 
 
 def application(environ, start_response):
-    Repository.instance().set_environ(environ)
     response_body = []
     response_headers = []
     
@@ -39,7 +38,8 @@ def application(environ, start_response):
     try:
         jsonstr = args['j']
         try:
-            handler = ProtocolHandler(jsonstr[0], response_headers)
+            repository = Repository(environ)
+            handler = ProtocolHandler(repository, jsonstr[0])
             response_body = [handler.execute()]
         except Exception, e:
             response_body = ['{error:%s}' % str(e)]
@@ -49,8 +49,8 @@ def application(environ, start_response):
         try:
             with open("template.html") as f:
                 template = f.read()
-                repository = Repository()
-                template = template.replace('{{publickey}}', Repository.instance().get_public_key())
+                repository = Repository(environ)
+                template = template.replace('{{publickey}}', repository.get_public_key())
                 response_body = [template]
             response_headers.append(('Content-Type', 'text/html'))
         except IOError, ie:

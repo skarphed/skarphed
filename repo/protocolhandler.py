@@ -45,10 +45,9 @@ class CommandType:
     GET_DEVELOPERS = 107
 
 class ProtocolHandler(object):
-    def __init__(self, jsonstr, response_headers):
-        self.repository = Repository.instance()
+    def __init__(self, repository, jsonstr):
+        self.repository = repository
         self.subject = json.loads(jsonstr)
-        self.response_headers = response_headers
 
 
     def verify_module(self):

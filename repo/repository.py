@@ -34,21 +34,8 @@ from database import DatabaseConnection
 
 
 class Repository(object):
-    __INSTANCE = None
-    environ = None
-
-    @classmethod
-    def instance(cls):
-        if not cls.__INSTANCE:
-            cls.__INSTANCE = Repository()
-        return cls.__INSTANCE
-
-    @classmethod
-    def set_environ(cls, environ):
-        cls.environ = environ
-
-
-    def __init__(self):
+    def __init__(self, environ):
+        self.environ = environ
         self.config = self.read_config('config.json')
         self.connection = DatabaseConnection(
                 self.config['db.ip'],
