@@ -253,10 +253,7 @@ class Repository(object):
                 'WHERE param = \'password\' OR param = \'salt\' ORDER BY param ASC;')
         db_hash = result[0]['val']
         salt = base64.b64decode(result[1]['val'])
-        print type(password)
-        print type(salt)
-        s = password + unicode(salt, 'utf-8')
-        hashvalue = hashlib.sha512(s).hexdigest()
+        hashvalue = hashlib.sha512(password.encode('utf-8') + salt).hexdigest()
         is_valid = hashvalue == db_hash
         
         session = self.environ['beaker.session']

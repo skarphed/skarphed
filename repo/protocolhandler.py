@@ -105,8 +105,9 @@ class ProtocolHandler(object):
         
         elif c == CommandType.LOGIN:
             self.check_set(['dxd'], 'Password not set')
-            result = self.repository.login(self.subject['dxd'])
-            return json.dumps({'r' : result})
+            if self.repository.login(self.subject['dxd']):
+                return json.dumps({'r' : 0})
+            return json.dumps({'r' : 1})
         
         elif c == CommandType.LOGOUT:
             self.repository.logout()
