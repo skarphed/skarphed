@@ -152,7 +152,7 @@ class Database(object):
 
         matchesRaw = list(matches)
 
-        modules = [module.getName()]
+        modules = [module.get_name()]
 
         for match in matches:
             splitted = match.split(".")
@@ -165,11 +165,10 @@ class Database(object):
         tableQuery = """SELECT MDT_ID, MDT_NAME, MOD_NAME
                      FROM MODULETABLES 
                       INNER JOIN MODULES ON (MDT_MOD_ID = MOD_ID )
-                     WHERE MOD_NAME IN (?) 
-                      AND MDT_NAME IN (?) ;"""
+                     WHERE MOD_NAME IN (%s) 
+                      AND MDT_NAME IN (%s) ;"""%("'"+"','".join(modules)+"'","'"+"','".join(matches)+"'")
         cur = self._connection.cursor()
-        tableQuery = self._queryCache(cur,tableQuery)
-        cur.execute(tableQuery,("'"+"','".join(modules)+"'","'"+"','".join(matches)+"'"))
+        cur.execute(tableQuery)
 
         replacementsDone = []
         for res in cur.fetchallmap():
@@ -178,7 +177,7 @@ class Database(object):
             tableId = "TAB_"+"0"*(6-len(tableId))+tableId
             query = query.replace(pattern, tableId)
             replacementsDone.append(res["MOD_NAME"]+"."+res["MDT_NAME"])
-            if res["MOD_NAME"] == module.getName():
+            if res["MOD_NAME"] == module.get_name():
                 query = query.replace("${"+res["MDT_NAME"]+"}", tableId)
 
         if len(matchesRaw) != len(replacementsDone):

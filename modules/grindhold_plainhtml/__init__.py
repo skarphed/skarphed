@@ -23,6 +23,7 @@
 ###########################################################
 
 import os
+from StringIO import StringIO
 
 from module import AbstractModule
 
@@ -50,7 +51,7 @@ class Module(AbstractModule):
     """
 
     def render_pure_html(self,widget_id,args={}):
-        content = self.get_content()
+        content = self.get_content(widget_id)
         return"<h2>%s</h2>%s"%(content['title'],content['html'])
 
     def render_html(self,widget_id,args={}):
@@ -61,7 +62,7 @@ class Module(AbstractModule):
 
     def set_content(self, widget_id, content="", title=""):
         title = str(title)
-        content = str(content)
+        content = StringIO(str(content))
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO ${html} (MOD_INSTANCE_ID, HTM_TITLE, HTM_HTML) \
                    VALUES (?,?,?) MATCHING (MOD_INSTANCE_ID) ;"
@@ -71,7 +72,7 @@ class Module(AbstractModule):
     def get_content(self, widget_id):
         db = self._core.get_db()
         stmnt = "SELECT HTM_TITLE, HTM_HTML FROM ${html} WHERE MOD_INSTANCE_ID = ? ;"
-        cur = db.query(self, stmnt, (widget_id))
+        cur = db.query(self, stmnt, (widget_id,))
         row = cur.fetchonemap()
         if row is not None:
             return {'title':row["HTM_TITLE"],

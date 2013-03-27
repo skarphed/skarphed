@@ -70,7 +70,7 @@ class Rpc(object):
         parameter = params[2]
 
         module_manager = self._core.get_module_manager()
-        module = module_manager.get_module()
+        module = module_manager.get_module(module_id)
         exec "res = module.%s(*parameter)"%method_name
         return res
 

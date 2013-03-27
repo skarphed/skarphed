@@ -42,7 +42,7 @@ class WidgetPage(gtk.VBox):
         self._path = path.replace("widget.py","")
 
         self.builder = gtk.Builder()
-        self.builder.add_from_file(self.path+"widget.glade")
+        self.builder.add_from_file(self._path+"widget.glade")
 
         handlers = {'save_cb':self.saveCallback}
         self.builder.connect_signals(handlers)
@@ -70,14 +70,14 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getScoville()
-        self.getApplication().doRPCCall(scv, self.loadContentCallback, "executeModuleMethod", [module.getId(), "get_content", [self.widgetId]])
+        self.getApplication().doRPCCall(scv, self.loadContentCallback, "executeModuleMethod", [module.getId(), "get_content", [widget.getId()]])
 
     def setContentCallback(self, data):
         self.loadContent()
 
     def saveCallback(self, widget=None, data=None):
         buff = self.builder.get_object("html_buffer")
-        html = buff.get_text()
+        html = buff.get_text(buff.get_start_iter(), buff.get_end_iter())
         title_entry = self.builder.get_object("title_entry")
         title = title_entry.get_text()
         
@@ -88,7 +88,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getScoville()
-        self.getApplication().doRPCCall(scv, self.setContentCallback, "executeModuleMethod", [module.getId(), "set_content", [self.widgetId, html, title]])        
+        self.getApplication().doRPCCall(scv, self.setContentCallback, "executeModuleMethod", [module.getId(), "set_content", [widget.getId(), html, title]])        
 
     def getPar(self):
         return self.par

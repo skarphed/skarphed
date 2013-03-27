@@ -35,11 +35,11 @@ class ModulePage(gtk.VBox):
         self.moduleId = module.getLocalId()
 
         path = os.path.realpath(__file__)
-        path = path.replace("widget.pyc","")
-        self._path = path.replace("widget.py","")
+        path = path.replace("module.pyc","")
+        self._path = path.replace("module.py","")
 
         self.builder = gtk.Builder()
-        self.builder.add_from_file(self.path+"module.glade")
+        self.builder.add_from_file(self._path+"module.glade")
 
         self.content = self.builder.get_object("module")
         self.add(self.content)
