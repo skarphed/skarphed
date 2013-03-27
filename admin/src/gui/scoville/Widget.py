@@ -51,8 +51,8 @@ class WidgetPage(GenericObjectPage):
         if not module.isGuiAvailable():
             module.addCallback(self.render)
             module.loadGui()
-        if not os.path.expanduser("~/.scoville/modulegui") in sys.path:
-            sys.path.append(os.path.expanduser("~/.scoville/modulegui"))
+        if not os.path.expanduser("~/.scovilleadmin/modulegui") in sys.path:
+            sys.path.append(os.path.expanduser("~/.scovilleadmin/modulegui"))
 
         self.render()
 

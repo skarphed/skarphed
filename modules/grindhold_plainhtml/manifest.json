@@ -1,0 +1,17 @@
+{
+  "name":"grindhold_plainhtml",
+  "hrname":"Plain HTML",
+  "version_major":0,
+  "version_minor":0,
+  "revision":1,
+  "permissions":["edit"],
+  "tables":[
+    {"name":"html",
+     "columns":[
+       {"name": "HTM_ID",     "type": "INT", "autoincrement" : true},
+       {"name": "HTM_TITLE",  "type": "VARCHAR(255)"},
+       {"name": "HTM_HTML",   "type": "Blob subtype 1"}
+     ]}
+  ]
+
+}

@@ -46,8 +46,8 @@ class ModulePage(GenericObjectPage):
         if not module.isGuiAvailable():
             print "Loading GUI"
             module.loadGui()
-        if not os.path.expanduser("~/.scoville/modulegui") in sys.path:
-            sys.path.append(os.path.expanduser("~/.scoville/modulegui"))
+        if not os.path.expanduser("~/.scovilleadmin/modulegui") in sys.path:
+            sys.path.append(os.path.expanduser("~/.scovilleadmin/modulegui"))
 
         self.render()
 

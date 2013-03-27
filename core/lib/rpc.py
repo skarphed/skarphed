@@ -64,6 +64,16 @@ class Rpc(object):
     
     # RPC - Method-Implementations____________________________
 
+    def executeModuleMethod(self, params):
+        module_id = params[0]
+        method_name = params[1]
+        parameter = params[2]
+
+        module_manager = self._core.get_module_manager()
+        module = module_manager.get_module()
+        exec "res = module.%s(*parameter)"%method_name
+        return res
+
     def getServerInfo(self,params):
         return self._core.get_configuration().get_entry("core.name")
 
@@ -742,4 +752,3 @@ class Rpc(object):
         view = view_manager.get_from_id(view_id)
         view.set_params_for_widget(widget_id, mapping)
         view.store()
-
