@@ -81,11 +81,13 @@ class ProtocolHandler(object):
             return json.dumps({'r' : module})
         
         elif c == CommandType.LOGIN:
-            pass
+            #TODO fix
+            return json.dumps({'r' : 0})
         
         elif c == CommandType.LOGOUT:
-            pass
-        
+            #TODO fix
+            return json.dumps({'r' : 0})
+
         elif c == CommandType.CHANGE_PASSWORD:
             self.check_set(['dxd'], 'Password not set')
             self.repository.change_password(self.subject['dxd'])
@@ -103,7 +105,10 @@ class ProtocolHandler(object):
             return json.dumps({'r' : 0})
         
         elif c == CommandType.UPLOAD_MODULE:
-            pass
+            self.check_set(['data', 'signature'], 'Not valid data')
+            self.repository.upload_module(base64.b64_decode(self.subject['data']),
+                    base64.b64_decode(self.subject['signature']))
+            return json.dumps({'r' : 0})
         
         elif c == CommandType.DELETE_MODULE:
             self.check_set(['moduleIdentifier'], 'Need module to delete')

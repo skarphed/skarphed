@@ -30,12 +30,19 @@ class DatabaseConnection(object):
             self.connection.close()
 
 
-    def query(self, statement, commit = False):
+    def params_to_tuple(self, params):
+        if type(params) == tuple:
+            return params
+        else:
+            return (params,)
+
+
+    def query(self, statement, params = (), commit = False):
         if self.connection is None:
             raise DatabaseException('No Connection')
         cursor = self.connection.cursor()
         try:
-            cursor.execute(statement)
+            cursor.execute(statement, self.params_to_tuple(params))
             result = cursor.fetchallmap()
             if commit:
                 self.connection.commit()
@@ -45,12 +52,12 @@ class DatabaseConnection(object):
             raise DatabaseException(str(e))
 
 
-    def update(self, statement):
+    def update(self, statement, params = ()):
         if self.connection is None:
             raise DatabaseException('No Connection')
         cursor = self.connection.cursor()
         try:
-            cursor.execute(statement)
+            cursor.execute(statement, self.params_to_tuple(params))
             self.connection.commit()
             cursor.close()
         except fdb.fbcore.DatabaseError, e:
@@ -59,7 +66,7 @@ class DatabaseConnection(object):
 
 
     def get_sequence_next(self, sequence):
-        result = self.query('SELECT NEXT VALUE FOR %s FROM RDB$DATABASE;' % sequence, commit = True)
+        result = self.query('SELECT NEXT VALUE FOR ? FROM RDB$DATABASE;', sequence, commit = True)
         if result:
             return result[0]['gen_id']
         else:
