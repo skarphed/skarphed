@@ -52,9 +52,10 @@ class Repository(object):
 
 
     def read_config(self, path):
-        with open(path, 'r') as f:
-            config = json.loads(f.read())
-            return config
+        f = open(path, 'r')
+        config = json.loads(f.read())
+        f.close()
+        return config
 
 
     def verify_admin(self):

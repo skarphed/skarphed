@@ -38,8 +38,9 @@ def application(environ, start_response):
         path = environ['PATH_INFO'][1:]
         status = '200 OK'  
         (mime, encoding) = guess_type(path)
-        with open(path, 'r') as f:
-            data = f.read()
+        f = open(path, 'r')
+        data = f.read()
+        f.close()
         response_body = [data]
         response_headers.append(('Content-Type', mime))
     else:
@@ -57,11 +58,12 @@ def application(environ, start_response):
             response_headers.append(('Content-Type', 'application/json'))
         except KeyError, e:
             try:
-                with open("template.html") as f:
-                    template = f.read()
-                    repository = Repository(environ)
-                    template = template.replace('{{publickey}}', repository.get_public_key())
-                    response_body = [template]
+                f = open('template.html')
+                template = f.read()
+                f.close()
+                repository = Repository(environ)
+                template = template.replace('{{publickey}}', repository.get_public_key())
+                response_body = [template]
                 response_headers.append(('Content-Type', 'text/html'))
             except IOError, ie:
                 response_body = ['Error reading template'] # TODO: improve error message
