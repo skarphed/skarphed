@@ -24,9 +24,11 @@ class CommandType:
     GET_DEVELOPERS = 107
 
 class ProtocolHandler(object):
-    def __init__(self, jsonstr):
-        self.repository = Repository()
+    def __init__(self, jsonstr, environ, response_headers):
+        self.repository = Repository.instance()
         self.subject = json.loads(jsonstr)
+        self.environ = environ
+        self.response_headers = response_headers
 
 
     def verify_module(self):
@@ -44,6 +46,7 @@ class ProtocolHandler(object):
                 raise Exception(errmsg)
         except KeyError, e:
             raise Exception(errmsg)
+
 
     def execute(self):
         c = self.subject['c']

@@ -14,7 +14,7 @@ def application(environ, start_response):
     try:
         jsonstr = args['j']
         try:
-            handler = ProtocolHandler(jsonstr[0])
+            handler = ProtocolHandler(jsonstr[0], environ, response_headers)
             response_body = [handler.execute()]
         except Exception, e:
             response_body = ['{error:%s}' % str(e)]
@@ -25,7 +25,7 @@ def application(environ, start_response):
             with open("template.html") as f:
                 template = f.read()
                 repository = Repository()
-                template = template.replace('{{publickey}}', repository.get_public_key())
+                template = template.replace('{{publickey}}', Repository.instance().get_public_key())
                 response_body = [template]
             response_headers.append(('Content-Type', 'text/html'))
         except IOError, ie:

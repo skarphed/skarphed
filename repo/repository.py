@@ -12,9 +12,29 @@ from Crypto.Signature import PKCS1_v1_5
 from database import DatabaseConnection
 
 class Repository(object):
+    __INSTANCE = None
+
+    @classmethod
+    def instance(cls):
+        if not cls.__INSTANCE:
+            cls.__INSTANCE = Repository()
+        return cls.__INSTANCE
+
+
     def __init__(self):
         self.config = self.read_config('config.json')
-        self.connection = None
+        self.connection = DatabaseConnection(
+                self.config['db.ip'],
+                self.config['db.name'],
+                self.config['db.user'],
+                self.config['db.password']
+            )
+        self.connection.connect()
+
+    
+    def __del__(self):
+        if self.connection:
+            self.connection.disconnect()
 
 
     def read_config(self, path):
@@ -36,24 +56,7 @@ class Repository(object):
         return salt
 
 
-    def establish_connection(self):
-        if not self.connection:
-            self.connection = DatabaseConnection(
-                    self.config['db.ip'],
-                    self.config['db.name'],
-                    self.config['db.user'],
-                    self.config['db.password']
-                )
-            self.connection.connect()
-
-
-    def close_connection(self):
-        if self.connection:
-            self.connection.disconnect()
-
-
     def get_all_modules(self):
-        self.establish_connection()
         result = self.connection.query('SELECT mod_displayname, mod_md5, mod_signature, mod_name,' +
                 'mod_versionmajor, mod_versionminor, mod_versionrev ' +
                 'FROM modules JOIN (SELECT mod_name vername ' +
@@ -73,13 +76,10 @@ class Repository(object):
                     'version_minor' : m['mod_versionminor'],
                     'revision' : m['mod_versionrev'],
                     'signature' : m['mod_signature']} for m in result]
-        self.close_connection()
         return modules
 
 
     def get_versions_of_module(self, module):
-        self.establish_connection()
-
         result = self.connection.query('SELECT mod_name, mod_displayname, mod_signature, mod_id, ' +
                 'mod_versionmajor, mod_versionminor, mod_versionrev ' +
                 'FROM modules ' +
@@ -90,12 +90,10 @@ class Repository(object):
                     'version_minor' : m['mod_versionminor'],
                     'revision' : m['mod_versionrev'],
                     'signature' : m['mod_signature']} for m in result]
-        self.close_connection()
         return modules
 
 
     def resolve_dependencies_downwards(self, module):
-        self.establish_connection()
         result = self.connection.query('SELECT mod_id FROM modules WHERE mod_name = ? ' +
                 'AND mod_versionmajor = ? AND mod_versionminor = ? AND mod_versionrev = ? ' +
                 'AND mod_signature = ?;',
@@ -128,16 +126,13 @@ class Repository(object):
                         'version_minor' : m['mod_versionminor'],
                         'revision' : m['mod_versionrev'],
                         'signature' : m['mod_signature']} for m in result]
-            self.close_connection()
             return modules
 
         else:
-            self.close_connection()
             raise Exception('Module does not exist: %s' % module['name'])
 
 
     def resolve_dependencies_upwards(self, module):
-        self.establish_connection()
         result = self.connection.query('SELECT mod_id ' +
                 'FROM modules ' +
                 'WHERE mod_name = ? AND mod_versionmajor = ? AND mod_versionminor = ? ' +
@@ -171,15 +166,12 @@ class Repository(object):
                         'version_minor' : m['mod_versionminor'],
                         'revision' : m['mod_versionrev'],
                         'signature' : m['mod_signature']} for m in result]
-            self.close_connection()
             return modules
         else:
-            self.close_connection()
             raise Exception('Module does not exist: %s' % module['name'])
 
 
     def download_module(self, module):
-        self.establish_connection()
         result = self.connection.query('SELECT mod_name, mod_displayname, mod_id, mod_versionmajor, ' +
                 'mod_versionminor, mod_versionrev, mod_data, mod_signature ' +
                 'FROM modules ' +
@@ -197,15 +189,12 @@ class Repository(object):
                         'version_minor' : mod['mod_versionminor'],
                         'revision' : mod['mod_versionrev'],
                         'signature' : mod['mod_signature']}
-            self.close_connection()
             return (result_mod, mod['mod_data'])
         else:
-            self.close_connection()
             raise Exception('Module does not exist: %s' % module['name'])
 
 
     def get_latest_version(self, module):
-        self.establish_connection()
         result = self.connection.query('SELECT mod_displayname, mod_signature, mod_name, ' +
                 'mod_versionmajor, mod_versionminor, mod_versionrev ' +
                 'FROM modules JOIN (SELECT mod_name vername, ' +
@@ -225,7 +214,6 @@ class Repository(object):
                         'signature' : mod['mod_signature']}
             return result_mod
         else:
-            self.close_connection()
             raise Exception('Module does not exist: %s' % module['name'])
 
 
@@ -240,37 +228,29 @@ class Repository(object):
     def change_password(self, password):
         self.verify_admin()
         
-        self.establish_connection()
         salt = self.generate_salt()
         hashvalue = hashlib.sha512(password + salt).hexdigest()
         salt = base64.b64encode(salt)
         self.connection.update('UPDATE config SET val = ? WHERE param = \'password\';', hashvalue)
         self.connection.update('UPDATE config SET val = ? WHERE param = \'salt\';', salt)
-        self.close_connection()
     
 
     def register_developer(self, name, fullname, publickey):
         self.verify_admin()
 
-        self.establish_connection()
         dev_id = self.connection.get_sequence_next('dev_gen')
         self.connection.update('INSERT INTO developer (dev_id, dev_name, dev_fullname, dev_publickey) ' +
                 'VALUES (?, ?, ?, ?);', (dev_id, name, fullname, publickey))
-        self.close_connection();
 
 
     def unregister_developer(self, dev_id):
         self.verify_admin()
 
-        self.establish_connection()
         self.connection.update('UPDATE developer SET dev_publickey = \'\' ' +
                 'WHERE dev_id = ?;', dev_id)
-        self.close_connection()
 
 
     def upload_module(self, data, signature):
-        self.establish_connection()
-
         result = self.connection.query('SELECT dev_id, dev_name, dev_publickey ' +
                 'FROM developer;')
         valid = False
@@ -317,13 +297,10 @@ class Repository(object):
                 (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
                 manifest['version_minor'], revision, md5, repo_signature, cStringIO.StringIO(data)))
 
-        self.close_connection()
-
 
     def delete_module(self, identifier, major=None, minor=None, revision=None):
         self.verify_admin()
 
-        self.establish_connection()
         if major:
             if minor:
                 if revision:
@@ -344,28 +321,23 @@ class Repository(object):
             self.connection.update('DELETE FROM modules ' +
                     'WHERE mod_name = ?;',
                     identifier)    
-        self.close_connection()
 
 
     def get_developers(self):
         self.verify_admin()
 
-        self.establish_connection()
         result = self.connection.query('SELECT dev_id, dev_name, dev_fullname ' +
                 'FROM developer;')
         developers = [{'devId' : d['dev_id'],
                         'name' : d['dev_name'],
                         'fullName' : d['dev_fullname']} for d in result]
-        self.close_connection()
         return developers
 
 
     def get_public_key(self):
-        self.establish_connection()
         result = self.connection.query('SELECT val ' +
                 'FROM config ' +
                 'WHERE param = \'publickey\'')
-        self.close_connection()
         
         if result:
             return result[0]['val']
@@ -373,11 +345,9 @@ class Repository(object):
 
 
     def get_private_key(self):
-        self.establish_connection()
         result = self.connection.query('SELECT val ' +
                 'FROM config ' +
                 'WHERE param = \'privatekey\'')
-        self.close_connection()
         
         if result:
             return result[0]['val']
