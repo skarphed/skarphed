@@ -13,12 +13,11 @@ def application(environ, start_response):
 
     try:
         jsonstr = args['j']
-#        try:
-        handler = ProtocolHandler(jsonstr[0])
-        response_body = [handler.execute()]
- #       except Exception, e:
-  #          raise e
-   #         response_body = ['{error:%s}' % str(e)]
+        try:
+            handler = ProtocolHandler(jsonstr[0])
+            response_body = [handler.execute()]
+        except Exception, e:
+            response_body = ['{error:%s}' % str(e)]
 
         response_headers.append(('Content-Type', 'application/json'))
     except KeyError, e:

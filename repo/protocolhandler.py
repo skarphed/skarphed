@@ -40,7 +40,7 @@ class ProtocolHandler(object):
 
     def check_set(self, keys, errmsg):
         try:
-            if not all([subject[key] != None for key in keys]):
+            if not all([self.subject[key] != None for key in keys]):
                 raise Exception(errmsg)
         except KeyError, e:
             raise Exception(errmsg)
