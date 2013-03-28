@@ -1,0 +1,17 @@
+{
+  "name":"grindhold_flatmenu",
+  "hrname":"Flat Menu",
+  "version_major":0,
+  "version_minor":0,
+  "revision":1,
+  "permissions":["edit"],
+  "tables":[
+    {"name":"flatmenu",
+     "columns":[
+       {"name": "FMN_SIT_ID",  "type": "INT"},
+       {"name": "FMN_MNU_ID",  "type": "INT"},
+       {"name": "FMN_ORIENTATION",   "type": "INT"}
+     ]}
+  ]
+
+}
