@@ -55,11 +55,11 @@ class WidgetPage(gtk.VBox):
 
         self.structure_table = self.builder.get_object("structure_table")
         self.content = self.builder.get_object("widget")
-        self.page_selector = ObjectCombo(self.content, 
+        self.page_selector = ObjectCombo(self, 
                                     "Site",
                                     selectFirst=True,
                                     virtualRootObject=widget.getModule().getModules().getScoville())
-        self.menu_selector = ObjectCombo(self.content, 
+        self.menu_selector = ObjectCombo(self, 
                                     "Menu",
                                     selectFirst=True,
                                     virtualRootObject=self.page_selector.getSelected())
@@ -84,7 +84,7 @@ class WidgetPage(gtk.VBox):
             if page != self.page_selector.getSelected():
                 self.page_selector.setSelected(page)
                 self.menu_selector.destroy()
-                self.menu_selector = ObjectCombo(self.content, 
+                self.menu_selector = ObjectCombo(self, 
                                      "Menu",
                                      selectFirst=True,
                                      virtualRootObject=page)
@@ -94,7 +94,7 @@ class WidgetPage(gtk.VBox):
         if self._menuId is not None:
             if page is not None:
                 menu = page.getMenuById(self._menuId)
-                self.menu_selector.setSelected(self._menuId)
+                self.menu_selector.setSelected(menu)
 
         if self._orientation == WidgetPage.HORIZONTALLY:
             self.builder.get_object("radio_horizontal").set_active(True)

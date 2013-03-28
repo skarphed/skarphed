@@ -603,7 +603,7 @@ class ActionList(object):
         rendered.
         """
         view_manager = self._core.get_view_manager()
-        view = view_manager.get_currently_rendering_view
+        view = view_manager.get_currently_rendering_view()
         target = {}
         target['s'] = view.get_page()
         target['v'] = view.get_space_widget_mapping()
@@ -614,12 +614,12 @@ class ActionList(object):
             for action in self.get_actions():
                 if action.get_url() is not None:
                     return action.get_url()
-                elif action.get_page() is not None:
+                elif action.get_page_id() is not None:
                     pass #TODO: Build "other view"-feature instead of "other page"-feature!
                 elif action.get_space() is not None and action.get_widget_id() is not None:
                     target['v'][action.get_space()] = action.get_widget_id()
             encoder = JSONEncoder()
-            return "/web/"+encoder.encode(target)
+            return encoder.encode(target)
 
 class MenuItem(object):
     """

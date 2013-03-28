@@ -215,7 +215,8 @@ class Core(object):
         if view is None:
             try:
                 view = view_manager.get_from_json(environment["QUERY_STRING"])
-            except ViewException:
+            except ViewException, e:
+                self.log(str(e)+"Q:: "+environment["QUERY_STRING"])
                 view = None # Maybe get some cool error-view in the future
 
         ext = view.render()

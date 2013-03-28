@@ -245,7 +245,6 @@ class Template(object):
 
         #put binary into database
         for bin_filename in os.listdir(temp_installpath+"/static"):
-            cls._core.log(bin_filename)
             binary=None
             try:
                 bin_file = open(temp_installpath+"/static/"+bin_filename,"rb")

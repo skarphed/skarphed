@@ -23,6 +23,7 @@
 ###########################################################
 
 from json import JSONDecoder, JSONEncoder
+from urllib2 import unquote
 import StringIO
 import re
 
@@ -34,7 +35,8 @@ class ViewException(Exception):
         3:"""There is no default view""",
         4:"""Cannot set Parameters for Widget that is not in this view!""",
         5:"""A view must have a space-widget-mapping ('v')""",
-        6:"""A view must have a page to render on ('s')"""
+        6:"""A view must have a page to render on ('s')""",
+        7:"""This is not a valid view-JSON"""
     }
 
     @classmethod
@@ -198,6 +200,14 @@ class View(object):
         'p' is an OPTIONAL parameter. if a html-form is submitted, this 
             contains a widget_id to 
         """
+
+        json = unquote(json)
+        jd = JSONDecoder()
+        try:
+            json = jd.decode(json)
+        except ValueError, e:
+            raise ViewException(ViewException.get_msg(7))
+
         view = View(cls._core)
         if json.has_key('s'):
             view.set_page(json['s'])
@@ -205,11 +215,17 @@ class View(object):
             raise ViewException(ViewException.get_msg(6))
 
         if json.has_key('v'):
+            for key, value in json['v'].items(): #transform indices back to int
+                json['v'][int(key)] = value
+                del(json['v'][key])
             view.set_space_widget_mapping(json['v'])
         else:
             raise ViewException(ViewException.get_msg(5))
 
         if json.has_key('c'):
+            for key, value in json['c'].items(): #transform indices back to int
+                json['v'][int(key)] = value
+                del(json['c'][key])
             view.set_widget_param_mapping(json['c'])
         else:
             view.set_widget_param_mapping({})
@@ -355,7 +371,7 @@ class View(object):
           <head>
             <title>%(title)s</title>
             <link href="%(scv_css)s" rel="stylesheet" type="text/css">
-            <link href="static/%(page_css)s" rel="stylesheet" type="text/css">
+            <link href="/static/%(page_css)s" rel="stylesheet" type="text/css">
             %(head)s
           </head>
           <body>
@@ -387,9 +403,6 @@ class View(object):
                 pass
 
             widget_html = widget.render_pure_html(args)
-            self._core.log("SPACENAME: "+space_name)
-            self._core.log("WIDGETHTM: "+widget_html)
-            self._core.log("BODY     : "+body)
             body = re.sub(r"<%%\s?%s\s?%%>"%space_name,widget_html,body)
 
         body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
