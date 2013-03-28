@@ -22,6 +22,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+from json import JSONEncoder
+
 class ActionException(Exception):
     """
     Exceptions for Database-Module
@@ -593,6 +595,31 @@ class ActionList(object):
             if child.get_id() == action_id :
                 return child
         return None
+
+    def render_link(self):
+        """
+        This method renders an actual link that can be used my a module that
+        renders a menu. This method only works if there is currently a view being
+        rendered.
+        """
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_currently_rendering_view
+        target = {}
+        target['s'] = view.get_page()
+        target['v'] = view.get_space_widget_mapping()
+        target['c'] = view.get_widget_param_mapping()
+        if view is None:
+            return ""
+        else:
+            for action in self.get_actions():
+                if action.get_url() is not None:
+                    return action.get_url()
+                elif action.get_page() is not None:
+                    pass #TODO: Build "other view"-feature instead of "other page"-feature!
+                elif action.get_space() is not None and action.get_widget_id() is not None:
+                    target['v'][action.get_space()] = action.get_widget_id()
+            encoder = JSONEncoder()
+            return "/web/"+encoder.encode(target)
 
 class MenuItem(object):
     """

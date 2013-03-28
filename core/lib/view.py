@@ -32,7 +32,9 @@ class ViewException(Exception):
         1:"""Invalid input type to specify Space""",
         2:"""Invalid input type to specify Widget""",
         3:"""There is no default view""",
-        4:"""Cannot set Parameters for Widget that is not in this view!"""
+        4:"""Cannot set Parameters for Widget that is not in this view!""",
+        5:"""A view must have a space-widget-mapping ('v')""",
+        6:"""A view must have a page to render on ('s')"""
     }
 
     @classmethod
@@ -51,12 +53,21 @@ class PageException(Exception):
         return "VIE_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
 
 class View(object):
+    CURRENTLY_RENDERING = None
     @classmethod
     def set_core(cls, core):
         """
         trivial
         """
         cls._core = core
+
+    @classmethod
+    def get_currently_rendering_view(cls):
+        return cls.CURRENTLY_RENDERING
+
+    @classmethod
+    def set_currently_rendering_view(cls, view):
+        cls.CURRENTLY_RENDERING = view
 
     @classmethod
     def get_viewlist(cls):
@@ -187,7 +198,25 @@ class View(object):
         'p' is an OPTIONAL parameter. if a html-form is submitted, this 
             contains a widget_id to 
         """
-        pass
+        view = View(cls._core)
+        if json.has_key('s'):
+            view.set_page(json['s'])
+        else:
+            raise ViewException(ViewException.get_msg(6))
+
+        if json.has_key('v'):
+            view.set_space_widget_mapping(json['v'])
+        else:
+            raise ViewException(ViewException.get_msg(5))
+
+        if json.has_key('c'):
+            view.set_widget_param_mapping(json['c'])
+        else:
+            view.set_widget_param_mapping({})
+        if json.has_key('p'):
+            view.set_post_widget_id(json['p'])
+
+        return view
 
     @classmethod
     def create(cls, page, name, json):
@@ -234,6 +263,9 @@ class View(object):
 
     def get_id(self):
         return self._id
+
+    def set_post_widget_id(self, nr):
+        self._post_widget_id = int(nr)
 
     def set_page(self, page):
         """
@@ -385,12 +417,16 @@ class View(object):
         """
         render this view
         """
+        View.set_currently_rendering_view(self)
         configuration = self._core.get_configuration()
         rendermode = configuration.get_entry("core.rendermode")
+        result = None
         if rendermode == "pure":
-            return self.render_pure()
+            result = self.render_pure()
         elif rendermode == "ajax":
-            return self.render_ajax()
+            result = self.render_ajax()
+        View.set_currently_rendering_view(None)
+        return result
 
     def store(self):
         """
@@ -469,6 +505,7 @@ class ViewManager(object):
         self.get_from_json = View.get_from_json
         self.get_default_view = View.get_default_view
         self.create_default_view = View.create_default_view
+        self.get_currently_rendering_view = View.get_currently_rendering_view
         self.create = View.create
 
 
