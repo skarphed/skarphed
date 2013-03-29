@@ -1,3 +1,24 @@
+###########################################################
+# Copyright 2011 Daniel 'grindhold' Brendle and Team
+#
+# This file is part of Scoville.
+#
+# Scoville is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License 
+# as published by the Free Software Foundation, either 
+# version 3 of the License, or (at your option) any later 
+# version.
+#
+# Scoville is distributed in the hope that it will be 
+# useful, but WITHOUT ANY WARRANTY; without even the implied 
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+# PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public 
+# License along with Scoville. 
+# If not, see http://www.gnu.org/licenses/.
+###########################################################
+
 import base64
 import json
 
@@ -24,8 +45,8 @@ class CommandType:
     GET_DEVELOPERS = 107
 
 class ProtocolHandler(object):
-    def __init__(self, jsonstr):
-        self.repository = Repository()
+    def __init__(self, repository, jsonstr):
+        self.repository = repository
         self.subject = json.loads(jsonstr)
 
 
@@ -44,6 +65,7 @@ class ProtocolHandler(object):
                 raise Exception(errmsg)
         except KeyError, e:
             raise Exception(errmsg)
+
 
     def execute(self):
         c = self.subject['c']
@@ -81,11 +103,13 @@ class ProtocolHandler(object):
             return json.dumps({'r' : module})
         
         elif c == CommandType.LOGIN:
-            #TODO fix
-            return json.dumps({'r' : 0})
+            self.check_set(['dxd'], 'Password not set')
+            if self.repository.login(self.subject['dxd']):
+                return json.dumps({'r' : 0})
+            return json.dumps({'r' : 1})
         
         elif c == CommandType.LOGOUT:
-            #TODO fix
+            self.repository.logout()
             return json.dumps({'r' : 0})
 
         elif c == CommandType.CHANGE_PASSWORD:
