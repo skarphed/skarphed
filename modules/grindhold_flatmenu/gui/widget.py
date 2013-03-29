@@ -63,8 +63,8 @@ class WidgetPage(gtk.VBox):
                                     "Menu",
                                     selectFirst=True,
                                     virtualRootObject=self.page_selector.getSelected())
-        self.structure_table.attach(self.page_selector,1,2,0,1)
-        self.structure_table.attach(self.menu_selector,1,2,1,2)
+        self.structure_table.attach(self.page_selector,1,2,0,1, gtk.FILL|gtk.SHRINK, gtk.FILL|gtk.SHRINK,0,0)
+        self.structure_table.attach(self.menu_selector,1,2,1,2, gtk.FILL|gtk.SHRINK, gtk.FILL|gtk.SHRINK,0,0)
 
         self.page_selector.connect("changed", self.pageChangedCallback)
         self.menu_selector.connect("changed", self.menuChangedCallback)
