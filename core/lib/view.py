@@ -348,12 +348,74 @@ class View(object):
 
         self._widget_param_mapping[widget] = params
 
+    def check_has_name(self):
+        """
+        Checks if this view has already a name in Database
+        A name is present if 
+        there is a View that has the complete SpaceWidget-Mapping in DB 
+        AND the complete WidgetParam-Mapping and the same page Id 
+        Returns the name if there is one
+        Returns False if there is no corresponding view
+        """
+        db = self._core.get_db()
+        stmnt_params = []
+        stmnt_firstloopdone = False
+        stmnt = "SELECT COUNT(VIW_VIE_ID) AS CNT, VIW_VIE_ID FROM VIEWWIDGETS INNER JOIN VIEWS WHERE "
+        for space_id , widget_id in self._space_widget_mapping.items():
+            if not stmnt_firstloopdone:
+                stmnt += " VIW_SPA_ID = ? AND VIW_WGT_ID = ? AND VIE_SIT_ID = ? "
+                stmnt_firstloopdone = True
+            stmnt += " OR VIW_SPA_ID = ? AND VIW_WGT_ID = ? AND VIE_SIT_ID = ? "
+            stmnt_params.extend((space_id, widget_id, self._page))
+        stmnt += " ORDER BY VIW_VIE_ID ;"
+
+        stmnt2_params = []
+        stmnt2_firstloopdone = False
+        stmnt2 = "SELECT COUNT(VWP_VIE_ID) AS CNT, VWP_VIE_ID FROM VIEWWIDGETPARAMS INNER JOIN VIEWS WHERE "
+        for wgt_id, params in self._widget_param_mapping.items():
+            for key, value in params.items():
+                if not stmnt2_firstloopdone:
+                    stmnt2 += " VWP_WGT_ID = ? AND VWP_KEY = ? AND VWP_VALUE = ? AND VIE_SIT_ID = ? "
+                    stmnt2_firstloopdone = True
+                stmnt2 += " OR VWP_WGT_ID = ? AND VWP_KEY = ? AND VWP_VALUE = ? AND VIE_SIT_ID = ? "
+                stmnt2_params.extend((wgt_id, key, value, self._page))
+        stmnt2 += "ORDER BY VWP_VIE_ID ;"
+
+        db_param_mappingcounts = {}
+
+        cur = db.query(self._core, stmnt2, stmnt2_params)
+        res2 = cur.fetchallmap()
+
+        for row in res2:
+            db_param_mappingcounts[row["VWP_VIE_ID"]] = row["CNT"]
+
+        cur = db.query(self._core, stmnt, stmnt_params)
+        res1 = cur.fetchallmap()
+
+        possible_views = []
+        for row in res1:
+            if row["CNT"] == len(self._space_widget_mapping):
+                view_paramcount = 0
+                for wgt_id , params in self._widget_param_mapping.items():
+                    view_paramcount += len(params)
+                if db_param_mappingcounts[row["VIW_VIE_ID"]] == view_paramcount:
+                    possible_views.append(row["VIW_VIE_ID"])
+
+        if len(possible_views) > 0:
+            stmnt= "SELECT VIE_NAME FROM VIEWS WHERE VIE_ID = ? ;"
+            cur = db.query(self._core, stmnt, (possible_views[0]))
+            row = cur.fetchonemap()
+            return row["VIE_NAME"]
+        else:
+            return False
+
 
     def generate_link_from_action(self,action):
         """
         returns a link that describes a call to a view that result of the action 
         """
         pass
+
 
     def generate_link_from_actionlist(self,actionlist):
         """
@@ -710,5 +772,3 @@ class PageManager(object):
         self.get_pages = Page.get_pages
         self.create = Page.create
         self.delete_all_pages = Page.delete_all_pages
-
-
