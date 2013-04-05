@@ -58,37 +58,36 @@ class DatabaseConnection(object):
             return (params,)
 
 
-    def query(self, statement, params = (), commit = False):
+    def query(self, statement, params = (), forceNoCache=False, commit = False):
         if self.connection is None:
             raise DatabaseException('No Connection')
         cursor = self.connection.cursor()
         try:
             cursor.execute(statement, self.params_to_tuple(params))
-            result = cursor.fetchallmap()
             if commit:
                 self.connection.commit()
-            cursor.close()
-            return result
+            return cursor
         except fdb.fbcore.DatabaseError, e:
             raise DatabaseException(str(e))
 
+    def get_seq_next(self,sequenceId):
+        """
+        Yields the next value of a given sequence (e.g. 'MOD_GEN') 
+        and increments it
+        """
+        cur = self._connection.cursor()
+        statement = "SELECT GEN_ID ( %s , 1) FROM RDB$DATABASE ;"%str(sequenceId)
+        cur.execute(statement)
+        res = cur.fetchone()
+        return res[0]
 
-    def update(self, statement, params = ()):
-        if self.connection is None:
-            raise DatabaseException('No Connection')
-        cursor = self.connection.cursor()
-        try:
-            cursor.execute(statement, self.params_to_tuple(params))
-            self.connection.commit()
-            cursor.close()
-        except fdb.fbcore.DatabaseError, e:
-            raise DatabaseException(str(e))
-
-
-
-    def get_sequence_next(self, sequence):
-        result = self.query('SELECT NEXT VALUE FOR ? FROM RDB$DATABASE;', sequence, commit = True)
-        if result:
-            return result[0]['gen_id']
-        else:
-            raise DatabaseException('No generator: %s' % sequence)
+    def get_seq_current(self,sequenceId):
+        """
+        Yields the current value of a given sequence (e.g. 'MOD_GEN') 
+        without incrementing it
+        """
+        cur = self._connection.cursor()
+        statement = "SELECT GEN_ID ( %s , 0) FROM RDB$DATABASE ;"%str(sequenceId)
+        cur.execute(statement)
+        res = cur.fetchone()
+        return res[0]

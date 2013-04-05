@@ -23,8 +23,8 @@
 
 from mimetypes import guess_type
 from urlparse import parse_qs
-
-from beaker.middleware import SessionMiddleware
+from traceback import print_exc
+from StringIO import StringIO
 
 import sys
 sys.path.append('/var/www_py/')
@@ -54,10 +54,12 @@ def repo_application(environ, start_response):
             jsonstr = args['j']
             try:
                 repository = Repository(environ)
-                handler = ProtocolHandler(repository, jsonstr[0])
+                handler = ProtocolHandler(repository, jsonstr[0], response_headers)
                 response_body = [handler.execute()]
             except Exception, e:
-                response_body = ['{error:%s}' % str(e)]
+                errorstream  = StringIO()
+                print_exc(None,errorstream)
+                response_body = ['{error:%s}' % errorstream.getvalue()]
 
             response_headers.append(('Content-Type', 'application/json'))
         except KeyError, e:
@@ -79,4 +81,4 @@ def repo_application(environ, start_response):
     return response_body
 
 
-application = SessionMiddleware(repo_application, type='dbm', data_dir='./.sessions')
+application = repo_application

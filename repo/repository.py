@@ -32,6 +32,7 @@ from Crypto.Signature import PKCS1_v1_5
 
 from database import DatabaseConnection
 
+from session import Session
 
 class Repository(object):
     def __init__(self, environ):
@@ -50,6 +51,8 @@ class Repository(object):
         if self.connection:
             self.connection.disconnect()
 
+    def get_db(self):
+        return self.connection
 
     def read_config(self, path):
         f = open(path, 'r')
@@ -87,7 +90,7 @@ class Repository(object):
                 'AND ver = mod_versionmajor*10000000 ' + 
                 '+mod_versionminor*100000 ' +
                 '+mod_versionrev;')
-
+        result = result.fetchallmap()
         modules = [{'name' : m['mod_name'],
                     'hrname' : m['mod_displayname'],
                     'version_major' : m['mod_versionmajor'],
@@ -102,6 +105,7 @@ class Repository(object):
                 'mod_versionmajor, mod_versionminor, mod_versionrev ' +
                 'FROM modules ' +
                 'WHERE mod_name = ?;', module['name'])
+        result = result.fetchallmap()
         modules = [{'name' : m['mod_name'],
                     'hrname' : m['mod_displayname'],
                     'version_major' : m['mod_versionmajor'],
@@ -117,12 +121,13 @@ class Repository(object):
                 'AND mod_signature = ?;',
                 (module['name'], module['version_major'], module['version_minor'],
                 module['revision'], module['signature']))
-
+        result = result.fetchallmap()
         if result:
             mod_id = result[0]['mod_id']
             result = self.connection.query('SELECT DISTINCT dep_mod_dependson ' +
                     'FROM dependencies ' +
                     'WHERE dep_mod_id = ?;', mod_id)
+            result = result.fetchallmap()
             mod_ids = [mod_id]
 
             while result:
@@ -133,11 +138,12 @@ class Repository(object):
                         'FROM dependencies ' +
                         'WHERE dep_mod_id IN ? AND dep_mod_dependson NOT IN ?;', 
                         (mod_ids_str, mod_ids_str));
-
+                result = result.fetchallmap()
             result = self.connection.query('SELECT mod_name, mod_displayname, mod_signature, mod_id, ' +
                     'mod_versionmajor, mod_versionminor, mod_versionrev ' +
                     'FROM modules WHERE mod_id IN (?) AND mod_id != ?;', 
                     (','.join(map(str, mod_ids)), mod_id));
+            result = result.fetchallmap()
             modules = [{'name' : m['mod_name'],
                         'hrname' : m['mod_displayname'],
                         'version_major' : m['mod_versionmajor'],
@@ -157,12 +163,13 @@ class Repository(object):
                 'AND mod_versionrev = ? AND mod_signature = ?;',
                 (module['name'], module['version_major'], module['version_minor'],
                 module['revision'], module['signature']))
-
+        result = result.fetchallmap()
         if result:
             mod_id = result[0]['mod_id']
             result = self.connection.query('SELECT DISTINCT dep_mod_id ' +
                     'FROM dependencies ' +
                     'WHERE dep_mod_dependson = ?;', mod_id);
+            result = result.fetchallmap()
             mod_ids = [mod_id]
             while result:
                 for mod in result:
@@ -172,12 +179,14 @@ class Repository(object):
                         'FROM dependencies ' +
                         'WHERE dep_mod_dependson IN ? AND dep_mod_id NOT IN ?;',
                         (mod_ids_str, mod_ids_str))
+                result = result.fetchallmap()
 
             result = self.connection.query('SELECT mod_name, mod_displayname, mod_signature, mod_id, ' +
                     'mod_versionmajor, mod_versionminor, mod_versionrev ' +
                     'FROM modules ' +
                     'WHERE mod_id IN (?) and mod_id != ?;',
                     (','.join(map(str, mod_ids)), mod_id))
+            result = result.fetchallmap()
             modules = [{'name' : m['mod_name'],
                         'hrname' : m['mod_displayname'],
                         'version_major' : m['mod_versionmajor'],
@@ -197,7 +206,7 @@ class Repository(object):
                 'AND mod_versionrev = ? AND mod_signature = ?;',
                 (module['name'], module['version_major'], module['version_minor'],
                 module['revision'], module['signature']))
-
+        result = result.fetchallmap()
         if result:
             mod = result[0]
             # TODO fix reading from blob mod_data
@@ -222,6 +231,7 @@ class Repository(object):
                 'ON vername = mod_name ' + 
                 'AND ver = mod_versionmajor*10000000+mod_versionminor*100000+mod_versionrev ' +
                 'WHERE mod_name = ?;', module['name']);
+        result = result.fetchallmap()
         if result:
             mod = result[0]
             result_mod = {'name' : mod['mod_name'],
@@ -235,18 +245,19 @@ class Repository(object):
             raise Exception('Module does not exist: %s' % module['name'])
 
 
-    def login(self, password):
-        result = self.connection.query('SELECT val ' +
-                'FROM config ' +
-                'WHERE param = \'password\' OR param = \'salt\' ORDER BY param ASC;')
-        db_hash = result[0]['val']
-        salt = base64.b64decode(result[1]['val'])
-        hashvalue = hashlib.sha512(password.encode('utf-8') + salt).hexdigest()
+    def login(self, password, response_header):
+        result = self.connection.query("SELECT VAL FROM CONFIG \
+                WHERE PARAM = 'password' OR PARAM = 'salt' ORDER BY PARAM ASC;")
+        result = result.fetchallmap()
+
+        db_hash = result[0]['VAL']
+        salt = base64.b64decode(result[1]['VAL'])
+        hashvalue = hashlib.sha512(password.encode('utf-8')  + salt).hexdigest()
         is_valid = hashvalue == db_hash
         
-        session = self.environ['beaker.session']
-        session['privileged'] = is_valid
-        session.save()
+        session = Session.create_session(self, response_header)
+        session.set_admin(is_valid)
+        session.store()
         return is_valid
 
 
@@ -263,23 +274,23 @@ class Repository(object):
         salt = self.generate_salt()
         hashvalue = hashlib.sha512(password + salt).hexdigest()
         salt = base64.b64encode(salt)
-        self.connection.update('UPDATE config SET val = ? WHERE param = \'password\';', hashvalue)
-        self.connection.update('UPDATE config SET val = ? WHERE param = \'salt\';', salt)
+        self.connection.query('UPDATE config SET val = ? WHERE param = \'password\';', hashvalue,commit=True)
+        self.connection.query('UPDATE config SET val = ? WHERE param = \'salt\';', salt,commit=True)
     
 
     def register_developer(self, name, fullname, publickey):
         self.verify_admin()
 
-        dev_id = self.connection.get_sequence_next('dev_gen')
-        self.connection.update('INSERT INTO developer (dev_id, dev_name, dev_fullname, dev_publickey) ' +
-                'VALUES (?, ?, ?, ?);', (dev_id, name, fullname, publickey))
+        dev_id = self.connection.get_seq_next('DEV_GEN')
+        self.connection.query('INSERT INTO developer (dev_id, dev_name, dev_fullname, dev_publickey) ' +
+                'VALUES (?, ?, ?, ?);', (dev_id, name, fullname, publickey),commit=True)
 
 
     def unregister_developer(self, dev_id):
         self.verify_admin()
 
-        self.connection.update('UPDATE developer SET dev_publickey = \'\' ' +
-                'WHERE dev_id = ?;', dev_id)
+        self.connection.query('UPDATE developer SET dev_publickey = \'\' ' +
+                'WHERE dev_id = ?;', dev_id,commit=True)
 
 
     def upload_module(self, data, signature):
@@ -310,11 +321,12 @@ class Repository(object):
         result = self.connection.query('SELECT MAX(mod_versionrev) AS maxrevision ' +
                 'FROM modules ' +
                 'WHERE mod_name = ?;', manifest['name'])
+        result = result.fetchallmap()
         if result:
             revision = result['maxrevision'] + 1
         else:
             revision = 0
-        mod_id = self.connection.get_sequence_next('mod_gen')
+        mod_id = self.connection.get_seq_next('MOD_GEN')
         md5 = hashlib.md5(data).hexdigest()
 
         key = RSA.importKey(self.get_private_key())
@@ -323,11 +335,11 @@ class Repository(object):
         repo_signature = base64.b64_encode(signer.sign(hashobj))
         
         # TODO blob working?
-        self.connection.update('INSERT INTO mdoules (mod_id, mod_name, mod_displayname, ' +
+        self.connection.query('INSERT INTO mdoules (mod_id, mod_name, mod_displayname, ' +
                 'mod_versionmajor, mod_versionminor, mod_versionrev, mod_md5, mod_signature, ' +
                 'mod_data VALUE (?,?,?,?,?,?,?,?,?);',
                 (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
-                manifest['version_minor'], revision, md5, repo_signature, cStringIO.StringIO(data)))
+                manifest['version_minor'], revision, md5, repo_signature, cStringIO.StringIO(data)),commit=True)
 
 
     def delete_module(self, identifier, major=None, minor=None, revision=None):
@@ -336,23 +348,23 @@ class Repository(object):
         if major:
             if minor:
                 if revision:
-                    self.connection.update('DELETE FROM modules ' +
+                    self.connection.query('DELETE FROM modules ' +
                             'WHERE mod_name = ? AND mod_versionmajor = ? AND ' +
                             'mod_versionminor = ? AND mod_versionrev = ?;',
-                            (identifier, major, minor, revision))
+                            (identifier, major, minor, revision),commit=True)
                 else:
-                    self.connection.update('DELETE FROM modules ' +
+                    self.connection.query('DELETE FROM modules ' +
                             'WHERE mod_name = ? AND mod_versionmajor = ? AND ' +
                             'mod_versionminor = ?;',
-                            (identifier, major, minor))    
+                            (identifier, major, minor),commit=True)    
             else:
-                self.connection.update('DELETE FROM modules ' +
+                self.connection.query('DELETE FROM modules ' +
                         'WHERE mod_name = ? AND mod_versionmajor = ?;',
-                        (identifier, major))    
+                        (identifier, major),commit=True)    
         else:
-            self.connection.update('DELETE FROM modules ' +
+            self.connection.query('DELETE FROM modules ' +
                     'WHERE mod_name = ?;',
-                    identifier)    
+                    identifier,commit=True)    
 
 
     def get_developers(self):
@@ -360,6 +372,7 @@ class Repository(object):
 
         result = self.connection.query('SELECT dev_id, dev_name, dev_fullname ' +
                 'FROM developer;')
+        result = result.fetchallmap()
         developers = [{'devId' : d['dev_id'],
                         'name' : d['dev_name'],
                         'fullName' : d['dev_fullname']} for d in result]
@@ -370,7 +383,7 @@ class Repository(object):
         result = self.connection.query('SELECT val ' +
                 'FROM config ' +
                 'WHERE param = \'publickey\'')
-        
+        result = result.fetchallmap()
         if result:
             return result[0]['val']
         return None
@@ -380,7 +393,7 @@ class Repository(object):
         result = self.connection.query('SELECT val ' +
                 'FROM config ' +
                 'WHERE param = \'privatekey\'')
-        
+        result = result.fetchallmap()
         if result:
             return result[0]['val']
         return None
