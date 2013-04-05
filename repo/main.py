@@ -26,19 +26,23 @@ from urlparse import parse_qs
 
 from beaker.middleware import SessionMiddleware
 
+import sys
+sys.path.append('/var/www_py/')
+
 from protocolhandler import ProtocolHandler
 from repository import Repository
 
 
-def application(environ, start_response):
+def repo_application(environ, start_response):
     response_body = []
     response_headers = []
 
     if environ['PATH_INFO'].startswith('/static/'):
+        prefix = "/usr/share/scvrepo/"
         path = environ['PATH_INFO'][1:]
         status = '200 OK'  
-        (mime, encoding) = guess_type(path)
-        f = open(path, 'r')
+        (mime, encoding) = guess_type(prefix+path)
+        f = open(prefix+path, 'r')
         data = f.read()
         f.close()
         response_body = [data]
@@ -58,7 +62,7 @@ def application(environ, start_response):
             response_headers.append(('Content-Type', 'application/json'))
         except KeyError, e:
             try:
-                f = open('template.html')
+                f = open('/usr/share/scvrepo/template.html')
                 template = f.read()
                 f.close()
                 repository = Repository(environ)
@@ -75,4 +79,4 @@ def application(environ, start_response):
     return response_body
 
 
-wsgi_app = SessionMiddleware(application, type='dbm', data_dir='./.sessions')
+application = SessionMiddleware(repo_application, type='dbm', data_dir='./.sessions')

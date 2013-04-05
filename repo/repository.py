@@ -36,7 +36,7 @@ from database import DatabaseConnection
 class Repository(object):
     def __init__(self, environ):
         self.environ = environ
-        self.config = self.read_config('config.json')
+        self.config = self.read_config('/etc/scvrepo/config.json')
         self.connection = DatabaseConnection(
                 self.config['db.ip'],
                 self.config['db.name'],
