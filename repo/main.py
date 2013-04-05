@@ -48,6 +48,7 @@ def repo_application(environ, start_response):
         response_body = [data]
         response_headers.append(('Content-Type', mime))
     else:
+        # TODO only accept post requests
         args = parse_qs(environ['QUERY_STRING']) # TODO: exception handling
 
         try:
