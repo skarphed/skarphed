@@ -229,12 +229,12 @@ class Repository(object):
         
         session = environ['session']
         session.set_admin(is_valid)
-        session.store()
+        session.store(environ)
         return is_valid
 
 
     def logout(self, environ):
-        environ['session'].delete()
+        environ['session'].delete(environ)
 
 
     def change_password(self, environ, password):

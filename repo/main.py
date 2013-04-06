@@ -34,6 +34,7 @@ sys.path.append('/var/www_py/')
 from database import DatabaseMiddleware
 from protocolhandler import ProtocolHandler
 from repository import Repository
+from session import SessionMiddleware
 
 
 def default_template(environ, response_headers):
@@ -96,4 +97,4 @@ def repo_application(environ, start_response):
     return response_body
 
 
-application = DatabaseMiddleware(repo_application)
+application = DatabaseMiddleware(SessionMiddleware(repo_application))
