@@ -35,38 +35,9 @@ from database import DatabaseConnection
 from session import Session
 
 class Repository(object):
-    def __init__(self, environ):
-        self.environ = environ
-        self.config = self.read_config('/etc/scvrepo/config.json')
-        self.connection = DatabaseConnection(
-                self.config['db.ip'],
-                self.config['db.name'],
-                self.config['db.user'],
-                self.config['db.password']
-            )
-        self.connection.connect()
-
-    
-    def __del__(self):
-        if self.connection:
-            self.connection.disconnect()
-
-    def get_db(self):
-        return self.connection
-
-    def read_config(self, path):
-        f = open(path, 'r')
-        config = json.loads(f.read())
-        f.close()
-        return config
-
-
-    def verify_admin(self):
-        # TODO use own session class, get rid of beaker
-        try:
-            if not self.environ['beaker.session']['privileged']:
-                raise Exception('You are no admin')
-        except Exception, e:
+    def verify_admin(self, environ):
+        session = environ['session']
+        if not session.is_admin():
             raise Exception('You are no admin')
 
 
@@ -78,17 +49,17 @@ class Repository(object):
         return salt
 
 
-    def get_all_modules(self):
-        result = self.connection.query('SELECT MOD_DISPLAYNAME, MOD_MD5, MOD_SIGNATURE, MOD_NAME, \
+    def get_all_modules(self, environ):
+        result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_MD5, MOD_SIGNATURE, MOD_NAME, \
                 MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
                 FROM MODULES JOIN (SELECT MOD_NAME VERNAME \
                 ,MAX(MOD_VERSIONMAJOR*10000000 \
                 +MOD_VERSIONMINOR*100000 \
-                +MOD_VERSIONREV) vER \
+                +MOD_VERSIONREV) VER \
                 FROM MODULES \
-                GROUP BY MOD_NAME) \ 
-                ON VERNAME = MOD_NAME \ 
-                AND VER = MOD_VERSIONMAJOR*10000000 \ 
+                GROUP BY MOD_NAME) \
+                ON VERNAME = MOD_NAME \
+                AND VER = MOD_VERSIONMAJOR*10000000 \
                 +MOD_VERSIONMINOR*100000 \
                 +MOD_VERSIONREV;')
         result = result.fetchallmap()
@@ -101,8 +72,8 @@ class Repository(object):
         return modules
 
 
-    def get_versions_of_module(self, module):
-        result = self.connection.query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
+    def get_versions_of_module(self, environ, module):
+        result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
                 'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
                 'FROM MODULES ' +
                 'WHERE MOD_NAME = ?;', module['name'])
@@ -116,8 +87,8 @@ class Repository(object):
         return modules
 
 
-    def resolve_dependencies_downwards(self, module):
-        result = self.connection.query('SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ' +
+    def resolve_dependencies_downwards(self, environ, module):
+        result = environ['db'].query('SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ' +
                 'AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ? ' +
                 'AND MOD_SIGNATURE = ?;',
                 (module['name'], module['version_major'], module['version_minor'],
@@ -125,7 +96,7 @@ class Repository(object):
         result = result.fetchallmap()
         if result:
             mod_id = result[0]['MOD_ID']
-            result = self.connection.query('SELECT DISTINCT DEP_MOD_DEPENDSOn ' +
+            result = environ['db'].query('SELECT DISTINCT DEP_MOD_DEPENDSOn ' +
                     'FROM DEPENDENCIES ' +
                     'WHERE DEP_MOD_ID = ?;', mod_id)
             result = result.fetchallmap()
@@ -135,12 +106,12 @@ class Repository(object):
                 for mod in result:
                     mod_ids.append(mod['DEP_MOD_DEPENDSOn'])
                 mod_ids_str = ','.join(map(str, mod_ids))
-                result = self.connection.query('SELECT DEP_MOD_DEPENDSON ' +
+                result = environ['db'].query('SELECT DEP_MOD_DEPENDSON ' +
                         'FROM DEPENDENCIES ' +
                         'WHERE DEP_MOD_ID IN ? AND DEP_MOD_DEPENDSON NOT IN ?;', 
                         (mod_ids_str, mod_ids_str));
                 result = result.fetchallmap()
-            result = self.connection.query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
+            result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
                     'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
                     'FROM MODULES WHERE MOD_ID IN (?) AND MOD_ID != ?;', 
                     (','.join(map(str, mod_ids)), mod_id));
@@ -157,8 +128,8 @@ class Repository(object):
             raise Exception('Module does not exist: %s' % module['name'])
 
 
-    def resolve_dependencies_upwards(self, module):
-        result = self.connection.query('SELECT MOD_ID ' +
+    def resolve_dependencies_upwards(self, environ, module):
+        result = environ['db'].query('SELECT MOD_ID ' +
                 'FROM MODULES ' +
                 'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? ' +
                 'AND MOD_VERSIONREV = ? AND MOD_SIGNATURE = ?;',
@@ -167,7 +138,7 @@ class Repository(object):
         result = result.fetchallmap()
         if result:
             mod_id = result[0]['MOD_ID']
-            result = self.connection.query('SELECT DISTINCT DEP_MOD_ID ' +
+            result = environ['db'].query('SELECT DISTINCT DEP_MOD_ID ' +
                     'FROM DEPENDENCIES ' +
                     'WHERE DEP_MOD_DEPENDSON = ?;', mod_id);
             result = result.fetchallmap()
@@ -176,13 +147,13 @@ class Repository(object):
                 for mod in result:
                     mod_ids.append(mod['DEP_MOD_ID'])
                 mod_ids_str = ','.join(map(str, mod_ids))
-                result = self.connection.query('SELECT DEP_MOD_ID ' +
+                result = environ['db'].query('SELECT DEP_MOD_ID ' +
                         'FROM DEPENDENCIES ' +
                         'WHERE DEP_MOD_DEPENDSON IN ? AND DEP_MOD_ID NOT IN ?;',
                         (mod_ids_str, mod_ids_str))
                 result = result.fetchallmap()
 
-            result = self.connection.query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
+            result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
                     'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
                     'FROM MODULES ' +
                     'WHERE MOD_ID IN (?) AND MOD_ID != ?;',
@@ -199,8 +170,8 @@ class Repository(object):
             raise Exception('Module does not exist: %s' % module['name'])
 
 
-    def download_module(self, module):
-        result = self.connection.query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_ID, MOD_VERSIONMAJOR, ' +
+    def download_module(self, environ, module):
+        result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_ID, MOD_VERSIONMAJOR, ' +
                 'MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_DATA, MOD_SIGNATURE ' +
                 'FROM MODULES ' +
                 'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? ' +
@@ -222,8 +193,8 @@ class Repository(object):
             raise Exception('Module does not exist: %s' % module['name'])
 
 
-    def get_latest_version(self, module):
-        result = self.connection.query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, ' +
+    def get_latest_version(self, environ, module):
+        result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, ' +
                 'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
                 'FROM MODULES JOIN (SELECT MOD_NAME VERNAME, ' +
                 'MAX(MOD_VERSIONMAJOR*10000000+MOD_VERSIONMINOR*100000+MOD_VERSIONREV) VER ' + 
@@ -246,8 +217,8 @@ class Repository(object):
             raise Exception('Module does not exist: %s' % module['name'])
 
 
-    def login(self, password, response_header):
-        result = self.connection.query("SELECT VAL FROM CONFIG \
+    def login(self, environ, password, response_header):
+        result = environ['db'].query("SELECT VAL FROM CONFIG \
                 WHERE PARAM = 'password' OR PARAM = 'salt' ORDER BY PARAM ASC;")
         result = result.fetchallmap()
 
@@ -256,47 +227,43 @@ class Repository(object):
         hashvalue = hashlib.sha512(password.encode('utf-8')  + salt).hexdigest()
         is_valid = hashvalue == db_hash
         
-        session = Session.create_session(self, response_header)
+        session = environ['session']
         session.set_admin(is_valid)
         session.store()
         return is_valid
 
 
-    def logout(self):
-        try:
-            #TODO use own session class, get rid of beaker
-            self.environ['beaker.session'].delete()
-        except KeyError, e:
-            pass
+    def logout(self, environ):
+        environ['session'].delete()
 
 
-    def change_password(self, password):
-        self.verify_admin()
+    def change_password(self, environ, password):
+        self.verify_admin(environ)
         
         salt = self.generate_salt()
         hashvalue = hashlib.sha512(password + salt).hexdigest()
         salt = base64.b64encode(salt)
-        self.connection.query('UPDATE CONFIG SET VAL = ? WHERE PARAM = \'password\';', hashvalue, commit=True)
-        self.connection.query('UPDATE CONFIG SET VAL = ? WHERE PARAM = \'salt\';', salt, commit=True)
+        environ['db'].query('UPDATE CONFIG SET VAL = ? WHERE PARAM = \'password\';', hashvalue, commit=True)
+        environ['db'].query('UPDATE CONFIG SET VAL = ? WHERE PARAM = \'salt\';', salt, commit=True)
     
 
-    def register_developer(self, name, fullname, publickey):
-        self.verify_admin()
+    def register_developer(self, environ, name, fullname, publickey):
+        self.verify_admin(environ)
 
-        dev_id = self.connection.get_seq_next('DEV_GEN')
-        self.connection.query('INSERT INTO DEVELOPER (DEV_ID, DEV_NAME, DEV_FULLNAME, DEV_PUBLICKEY) ' +
+        dev_id = environ['db'].get_seq_next('DEV_GEN')
+        environ['db'].query('INSERT INTO DEVELOPER (DEV_ID, DEV_NAME, DEV_FULLNAME, DEV_PUBLICKEY) ' +
                 'VALUES (?, ?, ?, ?);', (dev_id, name, fullname, publickey), commit=True)
 
 
-    def unregister_developer(self, dev_id):
-        self.verify_admin()
+    def unregister_developer(self, environ, dev_id):
+        self.verify_admin(environ)
 
-        self.connection.query('UPDATE DEVELOPER SET DEV_PUBLICKEY = \'\' ' +
+        environ['db'].query('UPDATE DEVELOPER SET DEV_PUBLICKEY = \'\' ' +
                 'WHERE DEV_ID = ?;', dev_id, commit=True)
 
 
-    def upload_module(self, data, signature):
-        result = self.connection.query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY ' +
+    def upload_module(self, environ, data, signature):
+        result = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY ' +
                 'FROM DEVELOPER;')
         valid = False
         hashobj = SHA256.new(data)
@@ -320,7 +287,7 @@ class Repository(object):
             raise Exception('Error while reading manifest')
         manifest = json.loads(manifestdata)
 
-        result = self.connection.query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION ' +
+        result = environ['db'].query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION ' +
                 'FROM MODULES ' +
                 'WHERE MOD_NAME = ?;', manifest['name'])
         result = result.fetchallmap()
@@ -328,7 +295,7 @@ class Repository(object):
             revision = result['MAXREVISION'] + 1
         else:
             revision = 0
-        mod_id = self.connection.get_seq_next('MOD_GEN')
+        mod_id = environ['db'].get_seq_next('MOD_GEN')
         md5 = hashlib.md5(data).hexdigest()
 
         key = RSA.importKey(self.get_private_key())
@@ -337,42 +304,42 @@ class Repository(object):
         repo_signature = base64.b64_encode(signer.sign(hashobj))
         
         # TODO blob working?
-        self.connection.query('INSERT INTO MDOULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, ' +
+        environ['db'].query('INSERT INTO MDOULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, ' +
                 'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_MD5, MOD_SIGNATURE, ' +
                 'MOD_DATA VALUE (?,?,?,?,?,?,?,?,?);',
                 (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
                 manifest['version_minor'], revision, md5, repo_signature, cStringIO.StringIO(data)),commit=True)
 
 
-    def delete_module(self, identifier, major=None, minor=None, revision=None):
-        self.verify_admin()
+    def delete_module(self, environ, identifier, major=None, minor=None, revision=None):
+        self.verify_admin(environ)
 
         if major:
             if minor:
                 if revision:
-                    self.connection.query('DELETE FROM MODULES ' +
+                    environ['db'].query('DELETE FROM MODULES ' +
                             'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND ' +
                             'MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ?;',
                             (identifier, major, minor, revision), commit=True)
                 else:
-                    self.connection.query('DELETE FROM MODULES ' +
+                    environ['db'].query('DELETE FROM MODULES ' +
                             'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND ' +
                             'MOD_VERSIONMINOR = ?;',
                             (identifier, major, minor), commit=True)    
             else:
-                self.connection.query('DELETE FROM MODULES ' +
+                environ['db'].query('DELETE FROM MODULES ' +
                         'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ?;',
                         (identifier, major), commit=True)    
         else:
-            self.connection.query('DELETE FROM MODULES ' +
+            environ['db'].query('DELETE FROM MODULES ' +
                     'WHERE MOD_NAME = ?;',
                     identifier, commit=True)    
 
 
-    def get_developers(self):
-        self.verify_admin()
+    def get_developers(self, environ):
+        self.verify_admin(environ)
 
-        result = self.connection.query('SELECT DEV_ID, DEV_NAME, DEV_FULLNAME ' +
+        result = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_FULLNAME ' +
                 'FROM DEVELOPER;')
         result = result.fetchallmap()
         developers = [{'devId' : d['DEV_ID'],
@@ -381,8 +348,8 @@ class Repository(object):
         return developers
 
 
-    def get_public_key(self):
-        result = self.connection.query('SELECT VAL ' +
+    def get_public_key(self, environ):
+        result = environ['db'].query('SELECT VAL ' +
                 'FROM CONFIG ' +
                 'WHERE PARAM = \'publickey\'')
         result = result.fetchallmap()
@@ -391,8 +358,8 @@ class Repository(object):
         return None
 
 
-    def get_private_key(self):
-        result = self.connection.query('SELECT VAL ' +
+    def get_private_key(self, environ):
+        result = environ['db'].query('SELECT VAL ' +
                 'FROM CONFIG ' +
                 'WHERE PARAM = \'privatekey\'')
         result = result.fetchallmap()

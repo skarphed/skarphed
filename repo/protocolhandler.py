@@ -69,80 +69,80 @@ class ProtocolHandler(object):
         except KeyError, e:
             raise Exception(errmsg)
 
-    def execute(self):
+    def execute(self, environ):
         c = self.subject['c']
         if c == CommandType.GET_ALL_MODULES:
-            modules = self.repository.get_all_modules()
+            modules = self.repository.get_all_modules(environ)
             return json.dumps({'r' : modules})
 
         elif c == CommandType.GET_VERSIONS_OF_MODULE:
             self.verify_module()
-            modules = self.repository.get_versions_of_module(self.subject['m'])
+            modules = self.repository.get_versions_of_module(environ, self.subject['m'])
             return json.dumps({'r' : modules})
 
         elif c == CommandType.RESOLVE_DEPENDENCIES_DOWNWARDS:
             self.verify_module()
-            modules = self.repository.resolve_dependencies_downwards(self.subject['m'])
+            modules = self.repository.resolve_dependencies_downwards(environ, self.subject['m'])
             return json.dumps({'r' : modules})
         
         elif c == CommandType.RESOLVE_DEPENDENCIES_UPWARDS:
             self.verify_module()
-            modules = self.repository.resolve_dependencies_upwards(self.subject['m'])
+            modules = self.repository.resolve_dependencies_upwards(environ, self.subject['m'])
             return json.dumps({'r' : modules})
         
         elif c == CommandType.DOWNLOAD_MODULE:
             self.verify_module()
-            (module, data) = self.repository.download_module(self.subject['m'])
+            (module, data) = self.repository.download_module(environ, self.subject['m'])
             return json.dumps({'r' : module, 'data' : base64.b64encode(data)})
         
         elif c == CommandType.GET_PUBLICKEY:
-            publickey = self.repository.get_public_key()
+            publickey = self.repository.get_public_key(environ)
             return json.dumps({'r' : publickey})
         
         elif c == CommandType.GET_LATEST_VERSION:
             self.verify_module()
-            module = self.repository.get_latest_version(self.subject['m'])
+            module = self.repository.get_latest_version(environ, self.subject['m'])
             return json.dumps({'r' : module})
         
         elif c == CommandType.LOGIN:
             self.check_set(['dxd'], 'Password not set')
-            if self.repository.login(self.subject['dxd'], self.response_header):
+            if self.repository.login(environ, self.subject['dxd'], self.response_header):
                 return json.dumps({'r' : 0})
             return json.dumps({'r' : 1})
         
         elif c == CommandType.LOGOUT:
-            self.repository.logout()
+            self.repository.logout(environ)
             return json.dumps({'r' : 0})
 
         elif c == CommandType.CHANGE_PASSWORD:
             self.check_set(['dxd'], 'Password not set')
-            self.repository.change_password(self.subject['dxd'])
+            self.repository.change_password(environ, self.subject['dxd'])
             return json.dumps({'r' : 0})
         
         elif c == CommandType.REGISTER_DEVELOPER:
             self.check_set(['name', 'fullName', 'publicKey'], 'Invalid registration data')
-            self.repository.register_developer(self.subject['name'], self.subject['fullName'],
+            self.repository.register_developer(environ, self.subject['name'], self.subject['fullName'],
                     self.subject['publicKey'])
             return json.dumps({'r' : 0})
         
         elif c == CommandType.UNREGISTER_DEVELOPER:
             self.check_set(['devId'], 'Need developer id')
-            self.repository.unregister_developer(self.subject['devId'])
+            self.repository.unregister_developer(environ, self.subject['devId'])
             return json.dumps({'r' : 0})
         
         elif c == CommandType.UPLOAD_MODULE:
             self.check_set(['data', 'signature'], 'Not valid data')
-            self.repository.upload_module(base64.b64_decode(self.subject['data']),
+            self.repository.upload_module(environ, base64.b64_decode(self.subject['data']),
                     base64.b64_decode(self.subject['signature']))
             return json.dumps({'r' : 0})
         
         elif c == CommandType.DELETE_MODULE:
             self.check_set(['moduleIdentifier'], 'Need module to delete')
-            self.repository.delete_module(self.subject['moduleIdentifier'])
+            self.repository.delete_module(environ, self.subject['moduleIdentifier'])
             return json.dumps({'r' : 0})
         
         elif c == CommandType.GET_DEVELOPERS:
-            developers = self.repository.get_developers()
+            developers = self.repository.get_developers(environ)
             return json.dumps({'r' : developers})
 
         else:

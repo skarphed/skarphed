@@ -28,6 +28,40 @@ from random import randrange
 from Cookie import SimpleCookie
 from helper import datetime2fdbTimestamp
 
+"""
+class RepoMiddleware(object):
+    def __init__(self, wrap_app):
+        self._wrap_app = wrap_app
+
+    def __call__(self, environ, start_response):
+
+        return wrap_app(environ, start_response):
+
+class Session(object):
+    def _generateRandomString(self,length):
+"""
+   #     generate  a random string 
+    #    TODO: outsource this function to some kind of helpers module (other occurence in database.py)
+"""
+        ret = ""
+        for i in range(length):
+            x = -1
+            while x in (-1,91,92,93,94,95,96,60,61,62,58,59,63,64):
+                x = randrange(48,123)
+            ret+=chr(x)
+        return ret
+
+    def __init__(self, id = None, expiration = None, is_admin = False):
+        if id:
+            self._id = id
+        else:
+            self._id = sha256(self._generateRandomString(24)).hexdigest()
+        if expiration:
+            self._expiration = expiration
+        else:
+            self._expiration = datetime.now()+timedelta(0,2*3600)
+        self._is_admin = is_admin
+"""
 class SessionException(Exception):
     ERRORS = {
         0:"""SessionError: Session Expired""",
@@ -45,7 +79,6 @@ class Session(object):
     TODO: Session saves environmental variablees
     TODO: Session takes env-vars in account when verifying the id of the client
     """
-    CURRENT_SESSION = None
 
     @classmethod
     def get_session(cls,repository,session_id):
@@ -73,7 +106,7 @@ class Session(object):
         return session
 
     @classmethod
-    def create_session(cls,repository, response_header):
+    def create_session(cls, repository, response_header):
         """
         creates a session for a given user
         """
@@ -113,14 +146,20 @@ class Session(object):
             ret+=chr(x)
         return ret
 
-    def __init__(self,repository):
+    def __init__(self, repository, id = None, expiration = None, is_admin = False):
         """
         initializes a session
         """
         self._repository = repository
-        self._id = sha256(self._generateRandomString(24)).hexdigest()
-        self._expiration = datetime.now()+timedelta(0,2*3600)
-        self._is_admin = False
+        if id:
+            self._id = id
+        else:
+            self._id = sha256(self._generateRandomString(24)).hexdigest()
+        if expiration:
+            self._expiration = expiration
+        else:
+            self._expiration = datetime.now()+timedelta(0,2*3600)
+        self._is_admin = is_admin
 
     def get_id(self):
         """

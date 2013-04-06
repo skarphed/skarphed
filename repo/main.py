@@ -21,16 +21,34 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+from cgi import FieldStorage
 from mimetypes import guess_type
 from urlparse import parse_qs
 from traceback import print_exc
 from StringIO import StringIO
+import json
 
 import sys
 sys.path.append('/var/www_py/')
 
+from database import DatabaseMiddleware
 from protocolhandler import ProtocolHandler
 from repository import Repository
+
+
+def default_template(environ, response_headers):
+    try:
+        f = open('/usr/share/scvrepo/template.html')
+        template = f.read()
+        f.close()
+        repository = Repository()
+        template = template.replace('{{publickey}}', repository.get_public_key(environ))
+        response_body = [template]
+        response_headers.append(('Content-Type', 'text/html'))
+    except IOError, ie:
+        response_body = ['Error reading template'] # TODO: improve error message
+        response_headers.append(('Content-Type', 'text/plain'))
+    return response_body
 
 
 def repo_application(environ, start_response):
@@ -48,15 +66,22 @@ def repo_application(environ, start_response):
         response_body = [data]
         response_headers.append(('Content-Type', mime))
     else:
-        # TODO only accept post requests
-        args = parse_qs(environ['QUERY_STRING']) # TODO: exception handling
-
         try:
-            jsonstr = args['j']
+            if environ['REQUEST_METHOD'] == 'POST':
+                try:
+                    size = int(environ.get('CONTENT_LENGTH', 0))
+                except ValueError, e:
+                    size = 0
+                args = FieldStorage(fp=environ['wsgi.input'], environ=environ)
+                jsonstr = args.getvalue('j')
+            else:
+                args = parse_qs(environ['QUERY_STRING'])
+                jsonstr = args['j']
+            print ("JSON: " + str(jsonstr))
             try:
-                repository = Repository(environ)
+                repository = Repository()
                 handler = ProtocolHandler(repository, jsonstr[0], response_headers)
-                response_body = [handler.execute()]
+                response_body = [handler.execute(environ)]
             except Exception, e:
                 errorstream  = StringIO()
                 print_exc(None,errorstream)
@@ -64,22 +89,11 @@ def repo_application(environ, start_response):
 
             response_headers.append(('Content-Type', 'application/json'))
         except KeyError, e:
-            try:
-                f = open('/usr/share/scvrepo/template.html')
-                template = f.read()
-                f.close()
-                repository = Repository(environ)
-                template = template.replace('{{publickey}}', repository.get_public_key())
-                response_body = [template]
-                response_headers.append(('Content-Type', 'text/html'))
-            except IOError, ie:
-                response_body = ['Error reading template'] # TODO: improve error message
-                response_headers.append(('Content-Type', 'text/plain'))
-
+            response_body = default_template(environ, response_headers) 
         status = '200 OK'
     
     start_response(status, response_headers)
     return response_body
 
 
-application = repo_application
+application = DatabaseMiddleware(repo_application)
