@@ -35,6 +35,7 @@ from gui.database.NewDatabase import NewDatabase
 from gui.database.NewSchema import NewSchema
 from gui.database.RegisterSchema import RegisterSchema
 from InputBox import InputBox
+from YesNoDialog import YesNoDialog
 
 class TreeContextMenu(gtk.Menu):
     def __init__(self,parent):
@@ -220,7 +221,9 @@ class TreeContextMenu(gtk.Menu):
             element.set_visible(False)
         
     def cb_removeServer(self,data=None):
-        self.currentObject.destroy()
+        def execute():
+            self.currentObject.destroy()
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to remove this Server?", execute)
   
     def cb_connectServer(self,data=None):
         self.currentObject.establishConnections()
@@ -237,7 +240,9 @@ class TreeContextMenu(gtk.Menu):
         pass
 
     def cb_removeInstance(self,data=None):
-        self.currentObject.getServer().removeInstance(self.currentObject)
+        def execute():
+            self.currentObject.getServer().removeInstance(self.currentObject)
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Instance?", execute)
     
     def cb_cssEditor(self,data=None):
         cn = self.currentObject.__class__.__name__
@@ -248,25 +253,32 @@ class TreeContextMenu(gtk.Menu):
         InputBox(self,"what should be the name of the new User?", self.currentObject.createUser)
     
     def cb_deleteUser(self,data=None):
-        self.currentObject.delete()        
+        def execute():
+            self.currentObject.delete()        
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this User?", execute)
     
     def cb_createWidget(self,data=None):
         InputBox(self,"what should be the name of the new Widget?", self.currentObject.createWidget)
     
     def cb_deleteWidget(self, data=None):
-        self.currentObject.delete()
+        def execute():
+            self.currentObject.delete()
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Widget?", execute)
     
     def cb_createMenu(self, data=None):
         self.currentObject.createMenu()
         
     def cb_deleteMenu(self, data=None):
-        self.currentObject.delete()
-        
+        def execute():
+            self.currentObject.delete()
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Menu?", execute)
     def cb_createRole(self, data=None):
         InputBox(self,"what should be the name of the new Widget?", self.currentObject.createRole)
     
     def cb_deleteRole(self, data=None):
-        self.currentObject.delete()
+        def execute():
+            self.currentObject.delete()
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Role?", execute)
     
     def cb_updateModules(self, data=None):
         self.currentObject.updateModules()
@@ -281,10 +293,14 @@ class TreeContextMenu(gtk.Menu):
         NewSchema(self.getPar().getPar(), self.currentObject)
 
     def cb_unregisterSchema(self, data=None):
-        self.currentObject.getPar().unregisterSchema(self.currentObject)
+        def execute():
+            self.currentObject.getPar().unregisterSchema(self.currentObject)
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to remove this Schema?", execute)
 
     def cb_destroySchema(self, data=None):
-        self.currentObject.getPar().destroySchema(self.currentObject)
+        def execute():
+            self.currentObject.getPar().destroySchema(self.currentObject)
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to destroy this Schema?", execute)
     
     def popup(self,obj,button,time):
         self.hide_buttons()
