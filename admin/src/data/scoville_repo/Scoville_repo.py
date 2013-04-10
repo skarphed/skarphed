@@ -81,10 +81,10 @@ class Scoville_repo(Instance):
             self.scv_loggedin = self.SCV_LOCKED
         else:
             self.scv_loggedin = self.SCV_UNLOCKED
-        self.updated()
         if self.scv_loggedin == self.SCV_UNLOCKED:
             self.loadDevelopers()
         self.loadModules()
+        self.updated()
         
     def authenticate(self):
         ScovilleRepository(self, {'c':100,'dxd':self.getPassword()}, self.authenticateCallback).start()
@@ -171,6 +171,9 @@ class Scoville_repo(Instance):
     
     def isOnline(self):
         return self.state==self.STATE_ONLINE
+
+    def isAuthenticated(self):
+        return self.scv_loggedin == self.SCV_UNLOCKED
   
     def getServer(self):
         return self.par.getServer()
