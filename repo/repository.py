@@ -303,7 +303,6 @@ class Repository(object):
         datafile = StringIO()
         newtar = tarfile.open(fileobj = datafile, mode = 'w:gz')
         for member in tar:
-            print(str(type(member)) + " <=> " + str(member))
             if member.isfile():
                 if member.name != 'manifest.json':
                     f = tar.extractfile(member)
