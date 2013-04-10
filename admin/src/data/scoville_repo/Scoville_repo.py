@@ -77,11 +77,14 @@ class Scoville_repo(Instance):
         self.password = str(password)
 
     def authenticateCallback(self, result):
-        if result['r'] == False:
+        if bool(result['r']) == True:
             self.scv_loggedin = self.SCV_LOCKED
         else:
             self.scv_loggedin = self.SCV_UNLOCKED
         self.updated()
+        if self.scv_loggedin == self.SCV_UNLOCKED:
+            self.loadDevelopers()
+        self.loadModules()
         
     def authenticate(self):
         ScovilleRepository(self, {'c':100,'dxd':self.getPassword()}, self.authenticateCallback).start()
@@ -116,8 +119,6 @@ class Scoville_repo(Instance):
     
     def establishConnections(self):
         self.authenticate()
-        self.loadDevelopers()
-        self.loadModules()
     
     def changePasswordCallback(self,result):
         #TODO: check for error
