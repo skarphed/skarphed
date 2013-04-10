@@ -25,6 +25,9 @@ import hashlib
 import json
 import random
 import tarfile
+import time
+
+from cStringIO import StringIO
 
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
@@ -241,7 +244,7 @@ class Repository(object):
         self.verify_admin(environ)
         
         salt = self.generate_salt()
-        hashvalue = hashlib.sha512(password + salt).hexdigest()
+        hashvalue = hashlib.sha512(password.encode('utf-8') + salt).hexdigest()
         salt = base64.b64encode(salt)
         environ['db'].query('UPDATE CONFIG SET VAL = ? WHERE PARAM = \'password\';', hashvalue, commit=True)
         environ['db'].query('UPDATE CONFIG SET VAL = ? WHERE PARAM = \'salt\';', salt, commit=True)
@@ -278,9 +281,7 @@ class Repository(object):
         if not valid:
             raise Exception('Signature verification failed')
         
-        print ("DEVID: " + str(dev_id)) #TODO debug output
-
-        datafile = cStringIO.StringIO(data)
+        datafile = StringIO(data)
         tar = tarfile.open(fileobj = datafile, mode = 'r:gz') 
         try:
             manifestdata = tar.extractfile('manifest.json').read()
@@ -297,19 +298,38 @@ class Repository(object):
             revision = maxrevision + 1
         else:
             revision = 0
+        manifest['revision'] = revision
+
+        datafile = StringIO()
+        newtar = tarfile.open(fileobj = datafile, mode = 'w:gz')
+        for member in tar:
+            print(str(type(member)) + " <=> " + str(member))
+            if member.isfile():
+                if member.name != 'manifest.json':
+                    f = tar.extractfile(member)
+                    newtar.addfile(member, f)
+                else:
+                    manifestdata = json.dumps(manifest)
+                    info = tarfile.TarInfo(name = 'manifest.json')
+                    info.size = len(manifestdata)
+                    info.mtime = time.time()
+                    newtar.addfile(tarinfo = info, fileobj = StringIO(manifestdata))
+        newtar.close()
+        tar.close()
+        newdata = datafile.getvalue()
+
         mod_id = environ['db'].get_seq_next('MOD_GEN')
 
         key = RSA.importKey(self.get_private_key(environ))
-        hashobj = SHA256.new(data)
+        hashobj = SHA256.new(newdata)
         signer = PKCS1_v1_5.new(key)
         repo_signature = base64.b64encode(signer.sign(hashobj))
         
-        # TODO blob working?
         environ['db'].query('INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, ' +
                 'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_SIGNATURE, ' +
                 'MOD_DATA) VALUES (?,?,?,?,?,?,?,?);',
                 (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
-                manifest['version_minor'], revision, repo_signature, cStringIO.StringIO(data)),commit=True)
+                manifest['version_minor'], revision, repo_signature, base64.b64encode(newdata)), commit=True)
 
 
     def delete_module(self, environ, identifier, major=None, minor=None, revision=None):

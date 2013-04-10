@@ -93,7 +93,7 @@ class ProtocolHandler(object):
         elif c == CommandType.DOWNLOAD_MODULE:
             self.verify_module()
             (module, data) = self.repository.download_module(environ, self.subject['m'])
-            return json.dumps({'r' : module, 'data' : base64.b64encode(data)})
+            return json.dumps({'r' : module, 'data' : data})
         
         elif c == CommandType.GET_PUBLICKEY:
             publickey = self.repository.get_public_key(environ)
