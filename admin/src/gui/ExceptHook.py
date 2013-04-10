@@ -16,6 +16,9 @@
 # - fix lockup with dialog.run(), return to mainloop instead
 # see also http://faq.pygtk.org/index.py?req=show&file=faq20.010.htp
 # (The license is still whatever you want.)
+#
+# Changed in the Development of Scoville:
+# - Made the _info-Dialog a gtk.MESSAGE_ERROR instead of gtk.MESSAGE_WARNING
 
 import inspect, linecache, pydoc, sys, traceback
 from cStringIO import StringIO
@@ -123,7 +126,7 @@ def _info (exctyp, value, tb):
 
     exception_dialog_active = True
     # Create the dialog
-    dialog = gtk.MessageDialog (parent=None, flags=0, type=gtk.MESSAGE_WARNING, buttons=gtk.BUTTONS_NONE)
+    dialog = gtk.MessageDialog (parent=None, flags=0, type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_NONE)
     dialog.set_title (_("Bug Detected"))
     if gtk.check_version (2, 4, 0) is not None:
         dialog.set_has_separator (False)
@@ -212,7 +215,50 @@ def _dialog_response_cb(dialog, resp, trace):
         exception_dialog_active = False
 
 
+####################################################
+#
+# ExpectedErrorHandler-Class is not 
+# the code of Filip Van Raemdonck
+# and Martin Renold but part of the 
+# Scoville Project by Daniel 'grindhold' Brendle
+# and Andre 'freakout' Kupka
+#
+####################################################
+
+class ExpectedErrorHandler(gtk.MessageDialog):
+    def __init__(self):
+        gtk.MessageDialog.__init__(self,parent=None, flags=0, type=gtk.MESSAGE_WARNING, buttons=gtk.BUTTONS_NONE)
+        self.open = False
+
+        self.knownExceptions = {}
+
+        self.add_button (gtk.STOCK_OK, gtk.RESPONSE_CLOSE)
+        self.connect('response', self.response_cb)
+        self.show_all()
+        self.set_visible(False)
+
+    def __call__(self, exctyp, value, tb):
+        if self.open:
+            return
+        if self.knownExceptions.has_key(exctyp):
+            self.set_title (_(self.knownExceptions[exctyp][0]))
+            self.set_markup (self.knownExceptions[exctyp][0])
+            self.format_secondary_text (self.knownExceptions[exctyp][1])
+            
+            print tb
+            self.set_visible(True)
+            self.open = True
+        else:
+            _info(exctyp, value, tb)
+
+    def response_cb(self, resp, trace):
+        self.set_visible(False)
+        self.open = False
+
+expectedErrorHandler = ExpectedErrorHandler()
+
 original_excepthook = sys.excepthook
-sys.excepthook = _info
+sys.excepthook = expectedErrorHandler
 exception_dialog_active = False
+
 
