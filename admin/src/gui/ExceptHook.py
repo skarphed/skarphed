@@ -251,10 +251,11 @@ class ExpectedErrorHandler(gtk.MessageDialog):
         else:
             _info(exctyp, value, tb)
 
-    def response_cb(self, resp, trace):
-        self.set_visible(False)
-        self.open = False
-
+    def response_cb(self, dialog, resp):
+        if resp == gtk.RESPONSE_OK:
+            self.set_visible(False)
+            self.open = False
+        
 expectedErrorHandler = ExpectedErrorHandler()
 
 original_excepthook = sys.excepthook
