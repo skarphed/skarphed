@@ -132,8 +132,8 @@ class ProtocolHandler(object):
         
         elif c == CommandType.UPLOAD_MODULE:
             self.check_set(['data', 'signature'], 'Not valid data')
-            self.repository.upload_module(environ, base64.b64_decode(self.subject['data']),
-                    base64.b64_decode(self.subject['signature']))
+            self.repository.upload_module(environ, base64.b64decode(self.subject['data']),
+                    base64.b64decode(self.subject['signature']))
             return json.dumps({'r' : 0})
         
         elif c == CommandType.DELETE_MODULE:

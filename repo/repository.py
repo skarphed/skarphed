@@ -50,7 +50,7 @@ class Repository(object):
 
 
     def get_all_modules(self, environ):
-        result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_MD5, MOD_SIGNATURE, MOD_NAME, \
+        result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, \
                 MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
                 FROM MODULES JOIN (SELECT MOD_NAME VERNAME \
                 ,MAX(MOD_VERSIONMAJOR*10000000 \
@@ -263,8 +263,9 @@ class Repository(object):
 
 
     def upload_module(self, environ, data, signature):
-        result = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY ' +
+        cur = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY ' +
                 'FROM DEVELOPER;')
+        result = cur.fetchallmap()
         valid = False
         hashobj = SHA256.new(data)
         for dev in result:
@@ -287,28 +288,28 @@ class Repository(object):
             raise Exception('Error while reading manifest')
         manifest = json.loads(manifestdata)
 
-        result = environ['db'].query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION ' +
+        cur = environ['db'].query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION ' +
                 'FROM MODULES ' +
                 'WHERE MOD_NAME = ?;', manifest['name'])
-        result = result.fetchallmap()
-        if result:
-            revision = result['MAXREVISION'] + 1
+        result = cur.fetchonemap()
+        maxrevision = result['MAXREVISION']
+        if maxrevision is not None:
+            revision = maxrevision + 1
         else:
             revision = 0
         mod_id = environ['db'].get_seq_next('MOD_GEN')
-        md5 = hashlib.md5(data).hexdigest()
 
-        key = RSA.importKey(self.get_private_key())
+        key = RSA.importKey(self.get_private_key(environ))
         hashobj = SHA256.new(data)
         signer = PKCS1_v1_5.new(key)
-        repo_signature = base64.b64_encode(signer.sign(hashobj))
+        repo_signature = base64.b64encode(signer.sign(hashobj))
         
         # TODO blob working?
-        environ['db'].query('INSERT INTO MDOULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, ' +
-                'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_MD5, MOD_SIGNATURE, ' +
-                'MOD_DATA VALUE (?,?,?,?,?,?,?,?,?);',
+        environ['db'].query('INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, ' +
+                'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_SIGNATURE, ' +
+                'MOD_DATA) VALUES (?,?,?,?,?,?,?,?);',
                 (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
-                manifest['version_minor'], revision, md5, repo_signature, cStringIO.StringIO(data)),commit=True)
+                manifest['version_minor'], revision, repo_signature, cStringIO.StringIO(data)),commit=True)
 
 
     def delete_module(self, environ, identifier, major=None, minor=None, revision=None):
