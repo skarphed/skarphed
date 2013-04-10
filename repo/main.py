@@ -77,15 +77,15 @@ def repo_application(environ, start_response):
                 jsonstr = args.getvalue('j')
             else:
                 args = parse_qs(environ['QUERY_STRING'])
-                jsonstr = args['j']
+                jsonstr = args['j'][0]
             print ("JSON: " + str(jsonstr))
             try:
                 repository = Repository()
-                handler = ProtocolHandler(repository, jsonstr[0], response_headers)
+                handler = ProtocolHandler(repository, jsonstr, response_headers)
                 response_body = [handler.execute(environ)]
             except Exception, e:
                 errorstream  = StringIO()
-                print_exc(None,errorstream)
+                print_exc(None, errorstream)
                 response_body = ['{error:%s}' % errorstream.getvalue()]
 
             response_headers.append(('Content-Type', 'application/json'))
@@ -94,6 +94,7 @@ def repo_application(environ, start_response):
         status = '200 OK'
     
     start_response(status, response_headers)
+    print ("RESPONSE: " + str(response_body))
     return response_body
 
 

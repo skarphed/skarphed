@@ -46,9 +46,11 @@ class SessionMiddleware(object):
                 cookie['session_id'] = session.get_id()
                 cookiestr = cookie.output().replace('Set-Cookie: ', '', 1)
                 headers.append(('Set-Cookie', cookiestr))
+                print ("RESPONSE HEADERS: " + str(headers))
             return start_response(status, headers, exc_info)
 
         environ['session'] = session
+        print ("SESSION: " + session.get_id() + " " + str(session.is_admin()))
         return self._wrap_app(environ, session_start_response)
 
     def get_session(self, environ):
@@ -62,12 +64,15 @@ class SessionMiddleware(object):
                 return None
             expiration = result['SES_EXPIRES']
             is_admin = result['SES_IS_ADMIN']
+            print ("LOAD SESSION: " + session_id)
             session = Session(session_id, expiration, is_admin)
             if expiration < datetime.now():
+                print "EXPIRED"
                 session.delete(environ)
                 session = None
             return session
         except KeyError, e:
+            print ("NO LOAD SESSION: " + str(e))
             return None
 
 
