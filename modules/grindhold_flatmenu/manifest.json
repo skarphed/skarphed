@@ -3,7 +3,6 @@
   "hrname":"Flat Menu",
   "version_major":0,
   "version_minor":0,
-  "revision":2,
   "permissions":["edit"],
   "tables":[
     {"name":"flatmenu",
