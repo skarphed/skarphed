@@ -1,6 +1,3 @@
-#!/usr/bin/python
-#-*- coding: utf-8 -*-
-
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
@@ -27,7 +24,7 @@ from datetime import datetime, timedelta
 from random import randrange
 from Cookie import SimpleCookie
 from Cookie import CookieError
-from helper import datetime2fdbTimestamp
+from helper import datetime_to_fdb_timestamp
 from config import Config
 
 class SessionMiddleware(object):
@@ -112,7 +109,7 @@ class Session(object):
         self._is_admin = is_admin
 
     def store(self, environ):
-        exp = datetime2fdbTimestamp(self._expiration)
+        exp = datetime_to_fdb_timestamp(self._expiration)
         is_admin = 0
         if self._is_admin:
             is_admin = 1

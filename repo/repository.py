@@ -220,7 +220,7 @@ class Repository(object):
             raise Exception('Module does not exist: %s' % module['name'])
 
 
-    def login(self, environ, password, response_header):
+    def login(self, environ, password):
         result = environ['db'].query("SELECT VAL FROM CONFIG \
                 WHERE PARAM = 'password' OR PARAM = 'salt' ORDER BY PARAM ASC;")
         result = result.fetchallmap()

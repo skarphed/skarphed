@@ -1,6 +1,3 @@
-#!/usr/bin/python
-#-*- coding: utf-8 -*-
-
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
@@ -22,7 +19,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-def datetime2fdbTimestamp(datetime):
+def datetime_to_fdb_timestamp(datetime):
     y = str(datetime.year)
     if datetime.month < 10:
         m = "0"+str(datetime.month)
@@ -47,5 +44,5 @@ def datetime2fdbTimestamp(datetime):
 
     return "%s-%s-%s %s:%s:%s"%(y,m,d,h,mi,s)
 
-def fdbTimestamp2datetime(fdb_timestamp):
+def fdb_timestamp_to_datetime(fdb_timestamp):
     pass

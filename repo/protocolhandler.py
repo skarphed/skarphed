@@ -45,13 +45,12 @@ class CommandType:
     GET_DEVELOPERS = 107
 
 class ProtocolHandler(object):
-    def __init__(self, repository, jsonstr, response_header):
+    def __init__(self, repository, jsonstr):
         logfile = open('/tmp/scvrepolog.log','a')
         logfile.write(jsonstr+"\n")
         logfile.close()
         self.repository = repository
         self.subject = json.loads(jsonstr)
-        self.response_header = response_header
 
     def verify_module(self):
         try:
@@ -106,7 +105,7 @@ class ProtocolHandler(object):
         
         elif c == CommandType.LOGIN:
             self.check_set(['dxd'], 'Password not set')
-            if self.repository.login(environ, self.subject['dxd'], self.response_header):
+            if self.repository.login(environ, self.subject['dxd']):
                 return json.dumps({'r' : 0})
             return json.dumps({'r' : 1})
         
@@ -146,4 +145,4 @@ class ProtocolHandler(object):
             return json.dumps({'r' : developers})
 
         else:
-            raise Exception('Unknown command identifier: %d' % subject['c'])
+            raise Exception('Unknown command identifier: %d' % self.subject['c'])

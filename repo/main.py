@@ -46,10 +46,12 @@ def default_template(environ, response_headers):
         template = template.replace('{{publickey}}', repository.get_public_key(environ))
         response_body = [template]
         response_headers.append(('Content-Type', 'text/html'))
+        status = '200 OK'
     except IOError, ie:
-        response_body = ['Error reading template'] # TODO: improve error message
+        response_body = ['404 Not Found'] # TODO: improve error message
         response_headers.append(('Content-Type', 'text/plain'))
-    return response_body
+        status = '404 Not Found'
+    return (status, response_body)
 
 
 def repo_application(environ, start_response):
@@ -57,6 +59,7 @@ def repo_application(environ, start_response):
     response_headers = []
 
     try:
+        status = '200 OK'
         if environ['REQUEST_METHOD'] == 'POST':
             try:
                 size = int(environ.get('CONTENT_LENGTH', 0))
@@ -70,7 +73,7 @@ def repo_application(environ, start_response):
         print ("JSON: " + str(jsonstr))
         try:
             repository = Repository()
-            handler = ProtocolHandler(repository, jsonstr, response_headers)
+            handler = ProtocolHandler(repository, jsonstr)
             response_body = [handler.execute(environ)]
         except Exception, e:
             errorstream  = StringIO()
@@ -79,8 +82,7 @@ def repo_application(environ, start_response):
 
         response_headers.append(('Content-Type', 'application/json'))
     except KeyError, e:
-        response_body = default_template(environ, response_headers) 
-    status = '200 OK'
+        (status, response_body) = default_template(environ, response_headers) 
     
     start_response(status, response_headers)
     print ("RESPONSE: " + str(response_body))
