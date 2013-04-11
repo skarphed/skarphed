@@ -28,6 +28,7 @@ from random import randrange
 from Cookie import SimpleCookie
 from Cookie import CookieError
 from helper import datetime2fdbTimestamp
+from config import Config
 
 class SessionMiddleware(object):
     def __init__(self, wrap_app):
@@ -35,13 +36,11 @@ class SessionMiddleware(object):
 
     def __call__(self, environ, start_response):
         session = self.get_session(environ)
-        set_cookie = session == None 
         if not session:
             session = Session()
-            session.store(environ)
 
         def session_start_response(status, headers, exc_info=None):
-            if set_cookie:
+            if session.stored():
                 cookie = SimpleCookie()
                 cookie['session_id'] = session.get_id()
                 cookiestr = cookie.output().replace('Set-Cookie: ', '', 1)
@@ -63,7 +62,7 @@ class SessionMiddleware(object):
             if not result:
                 return None
             expiration = result['SES_EXPIRES']
-            is_admin = result['SES_IS_ADMIN']
+            is_admin = bool(result['SES_IS_ADMIN'])
             print ("LOAD SESSION: " + session_id)
             session = Session(session_id, expiration, is_admin)
             if expiration < datetime.now():
@@ -91,6 +90,7 @@ class Session(object):
         return ret
 
     def __init__(self, id = None, expiration = None, is_admin = False):
+        config = Config()
         if id:
             self._id = id
         else:
@@ -98,8 +98,9 @@ class Session(object):
         if expiration:
             self._expiration = expiration
         else:
-            self._expiration = datetime.now()+timedelta(0,2*3600)
+            self._expiration = datetime.now()+timedelta(0,config['session.expires'])
         self._is_admin = is_admin
+        self._stored = False
     
     def get_id(self):
         return self._id
@@ -118,7 +119,11 @@ class Session(object):
         environ['db'].query('UPDATE OR INSERT INTO SESSIONS \
                (SES_ID, SES_EXPIRES, SES_IS_ADMIN) VALUES (?,?,?);',
                (self._id, exp, is_admin), commit = True)
+        self._stored = True
 
     def delete(self, environ):
         environ['db'].query('DELETE FROM SESSIONS WHERE SES_ID = ?;',
                 self._id, commit = True)
+
+    def stored(self):
+        return self._stored

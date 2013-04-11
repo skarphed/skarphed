@@ -230,9 +230,10 @@ class Repository(object):
         hashvalue = hashlib.sha512(password.encode('utf-8')  + salt).hexdigest()
         is_valid = hashvalue == db_hash
         
-        session = environ['session']
-        session.set_admin(is_valid)
-        session.store(environ)
+        if is_valid:
+            session = environ['session']
+            session.set_admin(is_valid)
+            session.store(environ)
         return is_valid
 
 
