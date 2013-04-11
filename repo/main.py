@@ -22,7 +22,6 @@
 ###########################################################
 
 from cgi import FieldStorage
-from mimetypes import guess_type
 from urlparse import parse_qs
 from traceback import print_exc
 from StringIO import StringIO
@@ -35,6 +34,7 @@ from database import DatabaseMiddleware
 from protocolhandler import ProtocolHandler
 from repository import Repository
 from session import SessionMiddleware
+from shareddatamiddleware import SharedDataMiddleware
 
 
 def default_template(environ, response_headers):
@@ -56,46 +56,37 @@ def repo_application(environ, start_response):
     response_body = []
     response_headers = []
 
-    if environ['PATH_INFO'].startswith('/static/'):
-        prefix = "/usr/share/scvrepo/"
-        path = environ['PATH_INFO'][1:]
-        status = '200 OK'  
-        (mime, encoding) = guess_type(prefix+path)
-        f = open(prefix+path, 'r')
-        data = f.read()
-        f.close()
-        response_body = [data]
-        response_headers.append(('Content-Type', mime))
-    else:
-        try:
-            if environ['REQUEST_METHOD'] == 'POST':
-                try:
-                    size = int(environ.get('CONTENT_LENGTH', 0))
-                except ValueError, e:
-                    size = 0
-                args = FieldStorage(fp=environ['wsgi.input'], environ=environ)
-                jsonstr = args.getvalue('j')
-            else:
-                args = parse_qs(environ['QUERY_STRING'])
-                jsonstr = args['j'][0]
-            print ("JSON: " + str(jsonstr))
+    try:
+        if environ['REQUEST_METHOD'] == 'POST':
             try:
-                repository = Repository()
-                handler = ProtocolHandler(repository, jsonstr, response_headers)
-                response_body = [handler.execute(environ)]
-            except Exception, e:
-                errorstream  = StringIO()
-                print_exc(None, errorstream)
-                response_body = ['{error:%s}' % errorstream.getvalue()]
+                size = int(environ.get('CONTENT_LENGTH', 0))
+            except ValueError, e:
+                size = 0
+            args = FieldStorage(fp=environ['wsgi.input'], environ=environ)
+            jsonstr = args.getvalue('j')
+        else:
+            args = parse_qs(environ['QUERY_STRING'])
+            jsonstr = args['j'][0]
+        print ("JSON: " + str(jsonstr))
+        try:
+            repository = Repository()
+            handler = ProtocolHandler(repository, jsonstr, response_headers)
+            response_body = [handler.execute(environ)]
+        except Exception, e:
+            errorstream  = StringIO()
+            print_exc(None, errorstream)
+            response_body = ['{error:%s}' % errorstream.getvalue()]
 
-            response_headers.append(('Content-Type', 'application/json'))
-        except KeyError, e:
-            response_body = default_template(environ, response_headers) 
-        status = '200 OK'
+        response_headers.append(('Content-Type', 'application/json'))
+    except KeyError, e:
+        response_body = default_template(environ, response_headers) 
+    status = '200 OK'
     
     start_response(status, response_headers)
     print ("RESPONSE: " + str(response_body))
     return response_body
 
 
-application = DatabaseMiddleware(SessionMiddleware(repo_application))
+application = SharedDataMiddleware(
+        DatabaseMiddleware(SessionMiddleware(repo_application)),
+        'static')
