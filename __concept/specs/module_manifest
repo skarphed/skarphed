@@ -1,0 +1,76 @@
+Module Metadata a.k.a manifest.json
+===================================
+
+In scoville, the metadata of modules is stored in a JSON-file called
+manifest.json which is located in the archive-root of the module.
+
+An exemplary manifest.json could look like this:
+
+{
+  "name":"grindhold_news",
+  "hrname":"News",
+  "version_major":0,
+  "version_minor":0,
+  "permissions":["write","delete","edit","deletecomments"],
+  "tables":[
+    {"name":"news",
+     "columns":[
+       {"name": "NWS_ID",     "type": "INT", "autoincrement" : true},
+       {"name": "NWS_TITLE",  "type": "VARCHAR(255)"},
+       {"name": "NWS_TEXT",   "type": "VARCHAR(5000)"},
+       {"name": "NWS_AUTHOR", "type": "INT"}
+       
+     ]},
+    {"name":"comments",
+     "columns" : [
+       {"name": "COM_ID",      "type": "INT", "autoincrement" : true},
+       {"name": "COM_NWS_ID", "type": "INT", "foreign":"news.ID"},
+       {"name": "COM_TEXT",    "type": "VARCHAR(5000)"},
+       {"name": "COM_AUTHOR",  "type": "INT"}
+     ]
+    }
+  ]
+  "dependencies":[
+    {
+      "name":"grindhold_users",
+      "version_major":0,
+      "version_minor":1
+    },
+    {
+      "name":"grindhold_data",
+      "version_major":1,
+      "version_minor":1
+    }
+  ]
+}
+
+
+Attributes of the JSON explained:
+
+name - Defines the internal name of the module. It must consist of the name
+       of the module-developer and the name of the module itself, with a un-
+       derscore inbetween. This is done to prevent name collisions.
+       For example: I am grindhold and i develop the module "news", so i call
+       the module "grindhold_news"
+
+hrname - A human readable version of the name. This version of the name will
+         be displayed everywhere, the Module shows up in GUI-context.
+
+version_major - The major version of the module. This number can be chosen freely
+                But it should only ascend over time
+
+version_minor - The minor version of the module. This number can be chosen freely
+                But it should only ascend over time. 
+
+permissions - A list of permissions that gets installed with this module.
+
+tables - A set of Tables that are to be generated in the database when this module
+         is installed. Each table consists of a name and a set of columns.
+         The colums each contain at least a "name" and a "type" the name can
+         be chosen freely but it is recommended to stick to the scoville columnstyle
+         The type must be a valid firebird2.5 compliant columntype e.g. INT or VARCHAR(300)
+
+dependencies - The modules that this module depends on. A dependency must at least contain
+               A valid module name, and the dependency must be available in the repository.
+               Optionally there can be a version_major and a version_minor-attribute.
+               If they are set, there must be at least this version installed.
