@@ -25,6 +25,10 @@ import json
 from repository import Repository
 
 class CommandType:
+    """
+    An enumeration of all command ids that can be passed via the "c" key of
+    the request json.
+    """
     #calls from scoville to repository
     GET_ALL_MODULES = 1
     GET_VERSIONS_OF_MODULE = 2
@@ -45,7 +49,15 @@ class CommandType:
     GET_DEVELOPERS = 107
 
 class ProtocolHandler(object):
+    """
+    The protocol handler verifies that a json request are wellformatted and delegates the request
+    to the repository. The results of the repository will be converted to a json response.
+    """
+
     def __init__(self, repository, jsonstr):
+        """
+        Initializes a protocol handler with a repository and the incoming request.
+        """
         logfile = open('/tmp/scvrepolog.log','a')
         logfile.write(jsonstr+"\n")
         logfile.close()
@@ -53,6 +65,10 @@ class ProtocolHandler(object):
         self.subject = json.loads(jsonstr)
 
     def verify_module(self):
+        """
+        Verifies that the json 'm' key's value is a valid modules, that means it contains the following keys:
+        name, hrname, version_major, version_minor, revision, signature
+        """
         try:
             module = self.subject['m']
             if not all([module[key] != None for key in ['name', 'hrname', 'version_major', 'version_minor', 'revision', 'signature']]):
@@ -62,6 +78,10 @@ class ProtocolHandler(object):
 
 
     def check_set(self, keys, errmsg):
+        """
+        Check whether the specified keys are set in the request json. If not an exception
+        with the given error message will be thrown.
+        """
         try:
             if not all([self.subject[key] != None for key in keys]):
                 raise Exception(errmsg)
@@ -69,6 +89,10 @@ class ProtocolHandler(object):
             raise Exception(errmsg)
 
     def execute(self, environ):
+        """
+        Executes the request and returns a json response. If the specified command is unknown an exception
+        will be thrown.
+        """
         c = self.subject['c']
         if c == CommandType.GET_ALL_MODULES:
             modules = self.repository.get_all_modules(environ)

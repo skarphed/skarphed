@@ -38,13 +38,23 @@ from database import DatabaseConnection
 from session import Session
 
 class Repository(object):
+    """
+    A repository handles incoming requests.
+    """
+
     def verify_admin(self, environ):
+        """
+        Verifies if the current session has admin rights. If not an exception will be thrown.
+        """
         session = environ['session']
         if not session.is_admin():
             raise Exception('You are no admin')
 
 
     def generate_salt(self):
+        """
+        Generates a random salt for password hashing.
+        """
         salt = ""
         length = random.randint(128, 255)
         for i in range(0, length):
@@ -53,6 +63,9 @@ class Repository(object):
 
 
     def get_all_modules(self, environ):
+        """
+        Returns a list of all modules.
+        """
         result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, \
                 MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
                 FROM MODULES JOIN (SELECT MOD_NAME VERNAME \
@@ -76,6 +89,9 @@ class Repository(object):
 
 
     def get_versions_of_module(self, environ, module):
+        """
+        Returns a list of all versions of the specified module.
+        """
         result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
                 'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
                 'FROM MODULES ' +
@@ -91,6 +107,10 @@ class Repository(object):
 
 
     def resolve_dependencies_downwards(self, environ, module):
+        """
+        Returns a list of all downward dependencies of a module. Downward dependencies are all
+        modules that are necessary for the specified module to work.
+        """
         result = environ['db'].query('SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ' +
                 'AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ? ' +
                 'AND MOD_SIGNATURE = ?;',
@@ -132,6 +152,10 @@ class Repository(object):
 
 
     def resolve_dependencies_upwards(self, environ, module):
+        """
+        Returns a list of all upward dependencies of a module. Upward dependencies are all
+        modules that needs the specified module to work.
+        """
         result = environ['db'].query('SELECT MOD_ID ' +
                 'FROM MODULES ' +
                 'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? ' +
@@ -174,6 +198,9 @@ class Repository(object):
 
 
     def download_module(self, environ, module):
+        """
+        Returns the specified module with its binary data.
+        """
         result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_ID, MOD_VERSIONMAJOR, ' +
                 'MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_DATA, MOD_SIGNATURE ' +
                 'FROM MODULES ' +
@@ -196,6 +223,9 @@ class Repository(object):
 
 
     def get_latest_version(self, environ, module):
+        """
+        Returns the latest version of the specified module.
+        """
         result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, ' +
                 'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
                 'FROM MODULES JOIN (SELECT MOD_NAME VERNAME, ' +
@@ -220,6 +250,9 @@ class Repository(object):
 
 
     def login(self, environ, password):
+        """
+        Login with a password to grant admin rights. This session will be stored.
+        """
         result = environ['db'].query("SELECT VAL FROM CONFIG \
                 WHERE PARAM = 'password' OR PARAM = 'salt' ORDER BY PARAM ASC;")
         result = result.fetchallmap()
@@ -237,10 +270,17 @@ class Repository(object):
 
 
     def logout(self, environ):
+        """
+        Deletes the current session.
+        """
         environ['session'].delete(environ)
 
 
     def change_password(self, environ, password):
+        """
+        Changes the repositories admin password.
+        Needs admin rights.
+        """
         self.verify_admin(environ)
         
         salt = self.generate_salt()
@@ -251,6 +291,10 @@ class Repository(object):
     
 
     def register_developer(self, environ, name, fullname, publickey):
+        """
+        Registers a new developer at this repository.
+        Needs admin rights.
+        """
         self.verify_admin(environ)
 
         dev_id = environ['db'].get_seq_next('DEV_GEN')
@@ -259,6 +303,12 @@ class Repository(object):
 
 
     def unregister_developer(self, environ, dev_id):
+        """
+        Removes a developer of this repository. Only the public key is removed, so that this
+        developer can no longer upload modules. This is necessary to keep the developer information
+        for modules that have been uploaded before.
+        Needs admin rights.
+        """
         self.verify_admin(environ)
 
         environ['db'].query('UPDATE DEVELOPER SET DEV_PUBLICKEY = \'\' ' +
@@ -266,6 +316,10 @@ class Repository(object):
 
 
     def upload_module(self, environ, data, signature):
+        """
+        Uploads a modules. data is the tared and gzipped module. It must contain a manifest.json file
+        in order to provide module meta information.
+        """
         cur = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY ' +
                 'FROM DEVELOPER;')
         result = cur.fetchallmap()
@@ -332,6 +386,10 @@ class Repository(object):
 
 
     def delete_module(self, environ, identifier, major=None, minor=None, revision=None):
+        """
+        Deletes the specified module(s) from this repository.
+        Needs admin rights.
+        """
         self.verify_admin(environ)
 
         if major:
@@ -357,6 +415,10 @@ class Repository(object):
 
 
     def get_developers(self, environ):
+        """
+        Returns a list of all registered developers.
+        Needs admin rights.
+        """
         self.verify_admin(environ)
 
         result = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_FULLNAME ' +

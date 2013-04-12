@@ -40,6 +40,9 @@ from shareddatamiddleware import SharedDataMiddleware
 
 
 def default_template(environ, response_headers):
+    """
+    Loads the default repositories template and returns it.
+    """
     try:
         f = open('/usr/share/scvrepo/template.html')
         template = f.read()
@@ -58,6 +61,10 @@ def default_template(environ, response_headers):
 
 
 def repo_application(environ, start_response):
+    """
+    The repositories WSGI application. If the incoming request's type is POST then it
+    will be delegated to a protocol handler, otherwise the default template will be returned.
+    """
     response_body = []
     response_headers = []
 
@@ -92,6 +99,12 @@ def repo_application(environ, start_response):
     return response_body
 
 
+"""
+Wraps the repository application in a
+0) SharedDataMiddleware, to provide some static content
+1) DatabaseMiddleware, to provide a database connection via environ['db']
+2) SessionMiddleware, to provide session handling
+"""
 application = SharedDataMiddleware(
         DatabaseMiddleware(SessionMiddleware(repo_application)),
         'static')
