@@ -184,7 +184,6 @@ class Repository(object):
         result = result.fetchallmap()
         if result:
             mod = result[0]
-            # TODO fix reading from blob mod_data
             result_mod = {'name' : mod['MOD_NAME'],
                         'hrname' : mod['MOD_DISPLAYNAME'],
                         'version_major' : mod['MOD_VERSIONMAJOR'],
@@ -373,9 +372,9 @@ class Repository(object):
         result = environ['db'].query('SELECT VAL ' +
                 'FROM CONFIG ' +
                 'WHERE PARAM = \'publickey\'')
-        result = result.fetchallmap()
+        result = result.fetchonemap()
         if result:
-            return result[0]['VAL']
+            return result['VAL']
         return None
 
 
@@ -383,7 +382,7 @@ class Repository(object):
         result = environ['db'].query('SELECT VAL ' +
                 'FROM CONFIG ' +
                 'WHERE PARAM = \'privatekey\'')
-        result = result.fetchallmap()
+        result = result.fetchonemap()
         if result:
-            return result[0]['VAL']
+            return result['VAL']
         return None

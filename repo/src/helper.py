@@ -20,6 +20,9 @@
 ###########################################################
 
 def datetime_to_fdb_timestamp(datetime):
+    """
+    Creates a fdb timestamp out of a datetime.
+    """
     y = str(datetime.year)
     if datetime.month < 10:
         m = "0"+str(datetime.month)
@@ -43,6 +46,3 @@ def datetime_to_fdb_timestamp(datetime):
         s = str(datetime.second)
 
     return "%s-%s-%s %s:%s:%s"%(y,m,d,h,mi,s)
-
-def fdb_timestamp_to_datetime(fdb_timestamp):
-    pass

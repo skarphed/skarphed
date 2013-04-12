@@ -28,28 +28,46 @@ from helper import datetime_to_fdb_timestamp
 from config import Config
 
 class SessionMiddleware(object):
+    """
+    A WSGI middleware that handles cookie-based sessions. The session object can be accessed
+    via the WSGI environment. On top of this middleware the DatabaseMiddleware must be used in
+    order to supply a database for session storage.
+    """
+
     def __init__(self, wrap_app):
+        """
+        Initializes the SessionMiddleware with a wrapped application.
+        """
         self._wrap_app = wrap_app
 
     def __call__(self, environ, start_response):
+        """
+        Manages sessions and calls the wrapped application.
+        """
         session = self.get_session(environ)
         if not session:
             session = Session()
 
         def session_start_response(status, headers, exc_info=None):
+            """
+            A start_response function that append a session cookie to the response headers if necessary.
+            """
             if session.stored():
                 cookie = SimpleCookie()
                 cookie['session_id'] = session.get_id()
                 cookiestr = cookie.output().replace('Set-Cookie: ', '', 1)
                 headers.append(('Set-Cookie', cookiestr))
-                print ("RESPONSE HEADERS: " + str(headers))
+                print ("RESPONSE HEADERS: " + str(headers)) # DEBUG
             return start_response(status, headers, exc_info)
 
         environ['session'] = session
-        print ("SESSION: " + session.get_id() + " " + str(session.is_admin()))
+        print ("SESSION: " + session.get_id() + " " + str(session.is_admin())) # DEBUG
         return self._wrap_app(environ, session_start_response)
 
     def get_session(self, environ):
+        """
+        Returns the session whose id is stored in the cookie or None if there is no cookie.
+        """
         try:
             cookie = SimpleCookie(environ['HTTP_COOKIE'])
             session_id = cookie['session_id'].value
@@ -60,23 +78,27 @@ class SessionMiddleware(object):
                 return None
             expiration = result['SES_EXPIRES']
             is_admin = bool(result['SES_IS_ADMIN'])
-            print ("LOAD SESSION: " + session_id)
+            print ("LOAD SESSION: " + session_id) # DEBUG
             session = Session(session_id, expiration, is_admin)
             if expiration < datetime.now():
-                print "EXPIRED"
+                print "EXPIRED" # DEBUG
                 session.delete(environ)
                 session = None
             return session
         except KeyError, e:
-            print ("NO LOAD SESSION: " + str(e))
+            print ("NO LOAD SESSION: " + str(e)) # DEBUG
             return None
 
 
 class Session(object):
-    def _generateRandomString(self, length):
+    """
+    A session stores its id, its expiration time and whether the user is privileged for admin actions.
+    """
+
+    def _generate_random_string(self, length):
         """
-        generate  a random string 
-        TODO: outsource this function to some kind of helpers module (other occurence in database.py)
+        Generates a random string with the desired length.
+        TODO: outsource this function to helpers
         """
         ret = ""
         for i in range(length):
@@ -87,11 +109,15 @@ class Session(object):
         return ret
 
     def __init__(self, id = None, expiration = None, is_admin = False):
+        """
+        Initializes a session object with the given values. If no values are specified, hardcoded
+        default values will be used.
+        """
         config = Config()
         if id:
             self._id = id
         else:
-            self._id = sha256(self._generateRandomString(24)).hexdigest()
+            self._id = sha256(self._generate_random_string(24)).hexdigest()
         if expiration:
             self._expiration = expiration
         else:
@@ -100,15 +126,27 @@ class Session(object):
         self._stored = False
     
     def get_id(self):
+        """
+        Returns the session id.
+        """
         return self._id
 
     def is_admin(self):
+        """
+        Returns whether this session is privileged for admin actions.
+        """
         return self._is_admin
     
     def set_admin(self, is_admin):
+        """
+        Sets the admin flag.
+        """
         self._is_admin = is_admin
 
     def store(self, environ):
+        """
+        Stores this session in the database.
+        """
         exp = datetime_to_fdb_timestamp(self._expiration)
         is_admin = 0
         if self._is_admin:
@@ -119,8 +157,14 @@ class Session(object):
         self._stored = True
 
     def delete(self, environ):
+        """
+        Removes this session from the database.
+        """
         environ['db'].query('DELETE FROM SESSIONS WHERE SES_ID = ?;',
                 self._id, commit = True)
 
     def stored(self):
+        """
+        Returns whether this session has been stored.
+        """
         return self._stored

@@ -22,11 +22,23 @@
 from mimetypes import guess_type
 
 class SharedDataMiddleware(object):
+    """
+    A WSGI middleware that provides static content.
+    """
+
     def __init__(self, wrap_app, location):
+        """
+        Initializes this SharedDataMiddleware with a wrapped application and
+        the location of the static content (e. g. 'static').
+        """
         self._location = location
         self._wrap_app = wrap_app
 
     def __call__(self, environ, start_response):
+        """
+        If the wsgi PATH_INFO starts with the static contents location, it will be returned.
+        Otherwise the wrapped application will be called.
+        """
         if environ['PATH_INFO'].startswith('/%s/' % self._location):
             prefix = "/usr/share/scvrepo/"
             path = prefix + environ['PATH_INFO'][1:]
