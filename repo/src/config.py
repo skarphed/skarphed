@@ -22,19 +22,33 @@
 import json
 
 class Config(object):
-    __shared_state = {}
+"""
+Provides a global accessibly configuration.
+"""
+    # shared state for borg pattern
+    __shared_state = {} 
 
     def __init__(self):
+        """
+        Initializes a configuration object with the shared state.
+        """
         self.__dict__ = self.__shared_state
 
     def __getitem__(self, key):
+        """
+        Returns the value of the configuration entry with the given key.
+        """
         return self.config[key]
 
-    def load_from_file(self, path = 'config.json'):
+    def load_from_file(self, path):
+        """
+        Loads the configuration from a json file.
+        """
         f = open(path, 'r')
         data = f.read()
         f.close()
         self.config = json.loads(data)
 
 
+# loads the default repository configuration
 Config().load_from_file('/etc/scvrepo/config.json')
