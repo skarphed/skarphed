@@ -2,14 +2,8 @@
 	ServerAdmin webmaster@localhost
 
 	DocumentRoot /var/www/scvrepo
-	<Directory />
-		Options FollowSymLinks
-		AllowOverride None
-	</Directory>
 	<Directory /var/www/scvrepo>
-		Options Indexes FollowSymLinks MultiViews
-		AllowOverride None
-		Order allow,deny
+		Order deny,allow
 		allow from all
 	</Directory>
 

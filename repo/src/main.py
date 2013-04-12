@@ -27,8 +27,10 @@ from traceback import print_exc
 from StringIO import StringIO
 import json
 
+import os
 import sys
-sys.path.append('/var/www_py/')
+
+sys.path.append(os.path.dirname(__file__))
 
 from database import DatabaseMiddleware
 from protocolhandler import ProtocolHandler
@@ -46,6 +48,7 @@ def default_template(environ, response_headers):
         template = template.replace('{{publickey}}', repository.get_public_key(environ))
         response_body = [template]
         response_headers.append(('Content-Type', 'text/html'))
+        response_headers.append(('Content-Length', str(len(template))))
         status = '200 OK'
     except IOError, ie:
         response_body = ['404 Not Found'] # TODO: improve error message

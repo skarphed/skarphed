@@ -1,5 +1,5 @@
 {
-  "db.ip"  :"127.0.0.1",
+  "db.ip":"127.0.0.1",
   "db.name":"scvrepo.fdb",
   "db.user":"zigapeda",
   "db.password":"test",
