@@ -431,6 +431,9 @@ class Repository(object):
 
 
     def get_public_key(self, environ):
+        """
+        Returns the public key of this repository.
+        """
         result = environ['db'].query('SELECT VAL ' +
                 'FROM CONFIG ' +
                 'WHERE PARAM = \'publickey\'')
@@ -441,6 +444,9 @@ class Repository(object):
 
 
     def get_private_key(self, environ):
+        """
+        Returns the public key of this repository.
+        """
         result = environ['db'].query('SELECT VAL ' +
                 'FROM CONFIG ' +
                 'WHERE PARAM = \'privatekey\'')
