@@ -40,7 +40,37 @@ if os.path.exists(COOKIEPATH):
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
 urllib2.install_opener(opener)
 
-class ScovilleRepositoryException(Exception):pass
+class ScovilleRepositoryException(Exception):
+    SIMPLE_ERRORS = {
+        2: "Authentication Failed. You are no Administrator",
+        3: "Could not upload Module: manifest.json is broken",
+        4: "Could not add Developer: Not a valid Public Key",
+        5: "Could not add Developer: Developer already exists (nickname must be unique)",
+        6: "Could not upload Module: Developername must be modulename-prefix (e.g. developer_module)",
+        7: "Request Error: Erroneous Request-JSON received",
+        8: "Database Error: A SQL-Statement failed in Execution"
+    }
+    def __init__(self, error):
+        Exception.__init__(self)
+
+        errorcode = error["c"]
+
+        if ScovilleRepositoryException.SIMPLE_ERRORS.has_key(errorcode):
+            self.message = ScovilleRepositoryException.SIMPLE_ERRORS[errorcode]
+        elif errorcode == 9: #DEPENDENCY OF MODULE COULDNT BE RESOLVED
+            dependencystring = ""
+            for dependency in error['args']:
+                dependencystring = "<br>%s (%s.%s)"%(dependency["name"], 
+                                                     dependency["version_major"], 
+                                                     dependency["version_minor"])
+            self.message = "The following dependencies are given by the Module but couldn't be found on the server:<br>%s"%dependencystring
+        elif errorcode == 1: # UNEXCPECTED EXCEPTION
+            pass # TODO : raise generic exception with traceback here
+        elif errorcode == 0:
+            self.message = "OK"
+        else:
+            self.message = "Unknown RepositoryError: %d"%errorcode
+
 
 class ScovilleRepository(threading.Thread):
     TYPE_TEMPLATE = 0

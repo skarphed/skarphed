@@ -225,12 +225,16 @@ def _dialog_response_cb(dialog, resp, trace):
 #
 ####################################################
 
+from net.ScovilleRepository import ScovilleRepositoryException
+
 class ExpectedErrorHandler(gtk.MessageDialog):
     def __init__(self):
         gtk.MessageDialog.__init__(self,parent=None, flags=0, type=gtk.MESSAGE_WARNING, buttons=gtk.BUTTONS_NONE)
         self.open = False
 
-        self.knownExceptions = {}
+        self.knownExceptions = {
+            ScovilleRepositoryException
+            }
 
         self.add_button (gtk.STOCK_OK, gtk.RESPONSE_CLOSE)
         self.connect('response', self.response_cb)
@@ -241,9 +245,14 @@ class ExpectedErrorHandler(gtk.MessageDialog):
         if self.open:
             return
         if self.knownExceptions.has_key(exctyp):
+            
+
             self.set_title (_(self.knownExceptions[exctyp][0]))
             self.set_markup (self.knownExceptions[exctyp][0])
-            self.format_secondary_text (self.knownExceptions[exctyp][1])
+            if exctyp is ScovilleRepositoryException:
+                self.format_secondary_text(value.message)
+            else:
+                self.format_secondary_text (self.knownExceptions[exctyp][1])
             
             print tb
             self.set_visible(True)

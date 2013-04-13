@@ -1,0 +1,48 @@
+0000 : OK  (never in an actual error)
+0001 : Failed to resolve dependency while uploading
+       
+       Solve: Upload dependency before uploading this module
+
+       ErrorJson:
+        {"error":{"c":1, "args":[
+                    {"name":"<mod_name>","version_major":1, "version_minor":2},
+                    {"name":"<mod_name>","version_major":3, "version_minor":6}
+                             ]}}
+
+0002 : Authentication Failed - You are only allowed to do this as administrator
+       
+       ErrorJson:
+       {"error":{"c":2, "args":[]}}
+
+0003 : Module Upload: ManifestJSON broken
+
+       ErrorJson:
+           {"error":{"c":3, "args":[]}}
+
+0004 : Could Not Add developer: No valid PublicKey
+
+           ErrorJson:
+           {"error":{"c":4, "args":[]}}
+
+0005 : could Not Add developer: This developer already exists (nickname uniqueness)
+
+           ErrorJson:
+           {"error":{"c":5, "args":[]}}
+
+0006 : could not upload Module: Developer Prefix wrong (if the public key belongs to hanswurscht,
+           module["name"] cannot be "asdf_module" . it must be "hanswurscht_module"
+
+           ErrorJson:
+           {"error":{"c":6, "args":[]}}
+
+0007 : erroneous json received (request error)
+
+           ErrorJson:
+           {"error":{"c":7, "args":[]}}
+
+0008 : Database Error 
+
+           ErrorJson:
+           {"error":{"c":8. "args":[]}}
+
+
