@@ -22,7 +22,7 @@
 import base64
 import json
 
-from repository import Repository
+from repository import *
 
 class CommandType:
     """
@@ -58,11 +58,11 @@ class ProtocolHandler(object):
         """
         Initializes a protocol handler with a repository and the incoming request.
         """
-        logfile = open('/tmp/scvrepolog.log','a')
-        logfile.write(jsonstr+"\n")
-        logfile.close()
         self.repository = repository
-        self.subject = json.loads(jsonstr)
+        try:
+            self.subject = json.loads(jsonstr)
+        except ValueError, e:
+            raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
 
     def verify_module(self):
         """
@@ -72,9 +72,9 @@ class ProtocolHandler(object):
         try:
             module = self.subject['m']
             if not all([module[key] != None for key in ['name', 'hrname', 'version_major', 'version_minor', 'revision', 'signature']]):
-                raise Exception('Not a valid module!')
+                raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
         except KeyError, e:
-            raise Exception('Not a valid module!')
+            raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
 
 
     def check_set(self, keys, errmsg):
@@ -84,9 +84,9 @@ class ProtocolHandler(object):
         """
         try:
             if not all([self.subject[key] != None for key in keys]):
-                raise Exception(errmsg)
+                raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
         except KeyError, e:
-            raise Exception(errmsg)
+            raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
 
     def execute(self, environ):
         """
@@ -129,10 +129,9 @@ class ProtocolHandler(object):
         
         elif c == CommandType.LOGIN:
             self.check_set(['dxd'], 'Password not set')
-            if self.repository.login(environ, self.subject['dxd']):
-                return json.dumps({'r' : 0})
-            return json.dumps({'r' : 1})
-        
+            self.repository.login(environ, self.subject['dxd'])
+            return json.dumps({'r' : 0})
+             
         elif c == CommandType.LOGOUT:
             self.repository.logout(environ)
             return json.dumps({'r' : 0})
@@ -169,4 +168,4 @@ class ProtocolHandler(object):
             return json.dumps({'r' : developers})
 
         else:
-            raise Exception('Unknown command identifier: %d' % self.subject['c'])
+            raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)

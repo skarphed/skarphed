@@ -32,9 +32,9 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from database import DatabaseMiddleware
+from database import *
 from protocolhandler import ProtocolHandler
-from repository import Repository
+from repository import *
 from session import SessionMiddleware
 from shareddatamiddleware import SharedDataMiddleware
 
@@ -85,6 +85,10 @@ def repo_application(environ, start_response):
             repository = Repository()
             handler = ProtocolHandler(repository, jsonstr)
             response_body = [handler.execute(environ)]
+        except DatabaseException, e:
+            response_body = ['{"error":%d}' % RepositoryErrorCode.DATABASE_ERROR]
+        except RepositoryException, e:
+            response_body = ['{"error":%s}' % json.dumps(e.get_error_json())] 
         except Exception, e:
             errorstream  = StringIO()
             print_exc(None, errorstream)

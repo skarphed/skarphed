@@ -37,6 +37,36 @@ from database import DatabaseConnection
 
 from session import Session
 
+
+class RepositoryErrorCode:
+    OK = 0
+    UNKNOWN_ERROR = 1
+    DATABASE_ERROR = 2
+    AUTH_FAILED = 3
+    INVALID_JSON = 4
+    MODULE_NOT_FOUND = 5
+    UPLOAD_INVALID_SIGNATURE = 6
+    UPLOAD_MANIFEST = 7
+    UPLOAD_DEV_PREFIX = 8
+    UPLOAD_DEPENDENCIES = 9
+    UPLOAD_CORRUPTED = 10
+
+class RepositoryException(Exception):
+    def __init__(self, error_json):
+        self._error_json = error_json
+
+    def get_error_json(self):
+        return self._error_json
+
+
+def create_repository_exception(code, *args):
+    """
+    Creates a new RepositoryException with the given error code and
+    error arguments.
+    """
+    return RepositoryException({"c":code,"args":args})
+
+
 class Repository(object):
     """
     A repository handles incoming requests.
@@ -48,7 +78,7 @@ class Repository(object):
         """
         session = environ['session']
         if not session.is_admin():
-            raise Exception('You are no admin')
+            raise create_repository_exception(RepositoryErrorCode.AUTH_FAILED)
 
 
     def generate_salt(self):
@@ -119,24 +149,24 @@ class Repository(object):
         result = result.fetchallmap()
         if result:
             mod_id = result[0]['MOD_ID']
-            result = environ['db'].query('SELECT DISTINCT DEP_MOD_DEPENDSOn ' +
-                    'FROM DEPENDENCIES ' +
-                    'WHERE DEP_MOD_ID = ?;', mod_id)
+            result = environ['db'].query('SELECT DISTINCT DEP_MOD_DEPENDSON \
+                    FROM DEPENDENCIES \
+                    WHERE DEP_MOD_ID = ?;', mod_id)
             result = result.fetchallmap()
             mod_ids = [mod_id]
 
             while result:
                 for mod in result:
-                    mod_ids.append(mod['DEP_MOD_DEPENDSOn'])
+                    mod_ids.append(mod['DEP_MOD_DEPENDSON'])
                 mod_ids_str = ','.join(map(str, mod_ids))
-                result = environ['db'].query('SELECT DEP_MOD_DEPENDSON ' +
-                        'FROM DEPENDENCIES ' +
-                        'WHERE DEP_MOD_ID IN ? AND DEP_MOD_DEPENDSON NOT IN ?;', 
+                result = environ['db'].query('SELECT DEP_MOD_DEPENDSON \
+                        FROM DEPENDENCIES \
+                        WHERE DEP_MOD_ID IN ? AND DEP_MOD_DEPENDSON NOT IN ?;', 
                         (mod_ids_str, mod_ids_str));
                 result = result.fetchallmap()
-            result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
-                    'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
-                    'FROM MODULES WHERE MOD_ID IN (?) AND MOD_ID != ?;', 
+            result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, \
+                    MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
+                    FROM MODULES WHERE MOD_ID IN (?) AND MOD_ID != ?;', 
                     (','.join(map(str, mod_ids)), mod_id));
             result = result.fetchallmap()
             modules = [{'name' : m['MOD_NAME'],
@@ -148,7 +178,7 @@ class Repository(object):
             return modules
 
         else:
-            raise Exception('Module does not exist: %s' % module['name'])
+            raise create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
 
 
     def resolve_dependencies_upwards(self, environ, module):
@@ -156,34 +186,34 @@ class Repository(object):
         Returns a list of all upward dependencies of a module. Upward dependencies are all
         modules that needs the specified module to work.
         """
-        result = environ['db'].query('SELECT MOD_ID ' +
-                'FROM MODULES ' +
-                'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? ' +
-                'AND MOD_VERSIONREV = ? AND MOD_SIGNATURE = ?;',
+        result = environ['db'].query('SELECT MOD_ID \
+                FROM MODULES \
+                WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? \
+                AND MOD_VERSIONREV = ? AND MOD_SIGNATURE = ?;',
                 (module['name'], module['version_major'], module['version_minor'],
                 module['revision'], module['signature']))
         result = result.fetchallmap()
         if result:
             mod_id = result[0]['MOD_ID']
-            result = environ['db'].query('SELECT DISTINCT DEP_MOD_ID ' +
-                    'FROM DEPENDENCIES ' +
-                    'WHERE DEP_MOD_DEPENDSON = ?;', mod_id);
+            result = environ['db'].query('SELECT DISTINCT DEP_MOD_ID \
+                    FROM DEPENDENCIES \
+                    WHERE DEP_MOD_DEPENDSON = ?;', mod_id);
             result = result.fetchallmap()
             mod_ids = [mod_id]
             while result:
                 for mod in result:
                     mod_ids.append(mod['DEP_MOD_ID'])
                 mod_ids_str = ','.join(map(str, mod_ids))
-                result = environ['db'].query('SELECT DEP_MOD_ID ' +
-                        'FROM DEPENDENCIES ' +
-                        'WHERE DEP_MOD_DEPENDSON IN ? AND DEP_MOD_ID NOT IN ?;',
+                result = environ['db'].query('SELECT DEP_MOD_ID \
+                        FROM DEPENDENCIES \
+                        WHERE DEP_MOD_DEPENDSON IN ? AND DEP_MOD_ID NOT IN ?;',
                         (mod_ids_str, mod_ids_str))
                 result = result.fetchallmap()
 
-            result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
-                    'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
-                    'FROM MODULES ' +
-                    'WHERE MOD_ID IN (?) AND MOD_ID != ?;',
+            result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, \
+                    MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
+                    FROM MODULES \
+                    WHERE MOD_ID IN (?) AND MOD_ID != ?;',
                     (','.join(map(str, mod_ids)), mod_id))
             result = result.fetchallmap()
             modules = [{'name' : m['MOD_NAME'],
@@ -194,18 +224,18 @@ class Repository(object):
                         'signature' : m['MOD_SIGNATURE']} for m in result]
             return modules
         else:
-            raise Exception('Module does not exist: %s' % module['name'])
+            raise create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
 
 
     def download_module(self, environ, module):
         """
         Returns the specified module with its binary data.
         """
-        result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_ID, MOD_VERSIONMAJOR, ' +
-                'MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_DATA, MOD_SIGNATURE ' +
-                'FROM MODULES ' +
-                'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? ' +
-                'AND MOD_VERSIONREV = ? AND MOD_SIGNATURE = ?;',
+        result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_ID, MOD_VERSIONMAJOR, \
+                MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_DATA, MOD_SIGNATURE \
+                FROM MODULES \
+                WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? \
+                AND MOD_VERSIONREV = ? AND MOD_SIGNATURE = ?;',
                 (module['name'], module['version_major'], module['version_minor'],
                 module['revision'], module['signature']))
         result = result.fetchallmap()
@@ -219,22 +249,22 @@ class Repository(object):
                         'signature' : mod['mod_signature']}
             return (result_mod, mod['MOD_DATA'])
         else:
-            raise Exception('Module does not exist: %s' % module['name'])
+            raise create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
 
 
     def get_latest_version(self, environ, module):
         """
         Returns the latest version of the specified module.
         """
-        result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, ' +
-                'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
-                'FROM MODULES JOIN (SELECT MOD_NAME VERNAME, ' +
-                'MAX(MOD_VERSIONMAJOR*10000000+MOD_VERSIONMINOR*100000+MOD_VERSIONREV) VER ' + 
-                'FROM MODULES' + 
-                'GROUP BY MOD_NAME) ' +  
-                'ON VERNAME = MOD_NAME ' + 
-                'AND VER = MOD_VERSIONMAJOR*10000000+MOD_VERSIONMINOR*100000+MOD_VERSIONREV ' +
-                'WHERE MOD_NAME = ?;', module['name']);
+        result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, \
+                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
+                FROM MODULES JOIN (SELECT MOD_NAME VERNAME, \
+                MAX(MOD_VERSIONMAJOR*10000000+MOD_VERSIONMINOR*100000+MOD_VERSIONREV) VER \
+                FROM MODULES \
+                GROUP BY MOD_NAME) \
+                ON VERNAME = MOD_NAME \
+                AND VER = MOD_VERSIONMAJOR*10000000+MOD_VERSIONMINOR*100000+MOD_VERSIONREV \
+                WHERE MOD_NAME = ?;', module['name']);
         result = result.fetchallmap()
         if result:
             mod = result[0]
@@ -246,7 +276,7 @@ class Repository(object):
                         'signature' : mod['MOD_SIGNATURE']}
             return result_mod
         else:
-            raise Exception('Module does not exist: %s' % module['name'])
+            raise create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
 
 
     def login(self, environ, password):
@@ -266,7 +296,8 @@ class Repository(object):
             session = environ['session']
             session.set_admin(is_valid)
             session.store(environ)
-        return is_valid
+        else:
+            raise create_repository_exception(RepositoryErrorCode.AUTH_FAILED)
 
 
     def logout(self, environ):
@@ -279,7 +310,7 @@ class Repository(object):
     def change_password(self, environ, password):
         """
         Changes the repositories admin password.
-        Needs admin rights.
+        Needs administrator privileges.
         """
         self.verify_admin(environ)
         
@@ -293,13 +324,14 @@ class Repository(object):
     def register_developer(self, environ, name, fullname, publickey):
         """
         Registers a new developer at this repository.
-        Needs admin rights.
+        Needs administrator privileges.
         """
         self.verify_admin(environ)
 
         dev_id = environ['db'].get_seq_next('DEV_GEN')
-        environ['db'].query('INSERT INTO DEVELOPER (DEV_ID, DEV_NAME, DEV_FULLNAME, DEV_PUBLICKEY) ' +
-                'VALUES (?, ?, ?, ?);', (dev_id, name, fullname, publickey), commit=True)
+        # TODO check public key and dev_name uniqueness (job of the database?)
+        environ['db'].query('INSERT INTO DEVELOPER (DEV_ID, DEV_NAME, DEV_FULLNAME, DEV_PUBLICKEY) \
+                VALUES (?, ?, ?, ?);', (dev_id, name, fullname, publickey), commit=True)
 
 
     def unregister_developer(self, environ, dev_id):
@@ -307,12 +339,17 @@ class Repository(object):
         Removes a developer of this repository. Only the public key is removed, so that this
         developer can no longer upload modules. This is necessary to keep the developer information
         for modules that have been uploaded before.
-        Needs admin rights.
+        Needs administrator privileges.
         """
         self.verify_admin(environ)
 
-        environ['db'].query('UPDATE DEVELOPER SET DEV_PUBLICKEY = \'\' ' +
-                'WHERE DEV_ID = ?;', dev_id, commit=True)
+        environ['db'].query('UPDATE DEVELOPER SET DEV_PUBLICKEY = \'\' \
+                WHERE DEV_ID = ?;', dev_id, commit=True)
+
+
+    def _check_manifest(self, manifest):
+        # TODO check manifest, if corrupted, throw exception
+        pass
 
 
     def upload_module(self, environ, data, signature):
@@ -322,8 +359,8 @@ class Repository(object):
         """
 
         # check if the signature matches a registered developer
-        cur = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY ' +
-                'FROM DEVELOPER;')
+        cur = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY \
+                FROM DEVELOPER;')
         result = cur.fetchallmap()
         valid = False
         hashobj = SHA256.new(data)
@@ -332,23 +369,32 @@ class Repository(object):
             verifier = PKCS1_v1_5.new(key)
             valid = verifier.verify(hashobj, signature)
             if valid:
-                dev_id = dev['DEV_ID']
+                dev_name = dev['DEV_NAME']
                 break;
         if not valid:
-            raise Exception('Signature verification failed')
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_INVALID_SIGNATURE)
         
         # extract the module's manifest from the module's archive
         datafile = StringIO(data)
-        tar = tarfile.open(fileobj = datafile, mode = 'r:gz') 
         try:
+            tar = tarfile.open(fileobj = datafile, mode = 'r:gz') 
             manifestdata = tar.extractfile('manifest.json').read()
         except Exception, e:
-            raise Exception('Error while reading manifest')
-        manifest = json.loads(manifestdata)
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_CORRUPTED)
+        
+        try:
+            manifest = json.loads(manifestdata)
+            self._check_manifest(manifest)
+        except Exception, e:
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
+
+        if not manifest['name'].startswith(dev_name + '_'):
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEV_PREFIX)
 
         # check whether all dependencies are available
         if 'dependencies' in manifest:
             dependencies = manifest['dependencies']
+            missing = []
             for dep in dependencies:
                 cur = environ['db'].query('SELECT COUNT(*) AS DEPCOUNT \
                         FROM MODULES \
@@ -357,8 +403,13 @@ class Repository(object):
                         (dep['name'], dep['version_major'], dep['version_minor']))
                 result = cur.fetchonemap()
                 if result['DEPCOUNT'] == 0:
-                    raise Exception('Dependency not installed: %s %d.%d' %
-                            (dep['name'], dep['version_major'], dep['version_minor']))
+                    missing.append({'name' : dep['name'],
+                            'version_major' : dep['version_major'],
+                            'version_minor' : dep['version_minor']})
+            if missing:
+                raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEPENDENCIES, *missing)
+
+        #TODO insert dependencies in DEPENDENCY table
         
         # calculate the new revision of the module and write it to the manifest
         cur = environ['db'].query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION \
@@ -374,21 +425,24 @@ class Repository(object):
 
         # create the new module archive with the new revision
         datafile = StringIO()
-        newtar = tarfile.open(fileobj = datafile, mode = 'w:gz')
-        for member in tar:
-            if member.isfile():
-                if member.name != 'manifest.json':
-                    f = tar.extractfile(member)
-                    newtar.addfile(member, f)
-                else:
-                    manifestdata = json.dumps(manifest)
-                    info = tarfile.TarInfo(name = 'manifest.json')
-                    info.size = len(manifestdata)
-                    info.mtime = time.time()
-                    newtar.addfile(tarinfo = info, fileobj = StringIO(manifestdata))
-        newtar.close()
-        tar.close()
-        newdata = datafile.getvalue()
+        try:
+            newtar = tarfile.open(fileobj = datafile, mode = 'w:gz')
+            for member in tar:
+                if member.isfile():
+                    if member.name != 'manifest.json':
+                        f = tar.extractfile(member)
+                        newtar.addfile(member, f)
+                    else:
+                        manifestdata = json.dumps(manifest)
+                        info = tarfile.TarInfo(name = 'manifest.json')
+                        info.size = len(manifestdata)
+                        info.mtime = time.time()
+                        newtar.addfile(tarinfo = info, fileobj = StringIO(manifestdata))
+            newtar.close()
+            tar.close()
+            newdata = datafile.getvalue()
+        except Exception, e:
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_CORRUPTED) # TODO check different error cases
 
         # generate a new module id and sign the module with the repositories
         # private key
@@ -400,9 +454,9 @@ class Repository(object):
         repo_signature = base64.b64encode(signer.sign(hashobj))
         
         # store the new module in the database
-        environ['db'].query('INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, ' +
-                'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_SIGNATURE, ' +
-                'MOD_DATA) VALUES (?,?,?,?,?,?,?,?);',
+        environ['db'].query('INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, \
+                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_SIGNATURE, \
+                MOD_DATA) VALUES (?,?,?,?,?,?,?,?);',
                 (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
                 manifest['version_minor'], revision, repo_signature, base64.b64encode(newdata)), commit=True)
 
@@ -410,41 +464,41 @@ class Repository(object):
     def delete_module(self, environ, identifier, major=None, minor=None, revision=None):
         """
         Deletes the specified module(s) from this repository.
-        Needs admin rights.
+        Needs administrator privileges.
         """
         self.verify_admin(environ)
 
         if major:
             if minor:
                 if revision:
-                    environ['db'].query('DELETE FROM MODULES ' +
-                            'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND ' +
-                            'MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ?;',
+                    environ['db'].query('DELETE FROM MODULES \
+                            WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND \
+                            MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ?;',
                             (identifier, major, minor, revision), commit=True)
                 else:
-                    environ['db'].query('DELETE FROM MODULES ' +
-                            'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND ' +
-                            'MOD_VERSIONMINOR = ?;',
+                    environ['db'].query('DELETE FROM MODULES \
+                            WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND \
+                            MOD_VERSIONMINOR = ?;',
                             (identifier, major, minor), commit=True)    
             else:
-                environ['db'].query('DELETE FROM MODULES ' +
-                        'WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ?;',
+                environ['db'].query('DELETE FROM MODULES \
+                        WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ?;',
                         (identifier, major), commit=True)    
         else:
-            environ['db'].query('DELETE FROM MODULES ' +
-                    'WHERE MOD_NAME = ?;',
+            environ['db'].query('DELETE FROM MODULES \
+                    WHERE MOD_NAME = ?;',
                     identifier, commit=True)    
 
 
     def get_developers(self, environ):
         """
         Returns a list of all registered developers.
-        Needs admin rights.
+        Needs administrator privileges.
         """
         self.verify_admin(environ)
 
-        result = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_FULLNAME ' +
-                'FROM DEVELOPER;')
+        result = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_FULLNAME \
+                FROM DEVELOPER;')
         result = result.fetchallmap()
         developers = [{'devId' : d['DEV_ID'],
                         'name' : d['DEV_NAME'],
@@ -456,9 +510,9 @@ class Repository(object):
         """
         Returns the public key of this repository.
         """
-        result = environ['db'].query('SELECT VAL ' +
-                'FROM CONFIG ' +
-                'WHERE PARAM = \'publickey\'')
+        result = environ['db'].query('SELECT VAL \
+                FROM CONFIG \
+                WHERE PARAM = \'publickey\'')
         result = result.fetchonemap()
         if result:
             return result['VAL']
@@ -469,9 +523,9 @@ class Repository(object):
         """
         Returns the public key of this repository.
         """
-        result = environ['db'].query('SELECT VAL ' +
-                'FROM CONFIG ' +
-                'WHERE PARAM = \'privatekey\'')
+        result = environ['db'].query('SELECT VAL \
+                FROM CONFIG \
+                WHERE PARAM = \'privatekey\'')
         result = result.fetchonemap()
         if result:
             return result['VAL']

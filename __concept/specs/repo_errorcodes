@@ -1,0 +1,59 @@
+0000 : OK  (never in an actual error)
+
+0001 : Unknown repository error
+        
+        ErrorJson:
+        {"error":{"c":1,"args":["traceback":"<traceback>"]}}
+
+0002 : Database Error 
+
+		ErrorJson:
+		{"error":{"c":2,"args":[]}}
+
+0003 : Authentication Failed - You are only allowed to do this as administrator
+       
+		ErrorJson:
+		{"error":{"c":3,"args":[]}}
+
+0004 : Invalid json - The retrieved json isn't even a json, or has missing keys
+
+		ErrorJson:
+		{"error":{"c":4,"args":[]}} 
+
+0005 : Module not found
+
+		ErrorJson:
+		{"error":{"c":5,"args":[
+			{"name":"<mod_name>","hrname":"<display_name>","version_major":0,"version_minor":0,
+			"revision":0","signature":"<signature>"}
+		]}}	
+
+0006 : Upload failed: Signature invalid
+
+		ErrorJson:
+		{"error":{"c":6,"args":[]}}
+
+0007 : Upload failed: Manifest broken
+
+		ErrorJson:
+		{"error":{"c":7,"args":[]}}
+
+0008 : Upload failed: Developer prefix wrong
+
+		ErrorJson:
+		{"error":{"c":8,"args":[]}}
+
+0009 : Failed to resolve dependency while uploading
+       
+       Solve: Upload dependency before uploading this module
+
+       ErrorJson:
+        {"error":{"c":9,"args":[
+                    {"name":"<mod_name>","version_major":1,"version_minor":2},
+                    {"name":"<mod_name>","version_major":3,"version_minor":6}
+        ]}}
+
+0010 : Upload failed: Corrupted module
+
+		ErrorJson:
+		{"error":{"c":10,"args":[]}}
