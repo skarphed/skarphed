@@ -97,7 +97,6 @@ class Store(gtk.TreeStore):
     def render(self):
         def search(model, path, iter):
             id = model.get_value(iter,2)
-            #print id
             if id >= 0:
                 try:
                     obj = self.objectStore.getLocalObjectById(model.get_value(iter,2))
