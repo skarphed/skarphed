@@ -714,8 +714,8 @@ class Repository(object):
         currently only one repository can be owned by one scoville instance
         """
         db = self._core.get_db()
-        stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (?,?,?,?,?,?) MATCHING (REP_ID) ;"
-        db.query(self._core,stmnt,(self._id, self._name, self._ip, self._port, self._lastupdate, self.get_public_key()),commit=True)
+        stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (1,?,?,?,?,?) MATCHING (REP_ID) ;"
+        db.query(self._core,stmnt,(self._name, self._ip, self._port, self._lastupdate, self.get_public_key()),commit=True)
 
 
     def delete(self):
