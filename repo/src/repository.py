@@ -39,6 +39,9 @@ from session import Session
 
 
 class RepositoryErrorCode:
+    """
+    An enumeration of all response error codes of the repository.
+    """
     OK = 0
     UNKNOWN_ERROR = 1
     DATABASE_ERROR = 2
@@ -52,10 +55,21 @@ class RepositoryErrorCode:
     UPLOAD_CORRUPTED = 10
 
 class RepositoryException(Exception):
+    """
+    An exception that stores an error json object. The global repository exception
+    handler will catch this exception and send the exception's error json as response.
+    """
+
     def __init__(self, error_json):
+        """
+        Initializes a RepositoryException with an error json object.
+        """
         self._error_json = error_json
 
     def get_error_json(self):
+        """
+        Returns the error json object.
+        """
         return self._error_json
 
 
@@ -348,8 +362,15 @@ class Repository(object):
 
 
     def _check_manifest(self, manifest):
-        # TODO check manifest, if corrupted, throw exception
-        pass
+        """
+        Checks whether a modules manifest.json is valid. If not, an exception will be thrown.
+        """
+        has_keys = all([manifest.has_key(key) for key in ['name', 'hrname', 'version_major', 'version_minor', 'permissions', 'tables', 'dependencies']])
+        if not has_keys:
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
+        # TODO check tables, dependencies (and permissions?)
+        tables = manifest['tables']
+        dependencies = manifest['dependencies']
 
 
     def upload_module(self, environ, data, signature):
@@ -382,34 +403,33 @@ class Repository(object):
         except Exception, e:
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_CORRUPTED)
         
+        # checks whether the manifest is a valid json a contains all necessary keys
         try:
             manifest = json.loads(manifestdata)
             self._check_manifest(manifest)
         except Exception, e:
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
 
+        # checks whether the modules developer prefix matches the developer name
         if not manifest['name'].startswith(dev_name + '_'):
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEV_PREFIX)
 
-        # check whether all dependencies are available
-        if 'dependencies' in manifest:
-            dependencies = manifest['dependencies']
-            missing = []
-            for dep in dependencies:
-                cur = environ['db'].query('SELECT COUNT(*) AS DEPCOUNT \
-                        FROM MODULES \
-                        WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? \
-                        AND MOD_VERSIONMINOR = ?;',
-                        (dep['name'], dep['version_major'], dep['version_minor']))
-                result = cur.fetchonemap()
-                if result['DEPCOUNT'] == 0:
-                    missing.append({'name' : dep['name'],
-                            'version_major' : dep['version_major'],
-                            'version_minor' : dep['version_minor']})
-            if missing:
-                raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEPENDENCIES, *missing)
-
-        #TODO insert dependencies in DEPENDENCY table
+        # checks whether all dependencies are available
+        dependencies = manifest['dependencies']
+        missing = []
+        for dep in dependencies:
+            cur = environ['db'].query('SELECT COUNT(*) AS DEPCOUNT \
+                    FROM MODULES \
+                    WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? \
+                    AND MOD_VERSIONMINOR = ?;',
+                    (dep['name'], dep['version_major'], dep['version_minor']))
+            result = cur.fetchonemap()
+            if result['DEPCOUNT'] == 0:
+                missing.append({'name' : dep['name'],
+                        'version_major' : dep['version_major'],
+                        'version_minor' : dep['version_minor']})
+        if missing:
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEPENDENCIES, *missing)
         
         # calculate the new revision of the module and write it to the manifest
         cur = environ['db'].query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION \
@@ -423,7 +443,7 @@ class Repository(object):
             revision = 0
         manifest['revision'] = revision
 
-        # create the new module archive with the new revision
+        # creates the new module archive with the new revision
         datafile = StringIO()
         try:
             newtar = tarfile.open(fileobj = datafile, mode = 'w:gz')
@@ -444,7 +464,7 @@ class Repository(object):
         except Exception, e:
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_CORRUPTED) # TODO check different error cases
 
-        # generate a new module id and sign the module with the repositories
+        # generates a new module id and sign the module with the repositories
         # private key
         mod_id = environ['db'].get_seq_next('MOD_GEN')
 
@@ -453,12 +473,31 @@ class Repository(object):
         signer = PKCS1_v1_5.new(key)
         repo_signature = base64.b64encode(signer.sign(hashobj))
         
-        # store the new module in the database
+        # stores the new module in the database
         environ['db'].query('INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, \
                 MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_SIGNATURE, \
                 MOD_DATA) VALUES (?,?,?,?,?,?,?,?);',
                 (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
                 manifest['version_minor'], revision, repo_signature, base64.b64encode(newdata)), commit=True)
+
+        # stores the dependencies of this module in the database
+        for dep in dependencies:
+            dep_id = environ['db'].get_seq_next('DEP_GEN')
+            
+            cur =  environ['db'].query('SELECT MOD_ID \
+                    FROM MODULES M \
+                    JOIN (SELECT MOD_NAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MAX(MOD_VERSIONREV) AS MAXREV \
+                        FROM MODULES \
+                        GROUP BY MOD_NAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR) REV \
+                    ON M.MOD_NAME = REV.MOD_NAME AND M.MOD_VERSIONMAJOR = REV.MOD_VERSIONMAJOR AND \
+                        M.MOD_VERSIONMINOR = REV.MOD_VERSIONMINOR AND M.MOD_VERSIONREV = REV.MAXREV \
+                    WHERE M.MOD_NAME = ? AND M.MOD_VERSIONMAJOR = ? AND M.MOD_VERSIONMINOR = ?;',
+                    (dep['name'], dep['version_major'], dep['version_minor']))
+            result = cur.fetchonemap()
+            dependson_id = result['MOD_ID']
+
+            environ['db'].query('INSERT INTO DEPENDENCIES (DEP_ID, DEP_MOD_ID, DEP_MOD_DEPENDSON) \
+                    VALUES (?,?,?);', (dep_id, mod_id, dependson_id), commit=True) 
 
 
     def delete_module(self, environ, identifier, major=None, minor=None, revision=None):

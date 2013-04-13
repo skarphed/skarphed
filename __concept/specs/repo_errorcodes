@@ -45,9 +45,9 @@
 
 0009 : Failed to resolve dependency while uploading
        
-       Solve: Upload dependency before uploading this module
+		Solve: Upload dependency before uploading this module
 
-       ErrorJson:
+		ErrorJson:
         {"error":{"c":9,"args":[
                     {"name":"<mod_name>","version_major":1,"version_minor":2},
                     {"name":"<mod_name>","version_major":3,"version_minor":6}
