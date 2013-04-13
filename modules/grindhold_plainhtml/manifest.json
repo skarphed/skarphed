@@ -3,7 +3,6 @@
   "hrname":"Plain HTML",
   "version_major":0,
   "version_minor":0,
-  "revision":4,
   "permissions":["edit"],
   "tables":[
     {"name":"html",

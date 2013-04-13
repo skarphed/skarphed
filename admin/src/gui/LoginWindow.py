@@ -136,6 +136,7 @@ class LoginWindow(gtk.Window):
         self.vbox.add(self.notebook)
         self.add(self.vbox)
         self.set_transient_for(self.getPar())
+        self.set_modal(True)
         self.set_position(gtk.WIN_POS_CENTER)
         self.set_resizable(False)
         

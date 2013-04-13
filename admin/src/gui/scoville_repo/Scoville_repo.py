@@ -39,7 +39,29 @@ class Scoville_repoPage (GenericObjectPage):
         
         self.table = gtk.Table(2,4,False)
         
-        self.adminFrame= PageFrame(self, "Repository", IconStock.REPO)
+        self.moduleFrame=PageFrame(self, "Modules", IconStock.MODULE)
+        self.moduleList = ModuleList(self,repo)
+        self.moduleFrame.add(self.moduleList)
+        self.pack_start(self.moduleFrame,False)
+        
+        self.uploadFrame=PageFrame(self, "Upload", IconStock.MODULE)
+        self.uploadbox = gtk.HBox()
+        self.uploadbox.set_border_width(10)
+        self.upload_label = gtk.Label("Please choose the module and click OK")
+        self.upload_filechoose = gtk.FileChooserButton("Select Template", None)
+        self.upload_filechoose.connect("file-set", self.fileChosen)
+        self.upload_filechoose.set_size_request(200,30)
+        self.upload_enter = gtk.Button(stock=gtk.STOCK_OK)
+        self.upload_enter.connect("clicked", self.uploadModule)
+        self.upload_dummy = gtk.Label("")
+        self.uploadbox.pack_start(self.upload_label,False)
+        self.uploadbox.pack_start(self.upload_filechoose,False)
+        self.uploadbox.pack_start(self.upload_enter,False)
+        self.uploadbox.pack_start(self.upload_dummy,True)
+        self.uploadFrame.add(self.uploadbox)
+        self.pack_start(self.uploadFrame,False)
+        
+        self.adminFrame= PageFrame(self, "Change Password", IconStock.CREDENTIAL)
         self.adminHBox = gtk.HBox()
         self.adminHBoxDummy = gtk.Label("")
         self.adminTable= gtk.Table(2,4,False)
@@ -69,10 +91,6 @@ class Scoville_repoPage (GenericObjectPage):
         self.adminButtonChange.connect("clicked", self.cb_ChangePassword)
         self.pack_start(self.adminFrame,False)
         
-        self.moduleFrame=PageFrame(self, "Modules", IconStock.MODULE)
-        self.moduleList = ModuleList(self,repo)
-        self.moduleFrame.add(self.moduleList)
-        self.pack_start(self.moduleFrame,False)
         
         self.developerFrame = PageFrame(self, "Developers", IconStock.USER)
         self.developerHBox= gtk.HBox()
@@ -104,29 +122,22 @@ class Scoville_repoPage (GenericObjectPage):
         self.developerFrame.add(self.developerHBox)
         self.pack_start(self.developerFrame,False)
         
-        self.uploadFrame=PageFrame(self, "Upload", IconStock.MODULE)
-        self.uploadbox = gtk.HBox()
-        self.uploadbox.set_border_width(10)
-        self.upload_label = gtk.Label("Please choose the module and click OK")
-        self.upload_filechoose = gtk.FileChooserButton("Select Template", None)
-        self.upload_filechoose.connect("file-set", self.fileChosen)
-        self.upload_filechoose.set_size_request(200,30)
-        self.upload_enter = gtk.Button(stock=gtk.STOCK_OK)
-        self.upload_enter.connect("clicked", self.uploadModule)
-        self.upload_dummy = gtk.Label("")
-        self.uploadbox.pack_start(self.upload_label,False)
-        self.uploadbox.pack_start(self.upload_filechoose,False)
-        self.uploadbox.pack_start(self.upload_enter,False)
-        self.uploadbox.pack_start(self.upload_dummy,True)
-        self.uploadFrame.add(self.uploadbox)
-        self.pack_start(self.uploadFrame,False)
-        
         self.show_all()
         
         repo.addCallback(self.render)
     
     def render(self):
-        pass
+        try:
+            repo = self.getApplication().getLocalObjectById(self.repoId)
+        except GenericObjectStoreException:
+            self.destroy()
+
+        auth = repo.isAuthenticated()
+
+        self.adminFrame.set_visible(auth)
+        self.developerFrame.set_visible(auth)
+        self.moduleList.render()
+        self.developerList.render()
     
     def cb_ChangePassword(self, widget=None, data=None):
         pw1 = self.adminPasswordEntry.get_text()

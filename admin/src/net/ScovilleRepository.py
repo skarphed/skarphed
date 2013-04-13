@@ -22,6 +22,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+import os
+
 import urllib2, cookielib
 import threading
 import json
@@ -29,8 +31,11 @@ import gobject
 from Tracker import Tracker
 from MultiPartForm import MultiPartForm
 
+COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
 cookiejar = cookielib.LWPCookieJar()
-cookiejar.load('cookies.txt')
+
+if os.path.exists(COOKIEPATH):
+    cookiejar.load(COOKIEPATH)
 
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
 urllib2.install_opener(opener)
@@ -69,6 +74,8 @@ class ScovilleRepository(threading.Thread):
         threading.Thread.__init__(self)
         self.repo = repo
         self.callback=callback
+        global cookiejar
+        self.cookiejar = cookiejar
         
         assert ScovilleRepository.COMMANDS.has_key(command['c'])
         
@@ -88,7 +95,7 @@ class ScovilleRepository(threading.Thread):
         self.request.add_data(post)
         
         Tracker().addProcess()
-        
+
     def run(self):
         json_dec = json.JSONDecoder()
         
@@ -101,5 +108,14 @@ class ScovilleRepository(threading.Thread):
         if result.has_key('error'):
             raise ScovilleRepositoryException(result['error'])
         
+
         if self.callback is not None:
-            gobject.idle_add(self.callback,result)
+            gobject.idle_add(self._callbackWrapper, self.callback,result)
+
+    def _callbackWrapper(self, callback, result):
+        """
+        Wraps the callback, so there will be no concurrent write-operatons
+        on the COOKIEFILE
+        """
+        self.cookiejar.save(COOKIEPATH, ignore_discard=True, ignore_expires=True)
+        callback(result)
