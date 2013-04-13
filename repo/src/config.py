@@ -22,9 +22,9 @@
 import json
 
 class Config(object):
-"""
-Provides a global accessibly configuration.
-"""
+    """
+    Provides a global accessibly configuration.
+    """
     # shared state for borg pattern
     __shared_state = {} 
 

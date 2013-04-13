@@ -92,10 +92,10 @@ class Repository(object):
         """
         Returns a list of all versions of the specified module.
         """
-        result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, ' +
-                'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV ' +
-                'FROM MODULES ' +
-                'WHERE MOD_NAME = ?;', module['name'])
+        result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, \
+                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
+                FROM MODULES \
+                WHERE MOD_NAME = ?;', module['name'])
         result = result.fetchallmap()
         modules = [{'name' : m['MOD_NAME'],
                     'hrname' : m['MOD_DISPLAYNAME'],
@@ -111,9 +111,9 @@ class Repository(object):
         Returns a list of all downward dependencies of a module. Downward dependencies are all
         modules that are necessary for the specified module to work.
         """
-        result = environ['db'].query('SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ' +
-                'AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ? ' +
-                'AND MOD_SIGNATURE = ?;',
+        result = environ['db'].query('SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? \
+                AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ? \
+                AND MOD_SIGNATURE = ?;',
                 (module['name'], module['version_major'], module['version_minor'],
                 module['revision'], module['signature']))
         result = result.fetchallmap()
@@ -317,9 +317,11 @@ class Repository(object):
 
     def upload_module(self, environ, data, signature):
         """
-        Uploads a modules. data is the tared and gzipped module. It must contain a manifest.json file
+        Uploads a modules. data is the module's archive. It must contain a manifest.json file
         in order to provide module meta information.
         """
+
+        # check if the signature matches a registered developer
         cur = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY ' +
                 'FROM DEVELOPER;')
         result = cur.fetchallmap()
@@ -335,6 +337,7 @@ class Repository(object):
         if not valid:
             raise Exception('Signature verification failed')
         
+        # extract the module's manifest from the module's archive
         datafile = StringIO(data)
         tar = tarfile.open(fileobj = datafile, mode = 'r:gz') 
         try:
@@ -343,9 +346,24 @@ class Repository(object):
             raise Exception('Error while reading manifest')
         manifest = json.loads(manifestdata)
 
-        cur = environ['db'].query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION ' +
-                'FROM MODULES ' +
-                'WHERE MOD_NAME = ?;', manifest['name'])
+        # check whether all dependencies are available
+        if 'dependencies' in manifest:
+            dependencies = manifest['dependencies']
+            for dep in dependencies:
+                cur = environ['db'].query('SELECT COUNT(*) AS DEPCOUNT \
+                        FROM MODULES \
+                        WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? \
+                        AND MOD_VERSIONMINOR = ?;',
+                        (dep['name'], dep['version_major'], dep['version_minor']))
+                result = cur.fetchonemap()
+                if result['DEPCOUNT'] == 0:
+                    raise Exception('Dependency not installed: %s %d.%d' %
+                            (dep['name'], dep['version_major'], dep['version_minor']))
+        
+        # calculate the new revision of the module and write it to the manifest
+        cur = environ['db'].query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION \
+                FROM MODULES \
+                WHERE MOD_NAME = ?;', manifest['name'])
         result = cur.fetchonemap()
         maxrevision = result['MAXREVISION']
         if maxrevision is not None:
@@ -354,6 +372,7 @@ class Repository(object):
             revision = 0
         manifest['revision'] = revision
 
+        # create the new module archive with the new revision
         datafile = StringIO()
         newtar = tarfile.open(fileobj = datafile, mode = 'w:gz')
         for member in tar:
@@ -371,6 +390,8 @@ class Repository(object):
         tar.close()
         newdata = datafile.getvalue()
 
+        # generate a new module id and sign the module with the repositories
+        # private key
         mod_id = environ['db'].get_seq_next('MOD_GEN')
 
         key = RSA.importKey(self.get_private_key(environ))
@@ -378,6 +399,7 @@ class Repository(object):
         signer = PKCS1_v1_5.new(key)
         repo_signature = base64.b64encode(signer.sign(hashobj))
         
+        # store the new module in the database
         environ['db'].query('INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, ' +
                 'MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_SIGNATURE, ' +
                 'MOD_DATA) VALUES (?,?,?,?,?,?,?,?);',
