@@ -403,12 +403,10 @@ class Repository(object):
         """
         Checks whether a modules manifest.json is valid. If not, an exception will be thrown.
         """
-        has_keys = all([manifest.has_key(key) for key in ['name', 'hrname', 'version_major', 'version_minor', 'permissions', 'tables', 'dependencies']])
+        has_keys = all([manifest.has_key(key) for key in ['name', 'hrname', 'version_major', 'version_minor']])
         if not has_keys:
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
         # TODO check tables, dependencies (and permissions?)
-        tables = manifest['tables']
-        dependencies = manifest['dependencies']
 
 
     def upload_module(self, environ, data, signature):
@@ -453,21 +451,22 @@ class Repository(object):
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEV_PREFIX)
 
         # checks whether all dependencies are available
-        dependencies = manifest['dependencies']
-        missing = []
-        for dep in dependencies:
-            cur = environ['db'].query('SELECT COUNT(*) AS DEPCOUNT \
-                    FROM MODULES \
-                    WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? \
-                    AND MOD_VERSIONMINOR = ?;',
-                    (dep['name'], dep['version_major'], dep['version_minor']))
-            result = cur.fetchonemap()
-            if result['DEPCOUNT'] == 0:
-                missing.append({'name' : dep['name'],
-                        'version_major' : dep['version_major'],
-                        'version_minor' : dep['version_minor']})
-        if missing:
-            raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEPENDENCIES, *missing)
+        if 'dependencies' in manifest:
+            dependencies = manifest['dependencies']
+            missing = []
+            for dep in dependencies:
+                cur = environ['db'].query('SELECT COUNT(*) AS DEPCOUNT \
+                        FROM MODULES \
+                        WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? \
+                        AND MOD_VERSIONMINOR = ?;',
+                        (dep['name'], dep['version_major'], dep['version_minor']))
+                result = cur.fetchonemap()
+                if result['DEPCOUNT'] == 0:
+                    missing.append({'name' : dep['name'],
+                            'version_major' : dep['version_major'],
+                            'version_minor' : dep['version_minor']})
+            if missing:
+                raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEPENDENCIES, *missing)
         
         # calculate the new revision of the module and write it to the manifest
         cur = environ['db'].query('SELECT MAX(MOD_VERSIONREV) AS MAXREVISION \
