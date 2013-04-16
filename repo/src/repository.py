@@ -558,18 +558,6 @@ class Repository(object):
         return developers
 
 
-    def create_key_pair(self, environ):
-        #TODO synchronize, only one keypair can be created
-        key = RSA.generate(1024, os.urandom)
-        pub = key.publickey().exportKey()
-        priv = key.exportKey()
-        environ['db'].query('INSERT INTO CONFIG (PARAM, VAL) VALUES \
-                (?,?);', ('publickey', pub), commit = True)
-        environ['db'].query('INSERT INTO CONFIG (PARAM, VAL) VALUES \
-                (?,?);', ('privatekey', priv), commit = True)
-        return (pub, priv)
-
-
     def get_public_key(self, environ):
         """
         Returns the public key of this repository.
@@ -581,8 +569,8 @@ class Repository(object):
         if result:
             return result['VAL']
         else:
-            (pub, priv) = self.create_key_pair(environ)
-            return pub
+            raise create_repository_exception(RepositoryErrorCode.UNKNOWN_ERROR,
+                    {'traceback':'No public key'})
 
 
     def get_private_key(self, environ):
@@ -596,5 +584,5 @@ class Repository(object):
         if result:
             return result['VAL']
         else:
-            (pub, priv) = self.create_key_pair(environ)
-            return priv
+            raise create_repository_exception(RepositoryErrorCode.UNKNOWN_ERROR,
+                    {'traceback':'No private key'})
