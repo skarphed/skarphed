@@ -56,6 +56,11 @@ def default_template(environ, response_headers):
         response_body = ['404 Not Found'] # TODO: improve error message
         response_headers.append(('Content-Type', 'text/plain'))
         status = '404 Not Found'
+    except RepositoryException, e:
+        # TODO what to return if there is no public key
+        response_body = ['404 Not Found'] # TODO: improve error message
+        response_headers.append(('Content-Type', 'text/plain'))
+        status = '404 Not Found'
     return (status, response_body)
 
 
