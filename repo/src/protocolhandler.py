@@ -180,6 +180,9 @@ class ProtocolHandler(object):
             return json.dumps({'r' : developers})
 
         elif c == CommandType.UPLOAD_TEMPLATE:
+            self.check_set(['data', 'signature'], 'Not valid data')
+            self.repository.upload_template(environ, base64.b64decode(self.subject['data']),
+                    base64.b64decode(self.subject['signature']))
             return json.dumps({'r' : 0})
 
         else:
