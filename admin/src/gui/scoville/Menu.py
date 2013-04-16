@@ -282,15 +282,14 @@ class ActionWidgetConfig(gtk.Table):
         
         self.entry_url = gtk.Entry()
         self.entry_widget = ObjectCombo(self, 
-59                                      "Widget",
-60                                      selectFirst=True,
-61                                      virtualRootObject=action.getActionList().getMenuItem().getSite().getScoville())
-        self.entry_space = SpaceSelector()
+                                     "Widget",
+                                     selectFirst=True,
+                                     virtualRootObject=action.getActionList().getMenuItem().getMenu().getSite().getScoville())
+        self.entry_space = SpaceCombo(self,action.getActionList().getMenuItem().getMenu().getSite())
         self.entry_site = ObjectCombo(self, 
-59                                    "Site",
-60                                    selectFirst=True,
-61                                    virtualRootObject=action.getActionList().getMenuItem().getSite().getScoville())
-        self.entry_space.set_range(1,spaceCount)
+                                   "Site",
+                                   selectFirst=True,
+                                   virtualRootObject=action.getActionList().getMenuItem().getMenu().getSite().getScoville())
         self.entry_url.connect("focus-in-event",self.focusCallback)
         self.entry_widget.connect("popup",self.focusCallback)
         self.entry_widget.connect("changed",self.focusCallback)
@@ -330,16 +329,16 @@ class ActionWidgetConfig(gtk.Table):
             self.getPar().destroy()
             return
         if action.data['type'] == 'url':
-            self.radio_url.activate()
+            self.radio_url.set_active(True)
             self.entry_url.set_text(action.data['url'])
         elif action.data['type'] == 'widgetSpaceConstellation':
-            self.radio_widgetSpaceConstellation.activate()
+            self.radio_widgetSpaceConstellation.set_active(True)
             widget=action.getWidget()
             space=action.getSpaceId()
             self.entry_space.setSpaceId(space)
             self.entry_widget.setSelected(widget)
         elif action.data['type'] == 'site':
-            self.radio_site.activate()
+            self.radio_site.set_active(True)
             site=action.getSite()
             self.entry_site.setSelected(site)
     
@@ -370,7 +369,7 @@ class ActionWidgetConfig(gtk.Table):
             action.setUrl(self.entry_url.get_text())
         elif self.radio_widgetSpaceConstellation.get_active():
             widget = self.entry_widget.getSelected()
-            action.setWidgetSpaceConstellation(widget.getId(),self.entry_space.getSpaceId())
+            action.setWidgetSpaceConstellation(widget.getLocalId(),self.entry_space.getSpaceId())
         elif self.radio_site.get_active():
             action.setSite(self.entry_site.getSelected().getId())
     
@@ -402,7 +401,7 @@ class SpaceCombo(gtk.ComboBox):
         self.render()
     
     def render(self):
-        def search(model,path,rowiter,spaces):
+        def search(model,path,rowiter):
             space_id = model.get_value(rowiter,2)
             if space_id >=0:
                 if space_id in model.objectsToAllocate.keys():
@@ -415,13 +414,13 @@ class SpaceCombo(gtk.ComboBox):
         page = self.getApplication().getLocalObjectById(self.pageId)
         self.store.objectsToAllocate = page.getSpaces()
         self.store.itersToRemove = []
-        self.store.foreach(search)
+        self.store.foreach(search,)
         
         for rowiter in self.store.itersToRemove:
             self.store.remove(rowiter)
         
         for key, value in self.store.objectsToAllocate.items():
-            self.store.append((IconStock.SPACE,value,key))
+            self.store.append((IconStock.SPACE,value,int(key)))
             
         if self.firstrender:
             self.set_active(0)
@@ -430,75 +429,17 @@ class SpaceCombo(gtk.ComboBox):
     def getSpaceId(self):
         return self.store.get_value(self.get_active_iter(),2)
 
-    def setSpaceId(self, id):
+    def setSpaceId(self, nr):
         def search(model, path, rowiter, to_select_id):
             space_id = model.get_value(rowiter,2)
-            if space_id == to_select_id:
-                self.iterToSelect = rowiter
+            if space_id == int(to_select_id):
+                model.iterToSelect = rowiter
         self.store.iterToSelect = None
-        self.store.foreach(search)
-        if self.store is not None:
+        self.store.foreach(search,nr)
+        if self.store.iterToSelect is not None:
             self.set_active_iter(self.store.iterToSelect)
         return
 
-    
-    def getPar(self):
-        return self.par
-
-    def getApplication(self):
-        return self.par.getApplication()
- 
-class SiteChooser(gtk.ComboBox):
-    WHITELISTED_CLASSES = ("Site")
-    def __init__(self, par, sites):
-        self.par = par
-        gtk.ComboBox.__init__(self)
-        self.sitesId = sites.getLocalId()
-        
-        self.store = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
-        self.set_model(self.store)
-        
-        self.renderer_icon = gtk.CellRendererPixbuf()
-        self.renderer_text = gtk.CellRendererText()
-        self.pack_start(self.renderer_icon,False)
-        self.pack_start(self.renderer_text,True)
-        self.add_attribute(self.renderer_icon,'pixbuf',0)
-        self.add_attribute(self.renderer_text,'text',1)
-        
-        sites.addCallback(self.render)
-        self.firstrender = True
-        self.render()
-    
-    def render(self):
-        def search(model,path,rowiter):
-            obj_id = model.get_value(rowiter,2)
-            if obj_id >=0:
-                try:
-                    obj = self.getApplication().getLocalObjectById(obj_id)
-                except GenericObjectStoreException:
-                    model.itersToRemove.append(rowiter)
-                else:
-                    model.set_value(rowiter,0,IconStock.SITE)
-                    model.set_value(rowiter,1,obj.getName())
-                    model.objectsToAllocate.remove(obj)
-        
-        sites = self.getApplication().getLocalObjectById(self.sitesId)
-        self.store.objectsToAllocate = sites.getSites()
-        self.store.itersToRemove = []
-        self.store.foreach(search)
-        
-        for rowiter in self.store.itersToRemove:
-            self.store.remove(rowiter)
-        
-        for obj in self.store.objectsToAllocate:
-            self.store.append((IconStock.SITE,obj.getName(),obj.getLocalId()))    
-        if self.firstrender:
-            self.set_active(0)
-            self.firstrender = False
-    
-    def getCurrentSiteId(self):
-        return self.store.get_value(self.get_active_iter(),2)
-        
     def getPar(self):
         return self.par
 

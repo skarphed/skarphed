@@ -252,10 +252,7 @@ class MenuItem(GenericScovilleObject):
     
     def getPar(self):
         return self.par
-    
-    def getSite(self):
-        return self.getPar()
-    
+
     def getMenu(self):
         if self.getPar().__class__.__name__ == 'Menu':
             return self.getPar()
@@ -331,25 +328,25 @@ class Action(GenericScovilleObject):
     
 
     def getSpaceId(self):
-        return self.data['space_id']
+        return self.data['space']
     
     def getWidgetId(self):
-        return self.data['widget_id']
+        return self.data['widgetId']
 
     def getWidget(self):
-        return self.getApplication().getLocalObjectById(self.getWidgetId())
+        return self.getActionList().getMenuItem().getMenu().getSite().getScoville().getModules().getWidgetById(self.getWidgetId())
     
     def getViewId(self):
-        return self.data['view_id']
+        return self.data['viewId']
 
     def getView(self):
-        return self.getApplication().getLocalObjectById(self.getViewId())
+        return self.getActionList().getMenuItem().getMenu().getSite().getScoville().getViews().getViewById(self.getViewId())
     
     def getSiteId(self):
-        return self.data['site_id']
+        return self.data['siteId']
 
     def getSite(self):
-        return self.getApplication().getLocalObjectById(self.getSiteId())
+        return self.getActionList().getMenuItem().getMenu().getSite()
 
     def getPar(self):
         return self.par
