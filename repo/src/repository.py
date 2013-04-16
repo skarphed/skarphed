@@ -23,6 +23,7 @@ import base64
 import cStringIO
 import hashlib
 import json
+import os
 import random
 import tarfile
 import time
@@ -53,6 +54,8 @@ class RepositoryErrorCode:
     UPLOAD_DEV_PREFIX = 8
     UPLOAD_DEPENDENCIES = 9
     UPLOAD_CORRUPTED = 10
+    DEVELOPER_NO_VALID_KEY = 11
+    DEVELOPER_ALREADY_EXISTS = 12
 
 class RepositoryException(Exception):
     """
@@ -341,9 +344,19 @@ class Repository(object):
         Needs administrator privileges.
         """
         self.verify_admin(environ)
+        
+        try:
+            key = RSA.importKey(dev['DEV_PUBLICKEY'])
+        except (ValueError, IndexError, TypeError), e:
+            raise create_repository_exception(RepositoryErrorCode.DEVELOPER_NO_VALID_KEY)
+
+        # hack to check whether developer exists, TODO let it do the database
+        cur = environ['db'].query('SELECT COUNT(*) AS DEVCOUNT FROM DEVELOPER WHERE DEV_NAME = ?;', name)
+        result = cur.fetchonemap()
+        if result['DEVCOUNT'] != 0:
+            raise create_repository_exception(RepositoryErrorCode.DEVELOPER_ALREADY_EXISTS)
 
         dev_id = environ['db'].get_seq_next('DEV_GEN')
-        # TODO check public key and dev_name uniqueness (job of the database?)
         environ['db'].query('INSERT INTO DEVELOPER (DEV_ID, DEV_NAME, DEV_FULLNAME, DEV_PUBLICKEY) \
                 VALUES (?, ?, ?, ?);', (dev_id, name, fullname, publickey), commit=True)
 
@@ -555,7 +568,9 @@ class Repository(object):
         result = result.fetchonemap()
         if result:
             return result['VAL']
-        return None
+        else:
+            raise create_repository_exception(RepositoryErrorCode.UNKNOWN_ERROR,
+                    {'traceback':'No public key'})
 
 
     def get_private_key(self, environ):
@@ -568,4 +583,6 @@ class Repository(object):
         result = result.fetchonemap()
         if result:
             return result['VAL']
-        return None
+        else:
+            raise create_repository_exception(RepositoryErrorCode.UNKNOWN_ERROR,
+                    {'traceback':'No private key'})

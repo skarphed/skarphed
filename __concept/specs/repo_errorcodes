@@ -58,10 +58,10 @@
 
 0011 : Could Not Add developer: No valid PublicKey
 
-           ErrorJson:
-           {"error":{"c":4, "args":[]}}
+		ErrorJson:
+        {"error":{"c":4, "args":[]}}
 
-0012 : could Not Add developer: This developer already exists (nickname uniqueness)
+0012 : Could Not Add developer: This developer already exists (nickname uniqueness)
 
-           ErrorJson:
-           {"error":{"c":5, "args":[]}}
+        ErrorJson:
+        {"error":{"c":5, "args":[]}}

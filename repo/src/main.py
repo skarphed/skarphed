@@ -38,7 +38,6 @@ from repository import *
 from session import SessionMiddleware
 from shareddatamiddleware import SharedDataMiddleware
 
-
 def default_template(environ, response_headers):
     """
     Loads the default repositories template and returns it.
@@ -54,6 +53,11 @@ def default_template(environ, response_headers):
         response_headers.append(('Content-Length', str(len(template))))
         status = '200 OK'
     except IOError, ie:
+        response_body = ['404 Not Found'] # TODO: improve error message
+        response_headers.append(('Content-Type', 'text/plain'))
+        status = '404 Not Found'
+    except RepositoryException, e:
+        # TODO what to return if there is no public key
         response_body = ['404 Not Found'] # TODO: improve error message
         response_headers.append(('Content-Type', 'text/plain'))
         status = '404 Not Found'
@@ -86,7 +90,7 @@ def repo_application(environ, start_response):
             handler = ProtocolHandler(repository, jsonstr)
             response_body = [handler.execute(environ)]
         except DatabaseException, e:
-            response_body = ['{"error":%d}' % RepositoryErrorCode.DATABASE_ERROR]
+            response_body = ['{"error":{"c":%d,"args":[]}}' % RepositoryErrorCode.DATABASE_ERROR]
         except RepositoryException, e:
             response_body = ['{"error":%s}' % json.dumps(e.get_error_json())] 
         except Exception, e:

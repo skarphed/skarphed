@@ -129,9 +129,12 @@ class DatabaseConnection(object):
         """
         Yields the next value of a given sequence (e.g. 'MOD_GEN') and increments it.
         """
-        self._connect()
-        cur = self._connection.cursor()
-        statement = 'SELECT GEN_ID (%s , 1) FROM RDB$DATABASE;' % str(sequence_id)
-        cur.execute(statement)
-        res = cur.fetchone()
-        return res[0]
+        try:
+            self._connect()
+            cur = self._connection.cursor()
+            statement = 'SELECT GEN_ID (%s , 1) FROM RDB$DATABASE;' % str(sequence_id)
+            cur.execute(statement)
+            res = cur.fetchone()
+            return res[0]
+        except fdb.fbcore.DatabaseError, e:
+            raise DatabaseException(str(e))
