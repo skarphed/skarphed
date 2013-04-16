@@ -329,6 +329,28 @@ class Action(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
                                         self.setNewTargetCallback,"setActionSite",[self.getId(),site.getId()])
     
+
+    def getSpaceId(self):
+        return self.data['space_id']
+    
+    def getWidgetId(self):
+        return self.data['widget_id']
+
+    def getWidget(self):
+        return self.getApplication().getLocalObjectById(self.getWidgetId())
+    
+    def getViewId(self):
+        return self.data['view_id']
+
+    def getView(self):
+        return self.getApplication().getLocalObjectById(self.getViewId())
+    
+    def getSiteId(self):
+        return self.data['site_id']
+
+    def getSite(self):
+        return self.getApplication().getLocalObjectById(self.getSiteId())
+
     def getPar(self):
         return self.par
     

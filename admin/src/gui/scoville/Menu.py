@@ -30,6 +30,7 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from data.Generic import GenericObjectStoreException
+from gui.ObjectCombo import ObjectCombo
 
 class MenuPage(GenericObjectPage):
     def __init__(self, par, menu):
@@ -280,9 +281,15 @@ class ActionWidgetConfig(gtk.Table):
         spaceCount = action.getActionList().getMenuItem().getMenu().getSite().getSpaceCount()
         
         self.entry_url = gtk.Entry()
-        self.entry_widget = WidgetChooser(self,action.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville().modules)
-        self.entry_space = gtk.SpinButton(gtk.Adjustment(1,1,spaceCount,1,0,0))
-        self.entry_site = SiteChooser(self,action.getActionList().getMenuItem().getMenu().getSite().getSites())
+        self.entry_widget = ObjectCombo(self, 
+59                                      "Widget",
+60                                      selectFirst=True,
+61                                      virtualRootObject=action.getActionList().getMenuItem().getSite().getScoville())
+        self.entry_space = SpaceSelector()
+        self.entry_site = ObjectCombo(self, 
+59                                    "Site",
+60                                    selectFirst=True,
+61                                    virtualRootObject=action.getActionList().getMenuItem().getSite().getScoville())
         self.entry_space.set_range(1,spaceCount)
         self.entry_url.connect("focus-in-event",self.focusCallback)
         self.entry_widget.connect("popup",self.focusCallback)
@@ -327,8 +334,14 @@ class ActionWidgetConfig(gtk.Table):
             self.entry_url.set_text(action.data['url'])
         elif action.data['type'] == 'widgetSpaceConstellation':
             self.radio_widgetSpaceConstellation.activate()
+            widget=action.getWidget()
+            space=action.getSpaceId()
+            self.entry_space.setSpaceId(space)
+            self.entry_widget.setSelected(widget)
         elif action.data['type'] == 'site':
             self.radio_site.activate()
+            site=action.getSite()
+            self.entry_site.setSelected(site)
     
     def focusCallback(self,widget=None,event=None):
         if widget == self.entry_url:
@@ -356,9 +369,10 @@ class ActionWidgetConfig(gtk.Table):
         if self.radio_url.get_active():
             action.setUrl(self.entry_url.get_text())
         elif self.radio_widgetSpaceConstellation.get_active():
-            action.setWidgetSpaceConstellation(self.entry_widget.getCurrentWidgetId(),self.entry_space.get_text())
+            widget = self.entry_widget.getSelected()
+            action.setWidgetSpaceConstellation(widget.getId(),self.entry_space.getSpaceId())
         elif self.radio_site.get_active():
-            action.setSite(self.entry_site.getCurrentSiteId())
+            action.setSite(self.entry_site.getSelected().getId())
     
     def getPar(self):
         return self.par
@@ -366,13 +380,13 @@ class ActionWidgetConfig(gtk.Table):
     def getApplication(self):
         return self.par.getApplication()
 
-class WidgetChooser(gtk.ComboBox):
-    WHITELISTED_CLASSES = ("Site")
-    def __init__(self, par,modules):
+class SpaceCombo(gtk.ComboBox):
+    def __init__(self, par,page):
         self.par = par
         gtk.ComboBox.__init__(self)
-        self.modulesId = modules.getLocalId()
         
+        self.pageId = page.getLocalId()
+
         self.store = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
         self.set_model(self.store)
         
@@ -384,39 +398,49 @@ class WidgetChooser(gtk.ComboBox):
         self.add_attribute(self.renderer_text,'text',1)
         
         self.firstrender = True
-        modules.addCallback(self.render)
+        page.addCallback(self.render)
         self.render()
     
     def render(self):
-        def search(model,path,rowiter):
-            obj_id = model.get_value(rowiter,2)
-            if obj_id >=0:
-                try:
-                    obj = self.getApplication().getLocalObjectById(obj_id)
-                except GenericObjectStoreException:
-                    model.itersToRemove.append(rowiter)
-                else:
+        def search(model,path,rowiter,spaces):
+            space_id = model.get_value(rowiter,2)
+            if space_id >=0:
+                if space_id in model.objectsToAllocate.keys():
                     model.set_value(rowiter,0,IconStock.WIDGET)
-                    model.set_value(rowiter,1,obj.getName())
-                    model.objectsToAllocate.remove(obj)
+                    model.set_value(rowiter,1,model.objectsToAllocate[space_id])
+                    del(model.objectsToAllocate[space_id])
+                else:
+                    model.itersToRemove.append(rowiter)
         
-        modules = self.getApplication().getLocalObjectById(self.modulesId)
-        self.store.objectsToAllocate = modules.getAllWidgets()
+        page = self.getApplication().getLocalObjectById(self.pageId)
+        self.store.objectsToAllocate = page.getSpaces()
         self.store.itersToRemove = []
         self.store.foreach(search)
         
         for rowiter in self.store.itersToRemove:
             self.store.remove(rowiter)
         
-        for obj in self.store.objectsToAllocate:
-            self.store.append((IconStock.WIDGET,obj.getName(),obj.getLocalId()))
+        for key, value in self.store.objectsToAllocate.items():
+            self.store.append((IconStock.SPACE,value,key))
             
         if self.firstrender:
             self.set_active(0)
             self.firstrender = False
     
-    def getCurrentWidgetId(self):
+    def getSpaceId(self):
         return self.store.get_value(self.get_active_iter(),2)
+
+    def setSpaceId(self, id):
+        def search(model, path, rowiter, to_select_id):
+            space_id = model.get_value(rowiter,2)
+            if space_id == to_select_id:
+                self.iterToSelect = rowiter
+        self.store.iterToSelect = None
+        self.store.foreach(search)
+        if self.store is not None:
+            self.set_active_iter(self.store.iterToSelect)
+        return
+
     
     def getPar(self):
         return self.par
