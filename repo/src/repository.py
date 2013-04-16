@@ -56,6 +56,7 @@ class RepositoryErrorCode:
     UPLOAD_CORRUPTED = 10
     DEVELOPER_NO_VALID_KEY = 11
     DEVELOPER_ALREADY_EXISTS = 12
+    TEMPLATE_NOT_FOUND = 13
 
 class RepositoryException(Exception):
     """
@@ -263,7 +264,7 @@ class Repository(object):
                         'version_major' : mod['MOD_VERSIONMAJOR'],
                         'version_minor' : mod['MOD_VERSIONMINOR'],
                         'revision' : mod['MOD_VERSIONREV'],
-                        'signature' : mod['mod_signature']}
+                        'signature' : mod['MOD_SIGNATURE']}
             return (result_mod, mod['MOD_DATA'])
         else:
             raise create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
@@ -294,6 +295,30 @@ class Repository(object):
             return result_mod
         else:
             raise create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
+
+
+    def get_all_templates(self, environ):
+        cur = environ['db'].query('SELECT TMP_ID, TMP_NAME, TMP_DESCRIPTION, TMP_AUTHOR, \
+                TMP_SIGNATURE FROM TEMPLATES;')
+        result = cur.fetchallmap()
+        templates = [{'id' : t['TMP_ID'],
+                    'name' : t['TMP_NAME'],
+                    'description' : t['TMP_DESCRIPTION'],
+                    'author' : t['TMP_AUTHOR'],
+                    'signature' : t['TMP_SIGNATURE']} for t in result]
+        return templates
+
+
+    def download_template(self, environ, ident):
+        cur = environ['db'].query('SELECT TMP_DATA, TMP_SIGNATURE \
+                FROM TEMPLATES \
+                WHERE TMP_ID = ?;', ident)
+        result = cur.fetchonemap();
+        if result:
+            return (result['TMP_DATA'], result['TMP_SIGNATURE'])
+        else:
+            raise create_repository_exception(RepositoryErrorCode.TEMPLATE_NOT_FOUND,
+                    {'id' : ident})
 
 
     def login(self, environ, password):

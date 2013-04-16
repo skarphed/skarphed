@@ -37,6 +37,8 @@ class CommandType:
     DOWNLOAD_MODULE = 5
     GET_PUBLICKEY = 6
     GET_LATEST_VERSION = 7
+    GET_ALL_TEMPLATES = 8
+    DOWNLOAD_TEMPLATE = 9
     
     #calls from admin-gui to repository
     LOGIN = 100
@@ -47,6 +49,7 @@ class CommandType:
     UPLOAD_MODULE = 105
     DELETE_MODULE = 106
     GET_DEVELOPERS = 107
+    UPLOAD_TEMPLATE = 108
 
 class ProtocolHandler(object):
     """
@@ -126,6 +129,15 @@ class ProtocolHandler(object):
             self.verify_module()
             module = self.repository.get_latest_version(environ, self.subject['m'])
             return json.dumps({'r' : module})
+
+        elif c == CommandType.GET_ALL_TEMPLATES:
+            templates = self.repository.get_all_templates(environ)
+            return json.dumps({'r' : templates})
+
+        elif c == CommandType.DOWNLOAD_TEMPLATE:
+            self.check_set(['id'], 'Template id missing')
+            (data, signature) = self.repository.download_template(environ, self.subject['id'])
+            return json.dumps({'r' : data, 'signature' : signature})
         
         elif c == CommandType.LOGIN:
             self.check_set(['dxd'], 'Password not set')
@@ -166,6 +178,9 @@ class ProtocolHandler(object):
         elif c == CommandType.GET_DEVELOPERS:
             developers = self.repository.get_developers(environ)
             return json.dumps({'r' : developers})
+
+        elif c == CommandType.UPLOAD_TEMPLATE:
+            return json.dumps({'r' : 0})
 
         else:
             raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)

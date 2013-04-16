@@ -91,7 +91,9 @@ def repo_application(environ, start_response):
             response_body = [handler.execute(environ)]
         except DatabaseException, e:
             response_body = ['{"error":{"c":%d,"args":[]}}' % RepositoryErrorCode.DATABASE_ERROR]
+            print str(e)
         except RepositoryException, e:
+            print str(e)
             response_body = ['{"error":%s}' % json.dumps(e.get_error_json())] 
         except Exception, e:
             errorstream  = StringIO()

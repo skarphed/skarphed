@@ -56,12 +56,19 @@
         ErrorJson:
         {"error":{"c":10,"args":[]}
 
-0011 : Could Not Add developer: No valid PublicKey
+0011 : Could not add developer: No valid public key
 
 		ErrorJson:
-        {"error":{"c":4, "args":[]}}
+        {"error":{"c":11, "args":[]}}
 
-0012 : Could Not Add developer: This developer already exists (nickname uniqueness)
+0012 : Could not add developer: This developer already exists (nickname uniqueness)
 
         ErrorJson:
-        {"error":{"c":5, "args":[]}}
+        {"error":{"c":12, "args":[]}}
+
+0013 : Template not found
+
+        ErrorJson:
+        {"error":{"c":13,"args":[
+            {'id':<mod_id>}
+        ]}}    
