@@ -634,6 +634,14 @@ class Repository(object):
                 repo_signature, base64.b64encode(data)), commit=True)
 
 
+    def delete_template(self, environ, ident):
+        """
+        Removes a template from this repository
+        """
+        environ['db'].query('DELETE FROM TEMPLATES \
+                WHERE TMP_ID = ?;', ident, commit=True)
+
+
     def get_public_key(self, environ):
         """
         Returns the public key of this repository.
