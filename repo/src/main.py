@@ -32,14 +32,17 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from database import DatabaseMiddleware
+from database import *
 from protocolhandler import ProtocolHandler
-from repository import Repository
+from repository import *
 from session import SessionMiddleware
 from shareddatamiddleware import SharedDataMiddleware
 
 
 def default_template(environ, response_headers):
+    """
+    Loads the default repositories template and returns it.
+    """
     try:
         f = open('/usr/share/scvrepo/template.html')
         template = f.read()
@@ -58,6 +61,10 @@ def default_template(environ, response_headers):
 
 
 def repo_application(environ, start_response):
+    """
+    The repositories WSGI application. If the incoming request's type is POST then it
+    will be delegated to a protocol handler, otherwise the default template will be returned.
+    """
     response_body = []
     response_headers = []
 
@@ -78,6 +85,10 @@ def repo_application(environ, start_response):
             repository = Repository()
             handler = ProtocolHandler(repository, jsonstr)
             response_body = [handler.execute(environ)]
+        except DatabaseException, e:
+            response_body = ['{"error":%d}' % RepositoryErrorCode.DATABASE_ERROR]
+        except RepositoryException, e:
+            response_body = ['{"error":%s}' % json.dumps(e.get_error_json())] 
         except Exception, e:
             errorstream  = StringIO()
             print_exc(None, errorstream)
@@ -92,6 +103,12 @@ def repo_application(environ, start_response):
     return response_body
 
 
+"""
+Wraps the repository application in a
+0) SharedDataMiddleware, to provide some static content
+1) DatabaseMiddleware, to provide a database connection via environ['db']
+2) SessionMiddleware, to provide session handling
+"""
 application = SharedDataMiddleware(
         DatabaseMiddleware(SessionMiddleware(repo_application)),
         'static')

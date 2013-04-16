@@ -22,9 +22,13 @@
 import base64
 import json
 
-from repository import Repository
+from repository import *
 
 class CommandType:
+    """
+    An enumeration of all command ids that can be passed via the "c" key of
+    the request json.
+    """
     #calls from scoville to repository
     GET_ALL_MODULES = 1
     GET_VERSIONS_OF_MODULE = 2
@@ -45,30 +49,50 @@ class CommandType:
     GET_DEVELOPERS = 107
 
 class ProtocolHandler(object):
+    """
+    The protocol handler verifies that a json request are wellformatted and delegates the request
+    to the repository. The results of the repository will be converted to a json response.
+    """
+
     def __init__(self, repository, jsonstr):
-        logfile = open('/tmp/scvrepolog.log','a')
-        logfile.write(jsonstr+"\n")
-        logfile.close()
+        """
+        Initializes a protocol handler with a repository and the incoming request.
+        """
         self.repository = repository
-        self.subject = json.loads(jsonstr)
+        try:
+            self.subject = json.loads(jsonstr)
+        except ValueError, e:
+            raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
 
     def verify_module(self):
+        """
+        Verifies that the json 'm' key's value is a valid modules, that means it contains the following keys:
+        name, hrname, version_major, version_minor, revision, signature
+        """
         try:
             module = self.subject['m']
             if not all([module[key] != None for key in ['name', 'hrname', 'version_major', 'version_minor', 'revision', 'signature']]):
-                raise Exception('Not a valid module!')
+                raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
         except KeyError, e:
-            raise Exception('Not a valid module!')
+            raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
 
 
     def check_set(self, keys, errmsg):
+        """
+        Check whether the specified keys are set in the request json. If not an exception
+        with the given error message will be thrown.
+        """
         try:
             if not all([self.subject[key] != None for key in keys]):
-                raise Exception(errmsg)
+                raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
         except KeyError, e:
-            raise Exception(errmsg)
+            raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
 
     def execute(self, environ):
+        """
+        Executes the request and returns a json response. If the specified command is unknown an exception
+        will be thrown.
+        """
         c = self.subject['c']
         if c == CommandType.GET_ALL_MODULES:
             modules = self.repository.get_all_modules(environ)
@@ -105,10 +129,9 @@ class ProtocolHandler(object):
         
         elif c == CommandType.LOGIN:
             self.check_set(['dxd'], 'Password not set')
-            if self.repository.login(environ, self.subject['dxd']):
-                return json.dumps({'r' : 0})
-            return json.dumps({'r' : 1})
-        
+            self.repository.login(environ, self.subject['dxd'])
+            return json.dumps({'r' : 0})
+             
         elif c == CommandType.LOGOUT:
             self.repository.logout(environ)
             return json.dumps({'r' : 0})
@@ -145,4 +168,4 @@ class ProtocolHandler(object):
             return json.dumps({'r' : developers})
 
         else:
-            raise Exception('Unknown command identifier: %d' % self.subject['c'])
+            raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
