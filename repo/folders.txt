@@ -1,4 +1,0 @@
-Folders for scoville repository:
-
-/etc/scvrepo/ -- configfiles for scovillerepo. place config.json here
-/usr/share/scvrepo/ -- datafiles for scovillerepo. place template.html and static/repo.png here
