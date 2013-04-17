@@ -438,7 +438,7 @@ class Rpc(object):
         ret = [{
                 'id':t['id'],
                 'name':t['name'],
-                'description':t['description']
+                'description':t['description'],
                 'author':t['author']
               } for t in templates]
         return ret
