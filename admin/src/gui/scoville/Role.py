@@ -30,6 +30,7 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
+from data.Generic import GenericObjectStoreException
 import gui.IconStock
 
 class RolePage(GenericObjectPage):
@@ -89,7 +90,11 @@ class RolePage(GenericObjectPage):
         role.addCallback(self.render)
     
     def render(self):
-        role = self.getApplication().getLocalObjectById(self.roleId)
+        try:
+            role = self.getApplication().getLocalObjectById(self.roleId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+            return
         self.headline.set_markup("<b>Edit Role: "+role.getName()+"</b>")
         
         if role.permissiondata is not None:

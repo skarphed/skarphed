@@ -197,7 +197,11 @@ class SitePage(GenericObjectPage):
         self.render()
         
     def render(self):
-        site = self.getApplication().getLocalObjectById(self.siteId)
+        try:
+            site = self.getApplication().getLocalObjectById(self.siteId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+            return
         self.info_displayName.set_text(site.getName())
         self.info_displayDescription.set_text(site.getDescription())
         self.info_displaySpaces.set_text(str(site.getSpaceCount()))

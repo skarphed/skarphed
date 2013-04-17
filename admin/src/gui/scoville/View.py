@@ -29,6 +29,7 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
+from data.Generic import GenericObjectStoreException
 
 from gui.IconStock import WIDGET, SITE, VIEW, SPACE
 from gui.ObjectCombo import ObjectCombo
