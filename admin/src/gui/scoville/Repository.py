@@ -29,6 +29,7 @@ import gtk
 
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
+from data.Generic import GenericObjectStoreException
 
 from gui.OperationTool import OperationTool
 import gui.IconStock
@@ -180,7 +181,12 @@ class RepositoryPage(GenericObjectPage):
             if val not in processed:
                 model.itersToRemove.append(rowiter)
         
-        repo = self.getApplication().getLocalObjectById(self.repoId)
+        try:
+            repo = self.getApplication().getLocalObjectById(self.repoId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+            return
+
         self.headline.set_markup("<b>Repository: "+repo.getName()+"</b>")
         
         self.processedIListIds = []

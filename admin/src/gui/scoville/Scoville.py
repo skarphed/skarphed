@@ -30,6 +30,7 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
+from data.Generic import GenericObjectStoreException
 from OperationDaemonControl import OperationDaemonControl
 import gui.IconStock
 
@@ -81,7 +82,11 @@ class ScovillePage(GenericObjectPage):
         scoville.addCallback(self.render)
     
     def render(self):
-        scoville = self.getApplication().getLocalObjectById(self.scovilleId)
+        try:
+            scoville = self.getApplication().getLocalObjectById(self.scovilleId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+            return
         repo = scoville.getRepository()
         try:
             self.repoEntry.set_text(repo.getURL())

@@ -29,6 +29,7 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
+from data.Generic import GenericObjectStoreException
 
 import gui.IconStock
 
@@ -92,7 +93,11 @@ class TemplatePage(GenericObjectPage):
             raise Exception("No File specified")
     
     def render(self):
-        template = self.getApplication().getLocalObjectById(self.templateId)
+        try:
+            template = self.getApplication().getLocalObjectById(self.templateId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+            return
         self.info_displayName.set_text(template.data['name'])
         self.info_displayDescription.set_text(template.data['description'])
         self.info_displayAuthor.set_text(template.data['author'])

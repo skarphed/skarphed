@@ -56,6 +56,7 @@ class ModulePage(GenericObjectPage):
             module = self.getApplication().getLocalObjectById(self.moduleId)
         except GenericObjectStoreException, e:
             self.destroy()
+            return
 
         if module.isGuiAvailable() and not self.moduleGuiLoaded:
             self.label.destroy()

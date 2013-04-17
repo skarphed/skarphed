@@ -30,6 +30,7 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
+from data.Generic import GenericObjectStoreException
 import gui.IconStock
 
 class OperationDaemonControl(PageFrame):
@@ -84,7 +85,11 @@ class OperationDaemonControl(PageFrame):
             opdaemon.refresh()
 
     def render(self):
-        opdaemon = self.getApplication().getLocalObjectById(self.operationdaemonId)
+        try:
+            opdaemon = self.getApplication().getLocalObjectById(self.operationdaemonId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+            return
         status = opdaemon.getStatus()
         if status:
             self.opdStatusDisplay.set_markup('<span color="#00ff00">Active</span>')
