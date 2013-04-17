@@ -233,7 +233,7 @@ class ExpectedErrorHandler(gtk.MessageDialog):
         self.open = False
 
         self.knownExceptions = {
-            ScovilleRepositoryException
+                ScovilleRepositoryException : 1
             }
 
         self.add_button (gtk.STOCK_OK, gtk.RESPONSE_CLOSE)

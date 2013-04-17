@@ -426,6 +426,23 @@ class Rpc(object):
         errorlog = template_manager.install_from_data(templatedata)
         return errorlog
 
+    def installTemplateFromRepo(self, params):
+        repo_template_id = int(params[0])
+        template_manager = self._core.get_template_manager()
+        errorlog = template_manager.install_from_repo(repo_template_id)
+        return errorlog
+
+    def refreshAvailableTemplates(self, params):
+        template_manager = self._core.get_template_manager()
+        templates = template_manager.fetch_templates_for_gui()
+        ret = [{
+                'id':t['id'],
+                'name':t['name'],
+                'description':t['description']
+                'author':t['author']
+              } for t in templates]
+        return ret
+
     def createWidget(self,params):
         module_id = int(params[0])
         new_widget_name = str(params[1])
@@ -588,7 +605,7 @@ class Rpc(object):
                         "url":action.get_url(),
                         "widgetId":action.get_widget_id(),
                         "space":action.get_space(),
-                        "siteId":action.get_page_id(),
+                        "viewId":action.get_view_id(),
                         "order":action.get_order(),
                         "type":action.get_type()})
         return ret
@@ -668,13 +685,13 @@ class Rpc(object):
         action.set_widget_space_constellation(widget_id, space)
         return 0
 
-    def setActionSite(self, params):
+    def setActionView(self, params):
         action_id = int(params[0])
-        page_id = int(params[1])
+        view_id = int(params[1])
 
         action_manager = self._core.get_action_manager()
         action = action_manager.get_action_by_id(action_id)
-        action.set_page_id(page_id)
+        action.set_view_id(view_id)
         return 0
 
     def renameMenu(self, params):

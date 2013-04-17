@@ -276,7 +276,7 @@ class ActionWidgetConfig(gtk.Table):
         
         self.radio_url = gtk.RadioButton(None, "URL:")
         self.radio_widgetSpaceConstellation = gtk.RadioButton(self.radio_url, "Widget into Space:")
-        self.radio_site = gtk.RadioButton(self.radio_url, "Other Site:")
+        self.radio_view = gtk.RadioButton(self.radio_url, "Other View:")
         
         spaceCount = action.getActionList().getMenuItem().getMenu().getSite().getSpaceCount()
         
@@ -286,15 +286,15 @@ class ActionWidgetConfig(gtk.Table):
                                      selectFirst=True,
                                      virtualRootObject=action.getActionList().getMenuItem().getMenu().getSite().getScoville())
         self.entry_space = SpaceCombo(self,action.getActionList().getMenuItem().getMenu().getSite())
-        self.entry_site = ObjectCombo(self, 
-                                   "Site",
+        self.entry_view = ObjectCombo(self, 
+                                   "View",
                                    selectFirst=True,
                                    virtualRootObject=action.getActionList().getMenuItem().getMenu().getSite().getScoville())
         self.entry_url.connect("focus-in-event",self.focusCallback)
         self.entry_widget.connect("popup",self.focusCallback)
         self.entry_widget.connect("changed",self.focusCallback)
         self.entry_space.connect("focus-in-event",self.focusCallback)
-        self.entry_site.connect("popup",self.focusCallback)
+        self.entry_view.connect("popup",self.focusCallback)
         self.entry_widget.connect("changed",self.focusCallback)
         
         self.deleteButton = gtk.Button(stock=gtk.STOCK_DELETE)
@@ -311,8 +311,8 @@ class ActionWidgetConfig(gtk.Table):
         self.attach(self.radio_widgetSpaceConstellation,0,1,1,2)
         self.attach(self.entry_widget,1,2,1,2)
         self.attach(self.entry_space,2,3,1,2)
-        self.attach(self.radio_site,0,1,2,3)
-        self.attach(self.entry_site,1,3,2,3)
+        self.attach(self.radio_view,0,1,2,3)
+        self.attach(self.entry_view,1,3,2,3)
         self.attach(self.deleteButton,0,1,3,4)
         self.attach(self.increaseOrderButton,1,2,3,4)
         self.attach(self.decreaseOrderButton,2,3,3,4)
@@ -337,18 +337,18 @@ class ActionWidgetConfig(gtk.Table):
             space=action.getSpaceId()
             self.entry_space.setSpaceId(space)
             self.entry_widget.setSelected(widget)
-        elif action.data['type'] == 'site':
-            self.radio_site.set_active(True)
-            site=action.getSite()
-            self.entry_site.setSelected(site)
+        elif action.data['type'] == 'view':
+            self.radio_view.set_active(True)
+            view=action.getView()
+            self.entry_view.setSelected(view)
     
     def focusCallback(self,widget=None,event=None):
         if widget == self.entry_url:
             self.radio_url.activate()
         elif widget == self.entry_space or widget == self.entry_widget:
             self.radio_widgetSpaceConstellation.activate()
-        elif widget == self.entry_site:
-            self.radio_site.activate()
+        elif widget == self.entry_view:
+            self.radio_view.activate()
         
     
     def deleteCallback(self, widget=None, data=None):
@@ -370,8 +370,8 @@ class ActionWidgetConfig(gtk.Table):
         elif self.radio_widgetSpaceConstellation.get_active():
             widget = self.entry_widget.getSelected()
             action.setWidgetSpaceConstellation(widget.getLocalId(),self.entry_space.getSpaceId())
-        elif self.radio_site.get_active():
-            action.setSite(self.entry_site.getSelected().getId())
+        elif self.radio_view.get_active():
+            action.setView(self.entry_view.getSelected().getLocalId())
     
     def getPar(self):
         return self.par

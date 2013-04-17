@@ -150,6 +150,8 @@ class View(object):
         with the given name. If there is, creates it
         with the data that can be retrieved from the database
         """
+        if len(name) > 128:
+            return None # Prevents DB-Error. Change VIE_NAME in scvdb.sql too if changing here
         db = cls._core.get_db()
         stmnt = "SELECT VIE_ID, VIE_SIT_ID, VIE_DEFAULT FROM VIEWS WHERE VIE_NAME = ? ;"
         cur = db.query(cls._core, stmnt, (str(name),))
@@ -359,27 +361,19 @@ class View(object):
         """
         db = self._core.get_db()
         stmnt_params = []
-        stmnt_firstloopdone = False
-        stmnt = "SELECT COUNT(VIW_VIE_ID) AS CNT, VIW_VIE_ID FROM VIEWWIDGETS INNER JOIN VIEWS WHERE "
+        stmnt = "SELECT COUNT(VIW_VIE_ID) AS CNT, VIW_VIE_ID FROM VIEWWIDGETS INNER JOIN VIEWS ON VIW_VIE_ID = VIE_ID WHERE 1=0"
         for space_id , widget_id in self._space_widget_mapping.items():
-            if not stmnt_firstloopdone:
-                stmnt += " VIW_SPA_ID = ? AND VIW_WGT_ID = ? AND VIE_SIT_ID = ? "
-                stmnt_firstloopdone = True
             stmnt += " OR VIW_SPA_ID = ? AND VIW_WGT_ID = ? AND VIE_SIT_ID = ? "
             stmnt_params.extend((space_id, widget_id, self._page))
-        stmnt += " ORDER BY VIW_VIE_ID ;"
+        stmnt += " GROUP BY VIW_VIE_ID ;"
 
         stmnt2_params = []
-        stmnt2_firstloopdone = False
-        stmnt2 = "SELECT COUNT(VWP_VIE_ID) AS CNT, VWP_VIE_ID FROM VIEWWIDGETPARAMS INNER JOIN VIEWS WHERE "
+        stmnt2 = "SELECT COUNT(VWP_VIE_ID) AS CNT, VWP_VIE_ID FROM VIEWWIDGETPARAMS INNER JOIN VIEWS ON VWP_VIE_ID = VIE_ID WHERE 1=0"
         for wgt_id, params in self._widget_param_mapping.items():
             for key, value in params.items():
-                if not stmnt2_firstloopdone:
-                    stmnt2 += " VWP_WGT_ID = ? AND VWP_KEY = ? AND VWP_VALUE = ? AND VIE_SIT_ID = ? "
-                    stmnt2_firstloopdone = True
                 stmnt2 += " OR VWP_WGT_ID = ? AND VWP_KEY = ? AND VWP_VALUE = ? AND VIE_SIT_ID = ? "
                 stmnt2_params.extend((wgt_id, key, value, self._page))
-        stmnt2 += "ORDER BY VWP_VIE_ID ;"
+        stmnt2 += " GROUP BY VWP_VIE_ID ;"
 
         db_param_mappingcounts = {}
 
@@ -398,12 +392,13 @@ class View(object):
                 view_paramcount = 0
                 for wgt_id , params in self._widget_param_mapping.items():
                     view_paramcount += len(params)
-                if db_param_mappingcounts[row["VIW_VIE_ID"]] == view_paramcount:
+                if (db_param_mappingcounts.has_key(row["VIW_VIE_ID"]) and db_param_mappingcounts[row["VIW_VIE_ID"]] == view_paramcount) \
+                        or len(db_param_mappingcounts) == 0:
                     possible_views.append(row["VIW_VIE_ID"])
 
         if len(possible_views) > 0:
             stmnt= "SELECT VIE_NAME FROM VIEWS WHERE VIE_ID = ? ;"
-            cur = db.query(self._core, stmnt, (possible_views[0]))
+            cur = db.query(self._core, stmnt, (possible_views[0],))
             row = cur.fetchonemap()
             return row["VIE_NAME"]
         else:

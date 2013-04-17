@@ -41,7 +41,8 @@ class ModuleCoreException(Exception):
         4:"""Can't delete Repo with null-id! """,
         5:"""Module already exists!""",
         6:"""This module does not exist""",
-        7:"""This widget does not exist"""
+        7:"""This widget does not exist""",
+        8:"""Template Signature is not valid! Packet may be compromised"""
     }
 
     @classmethod
@@ -708,6 +709,21 @@ class Repository(object):
         datafile.write(data)
         datafile.close()
         return datapath
+
+    def download_template(self, nr):
+        """
+        downloads a template, verifies its signature and returns its data
+        """
+        result = self._http_call({'c':9,'id':int(nr)})
+        data = base64.b64decode(result['r'])
+        if not self.verify_module(data, result['signature']):
+            raise ModuleCoreException(ModuleCoreException.get_msg(3))
+        else:
+            return data
+
+    def get_all_templates(self):
+        result = self._http_call({'c':8})
+        return result['r']
 
     def store(self):
         """

@@ -41,6 +41,10 @@ class Modules(GenericScovilleObject):
                 self.addChild(Module(self,module))
             else:
                 self.getModuleByName(module['name']).refresh(module)
+        result_modulenames = [m['name'] for m in data]
+        for module in self.children:
+            if module.getModuleName() not in result_modulenames:
+                self.removeChild(module)
         self.updated()       
     
     def getModuleByName(self,name):

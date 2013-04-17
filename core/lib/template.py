@@ -91,6 +91,18 @@ class Template(object):
         return tpl
 
     @classmethod
+    def fetch_templates_for_gui(cls):
+        repository = cls._core.get_module_manager().get_repository()
+        data = repository.get_all_templates()
+        return data
+
+    @classmethod
+    def install_from_repo(cls, nr):
+        repository = cls._core.get_module_manager().get_repository()
+        data = repository.download_template(nr)
+        return cls.install_from_data(data)
+
+    @classmethod
     def install_from_data(cls, data):
         """
         Receives .tar.gz'ed data and generates templatedata from it

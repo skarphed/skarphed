@@ -30,6 +30,7 @@ import gtk
 from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from data.Generic import GenericObjectStoreException
+from gui.YesNoDialog import YesNoDialog
 
 class Scoville_repoPage (GenericObjectPage):
     def __init__(self,par,repo):
@@ -44,23 +45,54 @@ class Scoville_repoPage (GenericObjectPage):
         self.moduleFrame.add(self.moduleList)
         self.pack_start(self.moduleFrame,False)
         
-        self.uploadFrame=PageFrame(self, "Upload", IconStock.MODULE)
-        self.uploadbox = gtk.HBox()
-        self.uploadbox.set_border_width(10)
-        self.upload_label = gtk.Label("Please choose the module and click OK")
-        self.upload_filechoose = gtk.FileChooserButton("Select Template", None)
-        self.upload_filechoose.connect("file-set", self.fileChosen)
-        self.upload_filechoose.set_size_request(200,30)
-        self.upload_enter = gtk.Button(stock=gtk.STOCK_OK)
-        self.upload_enter.connect("clicked", self.uploadModule)
-        self.upload_dummy = gtk.Label("")
-        self.uploadbox.pack_start(self.upload_label,False)
-        self.uploadbox.pack_start(self.upload_filechoose,False)
-        self.uploadbox.pack_start(self.upload_enter,False)
-        self.uploadbox.pack_start(self.upload_dummy,True)
-        self.uploadFrame.add(self.uploadbox)
-        self.pack_start(self.uploadFrame,False)
+        self.mUploadFrame=PageFrame(self, "Upload Module", IconStock.MODULE)
+        self.mUploadbox = gtk.HBox()
+        self.mUploadbox.set_border_width(10)
+        self.mUpload_label = gtk.Label("Please choose the Module and click OK")
+        self.mUpload_filechoose = gtk.FileChooserButton("Select Module", None)
+        self.mUpload_filechoose.connect("file-set", self.moduleFileChosen)
+        self.mUpload_filechoose.set_size_request(200,30)
+        self.mUpload_enter = gtk.Button(stock=gtk.STOCK_OK)
+        self.mUpload_enter.connect("clicked", self.uploadModule)
+        self.mUpload_dummy = gtk.Label("")
+        self.mUploadbox.pack_start(self.mUpload_label,False)
+        self.mUploadbox.pack_start(self.mUpload_filechoose,False)
+        self.mUploadbox.pack_start(self.mUpload_enter,False)
+        self.mUploadbox.pack_start(self.mUpload_dummy,True)
+        self.mUploadFrame.add(self.mUploadbox)
+        self.pack_start(self.mUploadFrame,False)
         
+        self.templateFrame=PageFrame(self, "Templates", IconStock.TEMPLATE)
+        self.templateVBox = gtk.VBox()
+        self.templateButtonBox = gtk.HBox()
+        self.templateDeleteButton = gtk.Button(stock=gtk.STOCK_DELETE)
+        self.templateDummy = gtk.Label("")
+        self.templateList = TemplateList(self,repo)
+        self.templateVBox.pack_start(self.templateList,True)
+        self.templateVBox.pack_start(self.templateButtonBox,False)
+        self.templateButtonBox.pack_start(self.templateDummy,True)
+        self.templateButtonBox.pack_start(self.templateDeleteButton,False)
+        self.templateDeleteButton.connect("clicked",self.cb_DeleteTemplate)
+        self.templateFrame.add(self.templateVBox)
+        self.pack_start(self.templateFrame,False)
+        
+        self.tUploadFrame=PageFrame(self, "Upload Template", IconStock.TEMPLATE)
+        self.tUploadbox = gtk.HBox()
+        self.tUploadbox.set_border_width(10)
+        self.tUpload_label = gtk.Label("Please choose the Template and click OK")
+        self.tUpload_filechoose = gtk.FileChooserButton("Select Template", None)
+        self.tUpload_filechoose.connect("file-set", self.templateFileChosen)
+        self.tUpload_filechoose.set_size_request(200,30)
+        self.tUpload_enter = gtk.Button(stock=gtk.STOCK_OK)
+        self.tUpload_enter.connect("clicked", self.uploadTemplate)
+        self.tUpload_dummy = gtk.Label("")
+        self.tUploadbox.pack_start(self.tUpload_label,False)
+        self.tUploadbox.pack_start(self.tUpload_filechoose,False)
+        self.tUploadbox.pack_start(self.tUpload_enter,False)
+        self.tUploadbox.pack_start(self.tUpload_dummy,True)
+        self.tUploadFrame.add(self.tUploadbox)
+        self.pack_start(self.tUploadFrame,False)
+
         self.adminFrame= PageFrame(self, "Change Password", IconStock.CREDENTIAL)
         self.adminHBox = gtk.HBox()
         self.adminHBoxDummy = gtk.Label("")
@@ -136,6 +168,7 @@ class Scoville_repoPage (GenericObjectPage):
 
         self.adminFrame.set_visible(auth)
         self.developerFrame.set_visible(auth)
+        self.templateDeleteButton.set_visible(auth)
         self.moduleList.render()
         self.developerList.render()
     
@@ -148,6 +181,19 @@ class Scoville_repoPage (GenericObjectPage):
         else:
             pass #TODO: Implement error behaviour
 
+    def cb_DeleteTemplate(self,widget=None,data=None): 
+        def execute():
+            repo = self.getApplication().getLocalObjectById(self.repoId)
+            repo.deleteTemplate(self.templateToDelete)
+            self.templateToDelete = None
+        
+        selection = self.templateList.treeview.get_selection()
+        rowiter = selection.get_selected()[1]
+        nr = self.templateList.store.get_value(rowiter,4)
+        self.templateToDelete = nr
+        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Template from the Repository?", execute)
+
+
 
     def cb_Add(self,widget=None,data=None):
         name = self.developerNameEntry.get_text()
@@ -159,14 +205,20 @@ class Scoville_repoPage (GenericObjectPage):
         repo.registerDeveloper(name,fullName,publicKey)
         
     
-    def fileChosen(self, widget=None, data=None):
-        self.fileToUpload = widget.get_filename()
+    def moduleFileChosen(self, widget=None, data=None):
+        self.moduleFileToUpload = widget.get_filename()
     
+    def templateFileChosen(self, widget=None, data=None):
+        self.templateFileToUpload = widget.get_filename()
     
     def uploadModule(self,widget=None,data=None):
         repo = self.getApplication().getLocalObjectById(self.repoId)
-        repo.uploadModule(self.fileToUpload)
+        repo.uploadModule(self.moduleFileToUpload)
     
+    def uploadTemplate(self,widget=None,data=None):
+        repo = self.getApplication().getLocalObjectById(self.repoId)
+        repo.uploadTemplate(self.templateFileToUpload)
+
     def getPar(self):
         return self.par
     
@@ -253,3 +305,51 @@ class DeveloperList(gtk.ScrolledWindow):
     def getApplication(self):
         return self.getPar().getApplication()
         
+class TemplateList(gtk.ScrolledWindow):
+    def __init__(self, par, repo):
+        self.par = par
+        gtk.ScrolledWindow.__init__(self)
+        self.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
+        
+        self.treeview = gtk.TreeView()
+        self.store= gtk.ListStore(gtk.gdk.Pixbuf, str, str, str, int)
+        self.treeview.set_model(self.store)
+        self.repoId = repo.getLocalId()
+        
+        self.col_name = gtk.TreeViewColumn("Template")
+        self.col_description = gtk.TreeViewColumn("Description")
+        self.col_author = gtk.TreeViewColumn("Author")
+        self.ren_icon = gtk.CellRendererPixbuf()
+        self.ren_name = gtk.CellRendererText()
+        self.ren_description = gtk.CellRendererText()
+        self.ren_author = gtk.CellRendererText()
+        self.col_name.pack_start(self.ren_icon,False)
+        self.col_name.pack_start(self.ren_name,False)
+        self.col_description.pack_start(self.ren_description,True)
+        self.col_author.pack_start(self.ren_author,False)
+        self.col_name.add_attribute(self.ren_icon, 'pixbuf',0)
+        self.col_name.add_attribute(self.ren_name, 'text', 1)
+        self.col_description.add_attribute(self.ren_description, 'text', 2)
+        self.col_author.add_attribute(self.ren_author, 'text', 3)
+        self.treeview.append_column(self.col_name)
+        self.treeview.append_column(self.col_description)
+        self.treeview.append_column(self.col_author)
+        self.add(self.treeview)
+        
+        repo.addCallback(self.render)
+        self.show_all()
+        self.render()
+        
+    def render(self):
+        repo = self.getApplication().getLocalObjectById(self.repoId)
+        templates = repo.getTemplates()
+        
+        self.store.clear()
+        for template in templates:
+            self.store.append((IconStock.TEMPLATE,template['name'],template['description'],template['author'],template['id']))
+            
+    def getPar(self):
+        return self.par
+    
+    def getApplication(self):
+        return self.getPar().getApplication()

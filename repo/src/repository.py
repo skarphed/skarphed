@@ -454,6 +454,7 @@ class Repository(object):
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEV_PREFIX)
 
         # checks whether all dependencies are available
+        dependencies = []
         if 'dependencies' in manifest:
             dependencies = manifest['dependencies']
             missing = []
@@ -622,7 +623,7 @@ class Repository(object):
         environ['db'].query('INSERT INTO TEMPLATES (TMP_ID, TMP_NAME, TMP_DESCRIPTION, \
                 TMP_AUTHOR, TMP_SIGNATURE, TMP_DATA) VALUES (?,?,?,?,?,?);',
                 (tmp_id, manifest['name'], manifest['description'], manifest['author'],
-                repo_signature, base64.b64encode(data)), commit=True)
+                repo_signature, StringIO(base64.b64encode(data))), commit=True)
 
 
     def delete_template(self, environ, ident):
