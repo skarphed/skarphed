@@ -29,8 +29,11 @@ import json
 import gobject
 from Tracker import Tracker
 
+COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
 cookiejar = cookielib.LWPCookieJar()
-cookiejar.load('cookies.txt')
+
+if os.path.exists(COOKIEPATH):
+    cookiejar.load(COOKIEPATH)
 
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
 urllib2.install_opener(opener)
