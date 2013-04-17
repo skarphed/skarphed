@@ -371,7 +371,7 @@ class Repository(object):
         self.verify_admin(environ)
         
         try:
-            key = RSA.importKey(dev['DEV_PUBLICKEY'])
+            key = RSA.importKey(publickey)
         except (ValueError, IndexError, TypeError), e:
             raise create_repository_exception(RepositoryErrorCode.DEVELOPER_NO_VALID_KEY)
 
@@ -408,7 +408,7 @@ class Repository(object):
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
 
 
-    def _match_developer_signature(self, environ, signature):
+    def _match_developer_signature(self, environ, data, signature):
         cur = environ['db'].query('SELECT DEV_NAME, DEV_PUBLICKEY \
                 FROM DEVELOPER WHERE DEV_PUBLICKEY IS NOT NULL;')
         result = cur.fetchallmap()
@@ -432,7 +432,7 @@ class Repository(object):
         in order to provide module meta information.
         """
         # check if the signature matches a registered developer
-        dev_name = self._match_developer_signature(signature)
+        dev_name = self._match_developer_signature(environ, data, signature)
         
         # extract the module's manifest from the module's archive
         datafile = StringIO(data)
@@ -593,7 +593,7 @@ class Repository(object):
         """
 
         # check if the signature matches a registered developer
-        dev_name = self._match_developer_signature(signature)
+        dev_name = self._match_developer_signature(environ, data, signature)
 
         # extract the template's manifest from the template's archive
         datafile = StringIO(data)
