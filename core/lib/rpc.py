@@ -426,6 +426,23 @@ class Rpc(object):
         errorlog = template_manager.install_from_data(templatedata)
         return errorlog
 
+    def installTemplateFromRepo(self, params):
+        repo_template_id = int(params[0])
+        template_manager = self._core.get_template_manager()
+        errorlog = template_manager.install_from_repo(repo_template_id)
+        return errorlog
+
+    def refreshAvailableTemplates(self, params):
+        template_manager = self._core.get_template_manager()
+        templates = template_manager.fetch_templates_for_gui()
+        ret = [{
+                'id':t['id'],
+                'name':t['name'],
+                'description':t['description']
+                'author':t['author']
+              } for t in templates]
+        return ret
+
     def createWidget(self,params):
         module_id = int(params[0])
         new_widget_name = str(params[1])
