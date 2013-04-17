@@ -116,6 +116,10 @@ class GenericScovilleObject(object):
     def addChild(self,child):
         if child not in self.children:
             self.children.append(child)
+
+    def removeChild(self, child):
+        if child in self.children:
+            self.children.remove(child)
     
     def getPar(self):
         if self.par is None:
