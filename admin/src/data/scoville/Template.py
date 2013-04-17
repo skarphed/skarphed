@@ -29,17 +29,36 @@ class Template(GenericScovilleObject):
         GenericScovilleObject.__init__(self)
         self.par = parent
         self.data = data
+        self.data['available'] = []
+        self.getRepoTemplates()
         self.updated()
     
     def getName(self):
         return "Templates"
     
     def refresh(self,data):
-        self.data = data
+        self.data.update(data)
         self.getScoville().getSites().refresh()
         self.getScoville().getViews().refresh()
+        self.getRepoTemplates()
         self.updated()
     
+    def repoTemplatesCallback(self, json):
+        self.data['available'] = json
+        self.updated()
+
+    def getRepoTemplates(self):
+        self.getApplication().doRPCCall(self.getScoville(),self.repoTemplatesCallback, "refreshAvailableTemplates")
+
+    def getAvailableTemplates(self):
+        return self.data['available']
+
+    def installFromRepoCallback(self, res=None):
+        self.getRepoTemplates()
+
+    def installFromRepo(self, nr):
+        self.getApplication().doRPCCall(self.getScoville(),self.installFromRepoCallback, "installTemplateFromRepo", [nr])
+
     def getPar(self):
         return self.par
     

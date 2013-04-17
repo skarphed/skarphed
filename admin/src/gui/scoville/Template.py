@@ -33,6 +33,8 @@ from data.Generic import GenericObjectStoreException
 
 import gui.IconStock
 
+class TemplatePageException(Exception): pass
+
 class TemplatePage(GenericObjectPage):
     def __init__(self,parent,template):
         self.par = parent
@@ -78,27 +80,106 @@ class TemplatePage(GenericObjectPage):
         self.upload.add(self.uploadbox)
         self.pack_start(self.upload,False)
         
+        self.repo = PageFrame(self,"Install Template from Repository", gui.IconStock.TEMPLATE)
+        self.repoVBox = gtk.VBox()
+        self.repoButtonbox = gtk.HBox()
+        self.repoDummy = gtk.Label("")
+        self.repoInstallButton = gtk.Button("Install")
+        self.repoRefreshButton = gtk.Button(stock=gtk.STOCK_REFRESH)
+        self.repostore = gtk.ListStore(gtk.gdk.Pixbuf, str, str, str, int)
+        self.repotree = gtk.TreeView()
+        self.repotree.set_model(self.repostore)
+        self.reposcroll = gtk.ScrolledWindow()
+        self.reposcroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.repocol_name = gtk.TreeViewColumn("Template")
+        self.repocol_description = gtk.TreeViewColumn("Description")
+        self.repocol_author = gtk.TreeViewColumn("Author")
+        self.reporen_icon = gtk.CellRendererPixbuf()
+        self.reporen_name = gtk.CellRendererText()
+        self.reporen_description = gtk.CellRendererText()
+        self.reporen_author = gtk.CellRendererText()
+        self.repocol_name.pack_start(self.reporen_icon,False)
+        self.repocol_name.pack_start(self.reporen_name,False)
+        self.repocol_description.pack_start(self.reporen_description,True)
+        self.repocol_author.pack_start(self.reporen_author,False)
+        self.repocol_name.add_attribute(self.reporen_icon,'pixbuf',0)
+        self.repocol_name.add_attribute(self.reporen_name,'text',1)
+        self.repocol_description.add_attribute(self.reporen_description,'text',2)
+        self.repocol_author.add_attribute(self.reporen_author,'text',3)
+        self.repotree.append_column(self.repocol_name)
+        self.repotree.append_column(self.repocol_description)
+        self.repotree.append_column(self.repocol_author)
+        self.repotree.connect("row-activated",self.installRowCallback)
+        self.reposcroll.add(self.repotree)
+        self.repoButtonbox.pack_start(self.repoDummy,True)
+        self.repoButtonbox.pack_start(self.repoRefreshButton,False)
+        self.repoButtonbox.pack_start(self.repoInstallButton,False)
+        self.repoVBox.pack_start(self.reposcroll,True)
+        self.repoVBox.pack_start(self.repoButtonbox,False)
+        self.repoRefreshButton.connect("clicked",self.refreshAvailableTemplates)
+        self.repoInstallButton.connect("clicked",self.installButtonCallback)
+        self.repo.add(self.repoVBox)
+        self.pack_start(self.repo)
+
         template.addCallback(self.render)
         self.show_all()
         self.render()
     
+    def render(self):
+        try:
+            template = self.getApplication().getLocalObjectById(self.templateId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+
+        self.info_displayName.set_text(template.data['name'])
+        self.info_displayDescription.set_text(template.data['description'])
+        self.info_displayAuthor.set_text(template.data['author'])
+
+        self.repostore.clear()
+        for available_template in template.getAvailableTemplates():
+            self.repostore.append((gui.IconStock.TEMPLATE,
+                                   available_template['name'],
+                                   available_template['description'],
+                                   available_template['author'],
+                                   available_template['id']))
+        
     def fileChosen(self, widget=None, data=None):
         self.fileToUpload = widget.get_filename()
     
     def uploadTemplate(self, widget=None, data=None):
-        template = self.getApplication().getLocalObjectById(self.templateId)
+        try:
+            template = self.getApplication().getLocalObjectById(self.templateId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+
         if self.fileToUpload is not None and self.fileToUpload != "":
             template.getScoville().uploadTemplate(self.fileToUpload)
         else:
             raise Exception("No File specified")
-    
-    def render(self):
+
+    def installRowCallback(self,treeview=None,iter=None,path=None,data=None):
         try:
             template = self.getApplication().getLocalObjectById(self.templateId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.destroy()
             return
-        self.info_displayName.set_text(template.data['name'])
-        self.info_displayDescription.set_text(template.data['description'])
-        self.info_displayAuthor.set_text(template.data['author'])
-        
+
+        selection = self.repotree.get_selection()
+        rowiter = selection.get_selected()[1]
+        if rowiter is None:
+            raise TemplatePageException("You must select a Template to install it")
+        nr = self.repostore.get_value(rowiter,4)
+        template.installFromRepo(nr)
+
+    def installButtonCallback(self,widget=None,data=None):
+        self.installRowCallback()
+
+    def refreshAvailableTemplates(self,widget=None,data=None):
+        try:
+            template = self.getApplication().getLocalObjectById(self.templateId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+        template.getRepoTemplates()
