@@ -23,7 +23,6 @@
 ###########################################################
 
 import os
-from urllib2 import quote
 from StringIO import StringIO
 
 from module import AbstractModule
@@ -62,9 +61,9 @@ class Module(AbstractModule):
 
         render = StringIO()
         for menu_item in menu_items:
-            link = quote(menu_item.get_action_list().render_link())
+            link = menu_item.get_action_list().render_link()
             name = menu_item.get_name()
-            render.write('&nbsp;<a href="/web/?%s">%s</a>'%(link, name))
+            render.write('&nbsp;<a href="%s">%s</a>'%(link, name))
             if content['orientation'] == Module.VERTICALLY:
                 render.write('<br>')
 

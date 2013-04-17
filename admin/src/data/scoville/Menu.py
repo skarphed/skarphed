@@ -321,10 +321,10 @@ class Action(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
                                         self.setNewTargetCallback,"setActionWidgetSpaceConstellation",[self.getId(),widget.getId(),space])
     
-    def setSite(self,siteId):
-        site = self.getApplication().getLocalObjectById(siteId)
+    def setView(self,viewId):
+        view = self.getApplication().getLocalObjectById(viewId)
         self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getScoville(),
-                                        self.setNewTargetCallback,"setActionSite",[self.getId(),site.getId()])
+                                        self.setNewTargetCallback,"setActionView",[self.getId(),view.getId()])
     
 
     def getSpaceId(self):
@@ -341,12 +341,6 @@ class Action(GenericScovilleObject):
 
     def getView(self):
         return self.getActionList().getMenuItem().getMenu().getSite().getScoville().getViews().getViewById(self.getViewId())
-    
-    def getSiteId(self):
-        return self.data['siteId']
-
-    def getSite(self):
-        return self.getActionList().getMenuItem().getMenu().getSite()
 
     def getPar(self):
         return self.par

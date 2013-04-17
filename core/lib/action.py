@@ -23,6 +23,7 @@
 ###########################################################
 
 from json import JSONEncoder
+from urllib2 import quote
 
 class ActionException(Exception):
     """
@@ -83,7 +84,7 @@ class Action(object):
         cls._core = core
 
     @classmethod
-    def create_action(cls, actionlist=None, page_id=None, url=None, widget_id = None, space_id = None):
+    def create_action(cls, actionlist=None, view_id=None, url=None, widget_id = None, space_id = None):
         """
         This method creates a new Action and returns it.
         You can create an action based on either:
@@ -97,10 +98,10 @@ class Action(object):
             return None
         action = Action(cls._core)
         action.set_action_list_id(actionlist.get_id())
-        if page_id is not None:
-            page =cls._core.get_composite_manager().get_page(page_id)
-            if page is not None:
-                action.set_page_id(page_id)
+        if view_id is not None:
+            view =cls._core.get_view_manager().get_from_id(view_id)
+            if view is not None:
+                action.set_view_id(view_id)
             else:
                 return None
         elif url is not None:
@@ -125,10 +126,10 @@ class Action(object):
         action.set_id(new_id)
         action.set_order(new_order)
         stmnt = "INSERT INTO ACTIONS (ACT_ID, ACT_NAME, ACT_ATL_ID, \
-                                      ACT_SIT_ID, ACT_SPA_ID, ACT_WGT_ID, ACT_URL, ACT_ORDER) \
+                                      ACT_VIE_ID, ACT_SPA_ID, ACT_WGT_ID, ACT_URL, ACT_ORDER) \
                               VALUES (?,?,?,?,?,?,?,?) ;"
         db.query(cls._core , stmnt, (action.get_id(), action.get_name(), action.get_action_list_id(),
-                                     action.get_page_id(), action.get_space(), action.get_widget_id(),
+                                     action.get_view_id(), action.get_space(), action.get_widget_id(),
                                      action.get_url(), action.get_order()),commit=True)
         return action
 
@@ -140,15 +141,15 @@ class Action(object):
         If the action does not exist this returns null 
         """
         db = cls._core.get_db()
-        stmnt = "SELECT ACT_NAME, ACT_ATL_ID, ACT_SIT_ID, \
+        stmnt = "SELECT ACT_NAME, ACT_ATL_ID, ACT_VIE_ID, \
                      ACT_SPA_ID, ACT_WGT_ID, ACT_URL, ACT_ORDER \
                  FROM ACTIONS WHERE ACT_ID = ?;"
         cur = db.query(cls._core,stmnt, (action_id,))
         row = cur.fetchonemap()
         if row is not None:
             action = Action(cls._core)
-            if row["ACT_SIT_ID"] is not None:
-                action.set_page_id(row["ACT_SIT_ID"],True)
+            if row["ACT_VIE_ID"] is not None:
+                action.set_view_id(row["ACT_VIE_ID"],True)
             if row["ACT_URL"] is not None:
                 action.set_url(row["ACT_URL"], True)
             if row["ACT_WGT_ID"] is not None and row["ACT_SPA_ID"] is not None:
@@ -170,7 +171,7 @@ class Action(object):
         self._widget_id = None
         self._space_id = None
 
-        self._page_id = None
+        self._view_id = None
         self._url = None
 
         self._name = None
@@ -325,11 +326,11 @@ class Action(object):
         self._url = url
         self._widget_id = None
         self._space_id = None
-        self._page_id = None
+        self._view_id = None
 
         if not ignore_db:
             db = self._core.get_db()
-            stmnt = "UPDATE ACTIONS SET ACT_URL = ?, ACT_SIT_ID = NULL, \
+            stmnt = "UPDATE ACTIONS SET ACT_URL = ?, ACT_VIE_ID = NULL, \
                      ACT_WGT_ID = NULL, ACT_SPA_ID = NULL WHERE ACT_ID = ?;"
             db.query(self._core, stmnt, (self.get_url(),self.get_id()),commit=True)
 
@@ -353,22 +354,22 @@ class Action(object):
             self._widget_id = int(widget_id)
             self._space_id = int(space_id)
             self._url = None
-            self._page_id = None
+            self._view_id = None
 
         if not ignore_db:
             db = self._core.get_db()
-            stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = NULL, \
+            stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_VIE_ID = NULL, \
                      ACT_WGT_ID = ?, ACT_SPA_ID = ? WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt, (self.get_widget_id(), self.get_space(), self.get_id()),commit=True)
 
-    def set_page_id(self, page_id, ignore_db = False):
+    def set_view_id(self, view_id, ignore_db = False):
         """
-        Make This action a Page-Link that links
-        to another Scoville-Page.
+        Make this a View-Link that links to another
+        Scoville-View
         Resets Widget/Page- and URL-Linkattributes
         """
-        if self._core.get_composite_manager().get_page(page_id) is not None:
-            self._page_id = int(page_id)
+        if self._core.get_view_manager().get_from_id(view_id) is not None:
+            self._view_id = int(view_id)
             self._widget_id = None
             self._space_id = None
             self._url = None
@@ -377,15 +378,15 @@ class Action(object):
 
         if not ignore_db:
             db = self._core.get_db()
-            stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_SIT_ID = ?, \
+            stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_VIE_ID = ?, \
                      ACT_WGT_ID = NULL, ACT_SPA_ID = NULL WHERE ACT_ID = ? ;"
-            db.query(self._core,stmnt,(self.get_page_id(),self.get_id()),commit=True)
+            db.query(self._core,stmnt,(self.get_view_id(),self.get_id()),commit=True)
 
     def unset_links(self):
         """
         Resets all links that are represented by this Action
         """
-        self._page_id = None
+        self._view_id = None
         self._widget_id = None
         self._space_id = None
         self._url = None
@@ -393,23 +394,23 @@ class Action(object):
     def get_widget_id(self):
         """
         Returns The widgetId assigned to This Action (only set when in Widget/Space-Mode)
-        otherwise null
+        otherwise None
         """
         return self._widget_id
 
     def get_space(self):
         """
         Returns The Space assigned to this Action (only set when in Widget/Space-Mode)
-        otherwise null
+        otherwise None
         """
         return self._space_id
 
-    def get_page_id(self):
+    def get_view_id(self):
         """
-        Returns the Page-ID of the site assigned to this Action (only in Page-Mode)
-        otherwise null
+        Returns the View-ID of the site assigned to this Action (only in View-Mode)
+        otherwise None
         """
-        return self._page_id
+        return self._view_id
 
     def get_url(self):
         """
@@ -428,8 +429,8 @@ class Action(object):
             return 'url'
         elif self._widget_id is not None and self._space_id is not None:
             return 'widgetSpaceConstellation'
-        elif self._page_id is not None:
-            return 'site'
+        elif self._view_id is not None:
+            return 'view'
         else:
             return None
 
@@ -614,12 +615,21 @@ class ActionList(object):
             for action in self.get_actions():
                 if action.get_url() is not None:
                     return action.get_url()
-                elif action.get_page_id() is not None:
-                    pass #TODO: Build "other view"-feature instead of "other page"-feature!
+                elif action.get_view_id() is not None:
+                    view = self._core.get_view_manager().get_from_id(action.get_view_id())
+                    name = view.get_name()
+                    return "/web/"+quote(name)
                 elif action.get_space() is not None and action.get_widget_id() is not None:
                     target['v'][action.get_space()] = action.get_widget_id()
+
             encoder = JSONEncoder()
-            return encoder.encode(target)
+            viewjsonstring = quote(encoder.encode(target))
+            checkview = view_manager.get_from_json(viewjsonstring)
+            existing_name = checkview.check_has_name()
+            if existing_name == False:
+                return "/web/?"+viewjsonstring
+            else:
+                return "/web/"+existing_name
 
 class MenuItem(object):
     """
@@ -1106,8 +1116,8 @@ class Menu(object):
         Returns the page this Menu belongs To
         """
         if self._page is None or self._page.get_id() != self._page_id:
-            composite_manager = self._core.get_composite_manager()
-            self._page = composite_manager.get_page(self._page_id)
+            page_manager = self._core.get_page_manager()
+            self._page = page_manager.get_page(self._page_id)
         return self._page
 
     def get_page_id(self):
