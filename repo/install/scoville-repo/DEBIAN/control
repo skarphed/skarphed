@@ -1,7 +1,7 @@
 Package: scoville-repo
 Priority: optional
 Section: web
-Installed-Size: 208
+Installed-Size: 204
 Maintainer: Andre Kupka <kupka@in.tum.de>
 Architecture: all
 Version: 0.1

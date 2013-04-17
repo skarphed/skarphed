@@ -371,7 +371,7 @@ class Repository(object):
         self.verify_admin(environ)
         
         try:
-            key = RSA.importKey(dev['DEV_PUBLICKEY'])
+            key = RSA.importKey(publickey)
         except (ValueError, IndexError, TypeError), e:
             raise create_repository_exception(RepositoryErrorCode.DEVELOPER_NO_VALID_KEY)
 
