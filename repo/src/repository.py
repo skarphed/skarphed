@@ -408,15 +408,9 @@ class Repository(object):
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
 
 
-    def upload_module(self, environ, data, signature):
-        """
-        Uploads a modules. data is the module's archive. It must contain a manifest.json file
-        in order to provide module meta information.
-        """
-
-        # check if the signature matches a registered developer
+    def _match_developer_signature(self, environ, signature):
         cur = environ['db'].query('SELECT DEV_NAME, DEV_PUBLICKEY \
-                FROM DEVELOPER;')
+                FROM DEVELOPER WHERE DEV_PUBLICKEY IS NOT NULL;')
         result = cur.fetchallmap()
         valid = False
         hashobj = SHA256.new(data)
@@ -429,6 +423,16 @@ class Repository(object):
                 break;
         if not valid:
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_INVALID_SIGNATURE)
+        return dev_name
+
+
+    def upload_module(self, environ, data, signature):
+        """
+        Uploads a modules. data is the module's archive. It must contain a manifest.json file
+        in order to provide module meta information.
+        """
+        # check if the signature matches a registered developer
+        dev_name = self._match_developer_signature(signature)
         
         # extract the module's manifest from the module's archive
         datafile = StringIO(data)
@@ -588,20 +592,7 @@ class Repository(object):
         """
 
         # check if the signature matches a registered developer
-        cur = environ['db'].query('SELECT DEV_NAME, DEV_PUBLICKEY \
-                FROM DEVELOPER;')
-        result = cur.fetchallmap()
-        valid = False
-        hashobj = SHA256.new(data)
-        for dev in result:
-            key = RSA.importKey(dev['DEV_PUBLICKEY'])
-            verifier = PKCS1_v1_5.new(key)
-            valid = verifier.verify(hashobj, signature)
-            if valid:
-                dev_name = dev['DEV_NAME']
-                break;
-        if not valid:
-            raise create_repository_exception(RepositoryErrorCode.UPLOAD_INVALID_SIGNATURE)
+        dev_name = self._match_developer_signature(signature)
 
         # extract the template's manifest from the template's archive
         datafile = StringIO(data)
