@@ -82,6 +82,10 @@ class ScovilleRepository(threading.Thread):
                 3 : 'resolveDependenciesDownwards',
                 4 : 'resolveDependenciesUpwards',
                 5 : 'downloadModule',
+                6 : 'getPublicKey',
+                7 : 'getLatestVersion',
+                8 : 'getAllTemplates',
+                9 : 'downloadTemplate',
                 100 : 'authenticate',
                 101 : 'logout',
                 102 : 'changePassword',
@@ -89,12 +93,14 @@ class ScovilleRepository(threading.Thread):
                 104 : 'unregisterDeveloper',
                 105 : 'uploadModule',
                 106 : 'deleteModule',
-                107 : 'getDevelopers'}
-    
-    HEADERS = { 'Accept-Language':'en-us,en;q=0.5',        
-                'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7', 
+                107 : 'getDevelopers',
+                108 : 'uploadTemplate',
+                109 : 'deleteTemplate'}
+
+    HEADERS = { 'Accept-Language':'en-us,en;q=0.5',
+                'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
                 'Content-Type':'application/json; charset=UTF-8',
-                'Keep-Alive':'300', 
+                'Keep-Alive':'300',
                 'Pragma':'no-cache, no-cache',
                 'Cache-Control':'no-cache, no-cache',
                 'Connection':'Keep-Alive',

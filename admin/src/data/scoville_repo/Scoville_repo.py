@@ -49,7 +49,7 @@ class Scoville_repo(Instance):
         self.state = self.STATE_OFFLINE
         self.loggedin = self.SCV_LOCKED
         self.load = self.LOADED_NONE
-        self.data = {'modules':[], 'developers':[]}
+        self.data = {'modules':[], 'developers':[], 'templates':[]}
         
         self.url = url
         self.username = username
@@ -84,6 +84,7 @@ class Scoville_repo(Instance):
         if self.loggedin == self.SCV_UNLOCKED:
             self.loadDevelopers()
         self.loadModules()
+        self.loadTemplates()
         self.updated()
         
     def authenticate(self):
@@ -96,12 +97,30 @@ class Scoville_repo(Instance):
             if module['name'] not in modulenames:
                 self.data['modules'].append(module)
         self.updated()       
-    
+
+    def loadTemplatesCallback(self,result):
+        result = result['r']
+        template_ids = [t['id'] for t in self.data['templates']]
+        for template in result:
+            if template['id'] not in template_ids:
+                self.data['templates'].append(template)
+        res_template_ids = [t['id'] for t in result]
+        for template in self.data['templates']:
+            if template['id'] not in res_template_ids:
+                self.data['templates'].remove(template)
+        self.updated()
+
     def loadModules(self):
         ScovilleRepository(self, {'c':1}, self.loadModulesCallback).start()
     
+    def loadTemplates(self):
+        ScovilleRepository(self, {'c':8}, self.loadTemplatesCallback).start()
+
     def getModules(self):
         return self.data['modules']
+
+    def getTemplates(self):
+        return self.data['templates']
     
     def loadDevelopersCallback(self, result):
         result = result['r']
@@ -156,7 +175,29 @@ class Scoville_repo(Instance):
         signature = base64.encodestring(signature)
         
         ScovilleRepository(self, {'c':105,'data':base64.encodestring(data), 'signature':signature}, self.moduleCallback).start()
+
+    def templateCallback(self,result):
+        self.loadTemplates()
+    
+    def uploadTemplate(self, filepath):
+        privatekey = self.getApplication().activeProfile.getPrivateKey()
         
+        moduleFile = open(filepath,'r')
+        data = moduleFile.read()
+        moduleFile.close()
+        
+        key = RSA.importKey(privatekey)
+        dataHash = SHA256.new(data)
+        signer = PKCS1_v1_5.new(key)
+        signature = signer.sign(dataHash)
+        signature = base64.encodestring(signature)
+        
+        ScovilleRepository(self, {'c':108,'data':base64.encodestring(data), 'signature':signature}, self.templateCallback).start()
+    
+    def deleteTemplate(self, template_id):
+        ScovilleRepository(self, {'c':109,'id':int(template_id)}, self.templateCallback).start()    
+
+    #TODO: Check if legacy or needed
     def deleteModule(self,moduleName):
         ScovilleRepository(self, {'c':106,'moduleIdentifier':moduleName}, self.moduleCallback).start()
     
