@@ -50,6 +50,8 @@ class TemplateManager(object):
         self.get_current_template = Template.get_current_template
         self.install_from_data = Template.install_from_data
         self.is_template_installed = Template.is_template_installed
+        self.fetch_templates_for_gui = Template.fetch_templates_for_gui
+        self.install_from_repo = Template.install_from_repo
 
 
 
@@ -99,6 +101,7 @@ class Template(object):
     @classmethod
     def install_from_repo(cls, nr):
         repository = cls._core.get_module_manager().get_repository()
+        cls._core.log("LE TEMPLATE: "+str(nr))
         data = repository.download_template(nr)
         return cls.install_from_data(data)
 
