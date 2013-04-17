@@ -1,0 +1,42 @@
+#!/bin/sh
+
+echo "Installing python dependencies via pip ..."
+pip install pycrypto
+pip install fdb
+
+echo "Setting firebird SYSDBA user ..."
+
+dpkg-reconfigure firebird2.5-super
+
+echo "Setting up firebird database ..."
+echo "Please enter your SYSDBA password:"
+
+read password
+echo "add SCVREPO -pw $password" | gsec -user SYSDBA -pass $password 2> /dev/null
+echo $(pwd)
+cd "/var/lib/firebird/2.5/data/"
+echo $(pwd)
+cat "/tmp/repo_database.sql" | isql-fb -user SYSDBA -pass $password 2> /dev/null
+rm "/tmp/repo_database.sql"
+
+echo "Configure Scoville Repository ..."
+
+repoconf="/etc/scvrepo/config.json"
+mkdir -p /etc/scvrepo
+
+conf=$(sed "s/test/${password}/" $repoconf)
+echo $conf > $repoconf
+
+#echo '{' > $repoconf
+#echo '  "db.ip":"127.0.0.1",' >> $repoconf
+#echo '  "db.name":"scvrepo.fdb",' >> $repoconf
+#echo '  "db.user":"scvrepo",' >> $repoconf
+#echo "  \"db.password\":\"$password\"," >> $repoconf
+#echo '  "session.expires":"7200",' >> $repoconf
+#echo '}' >> $repoconf
+
+echo "Setting up Apache ..."
+rm "/etc/apache2/sites-enabled/000-default"
+/etc/init.d/apache2 restart
+
+echo "WARNING: Change your repository password via Admin GUI as soon as possible!"
