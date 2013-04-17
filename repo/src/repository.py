@@ -451,6 +451,7 @@ class Repository(object):
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEV_PREFIX)
 
         # checks whether all dependencies are available
+        dependencies = []
         if 'dependencies' in manifest:
             dependencies = manifest['dependencies']
             missing = []
