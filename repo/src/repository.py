@@ -399,14 +399,13 @@ class Repository(object):
                 WHERE DEV_ID = ?;', dev_id, commit=True)
 
 
-    def _check_manifest(self, manifest):
+    def _check_manifest(self, manifest, keys):
         """
-        Checks whether a modules manifest.json is valid. If not, an exception will be thrown.
+        Checks whether a manifest.json is valid. If not, an exception will be thrown.
         """
-        has_keys = all([manifest.has_key(key) for key in ['name', 'hrname', 'version_major', 'version_minor']])
+        has_keys = all([manifest.has_key(key) for key in keys])
         if not has_keys:
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
-        # TODO check tables, dependencies (and permissions?)
 
 
     def upload_module(self, environ, data, signature):
@@ -416,7 +415,7 @@ class Repository(object):
         """
 
         # check if the signature matches a registered developer
-        cur = environ['db'].query('SELECT DEV_ID, DEV_NAME, DEV_PUBLICKEY \
+        cur = environ['db'].query('SELECT DEV_NAME, DEV_PUBLICKEY \
                 FROM DEVELOPER;')
         result = cur.fetchallmap()
         valid = False
@@ -442,7 +441,7 @@ class Repository(object):
         # checks whether the manifest is a valid json a contains all necessary keys
         try:
             manifest = json.loads(manifestdata)
-            self._check_manifest(manifest)
+            self._check_manifest(manifest, ['name', 'hrname', 'version_major', 'version_minor'])
         except Exception, e:
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
 
@@ -581,6 +580,67 @@ class Repository(object):
                         'name' : d['DEV_NAME'],
                         'fullName' : d['DEV_FULLNAME']} for d in result]
         return developers
+
+
+    def upload_template(self, environ, data, signature):
+        """
+        Uploads a templates. data is the templates's archive. It must contain a manifest.json file
+        in order to provide template meta information.
+        """
+
+        # check if the signature matches a registered developer
+        cur = environ['db'].query('SELECT DEV_NAME, DEV_PUBLICKEY \
+                FROM DEVELOPER;')
+        result = cur.fetchallmap()
+        valid = False
+        hashobj = SHA256.new(data)
+        for dev in result:
+            key = RSA.importKey(dev['DEV_PUBLICKEY'])
+            verifier = PKCS1_v1_5.new(key)
+            valid = verifier.verify(hashobj, signature)
+            if valid:
+                dev_name = dev['DEV_NAME']
+                break;
+        if not valid:
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_INVALID_SIGNATURE)
+
+        # extract the template's manifest from the template's archive
+        datafile = StringIO(data)
+        try:
+            tar = tarfile.open(fileobj = datafile, mode = 'r:gz') 
+            manifestdata = tar.extractfile('manifest.json').read()
+        except Exception, e:
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_CORRUPTED)
+
+        # checks whether the manifest is a valid json a contains all necessary keys
+        try:
+            manifest = json.loads(manifestdata)
+            self._check_manifest(manifest, ['name', 'description', 'author'])
+        except Exception, e:
+            raise create_repository_exception(RepositoryErrorCode.UPLOAD_MANIFEST)
+
+        # generates a new template id and sign the template with the repositories
+        # private key
+        tmp_id = environ['db'].get_seq_next('TMP_GEN')
+
+        key = RSA.importKey(self.get_private_key(environ))
+        hashobj = SHA256.new(data)
+        signer = PKCS1_v1_5.new(key)
+        repo_signature = base64.b64encode(signer.sign(hashobj))
+
+        # stores the new template in the database
+        environ['db'].query('INSERT INTO TEMPLATES (TMP_ID, TMP_NAME, TMP_DESCRIPTION, \
+                TMP_AUTHOR, TMP_SIGNATURE, TMP_DATA) VALUES (?,?,?,?,?,?);',
+                (tmp_id, manifest['name'], manifest['description'], manifest['author'],
+                repo_signature, base64.b64encode(data)), commit=True)
+
+
+    def delete_template(self, environ, ident):
+        """
+        Removes a template from this repository
+        """
+        environ['db'].query('DELETE FROM TEMPLATES \
+                WHERE TMP_ID = ?;', ident, commit=True)
 
 
     def get_public_key(self, environ):

@@ -50,6 +50,7 @@ class CommandType:
     DELETE_MODULE = 106
     GET_DEVELOPERS = 107
     UPLOAD_TEMPLATE = 108
+    DELETE_TEMPLATE = 109
 
 class ProtocolHandler(object):
     """
@@ -180,6 +181,14 @@ class ProtocolHandler(object):
             return json.dumps({'r' : developers})
 
         elif c == CommandType.UPLOAD_TEMPLATE:
+            self.check_set(['data', 'signature'], 'Not valid data')
+            self.repository.upload_template(environ, base64.b64decode(self.subject['data']),
+                    base64.b64decode(self.subject['signature']))
+            return json.dumps({'r' : 0})
+
+        elif c == CommandType.DELETE_TEMPLATE:
+            self.check_set(['id'], 'Need template to delete')
+            self.repository.delete_template(environ, self.subject['id'])
             return json.dumps({'r' : 0})
 
         else:
