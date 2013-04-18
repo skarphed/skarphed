@@ -26,6 +26,8 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from data.Generic import GenericObjectStoreException
+
 class RegisterSchema(gtk.Window):
     def __init__(self,par,database):
         self.par = par
@@ -78,8 +80,9 @@ class RegisterSchema(gtk.Window):
         self.destroy()
 
     def render(self):
-        database = self.getApplication().getLocalObjectById(self.databaseId)
-        if database is None:
+        try:
+            database = self.getApplication().getLocalObjectById(self.databaseId)
+        except GenericObjectStoreException:
             self.destroy()
 
     def getPar(self):

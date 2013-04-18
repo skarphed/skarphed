@@ -140,12 +140,13 @@ class ServerPropertyWindow(gtk.Window):
         try:
             server = self.getApplication().getLocalObjectById(self.serverId)
         except GenericObjectStoreException:
-            server = None
-        if server is not None:
-            self.instStore.clear()
-            for instance in server.getInstances():
-                icon = SCOVILLE #TODO: Implement Icon
-                self.instStore.append((icon,instance.getName(),instance.getLocalId()))
+            self.destroy()
+            return
+    
+        self.instStore.clear()
+        for instance in server.getInstances():
+            icon = SCOVILLE #TODO: Implement Icon
+            self.instStore.append((icon,instance.getName(),instance.getLocalId()))
         
     def getPar(self):
         return self.par

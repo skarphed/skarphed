@@ -26,6 +26,8 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from data.Generic import GenericObjectStoreException
+
 from IconStock import CSS
 
 class CssEditor(gtk.Window):
@@ -80,7 +82,11 @@ class CssEditor(gtk.Window):
         obj.loadCssPropertySet()
     
     def closeCallback(self,widget=None,data=None):
-        obj = self.getApplication().getLocalObjectById(self.objId)
+        try:
+            obj = self.getApplication().getLocalObjectById(self.objId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
         self.getPar().closeCssEditor(obj)
     
     def saveCallback(self,widget=None,data=None):
@@ -105,7 +111,11 @@ class CssEditor(gtk.Window):
         obj.loadCssPropertySet()
         
     def render(self):
-        obj = self.getApplication().getLocalObjectById(self.objId)
+        try:
+            obj = self.getApplication().getLocalObjectById(self.objId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
         propertySet = obj.getCssPropertySet()
         self.store.clear()
         self.listview.model_selector.clear()

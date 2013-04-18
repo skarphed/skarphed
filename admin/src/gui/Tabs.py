@@ -46,7 +46,11 @@ class GenericPage(gtk.ScrolledWindow):
         self.render()
 
     def render(self):
-        obj = self.getApplication().getLocalObjectById(self.objId)
+        try:
+            obj = self.getApplication().getLocalObjectById(self.objId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
         self.labeltop.set_text(obj.getName())
 
     def getPar(self):

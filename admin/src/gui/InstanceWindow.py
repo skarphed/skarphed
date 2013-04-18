@@ -103,11 +103,15 @@ class InstanceWindow(gtk.Window):
             self.render()
     
     def render(self):
-        instance = self.getApplication().getLocalObjectById(self.instanceId)
-        if instance is not None:
-            self.urlEntry.set_text(instance.getUrl())
-            self.userEntry.set_text(instance.getUsername())
-            self.passEntry.set_text(instance.getPassword())
+        try:
+            instance = self.getApplication().getLocalObjectById(self.instanceId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+    
+        self.urlEntry.set_text(instance.getUrl())
+        self.userEntry.set_text(instance.getUsername())
+        self.passEntry.set_text(instance.getPassword())
     
     def getInstanceType(self,text):
         for instanceType in self.instanceTypes:
