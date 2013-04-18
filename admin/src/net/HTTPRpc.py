@@ -54,8 +54,9 @@ class ScovilleRPC(threading.Thread):
         self.server = server
         self.callback = callback
         self.errorcallback = errorcallback
+        global cookiejar
+        self.cookiejar = cookiejar
         #TODO: Server Muss online sein! Check!
-        
         
         json_enc = json.JSONEncoder()
         
@@ -68,7 +69,6 @@ class ScovilleRPC(threading.Thread):
         
     def run(self):        
         json_dec = json.JSONDecoder()
-        
         
         try:
             answer = urllib2.urlopen(self.request)
@@ -85,9 +85,12 @@ class ScovilleRPC(threading.Thread):
                 gobject.idle_add(self.errorcallback,result)
         else:
             print result
-            gobject.idle_add(self.callback,result['result'])
-        
-        
-        
-        
-        
+            gobject.idle_add(self._callbackWrapper, self.callback,result['result'])
+
+    def _callbackWrapper(self, callback, result):
+        """
+        Wraps the callback, so there will be no concurrent write-operatons
+        on the COOKIEFILE
+        """
+        self.cookiejar.save(COOKIEPATH, ignore_discard=True, ignore_expires=True)
+        callback(result)

@@ -168,10 +168,7 @@ class Core(object):
         self.response_header = []
         if environment.has_key("HTTP_COOKIE"):
             session_manager =  self.get_session_manager()
-            cookies = environment["HTTP_COOKIE"].split("; ")
-            sessioncookie = cookies[0].split("=")
-            if sessioncookie[0] == "session_id":
-                session_manager.set_current_session(session_manager.get_session(sessioncookie[1]))
+            session_manager.set_current_session(session_manager.get_session(environment['HTTP_COOKIE']))
 
         try:
             request_body_size = int(environment.get('CONTENT_LENGTH', 0))
@@ -192,10 +189,7 @@ class Core(object):
         self.response_header = []
         if environment.has_key("HTTP_COOKIE"):
             session_manager =  self.get_session_manager()
-            cookies = environment["HTTP_COOKIE"].split("; ")
-            sessioncookie = cookies[0].split("=")
-            if sessioncookie[0] == "session_id":
-                session_manager.set_current_session(session_manager.get_session(sessioncookie[1]))
+            session_manager.set_current_session(session_manager.get_session(environment['HTTP_COOKIE']))
 
         view_manager = self.get_view_manager()
 

@@ -69,10 +69,15 @@ class Session(object):
         cls._core = core
 
     @classmethod
-    def get_session(cls,session_id):
+    def get_session(cls,cookies):
         """
         returns the session if it's not expired or nonexistant
         """
+        cookie = SimpleCookie(cookies)
+        session_id = cookie['session_id'].value
+
+        cls._core.log("SESSION_ID::"+session_id)
+        
         db = cls._core.get_db()
         stmnt = "SELECT SES_USR_ID, SES_EXPIRES FROM SESSIONS WHERE SES_ID = ? ;"
 
