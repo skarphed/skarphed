@@ -66,6 +66,7 @@ class ObjectStore(object):
         if type(obj) != str:
             obj = obj.__class__.__name__
         res = []
+        #TODO: Add performance by using parent.children if parent is set instead of ObjectStore.localObjects
         for element in ObjectStore.localObjects.values():
             if element.__class__.__name__ == obj:
                 if parent is not None and not element.isChildOf(parent):
@@ -77,9 +78,19 @@ class ObjectStore(object):
         return self.getAllOfClass("Server")
     
     def clear(self):
-        for element in ObjectStore.localObjects.keys():
-            if self.localObjects.has_key(element):
-                ObjectStore.localObjects[element].destroy()
+        """
+        TODO: Eventually linear object deletion causes the errors. recursive deletion should work
+        new plan: find all without parent, delete those ones recursively
+        """
+        rootelements = []
+        for element in ObjectStore.localObjects.values():
+            try:
+                par = element.getPar()
+            except GenericObjectStoreException:
+                rootelements.append(element)
+
+        for element in rootelements:
+            element.destroy()
         ObjectStore.localIDcounter = 0
         self.updated()
         
