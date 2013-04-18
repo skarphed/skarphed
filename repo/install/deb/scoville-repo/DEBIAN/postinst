@@ -27,13 +27,10 @@ mkdir -p /etc/scvrepo
 conf=$(sed "s/test/${password}/" $repoconf)
 echo $conf > $repoconf
 
-#echo '{' > $repoconf
-#echo '  "db.ip":"127.0.0.1",' >> $repoconf
-#echo '  "db.name":"scvrepo.fdb",' >> $repoconf
-#echo '  "db.user":"scvrepo",' >> $repoconf
-#echo "  \"db.password\":\"$password\"," >> $repoconf
-#echo '  "session.expires":"7200",' >> $repoconf
-#echo '}' >> $repoconf
+echo "Generating key pair ..."
+keygen="/tmp/gen_keypair.py"
+python $keygen
+rm $keygen
 
 echo "Setting up Apache ..."
 rm "/etc/apache2/sites-enabled/000-default"
