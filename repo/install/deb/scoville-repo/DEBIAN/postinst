@@ -13,9 +13,7 @@ echo "Please enter your SYSDBA password:"
 
 read password
 echo "add SCVREPO -pw $password" | gsec -user SYSDBA -pass $password 2> /dev/null
-echo $(pwd)
 cd "/var/lib/firebird/2.5/data/"
-echo $(pwd)
 cat "/tmp/repo_database.sql" | isql-fb -user SYSDBA -pass $password 2> /dev/null
 rm "/tmp/repo_database.sql"
 
@@ -24,7 +22,7 @@ echo "Configure Scoville Repository ..."
 repoconf="/etc/scvrepo/config.json"
 mkdir -p /etc/scvrepo
 
-conf=$(sed "s/test/${password}/" $repoconf)
+conf=$(sed "s/placeholder/${password}/" $repoconf)
 echo $conf > $repoconf
 
 echo "Generating key pair ..."

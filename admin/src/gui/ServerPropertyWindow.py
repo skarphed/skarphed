@@ -53,12 +53,16 @@ class ServerPropertyWindow(gtk.Window):
         self.instructionlabel = gtk.Label("Please enter the Server credentials")
         self.vbox.pack_start(self.instructionlabel,False)
         
-        self.ipFrame = gtk.Frame("IP")
-        self.ipFrameT = gtk.Table(2,1,False)
+        self.ipFrame = gtk.Frame("Common")
+        self.ipFrameT = gtk.Table(2,2,False)
         self.ipFrame_IPLabel = gtk.Label("IP:")
         self.ipFrame_IPEntry = gtk.Entry()
         self.ipFrameT.attach(self.ipFrame_IPLabel, 0,1,0,1)
         self.ipFrameT.attach(self.ipFrame_IPEntry, 1,2,0,1)
+        self.ipFrame_NameLabel = gtk.Label("Name:")
+        self.ipFrame_NameEntry = gtk.Entry()
+        self.ipFrameT.attach(self.ipFrame_NameLabel, 0,1,1,2)
+        self.ipFrameT.attach(self.ipFrame_NameEntry, 1,2,1,2)
         self.ipFrame.add(self.ipFrameT)
         self.vbox.pack_start(self.ipFrame,False)
                 
@@ -130,6 +134,7 @@ class ServerPropertyWindow(gtk.Window):
         
         if server is not None:
             self.ipFrame_IPEntry.set_text(server.getIp())
+            self.ipFrame_NameEntry.set_text(server.getRawName())
             self.sshFrame_NameEntry.set_text(server.getSSHName())
             self.sshFrame_PassEntry.set_text(server.getSSHPass())
             server.addCallback(self.render)
@@ -200,6 +205,7 @@ class ServerPropertyWindow(gtk.Window):
         else:
             server = concernedServer
         server.setIp(self.ipFrame_IPEntry.get_text())
+        server.setName(self.ipFrame_NameEntry.get_text())
         server.setSSHName(self.sshFrame_NameEntry.get_text())
         server.setSSHPass(self.sshFrame_PassEntry.get_text())
         server.load = server.LOADED_PROFILE

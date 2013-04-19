@@ -61,6 +61,7 @@ class Server(GenericScovilleObject):
         self.data = {}
         
         self.ip = ""
+        self.name = ""
         self.ssh_username = ""
         self.ssh_password = ""
 
@@ -115,6 +116,9 @@ class Server(GenericScovilleObject):
             return self.ip
         else:
             return "Unknown Server"
+
+    def getRawName(self):
+        return self.name;
             
     def loadProfileInfo(self,profileInfo):
         pass
