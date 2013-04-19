@@ -578,7 +578,7 @@ class Rpc(object):
         menu_item_id = int(params[0])
 
         action_manager = self._core.get_action_manager()
-        menu_item = action_manager.get_menu_item_by_id(action_manager)
+        menu_item = action_manager.get_menu_item_by_id(menu_item_id)
         menu_item.delete()
         return 0
 
