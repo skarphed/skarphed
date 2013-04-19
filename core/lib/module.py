@@ -217,10 +217,12 @@ class Widget(object):
         return self._site_id
 
     def render_pure_html(self,args={}):
-        return self._module.render_pure_html(self._id,args)
+        rendered = self._module.render_pure_html(self._id,args)
+        return '<div class="%s w%d">%s</div>'%(self._module.get_name(), self._id, rendered)
 
     def render_html(self,args={}):
-        return self._module.render_html(self._id,args)
+        rendered =  self._module.render_html(self._id,args)
+        return '<div class="%s w%d">%s</div>'%(self._module.get_name(), self._id, rendered)
 
     def render_javascript(self,args={}):
         return self._module.render_javascript(self._id,args)
