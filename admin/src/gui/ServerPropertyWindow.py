@@ -34,6 +34,8 @@ from data.Generic import GenericObjectStoreException
 
 class ServerPropertyWindow(gtk.Window):
     addWindowOpen=False
+    MODE_EDIT = 0
+    MODE_NEW = 1
     def __init__(self,parent, server=None):
         gtk.Window.__init__(self)
         self.par = parent
@@ -44,9 +46,11 @@ class ServerPropertyWindow(gtk.Window):
                 return
             self.set_title("Scoville Admin Pro :: New Server")
             ServerPropertyWindow.addWindowOpen = True
+            self.mode = ServerPropertyWindow.MODE_NEW
         else:
             self.serverId = server.getLocalId()
             self.set_title("Scoville Admin Pro :: Server Properties of "+server.getIp())
+            self.mode = ServerPropertyWindow.MODE_EDIT
             
         self.vbox = gtk.VBox()
         
@@ -81,34 +85,33 @@ class ServerPropertyWindow(gtk.Window):
         self.sshFrame.add(self.sshFrameT)
         self.vbox.pack_start(self.sshFrame,False)
         
-        if server is not None:
-            self.instFrame = gtk.Frame("Instances")
-            self.instFrameT = gtk.Table(2,4,False)
-            self.instList = gtk.TreeView()
-            self.instStore = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
-            self.instList.set_model(self.instStore)
-            self.instCol_Icon = gtk.TreeViewColumn()
-            self.instCol_Name = gtk.TreeViewColumn('Instance')
-            self.instRen_Icon = gtk.CellRendererPixbuf()
-            self.instRen_Name = gtk.CellRendererText()
-            self.instCol_Icon.pack_start(self.instRen_Icon,False)
-            self.instCol_Name.pack_start(self.instRen_Name,True)            
-            self.instCol_Icon.add_attribute(self.instRen_Icon,'pixbuf',0)
-            self.instCol_Name.add_attribute(self.instRen_Name,'text',1)
-            self.instList.append_column(self.instCol_Icon)
-            self.instList.append_column(self.instCol_Name)
-            self.instAdd = gtk.Button(stock=gtk.STOCK_ADD)
-            self.instRemove = gtk.Button(stock=gtk.STOCK_REMOVE)
-            self.instEdit = gtk.Button(stock=gtk.STOCK_EDIT)
-            self.instFrameT.attach(self.instList,0,1,0,4)
-            self.instFrameT.attach(self.instAdd,1,2,0,1)
-            self.instFrameT.attach(self.instRemove,1,2,1,2)
-            self.instFrameT.attach(self.instEdit,1,2,2,3)
-            self.instAdd.connect("clicked",self.cb_Add)
-            self.instRemove.connect("clicked",self.cb_Remove)
-            self.instEdit.connect("clicked",self.cb_Edit)
-            self.instFrame.add(self.instFrameT)
-            self.vbox.pack_start(self.instFrame,False)
+        self.instFrame = gtk.Frame("Instances")
+        self.instFrameT = gtk.Table(2,4,False)
+        self.instList = gtk.TreeView()
+        self.instStore = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
+        self.instList.set_model(self.instStore)
+        self.instCol_Icon = gtk.TreeViewColumn()
+        self.instCol_Name = gtk.TreeViewColumn('Instance')
+        self.instRen_Icon = gtk.CellRendererPixbuf()
+        self.instRen_Name = gtk.CellRendererText()
+        self.instCol_Icon.pack_start(self.instRen_Icon,False)
+        self.instCol_Name.pack_start(self.instRen_Name,True)            
+        self.instCol_Icon.add_attribute(self.instRen_Icon,'pixbuf',0)
+        self.instCol_Name.add_attribute(self.instRen_Name,'text',1)
+        self.instList.append_column(self.instCol_Icon)
+        self.instList.append_column(self.instCol_Name)
+        self.instAdd = gtk.Button(stock=gtk.STOCK_ADD)
+        self.instRemove = gtk.Button(stock=gtk.STOCK_REMOVE)
+        self.instEdit = gtk.Button(stock=gtk.STOCK_EDIT)
+        self.instFrameT.attach(self.instList,0,1,0,4)
+        self.instFrameT.attach(self.instAdd,1,2,0,1)
+        self.instFrameT.attach(self.instRemove,1,2,1,2)
+        self.instFrameT.attach(self.instEdit,1,2,2,3)
+        self.instAdd.connect("clicked",self.cb_Add)
+        self.instRemove.connect("clicked",self.cb_Remove)
+        self.instEdit.connect("clicked",self.cb_Edit)
+        self.instFrame.add(self.instFrameT)
+        self.vbox.pack_start(self.instFrame,False)
         
         self.fill = gtk.Label("")
         self.vbox.pack_start(self.fill,True)
@@ -142,16 +145,21 @@ class ServerPropertyWindow(gtk.Window):
         self.render()
     
     def render(self):
+        server = None
         try:
             server = self.getApplication().getLocalObjectById(self.serverId)
         except GenericObjectStoreException:
-            self.destroy()
-            return
-    
+            if self.mode == ServerPropertyWindow.MODE_EDIT:
+                self.destroy()
+                return
+        
+        self.instFrame.set_visible(self.mode == ServerPropertyWindow.MODE_EDIT)
+
         self.instStore.clear()
-        for instance in server.getInstances():
-            icon = SCOVILLE #TODO: Implement Icon
-            self.instStore.append((icon,instance.getName(),instance.getLocalId()))
+        if server is not None:
+            for instance in server.getInstances():
+                icon = SCOVILLE #TODO: Implement Icon
+                self.instStore.append((icon,instance.getName(),instance.getLocalId()))
         
     def getPar(self):
         return self.par
@@ -202,6 +210,7 @@ class ServerPropertyWindow(gtk.Window):
             concernedServer = None
         if self.serverId is None:
             server = self.getApplication().getData().createServer()
+            self.mode = ServerPropertyWindow.MODE_EDIT
         else:
             server = concernedServer
         server.setIp(self.ipFrame_IPEntry.get_text())
@@ -217,11 +226,6 @@ class ServerPropertyWindow(gtk.Window):
         self.destroy()
     
     def cb_Cancel(self,widget=None,data=None):
-        try:
-            server = self.getApplication().getLocalObjectById(self.serverId)
-        except GenericObjectStoreException:
-            server = None
-        if server is None:
-            ServerPropertyWindow.addWindowOpen = False
+        ServerPropertyWindow.addWindowOpen = False
         self.destroy()
         
