@@ -163,6 +163,7 @@ class Scoville_repoPage (GenericObjectPage):
             repo = self.getApplication().getLocalObjectById(self.repoId)
         except GenericObjectStoreException:
             self.destroy()
+            return
 
         auth = repo.isAuthenticated()
 
@@ -251,7 +252,11 @@ class ModuleList(gtk.ScrolledWindow):
         self.render()
         
     def render(self):
-        repo = self.getApplication().getLocalObjectById(self.repoId)
+        try:
+            repo = self.getApplication().getLocalObjectById(self.repoId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
         modules = repo.getModules()
         
         self.store.clear()
@@ -291,7 +296,11 @@ class DeveloperList(gtk.ScrolledWindow):
         self.render()
         
     def render(self):
-        repo = self.getApplication().getLocalObjectById(self.repoId)
+        try:
+            repo = self.getApplication().getLocalObjectById(self.repoId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
         developers = repo.getDevelopers()
         
         self.store.clear()
@@ -341,7 +350,11 @@ class TemplateList(gtk.ScrolledWindow):
         self.render()
         
     def render(self):
-        repo = self.getApplication().getLocalObjectById(self.repoId)
+        try:
+            repo = self.getApplication().getLocalObjectById(self.repoId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
         templates = repo.getTemplates()
         
         self.store.clear()
