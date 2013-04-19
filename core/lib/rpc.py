@@ -243,15 +243,29 @@ class Rpc(object):
             user_manager.get_user_by_name(user_name).revoke_role(role)
 
     def getCssPropertySet(self,params):
-        module_id = int(params[0])
-        widget_id = int(params[1])
-        session = str(params[2])
+        try:
+            module_id = int(params[0])
+        except TypeError:
+            module_id = None
+
+        try:
+            widget_id = int(params[1])
+        except TypeError:
+            widget_id = None
+
+        if params[2] is not None:
+            session = str(params[2])
+        else:
+            session = None
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
         if session_user.check_permission('scoville.css.edit'):
             css_manager = self._core.get_css_manager()
-            css_propertyset = css_manager.get_csspropertyset(module_id,widget_id,session)
+            if module_id == None and widget_id == None and session == None:
+                css_propertyset = css_manager.get_csspropertyset()
+            else:
+                css_propertyset = css_manager.get_csspropertyset(module_id,widget_id,session)
             data = css_propertyset.serialize_set()
             return data
 

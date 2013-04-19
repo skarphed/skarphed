@@ -255,6 +255,9 @@ class CSSPropertySet(object):
         
         db = cls._core.get_db()
         current_session = cls._core.get_session_manager().get_current_session()
+
+        rerendering_necessary = False
+
         if current_session is not None:
             stmnt = "SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SES_ID = ? AND CSE_OUTDATED = 0 ;"
             cur = db.query(cls._core,stmnt,(current_session.get_id(),))
@@ -263,8 +266,9 @@ class CSSPropertySet(object):
                 filename= row["CSE_FILE"]
             else:
                 filename= css_folder+current_session.get_id()+".css"
-                stmnt = "INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES (?,?,0) ;"
+                stmnt = "UPDATE OR INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES (?,?,0) MATCHING (CSE_SES_ID) ;"
                 db.query(cls._core,stmnt,(current_session.get_id(),filename),commit=True)
+                rerendering_necessary = True
         else:
             stmnt = "SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SES_ID = -1 AND CSE_OUTDATED = 0 ;"
             cur = db.query(cls._core,stmnt)
@@ -273,10 +277,12 @@ class CSSPropertySet(object):
                 filename= row["CSE_FILE"]
             else:
                 filename= css_folder+"general.css"
-                stmnt = "INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES (-1,?,0) ;"
+                #TODO: This was eventually fail! ↓
+                stmnt = "UPDATE OR INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES (-1,?,0) MATCHING (CSE_SES_ID) ;"
                 db.query(cls._core,stmnt,(filename,),commit=True)
+                rerendering_necessary = True
 
-        if not os.path.exists(filename):
+        if not os.path.exists(filename) or rerendering_necessary:
             cls.render_to_file(filename)
 
         cls.cleanup_css_sessiontable()

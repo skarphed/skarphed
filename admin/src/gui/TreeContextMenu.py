@@ -246,7 +246,7 @@ class TreeContextMenu(gtk.Menu):
     
     def cb_cssEditor(self,data=None):
         cn = self.currentObject.__class__.__name__
-        if cn in ("Server", "Module",  "Widget"):
+        if cn in ("Scoville", "Module",  "Widget"):
             self.getApplication().mainwin.openCssEditor(self.currentObject)
     
     def cb_createUser(self,data=None):

@@ -377,7 +377,7 @@ class Scoville(Instance):
         return self.state==self.STATE_ONLINE
     
     def loadCssPropertySetCallback(self,res):
-        self.cssPropertySet = json.JSONDecoder().decode(res)
+        self.cssPropertySet = res
         self.updated()
     
     def loadCssPropertySet(self):

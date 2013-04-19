@@ -91,11 +91,11 @@ class CssEditor(gtk.Window):
     
     def saveCallback(self,widget=None,data=None):
         def loop(model,path,rowiter):
-            if model.get_value(iter,4) == 0:
+            if model.get_value(rowiter,4) == 0:
                 selector = model.get_value(rowiter,0)
                 prop = model.get_value(rowiter,1)
-                value = model.get_value(iter,2)
-                inherited = model.get_value(iter,3)
+                value = model.get_value(rowiter,2)
+                inherited = model.get_value(rowiter,3)
                 model.newPropertySet[selector+"?"+prop] = {'v':value,'i':inherited}
         self.store.newPropertySet = {}
         self.store.foreach(loop)
