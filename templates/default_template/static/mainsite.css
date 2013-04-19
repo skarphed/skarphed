@@ -42,7 +42,6 @@ header{
     padding-left:50px;
     padding-right:50px;
     background: rgb(130,130,130); 
-    font-family: 'News Cycle';
     font-weight: bold;
     font-style: normal; 
     text-transform:uppercase;
@@ -52,7 +51,6 @@ header{
 
 .headerlink {
     font-size:100%;
-    font-family: 'News Cycle';
     font-weight: bold;
     font-style: normal; 
     text-transform:uppercase;
