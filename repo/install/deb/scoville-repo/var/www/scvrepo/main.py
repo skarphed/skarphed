@@ -90,7 +90,8 @@ def repo_application(environ, start_response):
             handler = ProtocolHandler(repository, jsonstr)
             response_body = [handler.execute(environ)]
         except DatabaseException, e:
-            response_body = ['{"error":{"c":%d,"args":[]}}' % RepositoryErrorCode.DATABASE_ERROR]
+            response_body = ['{"error":{"c":%d,"args":["errorstr":"%s"]}}' %
+                    (RepositoryErrorCode.DATABASE_ERROR, str(e))]
         except RepositoryException, e:
             response_body = ['{"error":%s}' % json.dumps(e.get_error_json())] 
         except Exception, e:
