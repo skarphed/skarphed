@@ -109,6 +109,7 @@ class Profile(object):
             for server in self.data['server']:
                 srv = data.Server.createServer()
                 srv.setIp(server['ip'])
+                srv.setName(server['name'])
                 srv.setSSHName(server['ssh_username'])
                 srv.setSSHPass(server['ssh_password'])
                 srv.establishConnections()
@@ -169,6 +170,7 @@ class Profile(object):
                             'username':instance.getUsername(),
                             'password':instance.getPassword()})
             self.data['server'].append({'ip':server.ip,
+                                    'name':server.getRawName(),
                                     'ssh_username':server.ssh_username,
                                     'ssh_password':server.ssh_password,
                                     'instances':instances})
