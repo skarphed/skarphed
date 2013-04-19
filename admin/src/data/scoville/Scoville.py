@@ -209,12 +209,13 @@ class Scoville(Instance):
         self.password = password
         self.publickey = None
         
+        self.repo_url = ""
+
         self.users = None
         self.template = None
         self.roles = None
         self.modules = None
         self.sites = None
-        self.repo = None
         self.operationManager = None
         self.operationDaemon = None
 
@@ -293,7 +294,6 @@ class Scoville(Instance):
         if True: #'scoville.sites.view' in self.serverRights
             self.sites = Sites(self)
             self.addChild(self.sites)
-        self.loadRepository()
         if True:
             self.views = Views(self)
             self.addChild(self.views)
@@ -344,22 +344,12 @@ class Scoville(Instance):
     def loadTemplate(self):
         self.getApplication().doRPCCall(self,self.loadTemplateCallback, "getCurrentTemplate")
     
-    def getRepository(self):
-        return self.repo
-    
-    def loadRepositoryCallback(self,res):
-        repo = Repository(self,res['ip'],res['port'],res['name'])
-        self.repo = repo
-        self.updated()
-    
-    def loadRepository(self):
-        self.getApplication().doRPCCall(self,self.loadRepositoryCallback, "getRepository")
-    
     def setRepositoryCallback(self,res):
         self.loadRepository()
         
     def setRepository(self,host,port):
         self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [host,port])
+        self.repo_url = host+":"+str(port)
     
     def uploadTemplateCallback(self,res):
         severe_error_happened = False

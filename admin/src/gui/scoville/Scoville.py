@@ -87,9 +87,8 @@ class ScovillePage(GenericObjectPage):
         except GenericObjectStoreException, e:
             self.destroy()
             return
-        repo = scoville.getRepository()
         try:
-            self.repoEntry.set_text(repo.getURL())
+            self.repoEntry.set_text(scoville.getRepoUrl())
         except AttributeError:
             pass
         public_key = scoville.getPublicKey()

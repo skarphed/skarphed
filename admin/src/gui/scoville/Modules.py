@@ -34,14 +34,11 @@ from data.Generic import GenericObjectStoreException
 from gui.OperationTool import OperationTool
 import gui.IconStock
 
-class RepositoryPage(GenericObjectPage):
-    def __init__(self,parent,repo):
+class ModulesPage(GenericObjectPage):
+    def __init__(self,parent,modules):
         self.par = parent
-        GenericObjectPage.__init__(self,parent,repo)
-        self.repoId = repo.getLocalId()
-        
-        self.headline = gtk.Label()
-        self.pack_start(self.headline,False)
+        GenericObjectPage.__init__(self,parent,modules)
+        self.modulesId = modules.getLocalId()
         
         self.info = PageFrame(self,"Information", gui.IconStock.REPO)
         self.infobox = gtk.VBox()
@@ -103,7 +100,7 @@ class RepositoryPage(GenericObjectPage):
         self.mod_AList_col_module.set_sort_column_id(1)
         self.mod_AListScroll.add(self.mod_AList)
         
-        self.mod_CList = OperationTool(self,repo.getScoville())
+        self.mod_CList = OperationTool(self,modules.getScoville())
         
         self.modbox.attach(self.mod_label,0,2,0,1)
         self.modbox.attach(self.mod_labelInstalled,0,1,1,2)
@@ -131,8 +128,8 @@ class RepositoryPage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        repo.addCallback(self.render)
-        repo.getScoville().getOperationManager().addCallback(self.render)
+        modules.addCallback(self.render)
+        modules.getScoville().getOperationManager().addCallback(self.render)
         self.getApplication().getObjectStore().addCallback(self.render)
     
     def iListGetDataCallback(self, treeview, context, selection, info, timestamp):
@@ -151,15 +148,15 @@ class RepositoryPage(GenericObjectPage):
         if context.get_source_widget().get_name() != "AList":
             return
         module = self.getApplication().getLocalObjectById(int(selection.data))
-        repo = self.getApplication().getLocalObjectById(self.repoId)
-        repo.getScoville().getModules().installModule(module)
+        modules = self.getApplication().getLocalObjectById(self.modulesId)
+        modules.installModule(module)
     
     def aListReceiveCallback(self, treeview, context, x, y, selection, info , timestamp):
         if context.get_source_widget().get_name() != "IList":
             return
         module = self.getApplication().getLocalObjectById(int(selection.data))
-        repo = self.getApplication().getLocalObjectById(self.repoId)
-        repo.getScoville().getModules().uninstallModule(module)    
+        modules = self.getApplication().getLocalObjectById(self.modulesId)
+        modules.uninstallModule(module)    
     
     def getModuleIterById(self, moduleList, moduleId):
         def search(model, path, rowiter, moduleId):
@@ -182,17 +179,15 @@ class RepositoryPage(GenericObjectPage):
                 model.itersToRemove.append(rowiter)
         
         try:
-            repo = self.getApplication().getLocalObjectById(self.repoId)
+            modules = self.getApplication().getLocalObjectById(self.modulesId)
         except GenericObjectStoreException, e:
             self.destroy()
             return
 
-        self.headline.set_markup("<b>Repository: "+repo.getName()+"</b>")
-        
         self.processedIListIds = []
         self.processedAListIds = []
         
-        for module in repo.getScoville().getModules().getAllModules():
+        for module in modules.getAllModules():
             if module.data.has_key('installed') and module.data['installed'] == True:
                 rowiter = self.getModuleIterById(self.mod_IListStore,module.getLocalId())
                 if rowiter is None:
