@@ -75,8 +75,6 @@ class Session(object):
         """
         cookie = SimpleCookie(cookies)
         session_id = cookie['session_id'].value
-
-        cls._core.log("SESSION_ID::"+session_id)
         
         db = cls._core.get_db()
         stmnt = "SELECT SES_USR_ID, SES_EXPIRES FROM SESSIONS WHERE SES_ID = ? ;"

@@ -101,7 +101,6 @@ class Template(object):
     @classmethod
     def install_from_repo(cls, nr):
         repository = cls._core.get_module_manager().get_repository()
-        cls._core.log("LE TEMPLATE: "+str(nr))
         data = repository.download_template(nr)
         return cls.install_from_data(data)
 
