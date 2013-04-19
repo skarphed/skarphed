@@ -51,6 +51,15 @@ def application(environ, start_response):
         response_headers.extend(ret["header"])
         response_headers.append(('Content-Type', 'application/json'))
 
+    elif environ['PATH_INFO'].startswith("/css/"):
+        configuration = core.get_configuration()
+        css_folder = configuration.get_entry("core.css_folder")
+        wpath = configuration.get_entry("global.webpath")
+        iid = configuration.get_entry("core.instance_id")
+        css = open(wpath+str(iid)+css_folder+"/"+environ["PATH_INFO"].replace("/css/","",1)).read()
+        response_body = [css]
+        response_headers.append(('Content-Type', 'text/css'))
+
     elif environ['PATH_INFO'].startswith("/web/"):
         ret = core.web_call(environ)
         response_body.extend(ret["body"])

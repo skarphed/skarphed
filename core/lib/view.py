@@ -465,7 +465,7 @@ class View(object):
         body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
 
         css_manager = self._core.get_css_manager()
-        #css_url = css_manager.get_css_url()
+        css_url = css_manager.get_css_url()
 
         configuration = self._core.get_configuration()
         title = configuration.get_entry("core.name")
@@ -473,7 +473,7 @@ class View(object):
         page_css = page.get_css_filename()
 
         return frame%{'title':title,
-                      'scv_css':"css_url",
+                      'scv_css':css_url,
                       'page_css':page_css,
                       'head':head,
                       'body':body}

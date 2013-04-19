@@ -22,6 +22,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+import os
+
 from tinycss.css21 import CSS21Parser
 
 class CSSException(Exception):
@@ -51,7 +53,7 @@ class CSSManager(object):
         self.create_csspropertyset_from_css = CSSPropertySet.create_csspropertyset_from_css
         self.create_csspropertyset_from_file = CSSPropertySet.create_csspropertyset_from_file
         self.get_csspropertyset = CSSPropertySet.get_csspropertyset
-        self.render = CSSPropertySet.render
+        self.render_to_file = CSSPropertySet.render_to_file
         self.get_css_file = CSSPropertySet.get_css_file
         self.get_css_url = CSSPropertySet.get_css_url
         self.cleanup_css_sessiontable = CSSPropertySet.cleanup_css_sessiontable
@@ -90,10 +92,10 @@ class CSSPropertySet(object):
         """
         parser = CSS21Parser()
         stylesheet = None
-        try:
-            stylesheet = parser.parse_stylesheet_bytes(css)
-        except Exception,e :
-            raise e # implement correct error handling
+        #try:
+        stylesheet = parser.parse_stylesheet_bytes(css)
+        #except Exception,e :
+        #    raise e # implement correct error handling
         propertyset = CSSPropertySet(cls._core)
         for rule in stylesheet.rules:
             selector = ",".join([s.as_css() for s in rule.selector])
@@ -120,17 +122,17 @@ class CSSPropertySet(object):
         """
         db = cls._core.get_db()
         if module_id is not None:
-            if module_id != CSSPropertySet.ALL:
+            if module_id == CSSPropertySet.ALL:
                 ret = {}
                 stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, MOD_ID \
                                  FROM CSS \
                                    INNER JOIN MODULES ON (CSS_MOD_ID = MOD_ID) \
-                                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL ;"
+                                 WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SES_ID IS NULL ;"
                 cur = db.query(cls._core,stmnt)
-                rows = cur.fetchmapall()
+                rows = cur.fetchallmap()
                 for row in rows:
                     if not ret.has_key(row["MOD_ID"]):
-                        ret[row["MOD_ID"]] = CSSPropertySet()
+                        ret[row["MOD_ID"]] = CSSPropertySet(cls._core)
                         ret[row["MOD_ID"]].set_module_id(row["MOD_ID"])
                     ret[row["MOD_ID"]].edit_value(row["CSS_SELECTOR"], row["CSS_TAG"], row["CSS_VALUE"])
                 return ret
@@ -139,14 +141,14 @@ class CSSPropertySet(object):
                     propertyset = cls.get_csspropertyset()
                     propertyset.set_all_inherited()
                 else:
-                    propertyset = CSSPropertySet()
+                    propertyset = CSSPropertySet(cls._core)
                 propertyset.set_module_id(module_id)
                 stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME \
                              FROM CSS \
                                INNER JOIN MODULES ON (CSS_MOD_ID = MOD_ID) \
-                             WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL AND CSS_MOD_ID = ? ;";
+                             WHERE CSS_MOD_ID IS NOT NULL AND CSS_WGT_ID IS NULL AND CSS_SES_ID IS NULL AND CSS_MOD_ID = ? ;";
                 cur = db.query(cls._core,stmnt,(module_id,))
-                rows = cur.fetchmapall()
+                rows = cur.fetchallmap()
                 for row in rows:
                     propertyset.edit_value(row["CSS_SELECTOR"],row["CSS_TAG"], row["CSS_VALUE"])
                 return propertyset
@@ -157,12 +159,12 @@ class CSSPropertySet(object):
                          FROM CSS \
                            INNER JOIN WIDGETS ON (CSS_WGT_ID = WGT_ID) \
                            INNER JOIN MODULES ON (WGT_MOD_ID = MOD_ID) \
-                         WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL ;"
+                         WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SES_ID IS NULL ;"
                 cur = db.query(cls._core,stmnt)
-                rows = cur.fetchmapall()
+                rows = cur.fetchallmap()
                 for row in rows:
                     if not ret.has_key(row["WGT_ID"]):
-                        ret[row["WGT_ID"]] = CSSPropertySet()
+                        ret[row["WGT_ID"]] = CSSPropertySet(cls._core)
                         ret[row["WGT_ID"]].set_widget_id(row["WGT_ID"])
                     ret[row["WGT_ID"]].edit_value(row["CSS_SELECTOR"],row["CSS_TAG"],row["CSS_VALUE"])
                 return ret
@@ -177,15 +179,15 @@ class CSSPropertySet(object):
                     else:
                         raise CSSException(CSSException.get_msg(0))
                 else:
-                    propertyset = CSSPropertySet()
+                    propertyset = CSSPropertySet(cls._core)
                 propertyset.set_widget_id(widget_id)
                 stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE, MOD_NAME, WGT_NAME \
                              FROM CSS \
                                INNER JOIN WIDGETS ON (CSS_WGT_ID = WGT_ID) \
                                INNER JOIN MODULES ON (WGT_MOD_ID = MOD_ID) \
-                             WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SESSION IS NULL AND CSS_WGT_ID = ? ;"
+                             WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NOT NULL AND CSS_SES_ID IS NULL AND CSS_WGT_ID = ? ;"
                 cur = db.query(cls._core,stmnt,(widget_id,))
-                rows = cur.fetchmapall()
+                rows = cur.fetchallmap()
                 for row in rows:
                     propertyset.edit_value(row["CSS_SELECTOR"], row["CSS_TAG"], row["CSS_VALUE"])
                 return propertyset
@@ -194,17 +196,17 @@ class CSSPropertySet(object):
             #TODO: Implement
 
         #Standard CSS Propertyset
-        propertyset = CSSPropertySet()
+        propertyset = CSSPropertySet(cls._core)
         propertyset.set_type_general()
-        stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SESSION IS NULL ;"
+        stmnt = "SELECT CSS_SELECTOR, CSS_TAG, CSS_VALUE FROM CSS WHERE CSS_MOD_ID IS NULL AND CSS_WGT_ID IS NULL AND CSS_SES_ID IS NULL ;"
         cur = db.query(cls._core,stmnt)
-        rows = cur.fetchmapall()
+        rows = cur.fetchallmap()
         for row in rows:
             propertyset.edit_value(row["CSS_SELECTOR"], row["CSS_TAG"], row["CSS_VALUE"])
         return propertyset
 
     @classmethod
-    def render(cls, filename):
+    def render_to_file(cls, filename):
         """
         renders a css file
         """
@@ -217,14 +219,10 @@ class CSSPropertySet(object):
             widget_sets = cls.get_csspropertyset(None,cls.ALL,None)
 
             css+= generic_set.render()
-            for module_set in module_sets:
+            for module_set in module_sets.values():
                 css+= module_set.render()
-            for widget_set in widget_sets:
+            for widget_set in widget_sets.values():
                 css+= widget_set.render()
-
-            cssfile = open(filename,"w")
-            cssfile.write(css)
-            cssfile.close()
 
         else:
             #TODO: Implement behaviour with session
@@ -238,9 +236,12 @@ class CSSPropertySet(object):
             for widget_set in widget_sets:
                 css+= widget_set.render()
 
-            cssfile = open(filename,"w")
-            cssfile.write(css)
-            cssfile.close()
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
+
+        cssfile = open(filename,"w")
+        cssfile.write(css)
+        cssfile.close()
 
     @classmethod
     def get_css_file(cls):
@@ -265,18 +266,18 @@ class CSSPropertySet(object):
                 stmnt = "INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES (?,?,0) ;"
                 db.query(cls._core,stmnt,(current_session.get_id(),filename),commit=True)
         else:
-            stmnt = "SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SES_ID = 'GENERAL' AND CSE_OUTDATED = 0 ;"
-            cur = db.query(cls._core,stmnt,(current_session.get_id(),))
+            stmnt = "SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SES_ID = -1 AND CSE_OUTDATED = 0 ;"
+            cur = db.query(cls._core,stmnt)
             row = cur.fetchonemap()
             if row is not None:
                 filename= row["CSE_FILE"]
             else:
                 filename= css_folder+"general.css"
-                stmnt = "INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES ('GENERAL',?,0) ;"
+                stmnt = "INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES (-1,?,0) ;"
                 db.query(cls._core,stmnt,(filename,),commit=True)
 
         if not os.path.exists(filename):
-            cls.render(filename)
+            cls.render_to_file(filename)
 
         cls.cleanup_css_sessiontable()
         return filename
@@ -287,9 +288,9 @@ class CSSPropertySet(object):
         Gets the cssFile as URL for the current user
         """
         configuration = cls._core.get_configuration()
+        filename = cls.get_css_file()
         filename = filename.replace(configuration.get_entry("global.webpath"),"",1)
         filename = filename.replace(configuration.get_entry("core.instance_id"),"",1)
-        filename = filename.replace(configuration.get_entry("/"),"",1)
         return filename
 
     @classmethod
@@ -406,7 +407,7 @@ class CSSPropertySet(object):
         """
         ret = {}
         for key, value in self._properties.items():
-            if value['i']:
+            if not value['i']:
                 ret[key] = value
         return ret
 
@@ -417,12 +418,11 @@ class CSSPropertySet(object):
         db = self._core.get_db()
         current_session = self._core.get_session_manager().get_current_session()
 
-
         self.delete()
 
         values_to_store = self.get_non_inherited()
-        stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SESSION) \
-                   VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SESSION) ;"
+        stmnt = "UPDATE OR INSERT INTO CSS (CSS_SELECTOR, CSS_TAG, CSS_VALUE, CSS_MOD_ID, CSS_WGT_ID, CSS_SES_ID) \
+                   VALUES ( ?,?,?,?,?,?) MATCHING (CSS_SELECTOR,CSS_TAG,CSS_MOD_ID,CSS_WGT_ID, CSS_SES_ID) ;"
         for key, value in values_to_store.items():
             selector, tag = key.split(CSSPropertySet.SPLIT)
             db.query(self._core,stmnt,(selector,tag,value['v'],self.get_module_id(),self.get_widget_id(),self.get_session_id()),commit=True)
@@ -524,6 +524,8 @@ class CSSPropertySet(object):
 
         elif self.typ == CSSPropertySet.SESSION:
             pass #TODO Implement sessiondependent behaviour
+
+        return css
 
     def serialize_set(self):
         """
