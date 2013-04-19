@@ -6,7 +6,7 @@
 0002 : Database Error 
 
         ErrorJson:
-        {"error":{"c":2,"args":[]}}
+        {"error":{"c":2,"args":["errorstr":"<errorstr>"]}}
 
 0003 : Authentication Failed - You are only allowed to do this as administrator
        
