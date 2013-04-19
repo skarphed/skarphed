@@ -123,7 +123,7 @@ class Views(GenericScovilleObject):
             if view['id'] not in viewIds:
                 self.addChild(View(self,view))
             else:
-                existing_view = self.getviewById(view['id'])
+                existing_view = self.getViewById(view['id'])
                 existing_view.refresh(view)                
     
     def getViewById(self,nr):
