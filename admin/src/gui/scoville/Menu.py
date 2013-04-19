@@ -410,8 +410,11 @@ class SpaceCombo(gtk.ComboBox):
                     del(model.objectsToAllocate[space_id])
                 else:
                     model.itersToRemove.append(rowiter)
-        
-        page = self.getApplication().getLocalObjectById(self.pageId)
+        try:
+            page = self.getApplication().getLocalObjectById(self.pageId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
         self.store.objectsToAllocate = page.getSpaces()
         self.store.itersToRemove = []
         self.store.foreach(search,)

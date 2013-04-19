@@ -91,8 +91,9 @@ class ObjectCombo(gtk.ComboBox):
             processedObjectIds.append(obj.getLocalId())
 
         if self.selectedObjectId is not None:
-            activeiter = self.getIterById(self.model, self.selectedObjectId) 
-            self.set_active_iter(activeiter)
+            activeiter = self.getIterById(self.model, self.selectedObjectId)
+            if activeiter is not None:
+                self.set_active_iter(activeiter)
         self.model.itersToRemove = []
         self.model.foreach(search, processedObjectIds)
         for rowiter in self.model.itersToRemove:
