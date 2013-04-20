@@ -29,14 +29,18 @@ import gtk
 
 class DefaultEntry(gtk.Entry):
     def __init__(self, *args, **kwargs):
+        if "default_message" in kwargs.keys():
+            defaultMessage = kwargs["default_message"]
+            del(kwargs["default_message"])
+        else:
+            defaultMessage = ""
         gtk.Entry.__init__(self, *args, **kwargs)
         self._isDefaultMessage = False
-        if "default_message" in kwargs.keys():
-            self._defaultMessage = kwargs["default_message"]
-        else:
-            self._defaultMessage = ""
+        self._defaultMessage = defaultMessage
         self.connect("focus-in-event", self.cb_focus_in)
         self.connect("focus-out-event", self.cb_focus_out)
+        if len(args) == 0:
+            self.cb_focus_out()
 
     def set_default_message(self, default_message):
         self._defaultMessage = default_message

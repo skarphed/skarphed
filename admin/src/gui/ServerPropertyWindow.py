@@ -66,7 +66,7 @@ class ServerPropertyWindow(gtk.Window):
         self.ipFrameT.attach(self.ipFrame_IPLabel, 0,1,0,1)
         self.ipFrameT.attach(self.ipFrame_IPEntry, 1,2,0,1)
         self.ipFrame_NameLabel = gtk.Label("Name:")
-        self.ipFrame_NameEntry = DefaultEntry(default_mesage="Server1")
+        self.ipFrame_NameEntry = DefaultEntry(default_message="Server1")
         self.ipFrameT.attach(self.ipFrame_NameLabel, 0,1,1,2)
         self.ipFrameT.attach(self.ipFrame_NameEntry, 1,2,1,2)
         self.ipFrame.add(self.ipFrameT)

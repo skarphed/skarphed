@@ -236,7 +236,7 @@ class ButtonBreadCrumbs(gtk.HBox):
         for index,crumb in enumerate(self.crumbs,1):
             self.pack_start(crumb,True)
             if index != len(self.crumbs):
-                sep = gtk.Label(" > ")
+                sep = gtk.Label(" → ")
                 separators.append(sep)
                 self.pack_start(sep,False)
         self.crumbs.extend(separators)
@@ -263,7 +263,7 @@ class BreadCrumbs(gtk.Label):
             try:
                 obj = object.getPar()
                 obj.addCallback(self.render)
-                crumbstring= obj.getName()+ " > "+crumbstring
+                crumbstring= obj.getName()+ " → "+crumbstring
             except Exception,e:
                 crumbstring = "# "+crumbstring
                 break
