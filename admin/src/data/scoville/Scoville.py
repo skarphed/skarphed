@@ -408,6 +408,19 @@ class Scoville(Instance):
         if self.operationDaemon is None:
             self.operationDaemon = OperationDaemon(self)
         return self.operationDaemon
+
+    def uploadBinaryCallback(self, res):
+        # res is the new ID of the uploaded binary file
+        return res
+
+    def uploadBinary(self, filepath):
+        f = open(filepath, 'r')
+        data = f.read()
+        f.close()
+        data = base64.b64encode(data)
+        filename = filepath.split("/")[1:]
+        self.getApplication().doRPCCall(self,self.uploadBinaryCallback, "uploadBinary", [data, filename])
+
     
     def getModules(self):
         return self.modules

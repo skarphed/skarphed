@@ -783,3 +783,13 @@ class Rpc(object):
         view = view_manager.get_from_id(view_id)
         view.set_params_for_widget(widget_id, mapping)
         view.store()
+
+    def uploadBinary(self, params):
+        data = base64.b64decode(params[0])
+        filename = str(params[1])
+
+        binary_manager = self._core.get_binary_manager()
+        #TODO: Care about mimetype recognition
+        binary = binary_manager.create(data, "benis/unknown", filename)
+        binary.store()
+        return binary.get_id()
