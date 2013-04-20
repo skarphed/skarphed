@@ -126,7 +126,7 @@ class Module(GenericScovilleObject):
             os.mkdir(modulepath+self.getModuleName()+"/"+self.getVersionFolderString())
 
         data = result['data']
-        signature = base64.decodestring(result['signature'])
+        signature = base64.b64decode(result['signature'])
         libstring = result['libstring']
 
         publickeyraw = self.getModules().getScoville().getPublicKey()
@@ -135,7 +135,7 @@ class Module(GenericScovilleObject):
         verifier = PKCS1_v1_5.new(publickey)
         if verifier.verify(hashed, signature):
             f = open(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui.tar.gz","w")
-            f.write(base64.decodestring(data))
+            f.write(base64.b64decode(data))
             f.close()
             tar = tarfile.open(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui.tar.gz","r:gz")
             tar.extractall(modulepath+self.getModuleName()+"/"+self.getVersionFolderString())

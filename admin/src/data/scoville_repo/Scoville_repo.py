@@ -172,9 +172,9 @@ class Scoville_repo(Instance):
         dataHash = SHA256.new(data)
         signer = PKCS1_v1_5.new(key)
         signature = signer.sign(dataHash)
-        signature = base64.encodestring(signature)
+        signature = base64.b64encode(signature)
         
-        ScovilleRepository(self, {'c':105,'data':base64.encodestring(data), 'signature':signature}, self.moduleCallback).start()
+        ScovilleRepository(self, {'c':105,'data':base64.b64encode(data), 'signature':signature}, self.moduleCallback).start()
 
     def templateCallback(self,result):
         self.loadTemplates()
@@ -190,9 +190,9 @@ class Scoville_repo(Instance):
         dataHash = SHA256.new(data)
         signer = PKCS1_v1_5.new(key)
         signature = signer.sign(dataHash)
-        signature = base64.encodestring(signature)
+        signature = base64.b64encode(signature)
         
-        ScovilleRepository(self, {'c':108,'data':base64.encodestring(data), 'signature':signature}, self.templateCallback).start()
+        ScovilleRepository(self, {'c':108,'data':base64.b64encode(data), 'signature':signature}, self.templateCallback).start()
     
     def deleteTemplate(self, template_id):
         ScovilleRepository(self, {'c':109,'id':int(template_id)}, self.templateCallback).start()    

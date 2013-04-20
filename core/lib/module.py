@@ -685,7 +685,7 @@ class Repository(object):
         k = RSA.importKey(self.get_public_key())
         verifier = PKCS1_v1_5.new(k)
         h = SHA256.new(data)
-        signature = base64.decodestring(signature)
+        signature = base64.b64decode(signature)
         return verifier.verify(h,signature)
 
     def download_module(self,module):
@@ -699,7 +699,7 @@ class Repository(object):
         result = self._http_call({'c':5,'m':module})
         if result is None:
             raise ModuleCoreException(ModuleCoreException.get_msg(2))
-        data = base64.decodestring(result["data"])
+        data = base64.b64decode(result["data"])
         if not self.verify_module(data, result["r"]["signature"]):
             raise ModuleCoreException(ModuleCoreException.get_msg(3))
 

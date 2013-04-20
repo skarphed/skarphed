@@ -103,7 +103,7 @@ class Site(GenericScovilleObject):
     def getMinimap(self):
         if self.data.has_key('minimap'):
             md5 = hashlib.md5()
-            raw = base64.decodestring(self.data['minimap'])
+            raw = base64.b64decode(self.data['minimap'])
             md5.update(raw)
             tempfilename = md5.hexdigest()
             try:

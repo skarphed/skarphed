@@ -291,13 +291,13 @@ class Rpc(object):
 
         module_manager = self._core.get_module_manager()
         module = module_manager.get_module(module_id)
-        moduleguidata = base64.encodestring(module.get_guidata())
+        moduleguidata = base64.b64encode(module.get_guidata())
         pki_manager = self._core.get_pki_manager()
         signature = pki_manager.sign(moduleguidata)
         configuration = self._core.get_configuration()
 
         return {'data':moduleguidata,
-                'signature':base64.encodestring(signature),
+                'signature':base64.b64encode(signature),
                 'libstring':configuration.get_entry('global.libpath')}
 
     def setRepository(self, params):
@@ -432,7 +432,7 @@ class Rpc(object):
                     'author': '(No Author)',}
 
     def installTemplate(self, params):
-        templatedata = base64.decodestring(params[0])
+        templatedata = base64.b64decode(params[0])
 
         #TODO check for permission
 

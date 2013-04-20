@@ -363,7 +363,7 @@ class Scoville(Instance):
     
     def uploadTemplate(self, filepath):
         template_file = open(filepath,'r')
-        templatedata = base64.encodestring(template_file.read())
+        templatedata = base64.b64encode(template_file.read())
         self.getApplication().doRPCCall(self,self.uploadTemplateCallback, "installTemplate", [templatedata])
         template_file.close()
         

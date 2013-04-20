@@ -53,7 +53,7 @@ def main():
         signature = signer.sign(hash)
         print type(signature)
         import base64
-        signature = base64.encodestring(signature)
+        signature = base64.b64encode(signature)
         
         sigFile = open(filename+'.sig','w')
         sigFile.write(signature)
@@ -81,7 +81,7 @@ def main():
         import json
         try:
             import base64
-            signature = base64.decodestring(open(filename+'.sig','r').read())
+            signature = base64.b64decode(open(filename+'.sig','r').read())
         except IOError:
             print "Could not load signature"
             sys.exit(1)

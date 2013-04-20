@@ -87,7 +87,7 @@ class Binary(object):
             bin.set_id(row["BIN_ID"])
             bin.set_filename(filename)
             bin.set_mime(row["BIN_MIME"])
-            bin.set_data(base64.decodestring(row["BIN_DATA"]))
+            bin.set_data(base64.b64decode(row["BIN_DATA"]))
             return bin
         else:
             raise BinaryException(BinaryException.get_msg(0, filename))
@@ -103,7 +103,7 @@ class Binary(object):
             bin.set_id(nr)
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
-            bin.set_data(base64.decodestring(row["BIN_DATA"]))
+            bin.set_data(base64.b64decode(row["BIN_DATA"]))
             return bin
         else:
             raise BinaryException(BinaryException.get_msg(0, nr))
@@ -119,7 +119,7 @@ class Binary(object):
             bin.set_id(row["BIN_ID"])
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
-            bin.set_data(base64.decodestring(row["BIN_DATA"]))
+            bin.set_data(base64.b64decode(row["BIN_DATA"]))
             return bin
         else:
             raise BinaryException(BinaryException.get_msg(1, md5))
@@ -161,7 +161,7 @@ class Binary(object):
         Stores this binary into the database
         """
         db = self._core.get_db()
-        data_io = StringIO(base64.encodestring(self._data))
+        data_io = StringIO(base64.b64encode(self._data))
         md5 = md5hash(self._data).hexdigest()
         sha256 = sha256hash(self._data).hexdigest()
         if self._id is None:
