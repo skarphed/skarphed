@@ -32,6 +32,8 @@ from time import sleep
 
 from data.Generic import GenericObjectStoreException
 
+from gui.DefaultEntry import DefaultEntry
+
 class NewSchema(gtk.Window):
     class Pulse(Thread):
         def __init__(self, window):
@@ -62,7 +64,7 @@ class NewSchema(gtk.Window):
          Please change this password after your first login.")
 
         self.name_label = gtk.Label("Name:")
-        self.name_entry = gtk.Entry()
+        self.name_entry = DefaultEntry(default_message="new_database_name")
         self.buttonhbox = gtk.HBox()
         self.progress = gtk.ProgressBar()
         self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)

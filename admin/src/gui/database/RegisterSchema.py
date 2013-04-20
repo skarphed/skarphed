@@ -27,6 +27,7 @@ pygtk.require("2.0")
 import gtk
 
 from data.Generic import GenericObjectStoreException
+from gui.DefaultEntry import DefaultEntry
 
 class RegisterSchema(gtk.Window):
     def __init__(self,par,database):
@@ -40,9 +41,9 @@ class RegisterSchema(gtk.Window):
         self.name_label = gtk.Label("Schema-Name")
         self.user_label = gtk.Label("Schema-User:")
         self.pass_label = gtk.Label("Schema-Password:")
-        self.user_entry = gtk.Entry()
-        self.pass_entry = gtk.Entry()
-        self.name_entry = gtk.Entry()
+        self.user_entry = DefaultEntry(default_message="user")
+        self.pass_entry = DefaultEntry(default_message="password")
+        self.name_entry = DefaultEntry(default_message="schema")
         self.buttonhbox = gtk.HBox()
         self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)
         self.ok = gtk.Button(stock=gtk.STOCK_OK)

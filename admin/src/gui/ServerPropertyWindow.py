@@ -32,6 +32,8 @@ from ViewPasswordButton import ViewPasswordButton
 from InstanceWindow import InstanceWindow
 from data.Generic import GenericObjectStoreException
 
+from gui.DefaultEntry import DefaultEntry
+
 class ServerPropertyWindow(gtk.Window):
     addWindowOpen=False
     MODE_EDIT = 0
@@ -60,11 +62,11 @@ class ServerPropertyWindow(gtk.Window):
         self.ipFrame = gtk.Frame("Common")
         self.ipFrameT = gtk.Table(2,2,False)
         self.ipFrame_IPLabel = gtk.Label("IP:")
-        self.ipFrame_IPEntry = gtk.Entry()
+        self.ipFrame_IPEntry = DefaultEntry(default_message="172.16.13.37")
         self.ipFrameT.attach(self.ipFrame_IPLabel, 0,1,0,1)
         self.ipFrameT.attach(self.ipFrame_IPEntry, 1,2,0,1)
         self.ipFrame_NameLabel = gtk.Label("Name:")
-        self.ipFrame_NameEntry = gtk.Entry()
+        self.ipFrame_NameEntry = DefaultEntry(default_mesage="Server1")
         self.ipFrameT.attach(self.ipFrame_NameLabel, 0,1,1,2)
         self.ipFrameT.attach(self.ipFrame_NameEntry, 1,2,1,2)
         self.ipFrame.add(self.ipFrameT)
@@ -73,7 +75,7 @@ class ServerPropertyWindow(gtk.Window):
         self.sshFrame = gtk.Frame("SSH")
         self.sshFrameT = gtk.Table(2,2,False)
         self.sshFrame_NameLabel = gtk.Label("Username:")
-        self.sshFrame_NameEntry = gtk.Entry()
+        self.sshFrame_NameEntry = DefaultEntry(default_message="root")
         self.sshFrame_PassLabel = gtk.Label("Password:")
         self.sshFrame_PassEntry = gtk.Entry()
         self.sshFrame_PassEntry.set_visibility(False)

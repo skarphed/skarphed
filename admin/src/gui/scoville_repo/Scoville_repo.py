@@ -31,6 +31,7 @@ from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from data.Generic import GenericObjectStoreException
 from gui.YesNoDialog import YesNoDialog
+from gui.DefaultEntry import DefaultEntry
 
 class Scoville_repoPage (GenericObjectPage):
     def __init__(self,par,repo):
@@ -135,8 +136,8 @@ class Scoville_repoPage (GenericObjectPage):
         self.developerNameLabel = gtk.Label("Nickname:")
         self.developerFullnameLabel = gtk.Label("Full Name:")
         self.developerPublicKeyLabel = gtk.Label("Public Key:")
-        self.developerNameEntry = gtk.Entry()
-        self.developerFullnameEntry = gtk.Entry()
+        self.developerNameEntry = DefaultEntry(default_message="nickname")
+        self.developerFullnameEntry = DefaultEntry(default_message="Firstname Lastname")
         self.developerPublicKeyEntry = gtk.TextView()
         self.developerAddButton = gtk.Button(stock=gtk.STOCK_ADD)
         self.developerAddButton.connect("clicked", self.cb_Add)

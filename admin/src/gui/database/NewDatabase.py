@@ -27,6 +27,7 @@ pygtk.require("2.0")
 import gtk
 
 from data.Generic import GenericObjectStoreException
+from gui.DefaultEntry import DefaultEntry
 
 class NewDatabase(gtk.Window):
     def __init__(self,par,server):
@@ -39,8 +40,8 @@ class NewDatabase(gtk.Window):
         self.instruction = gtk.Label("Please enter DBA-Credentials here:")
         self.dba_user_label = gtk.Label("DBA-User:")
         self.dba_pass_label = gtk.Label("Password:")
-        self.dba_user_entry = gtk.Entry()
-        self.dba_pass_entry = gtk.Entry()
+        self.dba_user_entry = DefaultEntry(default_message="SYSDBA")
+        self.dba_pass_entry = DefaultEntry(default_message="password")
         self.buttonhbox = gtk.HBox()
         self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)
         self.ok = gtk.Button(stock=gtk.STOCK_OK)

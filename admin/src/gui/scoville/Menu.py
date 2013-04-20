@@ -31,6 +31,7 @@ from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from data.Generic import GenericObjectStoreException
 from gui.ObjectCombo import ObjectCombo
+from gui.DefaultEntry import DefaultEntry
 
 class MenuPage(GenericObjectPage):
     def __init__(self, par, menu):
@@ -278,9 +279,7 @@ class ActionWidgetConfig(gtk.Table):
         self.radio_widgetSpaceConstellation = gtk.RadioButton(self.radio_url, "Widget into Space:")
         self.radio_view = gtk.RadioButton(self.radio_url, "Other View:")
         
-        spaceCount = action.getActionList().getMenuItem().getMenu().getSite().getSpaceCount()
-        
-        self.entry_url = gtk.Entry()
+        self.entry_url = DefaultEntry(default_message="http://www.example.org")
         self.entry_widget = ObjectCombo(self, 
                                      "Widget",
                                      selectFirst=True,

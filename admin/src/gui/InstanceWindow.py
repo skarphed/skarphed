@@ -26,10 +26,10 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-
-from IconStock import SCOVILLE
 from ViewPasswordButton import ViewPasswordButton
 from  data.Server import DNSError
+
+from gui.DefaultEntry import DefaultEntry
 
 class InstanceWindow(gtk.Window):
     addWindowOpen=False
@@ -64,10 +64,10 @@ class InstanceWindow(gtk.Window):
             self.typeStore.append((instanceType.displayName,))
         self.typeCombo.set_active(0)
         self.urlLabel = gtk.Label("URL:")
-        self.urlEntry = gtk.Entry()
+        self.urlEntry = DefaultEntry(default_message="http://instance.org")
         self.urlEntry.set_text("http://")
         self.userLabel = gtk.Label("Username:")
-        self.userEntry = gtk.Entry()
+        self.userEntry = DefaultEntry(default_message="username")
         self.passLabel = gtk.Label("Password:")
         self.passEntry = gtk.Entry()
         self.passEntry.set_visibility(False)

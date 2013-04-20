@@ -32,6 +32,7 @@ from GenericObject import PageFrame
 from GenericObject import FrameLabel
 from data.Generic import GenericObjectStoreException
 from OperationDaemonControl import OperationDaemonControl
+from gui.DefaultEntry import DefaultEntry
 import gui.IconStock
 
 class ScovillePage(GenericObjectPage):
@@ -47,7 +48,7 @@ class ScovillePage(GenericObjectPage):
         self.repoHBox = gtk.HBox()
         self.repotable = gtk.Table(2,3)
         self.repoLabel = gtk.Label("Repository")
-        self.repoEntry = gtk.Entry()
+        self.repoEntry = DefaultEntry(default_message="example_repo.org:80")
         self.repoInfoLabel = gtk.Label("Please enter Repository URL here:")
         self.repoOkButton = gtk.Button(stock=gtk.STOCK_OK)
         self.repoOkButton.connect("clicked", self.cb_changeRepo)

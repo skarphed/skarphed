@@ -28,16 +28,18 @@ pygtk.require("2.0")
 import gtk
 import hashlib
 
+from gui.DefaultEntry import DefaultEntry
+
 class NewProfile(gtk.Fixed):
     def __init__(self,parent):
         gtk.Fixed.__init__(self)
         self.par=parent
         
-        self.l_user = gtk.Label("user")
-        self.e_user = gtk.Entry()
-        self.l_password = gtk.Label("password")
+        self.l_user = gtk.Label("User")
+        self.e_user = DefaultEntry(default_message="username")
+        self.l_password = gtk.Label("Password")
         self.e_password = gtk.Entry()
-        self.l_password_r = gtk.Label ("repeat password")
+        self.l_password_r = gtk.Label ("Repeat password")
         self.e_password_r = gtk.Entry()
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
         
@@ -83,9 +85,9 @@ class UseProfile(gtk.Fixed):
         gtk.Fixed.__init__(self)
         self.par=parent
         
-        self.l_user = gtk.Label(u"user")
-        self.e_user = gtk.Entry()
-        self.l_password = gtk.Label(u"password")
+        self.l_user = gtk.Label(u"User")
+        self.e_user = DefaultEntry(default_message="username")
+        self.l_password = gtk.Label(u"Password")
         self.e_password = gtk.Entry()
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
         

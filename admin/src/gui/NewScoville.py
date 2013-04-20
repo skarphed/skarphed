@@ -65,8 +65,7 @@ class NewScoville(gtk.Window):
 
         self.srv_label = gtk.Label("Server:")
         self.srv_name_label = gtk.Label("New Instance Name:")
-        self.srv_name_entry = DefaultEntry()
-        self.srv_name_entry.set_default_message("Instance-Name")
+        self.srv_name_entry = DefaultEntry(default_message="Instance-Name")
 
         self.frm_srv_tbl.attach(self.srv_label,0,1,0,1)
         self.frm_srv_tbl.attach(self.srv_combobox,1,2,0,1)
@@ -110,17 +109,13 @@ class NewScoville(gtk.Window):
         self.frm_target.add(self.frm_target_tbl)
 
         self.apache_ip_label = gtk.Label("Listen-IP:")
-        self.apache_ip_entry = DefaultEntry()
-        self.apache_ip_entry.set_default_message("255.255.255.255 or *")
+        self.apache_ip_entry = DefaultEntry(default_message="255.255.255.255 or *")
         self.apache_port_label = gtk.Label("Listen-Port:")
-        self.apache_port_entry = DefaultEntry()
-        self.apache_port_entry.set_default_message("80")
+        self.apache_port_entry = DefaultEntry(default_message="80")
         self.apache_domain_label = gtk.Label("ServerName:")
-        self.apache_domain_entry = DefaultEntry()
-        self.apache_domain_entry.set_default_message("[subdomain.]domain.tld or leave empty")
+        self.apache_domain_entry = DefaultEntry(default_message="[subdomain.]domain.tld or leave empty")
         self.apache_subdomain_label = gtk.Label("ServerAlias:")
-        self.apache_subdomain_entry = DefaultEntry()
-        self.apache_subdomain_entry.set_default_message("[subdomain.]domain.tld or leave empty")
+        self.apache_subdomain_entry = DefaultEntry(default_message="[subdomain.]domain.tld or leave empty")
 
         self.frm_apache_tbl.attach(self.apache_ip_label,0,1,0,1)
         self.frm_apache_tbl.attach(self.apache_ip_entry,1,2,0,1)
