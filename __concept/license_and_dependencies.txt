@@ -5,6 +5,7 @@ Schriftart  "News Cycle"  ::  OFL (SIL Open Font License)
 
 Abhaengigkeiten: 
 
+python-dev -- over package manager
 fdb -> Firebird Python Client [BSD-Style]
 PyCrypto -> Cryptography for python [Public Domain]
 python-paramiko -> SSH-library for python [LGPL]
