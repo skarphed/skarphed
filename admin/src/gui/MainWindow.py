@@ -45,6 +45,9 @@ class MainWindow(gtk.Window):
         self.app = app
         self.openCssEditors = {}
         
+        self._dialogOpen = False
+        self._dialogObject = None
+
         self.set_title("Scoville Admin PRO")
         self.set_icon_from_file("../data/icon/mp_logo.png")
         self.maximize()
@@ -119,6 +122,27 @@ class MainWindow(gtk.Window):
         
         self.show_all()
     
+    def openDialogPane(self, dialog):
+        if not self._dialogOpen:
+            self._dialogObject = dialog
+            self.pane.add2(self._dialogObject)
+            self.tree.set_sensitive(False)
+            self.tool.set_sensitive(False)
+            self.menu.set_sensitive(False)
+            self._dialogOpen = True
+            self.show_all()
+
+    def closeDialogPane(self):
+        if self._dialogOpen:
+            self.pane.add2(self.tabs)
+            self.tree.set_sensitive(True)
+            self.tool.set_sensitive(True)
+            self.menu.set_sensitive(True)
+            self._dialogObject.destroy()
+            self._dialogObject = None
+            self._dialogOpen = False
+            self.show_all()
+
     def cb_ServerClicked(self,widget=None,data=None):        
         raise Exception("LOLOLOL")
     
