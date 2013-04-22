@@ -31,27 +31,93 @@ import IconStock
 from data.Generic import GenericObjectStoreException
 
 class GenericPage(gtk.ScrolledWindow):
-    def __init__(self,par, obj):
-        self.par = par
-        self.objId = obj.getLocalId()
+    """
+    This Class defines a Page in the Scoville Tab-Display
+    """
+    def __init__(self,par):
         gtk.ScrolledWindow.__init__(self)
+        self.par = par
         self.vbox = gtk.VBox()
-        self.labeltop = gtk.Label()
-        self.labelbottom = gtk.Label("no further details")
-        self.vbox.add(self.labeltop)
-        self.vbox.add(self.labelbottom)
-        self.add(self.vbox)
+        
+        self.add_with_viewport(self.vbox)
+
+        #map the add-methods of vbox on this genericpage
+        self.add = self.vbox.add
+        self.pack_start = self.vbox.pack_start
+        self.pack_end = self.vbox.pack_end
+
+        #the page only scrolls if it outgrows the space that is there
         self.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        obj.addCallback(self.render)
-        self.render()
 
     def render(self):
+        pass #to be overridden by descendants
+
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
+
+class ObjectPageAbstract(GenericPage):
+    """
+    This is a baseClass for displaying Pages that render objects
+    """
+    def __init__(self,par, obj):
+        GenericPage.__init__(self, par)
+        self.objId = obj.getLocalId()
+        obj.addCallback(self.render)
+
+    def getMyObject(self):
         try:
             obj = self.getApplication().getLocalObjectById(self.objId)
         except GenericObjectStoreException:
             self.destroy()
             return
+        return obj
+
+class ObjectPage(ObjectPageAbstract):
+    """
+    This Class defines a Page in the Scoville Tab-Display
+    That simply displays an Object and its name
+
+    Normally used as placeholder
+    """
+    def __init__(self,par, obj):
+        ObjectPageAbstract.__init__(self, par, obj)
+        self.labeltop = gtk.Label()
+
+        #self.labelbottom = gtk.Label("""no further details""")
+        self.add(self.labeltop)
+        #self.add(self.labelbottom)
+        for i in xrange(0,10):
+            self.pack_start(gtk.Label("benis"),True,True)
+
+        self.show_all()
+        self.render()
+
+    def render(self):
+        obj = self.getMyObject()
         self.labeltop.set_text(obj.getName())
+
+class FrameLabel(gtk.HBox):
+    def __init__(self,parent, text, icon=None):
+        self.par = parent
+        gtk.HBox.__init__(self)
+        self.set_spacing(10)
+        assert type(text) == str, "text must be string"
+        
+        self.icon = gtk.Image()
+        if icon is not None:
+            self.icon.set_from_pixbuf(icon)
+        self.label = gtk.Label()
+        self.label.set_text(text)
+        
+        self.pack_start(self.icon,False)
+        self.pack_start(self.label,True)
+        self.show_all()
+    
+    def setText(self,text):
+        self.label.set_text(text)
 
     def getPar(self):
         return self.par
@@ -78,7 +144,7 @@ class PageGenerator(object):
     
     def createPage(self):
         instanceType = self.getInstanceOfObject(self.obj)
-        page = GenericPage(self.par,self.obj)
+        page = ObjectPage(self.par,self.obj)
         if instanceType is not None:
             exec "from "+instanceType.instanceTypeName+"."+self.obj.__class__.__name__+\
              " import "+self.obj.__class__.__name__+"Page"
