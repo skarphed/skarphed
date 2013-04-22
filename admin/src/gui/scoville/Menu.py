@@ -27,17 +27,15 @@ from gui import IconStock
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from data.Generic import GenericObjectStoreException
 from gui.ObjectCombo import ObjectCombo
 from gui.DefaultEntry import DefaultEntry
 
-class MenuPage(GenericObjectPage):
+class MenuPage(ObjectPageAbstract):
     def __init__(self, par, menu):
-        GenericObjectPage.__init__(self,par,menu)
-        self.par = par
-        self.menuId = menu.getLocalId()
+        ObjectPageAbstract.__init__(self,par,menu)
         
         self.info = PageFrame(self, "Name", IconStock.SITE)
         self.infobox = gtk.HBox()
@@ -93,25 +91,20 @@ class MenuPage(GenericObjectPage):
         
         self.edit_menutree.connect("cursor-changed",self.menuItemChangeCallback)
         
-        menu.addCallback(self.render)
         self.show_all()
         
     
     def render(self):
-        try:
-            menu = self.getApplication().getLocalObjectById(self.menuId)
-        except GenericObjectStoreException:
-            self.destroy()
+        menu = self.getMyObject()
+        if not menu:
             return
         self.info_labelName.set_text(menu.getName())
     
     def renameCallback(self,widget=None,data=None):
-        try:
-            menu = self.getApplication().getLocalObjectById(self.menuId)
-        except GenericObjectStoreException:
-            self.destroy()
-        else:
-            menu.rename(self.info_entryName.get_text())
+        menu = self.getMyObject()
+        if not menu:
+            return
+        menu.rename(self.info_entryName.get_text())
     
     def menuItemChangeCallback(self,*args,**kwargs):
         self.addbutton.set_sensitive(False)

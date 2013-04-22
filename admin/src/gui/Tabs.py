@@ -70,10 +70,11 @@ class ObjectPageAbstract(GenericPage):
     def getMyObject(self):
         try:
             obj = self.getApplication().getLocalObjectById(self.objId)
+            return obj
         except GenericObjectStoreException:
             self.destroy()
-            return
-        return obj
+            return False
+        
 
 class ObjectPage(ObjectPageAbstract):
     """
@@ -97,6 +98,8 @@ class ObjectPage(ObjectPageAbstract):
 
     def render(self):
         obj = self.getMyObject()
+        if not obj:
+            return
         self.labeltop.set_text(obj.getName())
 
 class FrameLabel(gtk.HBox):
@@ -124,6 +127,13 @@ class FrameLabel(gtk.HBox):
 
     def getApplication(self):
         return self.par.getApplication()
+
+
+class PageFrame(gtk.Frame):
+    def __init__(self,parent, text, icon=None):
+        gtk.Frame.__init__(self)
+        self.set_border_width(10)
+        self.set_label_widget(FrameLabel(self,text,icon))
 
 
 class PageGenerator(object):
