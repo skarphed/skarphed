@@ -27,17 +27,15 @@ from gui import IconStock
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from data.Generic import GenericObjectStoreException
 from gui.YesNoDialog import YesNoDialog
 from gui.DefaultEntry import DefaultEntry
 
-class Scoville_repoPage (GenericObjectPage):
+class Scoville_repoPage (ObjectPageAbstract):
     def __init__(self,par,repo):
-        self.par = par
-        GenericObjectPage.__init__(self,par,repo)
-        self.repoId = repo.getLocalId()
+        ObjectPageAbstract.__init__(self,par,repo)
         
         self.table = gtk.Table(2,4,False)
         
@@ -156,14 +154,10 @@ class Scoville_repoPage (GenericObjectPage):
         self.pack_start(self.developerFrame,False)
         
         self.show_all()
-        
-        repo.addCallback(self.render)
     
     def render(self):
-        try:
-            repo = self.getApplication().getLocalObjectById(self.repoId)
-        except GenericObjectStoreException:
-            self.destroy()
+        repo = self.getMyObject()
+        if not repo:
             return
 
         auth = repo.isAuthenticated()
@@ -203,7 +197,9 @@ class Scoville_repoPage (GenericObjectPage):
         textBuffer = self.developerPublicKeyEntry.get_buffer()
         publicKey = textBuffer.get_text(textBuffer.get_start_iter(),textBuffer.get_end_iter())
         
-        repo = self.getApplication().getLocalObjectById(self.repoId)
+        repo = self.getMyObject()
+        if not repo:
+            return
         repo.registerDeveloper(name,fullName,publicKey)
         
     
@@ -214,18 +210,16 @@ class Scoville_repoPage (GenericObjectPage):
         self.templateFileToUpload = widget.get_filename()
     
     def uploadModule(self,widget=None,data=None):
-        repo = self.getApplication().getLocalObjectById(self.repoId)
+        repo = self.getMyObject()
+        if not repo:
+            return
         repo.uploadModule(self.moduleFileToUpload)
     
     def uploadTemplate(self,widget=None,data=None):
-        repo = self.getApplication().getLocalObjectById(self.repoId)
+        repo = self.getMyObject()
+        if not repo:
+            return
         repo.uploadTemplate(self.templateFileToUpload)
-
-    def getPar(self):
-        return self.par
-    
-    def getApplication(self):
-        return self.getPar().getApplication()
 
 class ModuleList(gtk.ScrolledWindow):
     def __init__(self, par, repo):
