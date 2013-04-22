@@ -28,7 +28,7 @@ from gui import IconStock
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from data.Generic import GenericObjectStoreException
 
@@ -120,11 +120,9 @@ class WidgetContainer(gtk.HBox):
         return self.par.getApplication()
 
 
-class SitePage(GenericObjectPage):
+class SitePage(ObjectPageAbstract):
     def __init__(self, par, site):
-        GenericObjectPage.__init__(self,par,site)
-        self.par = par
-        self.siteId = site.getLocalId()
+        ObjectPageAbstract.__init__(self,par,site)
         
         self.info = PageFrame(self,"Information", IconStock.SITE)
         self.infobox = gtk.VBox()
@@ -162,7 +160,7 @@ class SitePage(GenericObjectPage):
         self.wdg_col.add_attribute(self.wdg_ren_icon,'pixbuf',0)
         self.wdg_col.add_attribute(self.wdg_ren_name,'text',1)
         self.wdg_view.append_column(self.wdg_col)
-        self.wdg_view.set_name("siteWidgetList"+str(self.siteId))
+        self.wdg_view.set_name("siteWidgetList"+str(site.getLocalId()))
         self.wdg_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, [('text/plain',0,0)], gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
         self.wdg_view.enable_model_drag_dest([('text/plain',0,0)], gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
         self.wdg_view.connect("drag-data-get", self.getDragDataCallback)
@@ -190,18 +188,15 @@ class SitePage(GenericObjectPage):
         self.wdg.add(self.wdgbox)
         self.pack_start(self.wdg,False)
         
-        
-        site.addCallback(self.render)
         for module in site.getScoville().modules.children:
             module.addCallback(self.render)
         self.render()
         
     def render(self):
-        try:
-            site = self.getApplication().getLocalObjectById(self.siteId)
-        except GenericObjectStoreException, e:
-            self.destroy()
+        site = self.getMyObject()
+        if not site:
             return
+
         self.info_displayName.set_text(site.getName())
         self.info_displayDescription.set_text(site.getDescription())
         self.info_displaySpaces.set_text(str(site.getSpaceCount()))
@@ -225,11 +220,7 @@ class SitePage(GenericObjectPage):
         if not context.get_source_widget().get_name().startswith("siteWidget_"+str(self.site.getLocalId())):
             return
         spaceId = int(context.get_source_widget().get_name()[-1:])
-        site = self.getApplication().getLocalObjectById(self.siteId)
+        site = self.getMyObject()
+        if not site:
+            return
         site.removeWidgetFromSpace(spaceId)
-    
-    def getPar(self):
-        return self.par
-
-    def getApplication(self):
-        return self.par.getApplication()

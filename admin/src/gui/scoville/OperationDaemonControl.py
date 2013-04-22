@@ -27,7 +27,6 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
 from data.Generic import GenericObjectStoreException

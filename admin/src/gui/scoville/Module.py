@@ -24,25 +24,21 @@
 
 import sys
 import os
-from GenericObject import GenericObjectPage
-from data.Generic import GenericObjectStoreException
+from GenericObject import ObjectPageAbstract
 
 import pygtk
 pygtk.require("2.0")
 import gtk
 
-class ModulePage(GenericObjectPage):
+class ModulePage(ObjectPageAbstract):
     def __init__(self,par,module):
-        self.par = par
-        GenericObjectPage.__init__(self, par, module)
-        self.moduleId = module.getLocalId()
+        ObjectPageAbstract.__init__(self, par, module)
 
         self.moduleGuiLoaded = False
 
         self.label = gtk.Label("Wait a Second. Loading GUI")
         self.add(self.label)
 
-        module.addCallback(self.render)
         if not module.isGuiAvailable():
             print "Loading GUI"
             module.loadGui()
@@ -52,10 +48,8 @@ class ModulePage(GenericObjectPage):
         self.render()
 
     def render(self):
-        try:
-            module = self.getApplication().getLocalObjectById(self.moduleId)
-        except GenericObjectStoreException, e:
-            self.destroy()
+        module = self.getMyObject()
+        if not module:
             return
 
         if module.isGuiAvailable() and not self.moduleGuiLoaded:

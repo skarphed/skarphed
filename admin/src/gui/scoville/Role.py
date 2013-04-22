@@ -27,16 +27,14 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
-from data.Generic import GenericObjectStoreException
 import gui.IconStock
 
-class RolePage(GenericObjectPage):
+class RolePage(ObjectPageAbstract):
     def __init__(self,parent,role):
-        GenericObjectPage.__init__(self,parent,role)
-        self.roleId = role.getLocalId()
+        ObjectPageAbstract.__init__(self,parent,role)
         
         role.fetchPermissions()
         
@@ -87,14 +85,12 @@ class RolePage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        role.addCallback(self.render)
     
     def render(self):
-        try:
-            role = self.getApplication().getLocalObjectById(self.roleId)
-        except GenericObjectStoreException, e:
-            self.destroy()
+        role = self.getMyObject()
+        if not role:
             return
+
         self.headline.set_markup("<b>Edit Role: "+role.getName()+"</b>")
         
         if role.permissiondata is not None:
@@ -113,11 +109,3 @@ class RolePage(GenericObjectPage):
             role.assignPermission(perm)
         else:
             role.removePermission(perm)  
-    
-    def getPar(self):
-        return self.par
-
-    def getApplication(self):
-        return self.par.getApplication()
-
-        

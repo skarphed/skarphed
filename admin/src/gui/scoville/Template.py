@@ -26,20 +26,17 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
-from data.Generic import GenericObjectStoreException
 
 import gui.IconStock
 
 class TemplatePageException(Exception): pass
 
-class TemplatePage(GenericObjectPage):
+class TemplatePage(ObjectPageAbstract):
     def __init__(self,parent,template):
-        self.par = parent
-        GenericObjectPage.__init__(self,parent,template)
-        self.templateId = template.getLocalId()
+        ObjectPageAbstract.__init__(self,parent,template)
         
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
@@ -121,15 +118,12 @@ class TemplatePage(GenericObjectPage):
         self.repo.add(self.repoVBox)
         self.pack_start(self.repo)
 
-        template.addCallback(self.render)
         self.show_all()
         self.render()
     
     def render(self):
-        try:
-            template = self.getApplication().getLocalObjectById(self.templateId)
-        except GenericObjectStoreException:
-            self.destroy()
+        template = self.getMyObject()
+        if not template:
             return
 
         self.info_displayName.set_text(template.data['name'])
@@ -148,10 +142,8 @@ class TemplatePage(GenericObjectPage):
         self.fileToUpload = widget.get_filename()
     
     def uploadTemplate(self, widget=None, data=None):
-        try:
-            template = self.getApplication().getLocalObjectById(self.templateId)
-        except GenericObjectStoreException:
-            self.destroy()
+        template = self.getMyObject()
+        if not template:
             return
 
         if self.fileToUpload is not None and self.fileToUpload != "":
@@ -160,10 +152,8 @@ class TemplatePage(GenericObjectPage):
             raise Exception("No File specified")
 
     def installRowCallback(self,treeview=None,iter=None,path=None,data=None):
-        try:
-            template = self.getApplication().getLocalObjectById(self.templateId)
-        except GenericObjectStoreException:
-            self.destroy()
+        template = self.getMyObject()
+        if not template:
             return
 
         selection = self.repotree.get_selection()
@@ -177,9 +167,7 @@ class TemplatePage(GenericObjectPage):
         self.installRowCallback()
 
     def refreshAvailableTemplates(self,widget=None,data=None):
-        try:
-            template = self.getApplication().getLocalObjectById(self.templateId)
-        except GenericObjectStoreException:
-            self.destroy()
+        template = self.getMyObject()
+        if not template:
             return
         template.getRepoTemplates()

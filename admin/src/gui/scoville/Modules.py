@@ -27,18 +27,15 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
-from data.Generic import GenericObjectStoreException
 
 from gui.OperationTool import OperationTool
 import gui.IconStock
 
-class ModulesPage(GenericObjectPage):
+class ModulesPage(ObjectPageAbstract):
     def __init__(self,parent,modules):
-        self.par = parent
-        GenericObjectPage.__init__(self,parent,modules)
-        self.modulesId = modules.getLocalId()
+        ObjectPageAbstract.__init__(self,parent,modules)
         
         self.info = PageFrame(self,"Information", gui.IconStock.REPO)
         self.infobox = gtk.VBox()
@@ -128,7 +125,6 @@ class ModulesPage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        modules.addCallback(self.render)
         modules.getScoville().getOperationManager().addCallback(self.render)
         self.getApplication().getObjectStore().addCallback(self.render)
     
@@ -148,14 +144,18 @@ class ModulesPage(GenericObjectPage):
         if context.get_source_widget().get_name() != "AList":
             return
         module = self.getApplication().getLocalObjectById(int(selection.data))
-        modules = self.getApplication().getLocalObjectById(self.modulesId)
+        modules = self.getMyObject()
+        if not modules:
+            return
         modules.installModule(module)
     
     def aListReceiveCallback(self, treeview, context, x, y, selection, info , timestamp):
         if context.get_source_widget().get_name() != "IList":
             return
         module = self.getApplication().getLocalObjectById(int(selection.data))
-        modules = self.getApplication().getLocalObjectById(self.modulesId)
+        modules = self.getMyObject()
+        if not modules:
+            return
         modules.uninstallModule(module)    
     
     def getModuleIterById(self, moduleList, moduleId):
@@ -178,10 +178,8 @@ class ModulesPage(GenericObjectPage):
             if val not in processed:
                 model.itersToRemove.append(rowiter)
         
-        try:
-            modules = self.getApplication().getLocalObjectById(self.modulesId)
-        except GenericObjectStoreException, e:
-            self.destroy()
+        modules = self.getMyObject()
+        if not modules:
             return
 
         self.processedIListIds = []
@@ -216,12 +214,3 @@ class ModulesPage(GenericObjectPage):
             self.mod_IListStore.remove(rowiter)
         for rowiter in self.mod_AListStore.itersToRemove:
             self.mod_AListStore.remove(rowiter)
-        
-    
-    def getPar(self):
-        return self.par
-
-    def getApplication(self):
-        return self.par.getApplication()
-    
-    

@@ -27,18 +27,17 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
-from data.Generic import GenericObjectStoreException
 
 import gui.IconStock
 
 
-class UserPage(GenericObjectPage):
-    def __init__(self,parent,user):
-        GenericObjectPage.__init__(self,parent,user)
-        self.userId = user.getLocalId()
+class UserPage(ObjectPageAbstract):
+    def __init__(self,par,user):
+        ObjectPageAbstract.__init__(self,par,user)
+
         user.fetchRightsData()
         user.fetchRoleData()
         
@@ -114,14 +113,12 @@ class UserPage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        user.addCallback(self.render)
         
     def render(self):
-        try:
-            user = self.getApplication().getLocalObjectById(self.userId)
-        except GenericObjectStoreException:
-            self.destroy()
-            return
+        user = self.getMyObject()
+        if not user:
+            return 
+
         self.headline.set_markup("<b>Settings for User: "+user.getName()+"</b>")
         
         if user.permissiondata is not None:
@@ -138,11 +135,11 @@ class UserPage(GenericObjectPage):
         rowiter = self.perm_rolelist.get_iter(path)
         roleId = self.perm_rolelist.get_value(rowiter,3)
         val = 1-self.perm_rolelist.get_value(rowiter,0)
-        try:
-            user = self.getApplication().getLocalObjectById(self.userId)
-        except GenericObjectStoreException:
-            self.destroy()
-            return
+        
+        user = self.getMyObject()
+        if not user:
+            return 
+        
         if val == 1:
             user.assignRole(roleId)
         else:
@@ -152,11 +149,11 @@ class UserPage(GenericObjectPage):
         rowiter = self.perm_permlist.get_iter(path)
         perm = self.perm_permlist.get_value(rowiter,1)
         val = 1-self.perm_permlist.get_value(rowiter,0)
-        try:
-            user = self.getApplication().getLocalObjectById(self.userId)
-        except GenericObjectStoreException:
-            self.destroy()
-            return
+        
+        user = self.getMyObject()
+        if not user:
+            return 
+        
         if val == 1:
             user.assignPermission(perm)
         else:

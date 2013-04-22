@@ -27,19 +27,17 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
-from data.Generic import GenericObjectStoreException
 from OperationDaemonControl import OperationDaemonControl
 from gui.DefaultEntry import DefaultEntry
 import gui.IconStock
 
-class ScovillePage(GenericObjectPage):
+class ScovillePage(ObjectPageAbstract):
     def __init__(self,par,scoville):
-        GenericObjectPage.__init__(self,par,scoville)
-        self.scovilleId = scoville.getLocalId()
-        
+        ObjectPageAbstract.__init__(self,par,scoville)
+
         self.headline = gtk.Label("Scoville Instance")
         self.pack_start(self.headline,False)
         
@@ -80,14 +78,12 @@ class ScovillePage(GenericObjectPage):
         self.show_all()
         
         self.render()
-        scoville.addCallback(self.render)
     
     def render(self):
-        try:
-            scoville = self.getApplication().getLocalObjectById(self.scovilleId)
-        except GenericObjectStoreException, e:
-            self.destroy()
+        scoville = self.getMyObject()
+        if not scoville:
             return
+
         try:
             self.repoEntry.set_text(scoville.getRepoUrl())
         except AttributeError:
@@ -99,16 +95,11 @@ class ScovillePage(GenericObjectPage):
             self.pki_textbuffer.set_text("")    
         
     def cb_changeRepo(self, widget=None, data=None):
-        scoville = self.getApplication().getLocalObjectById(self.scovilleId)
+        scoville = self.getMyObject()
+        if not scoville:
+            return
+
         repostring = self.repoEntry.get_text()
         host,port = repostring.split(":")
         port = int(port)        
         scoville.setRepository(host,port)
-    
-    def getPar(self):
-        return self.par
-
-    def getApplication(self):
-        return self.par.getApplication()
-
-        

@@ -26,7 +26,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from GenericObject import GenericObjectPage
+from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
 from data.Generic import GenericObjectStoreException
@@ -36,10 +36,9 @@ from gui.ObjectCombo import ObjectCombo
 from gui.DefaultEntry import DefaultEntry
 
 
-class ViewPage(GenericObjectPage):
-    def __init__(self, parent, view):
-        GenericObjectPage.__init__(self, parent, view)
-        self.viewId = view.getLocalId()
+class ViewPage(ObjectPageAbstract):
+    def __init__(self, par, view):
+        ObjectPageAbstract.__init__(self, par, view)
 
         self.view = PageFrame(self, "View", VIEW)
         self.view_hbox = gtk.HBox(spacing=10)
@@ -74,18 +73,16 @@ class ViewPage(GenericObjectPage):
 
         self.page_combobox.connect("changed", self.changedPageCallback)
 
-        view.addCallback(self.render)
         if not view.isFullyLoaded():
             view.loadFull()
         else:
             self.render()
 
     def render(self):
-        try:
-            view = self.getApplication().getLocalObjectById(self.viewId)
-        except GenericObjectStoreException:
-            self.destroy()
+        view = self.getMyObject()
+        if not view:
             return
+            
         self.view_entry.set_text(view.data['name'])
         if view.data['default']:
             self.view_entry.set_sensitive(False)
