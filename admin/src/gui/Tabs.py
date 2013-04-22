@@ -87,11 +87,9 @@ class ObjectPage(ObjectPageAbstract):
         ObjectPageAbstract.__init__(self, par, obj)
         self.labeltop = gtk.Label()
 
-        #self.labelbottom = gtk.Label("""no further details""")
+        self.labelbottom = gtk.Label("""no further details""")
         self.add(self.labeltop)
-        #self.add(self.labelbottom)
-        for i in xrange(0,10):
-            self.pack_start(gtk.Label("benis"),True,True)
+        self.add(self.labelbottom)
 
         self.show_all()
         self.render()
