@@ -28,7 +28,6 @@ import gtk
 
 from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
-from GenericObject import FrameLabel
 
 import gui.IconStock
 
