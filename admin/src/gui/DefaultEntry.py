@@ -39,7 +39,7 @@ class DefaultEntry(gtk.Entry):
         self._defaultMessage = defaultMessage
         self.connect("focus-in-event", self.cb_focus_in)
         self.connect("focus-out-event", self.cb_focus_out)
-        if len(args) == 0:
+        if self._defaultMessage != "":
             self.cb_focus_out()
 
     def set_default_message(self, default_message):
@@ -48,15 +48,15 @@ class DefaultEntry(gtk.Entry):
 
     def cb_focus_in(self, widget=None, data=None):
         if self._isDefaultMessage:
+            self._isDefaultMessage = False
             gtk.Entry.set_text(self, "")
             self.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#000000"))
-            self._isDefaultMessage = False
 
     def cb_focus_out(self, widget=None, data=None):
         if gtk.Entry.get_text(self) == "":
+            self._isDefaultMessage = True
             gtk.Entry.set_text(self, self._defaultMessage)
             self.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse("#AAAAAA"))
-            self._isDefaultMessage = True
     
     def get_text(self):
         if not self._isDefaultMessage:
