@@ -29,7 +29,6 @@ import gtk
 
 from IconStock import SCOVILLE
 from ViewPasswordButton import ViewPasswordButton
-from InstanceWindow import InstanceWindow
 from data.Generic import GenericObjectStoreException
 
 class KeyWindow(gtk.Window):

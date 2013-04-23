@@ -29,7 +29,7 @@ import gtk
 
 from IconStock import SCOVILLE
 from ViewPasswordButton import ViewPasswordButton
-from InstanceWindow import InstanceWindow
+from InstancePage import InstancePage
 from data.Generic import GenericObjectStoreException
 
 from gui.DefaultEntry import DefaultEntry
@@ -163,7 +163,7 @@ class ServerPropertyPage(gtk.Frame):
     
     def cb_Add(self,widget=None,data=None):
         server = self.getApplication().getLocalObjectById(self.serverId)
-        InstanceWindow(self,server)
+        InstancePage(self,server)
     
     def cb_Remove(self,widget=None,data=None):
         instance = self.getCurrentInstance()
@@ -183,7 +183,7 @@ class ServerPropertyPage(gtk.Frame):
             server = None
         if instance is None or server is None:
             return
-        InstanceWindow(self,server,instance)
+        InstancePage(self,server,instance)
     
     def getCurrentInstance(self, onlyId=True):
         try:
