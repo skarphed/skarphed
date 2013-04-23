@@ -27,13 +27,11 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-class InputBox(gtk.Window):
-    inputBoxOpen = False
+class InputBox(gtk.Frame):
     def __init__(self,par,text,callback,typeWanted=False):
         self.par = par
-        gtk.Window.__init__(self)
+        gtk.Frame.__init__(self, "Input Box") # TODO title
         
-        self.set_title("Scoville Admin")
         self.set_border_width(10)
         
         self.label = gtk.Label(text)
@@ -56,7 +54,7 @@ class InputBox(gtk.Window):
         self.typeWanted = typeWanted
         
         self.add(self.vbox)
-        self.show_all()
+        self.getApplication().getMainWindow().openDialogPane(self)
 
         self.entry.grab_focus()
     
@@ -77,7 +75,7 @@ class InputBox(gtk.Window):
             except ValueError:
                 errorMessage(0)
                 return
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
         self.cb(value)
         
         
