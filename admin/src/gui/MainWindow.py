@@ -28,7 +28,7 @@ pygtk.require("2.0")
 import gtk
 import sys
 
-from ServerPropertyWindow import ServerPropertyWindow
+from ServerPropertyPage import ServerPropertyPage
 from LoginPage import LoginPage
 from KeyWindow import KeyWindow
 from Toolbar import Toolbar
@@ -163,7 +163,7 @@ class MainWindow(gtk.Window):
         self.openDialogPane(LoginPage(self));
     
     def cb_AddServerButton(self,widget=None,data=None):
-        ServerPropertyWindow(self)
+        ServerPropertyPage(self)
     
     def cb_pkiButton(self,widget=None,data=None):
         KeyWindow(self, self.getApplication().activeProfile)

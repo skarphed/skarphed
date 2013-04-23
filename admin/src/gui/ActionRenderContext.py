@@ -22,7 +22,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-from ServerPropertyWindow import ServerPropertyWindow
+from ServerPropertyPage import ServerPropertyPage
 from NewScoville import NewScoville
 from gui.database.NewDatabase import NewDatabase
 from gui.database.NewSchema import NewSchema
@@ -94,7 +94,7 @@ class ServerARC(ActionRenderContext):
         self.obj.establishConnections()
         
     def Properties(self,data=None):
-        ServerPropertyWindow(self.getPar().getPar(),server=self.obj)
+        ServerPropertyPage(self.getPar().getPar(),server=self.obj)
     
     def createInstance(self,data=None):
         NewScoville(self.getPar().getPar(),server=self.obj)
