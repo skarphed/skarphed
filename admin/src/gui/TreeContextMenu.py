@@ -27,15 +27,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-import IconStock
-
-from ServerPropertyWindow import ServerPropertyWindow
-from NewScoville import NewScoville
-from gui.database.NewDatabase import NewDatabase
-from gui.database.NewSchema import NewSchema
-from gui.database.RegisterSchema import RegisterSchema
-from InputBox import InputBox
-from YesNoDialog import YesNoDialog
+from ActionRenderContext import getAppropriateARC
 
 class TreeContextMenu(gtk.Menu):
     def __init__(self,parent):
@@ -44,310 +36,32 @@ class TreeContextMenu(gtk.Menu):
         self.par = parent
         self.concernedIter = None
 
-        removeServerI = gtk.Image()
-        removeServerI.set_from_pixbuf(IconStock.DELETE)
-        self.removeServer = gtk.ImageMenuItem()
-        self.removeServer.set_image(removeServerI)
-        gtk.MenuItem.__init__(self.removeServer,"Remove Server")
-        self.append(self.removeServer)
-        self.removeServer.connect("activate",self.cb_removeServer)
-        
-        
-        connectServerI = gtk.Image()
-        connectServerI.set_from_pixbuf(IconStock.SCOVILLE)
-        self.connectServer = gtk.ImageMenuItem()
-        self.connectServer.set_image(connectServerI)
-        gtk.MenuItem.__init__(self.connectServer,"Attempt Connection")
-        self.append(self.connectServer)
-        self.connectServer.connect("activate", self.cb_connectServer)
-        
-        propertiesI = gtk.Image()
-        propertiesI.set_from_pixbuf(IconStock.SCOVILLE)
-        self.properties = gtk.ImageMenuItem()
-        self.properties.set_image(propertiesI)
-        gtk.MenuItem.__init__(self.properties, "Properties...")
-        self.append(self.properties)
-        self.properties.connect("activate", self.cb_Properties)
-        
-        cssEditorI = gtk.Image()
-        cssEditorI.set_from_pixbuf(IconStock.CSS)
-        self.cssEditor = gtk.ImageMenuItem()
-        self.cssEditor.set_image(cssEditorI)
-        gtk.MenuItem.__init__(self.cssEditor, "CSS-editor")
-        self.append(self.cssEditor)
-        self.cssEditor.connect("activate", self.cb_cssEditor)
-        
-        deleteUserI = gtk.Image()
-        deleteUserI.set_from_pixbuf(IconStock.DELETE)
-        self.deleteUser = gtk.ImageMenuItem()
-        self.deleteUser.set_image(deleteUserI)
-        gtk.MenuItem.__init__(self.deleteUser, "Delete")
-        self.append(self.deleteUser)
-        self.deleteUser.connect("activate", self.cb_deleteUser)
-        
-        createUserI = gtk.Image()
-        createUserI.set_from_pixbuf(IconStock.USER)
-        self.createUser = gtk.ImageMenuItem()
-        self.createUser.set_image(createUserI)
-        gtk.MenuItem.__init__(self.createUser, "Create User")
-        self.append(self.createUser)
-        self.createUser.connect("activate", self.cb_createUser)
-        
-        createInstanceI = gtk.Image()
-        createInstanceI.set_from_pixbuf(IconStock.SCOVILLE)
-        self.createInstance = gtk.ImageMenuItem()
-        self.createInstance.set_image(createInstanceI)
-        gtk.MenuItem.__init__(self.createInstance,"Create Instance")
-        self.append(self.createInstance)
-        self.createInstance.connect("activate",self.cb_createInstance)
-
-        destroyInstanceI = gtk.Image()
-        destroyInstanceI.set_from_pixbuf(IconStock.DELETE)
-        self.destroyInstance = gtk.ImageMenuItem()
-        self.destroyInstance.set_image(destroyInstanceI)
-        gtk.MenuItem.__init__(self.destroyInstance,"Destroy Instance")
-        self.append(self.destroyInstance)
-        self.destroyInstance.connect("activate",self.cb_destroyInstance)
-
-        removeInstanceI = gtk.Image()
-        removeInstanceI.set_from_pixbuf(IconStock.DELETE)
-        self.removeInstance = gtk.ImageMenuItem()
-        self.removeInstance.set_image(removeInstanceI)
-        gtk.MenuItem.__init__(self.removeInstance,"Remove Instance")
-        self.append(self.removeInstance)
-        self.removeInstance.connect("activate",self.cb_removeInstance)
-        
-        createWidgetI = gtk.Image()
-        createWidgetI.set_from_pixbuf(IconStock.WIDGET)
-        self.createWidget = gtk.ImageMenuItem()
-        self.createWidget.set_image(createWidgetI)
-        gtk.MenuItem.__init__(self.createWidget,"Create Widget")
-        self.append(self.createWidget)
-        self.createWidget.connect("activate",self.cb_createWidget)
-        
-        deleteWidgetI = gtk.Image()
-        deleteWidgetI.set_from_pixbuf(IconStock.WIDGET)
-        self.deleteWidget = gtk.ImageMenuItem()
-        self.deleteWidget.set_image(deleteWidgetI)
-        gtk.MenuItem.__init__(self.deleteWidget,"Delete Widget")
-        self.append(self.deleteWidget)
-        self.deleteWidget.connect("activate",self.cb_deleteWidget)
-        
-        createMenuI = gtk.Image()
-        createMenuI.set_from_pixbuf(IconStock.MENU)
-        self.createMenu = gtk.ImageMenuItem()
-        self.createMenu.set_image(createMenuI)
-        gtk.MenuItem.__init__(self.createMenu,"Create Menu")
-        self.append(self.createMenu)
-        self.createMenu.connect("activate",self.cb_createMenu)
-        
-        deleteMenuI = gtk.Image()
-        deleteMenuI.set_from_pixbuf(IconStock.MENU)
-        self.deleteMenu = gtk.ImageMenuItem()
-        self.deleteMenu.set_image(deleteMenuI)
-        gtk.MenuItem.__init__(self.deleteMenu,"Delete Menu")
-        self.append(self.deleteMenu)
-        self.deleteMenu.connect("activate",self.cb_deleteMenu)
-        
-        createRoleI = gtk.Image()
-        createRoleI.set_from_pixbuf(IconStock.ROLE)
-        self.createRole = gtk.ImageMenuItem()
-        self.createRole.set_image(createRoleI)
-        gtk.MenuItem.__init__(self.createRole,"Create Role")
-        self.append(self.createRole)
-        self.createRole.connect("activate",self.cb_createRole)
-        
-        deleteRoleI = gtk.Image()
-        deleteRoleI.set_from_pixbuf(IconStock.ROLE)
-        self.deleteRole = gtk.ImageMenuItem()
-        self.deleteRole.set_image(deleteRoleI)
-        gtk.MenuItem.__init__(self.deleteRole,"Delete Role")
-        self.append(self.deleteRole)
-        self.deleteRole.connect("activate",self.cb_deleteRole)
-        
-        updateModulesI = gtk.Image()
-        updateModulesI.set_from_pixbuf(IconStock.MODULE_UPDATEABLE)
-        self.updateModules = gtk.ImageMenuItem()
-        self.updateModules.set_image(updateModulesI)
-        gtk.MenuItem.__init__(self.updateModules,"Update Modules")
-        self.append(self.updateModules)
-        self.updateModules.connect("activate",self.cb_updateModules)
-        
-        registerDatabaseI = gtk.Image()
-        registerDatabaseI.set_from_pixbuf(IconStock.DATABASE)
-        self.registerDatabase = gtk.ImageMenuItem()
-        self.registerDatabase.set_image(registerDatabaseI)
-        gtk.MenuItem.__init__(self.registerDatabase,"Register Database")
-        self.append(self.registerDatabase)
-        self.registerDatabase.connect("activate",self.cb_registerDatabase)
-
-        registerSchemaI = gtk.Image()
-        registerSchemaI.set_from_pixbuf(IconStock.SCHEMA)
-        self.registerSchema = gtk.ImageMenuItem()
-        self.registerSchema.set_image(registerSchemaI)
-        gtk.MenuItem.__init__(self.registerSchema,"Register Schema")
-        self.append(self.registerSchema)
-        self.registerSchema.connect("activate",self.cb_registerSchema)
-
-        createSchemaI = gtk.Image()
-        createSchemaI.set_from_pixbuf(IconStock.SCHEMA)
-        self.createSchema = gtk.ImageMenuItem()
-        self.createSchema.set_image(createSchemaI)
-        gtk.MenuItem.__init__(self.createSchema,"Create Schema")
-        self.append(self.createSchema)
-        self.createSchema.connect("activate",self.cb_createSchema)
-
-        unregisterSchemaI = gtk.Image()
-        unregisterSchemaI.set_from_pixbuf(IconStock.SCHEMA)
-        self.unregisterSchema = gtk.ImageMenuItem()
-        self.unregisterSchema.set_image(unregisterSchemaI)
-        gtk.MenuItem.__init__(self.unregisterSchema,"Unregister Schema")
-        self.append(self.unregisterSchema)
-        self.unregisterSchema.connect("activate",self.cb_unregisterSchema)
-        
-        destroySchemaI = gtk.Image()
-        destroySchemaI.set_from_pixbuf(IconStock.SCHEMA)
-        self.destroySchema = gtk.ImageMenuItem()
-        self.destroySchema.set_image(destroySchemaI)
-        gtk.MenuItem.__init__(self.destroySchema,"Destroy Schema")
-        self.append(self.destroySchema)
-        self.destroySchema.connect("activate",self.cb_destroySchema)
-                
+        self.currentItems = []
 
         self.show_all()
-        
-    def hide_buttons(self):
-        for element in self.get_children():
-            element.set_visible(False)
-        
-    def cb_removeServer(self,data=None):
-        def execute():
-            self.currentObject.destroy()
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to remove this Server?", execute)
-  
-    def cb_connectServer(self,data=None):
-        self.currentObject.establishConnections()
-        
-    def cb_Properties(self,data=None):
-        if self.currentObject.__class__.__name__ == "Server":
-            ServerPropertyWindow(self.getPar().getPar(),server=self.currentObject)
-    
-    def cb_createInstance(self,data=None):
-        if self.currentObject.__class__.__name__ == "Server":
-            NewScoville(self.getPar().getPar(),server=self.currentObject)
 
-    def cb_destroyInstance(self,data=None):
-        pass
-
-    def cb_removeInstance(self,data=None):
-        def execute():
-            self.currentObject.getServer().removeInstance(self.currentObject)
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Instance?", execute)
-    
-    def cb_cssEditor(self,data=None):
-        cn = self.currentObject.__class__.__name__
-        if cn in ("Scoville", "Module",  "Widget"):
-            self.getApplication().mainwin.openCssEditor(self.currentObject)
-    
-    def cb_createUser(self,data=None):
-        InputBox(self,"what should be the name of the new User?", self.currentObject.createUser)
-    
-    def cb_deleteUser(self,data=None):
-        def execute():
-            self.currentObject.delete()        
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this User?", execute)
-    
-    def cb_createWidget(self,data=None):
-        InputBox(self,"what should be the name of the new Widget?", self.currentObject.createWidget)
-    
-    def cb_deleteWidget(self, data=None):
-        def execute():
-            self.currentObject.delete()
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Widget?", execute)
-    
-    def cb_createMenu(self, data=None):
-        self.currentObject.createMenu()
-        
-    def cb_deleteMenu(self, data=None):
-        def execute():
-            self.currentObject.delete()
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Menu?", execute)
-    def cb_createRole(self, data=None):
-        InputBox(self,"what should be the name of the new Widget?", self.currentObject.createRole)
-    
-    def cb_deleteRole(self, data=None):
-        def execute():
-            self.currentObject.delete()
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Role?", execute)
-    
-    def cb_updateModules(self, data=None):
-        self.currentObject.updateModules()
-
-    def cb_registerDatabase(self, data=None):
-        NewDatabase(self.getPar().getPar(), self.currentObject)
-
-    def cb_registerSchema(self, data=None):
-        RegisterSchema(self.getPar().getPar(), self.currentObject)
-
-    def cb_createSchema(self, data=None):
-        NewSchema(self.getPar().getPar(), self.currentObject)
-
-    def cb_unregisterSchema(self, data=None):
-        def execute():
-            self.currentObject.getPar().unregisterSchema(self.currentObject)
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to remove this Schema?", execute)
-
-    def cb_destroySchema(self, data=None):
-        def execute():
-            self.currentObject.getPar().destroySchema(self.currentObject)
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to destroy this Schema?", execute)
-    
     def popup(self,obj,button,time):
-        self.hide_buttons()
-        itemtype = obj.__class__.__name__
-        if itemtype == "Server":
-            self.removeServer.set_visible(True)
-            self.connectServer.set_visible(True)
-            self.properties.set_visible(True)
-            self.createInstance.set_visible(True)
-            self.registerDatabase.set_visible(True)
-            self.connectServer.set_sensitive(not obj.isOnline())
+        for item in self.currentItems:
+            self.remove(item)
+        self.currentItems = []
+        
+        arc = getAppropriateARC(self, obj)
 
-        elif itemtype == "Module":
-            self.cssEditor.set_visible(True)
-            self.createWidget.set_visible(True)
-        elif itemtype == "Widget":
-            self.cssEditor.set_visible(True)
-            self.deleteWidget.set_visible(True)
-        elif itemtype == "GenericScovilleObject":
-            pass
-        elif itemtype == "User":
-            self.deleteUser.set_visible(True)
-        elif itemtype == "Users":
-            self.createUser.set_visible(True)
-        elif itemtype == "Role":
-            self.deleteRole.set_visible(True)
-        elif itemtype == "Roles":
-            self.createRole.set_visible(True)
-        elif itemtype == "Scoville": # HERE BE DRAGONS
-            self.removeInstance.set_visible(True)
-            self.destroyInstance.set_visible(True)
-            self.cssEditor.set_visible(True)
-            self.updateModules.set_visible(True)
-        elif itemtype == "Site":
-            self.createMenu.set_visible(True)
-        elif itemtype == "Menu":
-            self.deleteMenu.set_visible(True)
-        elif itemtype == "Database":
-            self.registerSchema.set_visible(True)
-            self.createSchema.set_visible(True)
-        elif itemtype == "Schema":
-            self.unregisterSchema.set_visible(True)
-            self.destroySchema.set_visible(True)
-        else: 
-            return
-        self.currentObject = obj
+        for action in arc.getActions():
+           image = gtk.Image()
+           image.set_from_pixbuf(action.getIcon()) 
+           item = gtk.ImageMenuItem()
+           item.set_image(image)
+           gtk.MenuItem.__init__(item, action.getName())
+           item.connect("activate", action.getCallback())
+           self.currentItems.append(item)
+
+        for item in self.currentItems:
+            self.append(item)
+
         gtk.Menu.popup(self,None,None,None,button,time,None)
+
+        self.show_all()
     
     def getPar(self):
         return self.par

@@ -31,6 +31,7 @@ import sys
 from ServerPropertyWindow import ServerPropertyWindow
 from LoginWindow import LoginWindow
 from KeyWindow import KeyWindow
+from Toolbar import Toolbar
 from Tree import Tree
 from Tabs import Tabs
 from CssEditor import CssEditor
@@ -56,7 +57,7 @@ class MainWindow(gtk.Window):
         self.headerbox = gtk.HBox()
         self.header = gtk.image_new_from_file("../data/header.png")
         self.menu = gtk.MenuBar()
-        self.tool = gtk.Toolbar()
+        self.tool = Toolbar(self)
         self.pane = gtk.HPaned()
         self.treescroll = gtk.ScrolledWindow()
         self.treescroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
@@ -87,23 +88,6 @@ class MainWindow(gtk.Window):
         self.treescroll.set_size_request(250,0)
         self.pane.add(self.treescroll)
         self.pane.add(self.tabs)
-        
-        #Toolbar:
-        self.logoutbutton=gtk.ToolButton()
-        self.logoutbutton.set_stock_id(gtk.STOCK_QUIT)
-        self.logoutbutton.connect("clicked", self.cb_LogoutButton)
-        self.addserverbutton=gtk.ToolButton()
-        self.addserverbutton.set_stock_id(gtk.STOCK_ADD)
-        self.addserverbutton.connect("clicked", self.cb_AddServerButton)
-        
-        self.pkibutton=gtk.ToolButton()
-        self.pkibutton.set_stock_id(gtk.STOCK_PROPERTIES)
-        self.pkibutton.connect("clicked", self.cb_pkiButton)
-        
-        
-        self.tool.add(self.logoutbutton)
-        self.tool.add(self.addserverbutton)
-        self.tool.add(self.pkibutton)
         
         self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"),False)
         self.status.pack_end(self.progress,False)
@@ -200,6 +184,9 @@ class MainWindow(gtk.Window):
         id = obj.getLocalId()
         if self.openCssEditors.has_key(id):
             del(self.openCssEditors[id])
+
+    def getToolbar(self):
+        return self.tool
     
     def getApplication(self):
         return self.app

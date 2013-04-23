@@ -73,16 +73,15 @@ class Tree(gtk.TreeView):
             y = int(event.y)
             pathinfo = self.get_path_at_pos(x,y)
             if pathinfo is not None:
-                try:
-                    self.grab_focus()
-                    self.set_cursor(pathinfo[0],pathinfo[1],0) 
-                    selection = self.get_selection()
-                    iter = selection.get_selected()[1]
-                    id = self.store.get_value(iter,2)
-                    obj = self.store.objectStore.getLocalObjectById(id)
-                    self.context.popup(obj,event.button,event.get_time())
-                except:
-                    pass
+                self.grab_focus()
+                self.set_cursor(pathinfo[0],pathinfo[1],0) 
+                selection = self.get_selection()
+                iter = selection.get_selected()[1]
+                id = self.store.get_value(iter,2)
+                obj = self.store.objectStore.getLocalObjectById(id)
+                self.context.popup(obj,event.button,event.get_time())
+                self.getPar().getToolbar().renderContextButtons(obj)
+            
     
     def cb_RowActivated(self,treeview,iter,path,wdata=None): 
         '''This callbackmethod defines behaviour after doubleclicking a row. It is calling open match
