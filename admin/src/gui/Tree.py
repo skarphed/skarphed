@@ -71,7 +71,11 @@ class Tree(gtk.TreeView):
     def cb_CursorChanged(self,data):
         selection = self.get_selection()
         rowiter = selection.get_selected()[1]
+        if rowiter is None:
+            return
         nr = self.store.get_value(rowiter,2)
+        if not nr >= 0:
+            return
         obj = self.store.objectStore.getLocalObjectById(nr)
         self.getPar().getToolbar().renderContextButtons(obj)
         self.getPar().getTabs().openPage(obj,False)
