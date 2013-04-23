@@ -82,7 +82,7 @@ class ServerARC(ActionRenderContext):
         self.addAction('Remove', IconStock.DELETE, self.removeServer)
         self.addAction('Connect', IconStock.WIDGET, self.connectServer)
         self.addAction('Properties', IconStock.SERVER, self.Properties)
-        self.addAction('Create Instance', IconStock.MODULE, self.createInstance)
+        self.addAction('Create Instance', IconStock.SCOVILLE, self.createInstance)
         self.addAction('Register Database', IconStock.DATABASE, self.registerDatabase)
 
     def removeServer(self,data=None):
@@ -107,8 +107,8 @@ class ScovilleARC(ActionRenderContext):
         ActionRenderContext.__init__(self, par,scoville)
 
         self.addAction('Destroy', IconStock.DELETE, self.destroyInstance)
-        self.addAction('Remove', IconStock.DELETE, self.destroyInstance)
-        self.addAction('CSS Editor', IconStock.CSS, self.destroyInstance)
+        self.addAction('Remove', IconStock.DELETE, self.removeInstance)
+        self.addAction('CSS Editor', IconStock.CSS, self.cssEditor)
         self.addAction('Update Modules', IconStock.MODULE_UPDATEABLE, self.updateModules)
 
     def destroyInstance(self,data=None):
