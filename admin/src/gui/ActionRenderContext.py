@@ -39,7 +39,7 @@ class ActionRenderContext(object):
     def __init__(self, parent, obj):
         self.actions = []
         self.obj = obj
-        self.parent = parent
+        self.par = parent
 
     def addAction(self, name, icon, callback):
         if name not in [a.getName() for a in self.actions]:
