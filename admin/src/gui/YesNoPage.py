@@ -26,21 +26,34 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-class YesNoDialog(gtk.MessageDialog):
+class YesNoPage(gtk.Frame):
     def __init__(self, par, message, callback):
-        gtk.MessageDialog.__init__(self,parent=par, flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
-        self.set_markup(message)
+        gtk.Frame.__init__(self, message)
         self.par = par
+        self.hbox = gtk.HBox()
+        self.yes = gtk.Button("Yes");
+        self.no = gtk.Button("No")
+        self.hbox.pack_start(self.yes)
+        self.hbox.pack_start(self.no)
+        self.add(self.hbox)
+
         self.callback = callback
 
-        self.connect('response', self.response_callback)
-        self.connect('close', self.close_callback)
-        self.run()
+        self.yes.connect('clicked', self.yes_callback)
+        self.no.connect('clicked', self.no_callback)
 
-    def close_callback(self):
-        self.destroy()
+        self.getApplication().getMainWindow().openDialogPane(self)
 
-    def response_callback(self, dialog, resp):
-        if resp == gtk.RESPONSE_YES:
+    def no_callback(self, button, data=None):
+        self.getApplication().getMainWindow().closeDialogPane()
+
+    def yes_callback(self, button, data=None):
+        if self.callback:
             self.callback()
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
+
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
