@@ -116,15 +116,15 @@ class MainWindow(gtk.Window):
         self.table.attach(self.status,0,1,4,5,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.add(self.table)
         
-        self.loginwindow = LoginWindow(self)
-        
         self.connect("delete_event",self.cb_Close)
-        
         self.show_all()
+
+        self.openDialogPane(LoginWindow(self));
     
     def openDialogPane(self, dialog):
         if not self._dialogOpen:
             self._dialogObject = dialog
+            self.pane.remove(self.tabs)
             self.pane.add2(self._dialogObject)
             self.tree.set_sensitive(False)
             self.tool.set_sensitive(False)
@@ -134,6 +134,7 @@ class MainWindow(gtk.Window):
 
     def closeDialogPane(self):
         if self._dialogOpen:
+            self.pane.remove(self._dialogObject)
             self.pane.add2(self.tabs)
             self.tree.set_sensitive(True)
             self.tool.set_sensitive(True)
@@ -165,7 +166,7 @@ class MainWindow(gtk.Window):
         #except Exception, e:
             #raise e
         #else:
-        self.loginwindow = LoginWindow(self)
+        self.openDialogPane(LoginWindow(self));
     
     def cb_AddServerButton(self,widget=None,data=None):
         ServerPropertyWindow(self)

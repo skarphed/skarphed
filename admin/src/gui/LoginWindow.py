@@ -76,8 +76,6 @@ class NewProfile(gtk.Fixed):
                 self.getApplication().createProfile(username,hash.hexdigest())
             except Exception,e :
                 raise e
-            else:
-                self.getPar().destroy()
             
 
 class UseProfile(gtk.Fixed):
@@ -117,39 +115,30 @@ class UseProfile(gtk.Fixed):
             self.getApplication().doLoginTry(username,hash.hexdigest())
         except Exception,e :
             raise e
-        else:
-            self.getPar().destroy()
+        self.getApplication().mainwin.closeDialogPane()
 
-class LoginWindow(gtk.Window):
-    def __init__(self,parent):
-        gtk.Window.__init__(self)
+class LoginWindow(gtk.VBox):
+    def __init__(self, parent):
+        gtk.VBox.__init__(self)
         self.par = parent
-        self.set_title("Scoville Admin Pro :: Login")
-        self.set_icon_from_file("../data/icon/mp_logo.png")
+        #self.set_title("Scoville Admin Pro :: Login")
+        #self.set_icon_from_file("../data/icon/mp_logo.png")
         
-        self.vbox = gtk.VBox()
         self.image = gtk.image_new_from_file("../data/login.png")
         self.notebook = gtk.Notebook()
         self.useprofile = UseProfile(self)
         self.newprofile = NewProfile(self)
         self.notebook.append_page(self.useprofile,gtk.Label("load profile"))
         self.notebook.append_page(self.newprofile,gtk.Label("create profile"))
-        self.vbox.add(self.image)
-        self.vbox.add(self.notebook)
-        self.add(self.vbox)
-        self.set_transient_for(self.getPar())
-        self.set_modal(True)
-        self.set_position(gtk.WIN_POS_CENTER)
-        self.set_resizable(False)
+        self.add(self.image)
+        self.add(self.notebook)
         
         self.show_all()
 
         self.useprofile.e_user.grab_focus()
-        
+
     def getPar(self):
         return self.par
 
     def getApplication(self):
         return self.par.getApplication()
-    
-        
