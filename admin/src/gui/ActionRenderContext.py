@@ -25,7 +25,7 @@
 from ServerPropertyPage import ServerPropertyPage
 from NewScoville import NewScoville
 from gui.database.NewDatabasePage import NewDatabasePage
-from gui.database.NewSchema import NewSchema
+from gui.database.NewSchemaPage import NewSchemaPage
 from gui.database.RegisterSchemaPage import RegisterSchemaPage
 from InputBox import InputBox
 from YesNoDialog import YesNoDialog
@@ -217,7 +217,7 @@ class DatabaseARC(ActionRenderContext):
         RegisterSchemaPage(self.getPar().getPar(), self.obj)
 
     def createSchema(self, data=None):
-        NewSchema(self.getPar().getPar(), self.obj)
+        NewSchemaPage(self.getPar().getPar(), self.obj)
 
 class SchemaARC(ActionRenderContext):
     def __init__(self, par,schema):
