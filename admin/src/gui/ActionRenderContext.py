@@ -24,7 +24,7 @@
 
 from ServerPropertyPage import ServerPropertyPage
 from NewScoville import NewScoville
-from gui.database.NewDatabase import NewDatabase
+from gui.database.NewDatabasePage import NewDatabasePage
 from gui.database.NewSchema import NewSchema
 from gui.database.RegisterSchema import RegisterSchema
 from InputBox import InputBox
@@ -100,7 +100,7 @@ class ServerARC(ActionRenderContext):
         NewScoville(self.getPar().getPar(),server=self.obj)
     
     def registerDatabase(self, data=None):
-        NewDatabase(self.getPar().getPar(), self.obj)
+        NewDatabasePage(self.getPar().getPar(), self.obj)
 
 class ScovilleARC(ActionRenderContext):
     def __init__(self, par, scoville):
