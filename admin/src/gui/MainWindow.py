@@ -187,6 +187,9 @@ class MainWindow(gtk.Window):
 
     def getToolbar(self):
         return self.tool
+
+    def getTree(self):
+        return self.tree
     
     def getApplication(self):
         return self.app

@@ -165,18 +165,39 @@ class Tabs(gtk.Notebook):
         self.par = parent
         self.pagestore = {}
         self.set_scrollable(True)
+        self.connect("switch-page", self.pageSwitched)
+        self.lastPageNum = None
         
-    def openPage(self,obj):
+    def openPage(self,obj,force=True):
+        """
+        opens a page that represents obj
+        if force is True, there will be a page
+        created if it does not exist
+        """
         if not self.pagestore.has_key(obj.getLocalId()):
-            self.pagestore[obj.getLocalId()] = TabPage(self,obj)
-            self.append_page(self.pagestore[obj.getLocalId()],TabLabel(self,obj))
-            self.set_tab_reorderable(self.pagestore[obj.getLocalId()],True)
+            if force:
+                self.pagestore[obj.getLocalId()] = TabPage(self,obj)
+                self.append_page(self.pagestore[obj.getLocalId()],TabLabel(self,obj))
+                self.set_tab_reorderable(self.pagestore[obj.getLocalId()],True)
+            else:
+                return
         self.set_current_page(self.page_num(self.pagestore[obj.getLocalId()]))
+        
         
     def closePage(self,objId):
         if self.pagestore.has_key(objId):
             self.remove_page(self.page_num(self.pagestore[objId]))
             del(self.pagestore[objId])
+
+    def pageSwitched(self, note, page, page_num):
+        if page_num != self.lastPageNum:
+            page = self.get_nth_page(page_num)
+            scvPage = page.get_children()[1]
+            self.lastPageNum = page_num
+            if hasattr(scvPage, "getMyObject"):
+                obj = scvPage.getMyObject()
+                self.getPar().getTree().setActiveObject(obj)
+
             
     def getPar(self):
         return self.par

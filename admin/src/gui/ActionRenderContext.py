@@ -247,11 +247,12 @@ ARCMAP = {
                    "Widget"           : WidgetARC,
                    "Menu"             : MenuARC,
                    "Database"         : DatabaseARC,
-                   "Schema"           : SchemaARC 
+                   "Schema"           : SchemaARC,
+                   "Scoville"         : ScovilleARC
                    }
 
 def getAppropriateARC(parent, obj):
     if ARCMAP.has_key(obj.__class__.__name__):
         return ARCMAP[obj.__class__.__name__](parent, obj)
     else:
-        return ActionRenderContext()
+        return ActionRenderContext(parent, None)

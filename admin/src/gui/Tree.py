@@ -66,7 +66,17 @@ class Tree(gtk.TreeView):
         self.connect("row-activated",self.cb_RowActivated)
         #self.connect("row-expanded",self.cb_RowExpanded)
         self.connect("button_press_event",self.cb_ButtonPressed)
+        self.connect("cursor-changed",self.cb_CursorChanged)
   
+    def cb_CursorChanged(self,data):
+        selection = self.get_selection()
+        rowiter = selection.get_selected()[1]
+        nr = self.store.get_value(rowiter,2)
+        obj = self.store.objectStore.getLocalObjectById(nr)
+        self.getPar().getToolbar().renderContextButtons(obj)
+        self.getPar().getTabs().openPage(obj,False)
+            
+
     def cb_ButtonPressed(self, widget = None, event = None, data = None):
         if event.button==3:
             x = int(event.x)
@@ -76,9 +86,9 @@ class Tree(gtk.TreeView):
                 self.grab_focus()
                 self.set_cursor(pathinfo[0],pathinfo[1],0) 
                 selection = self.get_selection()
-                iter = selection.get_selected()[1]
-                id = self.store.get_value(iter,2)
-                obj = self.store.objectStore.getLocalObjectById(id)
+                rowiter = selection.get_selected()[1]
+                nr = self.store.get_value(rowiter,2)
+                obj = self.store.objectStore.getLocalObjectById(nr)
                 self.context.popup(obj,event.button,event.get_time())
                 self.getPar().getToolbar().renderContextButtons(obj)
             
@@ -92,8 +102,11 @@ class Tree(gtk.TreeView):
         if id >= 0:
             object = self.getApplication().getLocalObjectById(id)
             self.getPar().getTabs().openPage(object)
-        
-        
+
+    def setActiveObject(self, obj):
+        rowiter = self.store.getIterById(obj.getLocalId())
+        path = self.store.get_path(rowiter)
+        self.set_cursor(path)
         
     def getPar(self):
         return self.par

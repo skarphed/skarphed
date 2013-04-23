@@ -32,6 +32,7 @@ from ActionRenderContext import getAppropriateARC
 class Toolbar(gtk.Toolbar):
     def __init__(self, parent):
         self.par = parent
+        gtk.Toolbar.__init__(self)
 
         self.logoutbutton=gtk.ToolButton()
         self.logoutbutton.set_stock_id(gtk.STOCK_QUIT)
@@ -63,13 +64,10 @@ class Toolbar(gtk.Toolbar):
         for action in arc.getActions():
             image = gtk.Image()
             image.set_from_pixbuf(action.getIcon())
-            item = self.append_item(
-                                    action.getName(),
-                                    action.getName(),
-                                    action.getName(),
-                                    image,
-                                    action.getCallback()
-                                    )
+            item = gtk.ToolButton(image,action.getName())
+            item.connect("clicked", action.getCallback())
+            self.insert(item,-1)
+            self.contextButtons.append(item)
 
         self.show_all()
 
