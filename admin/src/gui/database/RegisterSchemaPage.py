@@ -29,10 +29,10 @@ import gtk
 from data.Generic import GenericObjectStoreException
 from gui.DefaultEntry import DefaultEntry
 
-class RegisterSchema(gtk.Window):
-    def __init__(self,par,database):
+class RegisterSchemaPage(gtk.Frame):
+    def __init__(self, par, database):
         self.par = par
-        gtk.Window.__init__(self)
+        gtk.Frame.__init__(self, "Scoville Admin PRO :: Register Schema")
 
         self.databaseId = database.getLocalId()
 
@@ -67,7 +67,7 @@ class RegisterSchema(gtk.Window):
 
         self.table.set_border_width(10)
         self.add(self.table)
-        self.show_all()
+        self.getApplication().getMainWindow().openDialogPane(self)
 
 
     def cb_Ok(self,widget=None,data=None):
@@ -75,16 +75,16 @@ class RegisterSchema(gtk.Window):
         database.registerSchema(self.name_entry.get_text(),
                                 self.user_entry.get_text(), 
                                 self.pass_entry.get_text())
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
 
     def cb_Cancel(self, widget=None, data=None):
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
 
     def render(self):
         try:
             database = self.getApplication().getLocalObjectById(self.databaseId)
         except GenericObjectStoreException:
-            self.destroy()
+            self.getApplication().getMainWindow().closeDialogPane()
 
     def getPar(self):
         return self.par
