@@ -50,6 +50,8 @@ class LoginPage(gtk.Frame):
 
         self.add(self.vbox)
 
+        self.getPar().openDialogPane(self)
+
         self.useprofile.e_user.grab_focus()
 
     def getPar(self):

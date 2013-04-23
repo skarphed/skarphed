@@ -107,7 +107,7 @@ class MainWindow(gtk.Window):
         self.connect("delete_event",self.cb_Close)
         self.show_all()
 
-        self.openDialogPane(LoginPage(self));
+        LoginPage(self)
     
     def openDialogPane(self, dialog):
         self._dialogObjectStack.append(dialog)
@@ -160,7 +160,7 @@ class MainWindow(gtk.Window):
         #except Exception, e:
             #raise e
         #else:
-        self.openDialogPane(LoginPage(self));
+        LoginPage(self)
     
     def cb_AddServerButton(self,widget=None,data=None):
         ServerPropertyPage(self)
