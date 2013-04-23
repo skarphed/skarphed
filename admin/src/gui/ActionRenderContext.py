@@ -23,7 +23,7 @@
 ###########################################################
 
 from ServerPropertyPage import ServerPropertyPage
-from NewScoville import NewScoville
+from NewScovillePage import NewScovillePage
 from gui.database.NewDatabasePage import NewDatabasePage
 from gui.database.NewSchemaPage import NewSchemaPage
 from gui.database.RegisterSchemaPage import RegisterSchemaPage
@@ -97,7 +97,7 @@ class ServerARC(ActionRenderContext):
         ServerPropertyPage(self.getPar().getPar(),server=self.obj)
     
     def createInstance(self,data=None):
-        NewScoville(self.getPar().getPar(),server=self.obj)
+        NewScovillePage(self.getPar().getPar(),server=self.obj)
     
     def registerDatabase(self, data=None):
         NewDatabasePage(self.getPar().getPar(), self.obj)
