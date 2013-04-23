@@ -36,7 +36,21 @@ class LoginPage(gtk.Frame):
         gtk.Frame.__init__(self, "Scoville Admin Pro :: Login")
         self.par = parent
 
+        self.image = gtk.image_new_from_file("../data/login.png")
+        self.vbox = gtk.VBox()
+        self.hbox = gtk.HBox(True)
+        self.newprofile = NewProfile(self)
+        self.useprofile = UseProfile(self)
 
+        self.hbox.pack_start(self.useprofile)
+        self.hbox.pack_start(self.newprofile)
+
+        self.vbox.pack_start(self.image, False, False)
+        self.vbox.pack_start(self.hbox)
+
+        self.add(self.vbox)
+
+        self.useprofile.e_user.grab_focus()
 
     def getPar(self):
         return self.par
@@ -44,10 +58,13 @@ class LoginPage(gtk.Frame):
     def getApplication(self):
         return self.par.getApplication()
 
-class NewProfile(gtk.Fixed):
-    def __init__(self,parent):
-        gtk.Fixed.__init__(self)
+
+class NewProfile(gtk.Frame):
+    def __init__(self, parent):
+        gtk.Frame.__init__(self, "Create a new profile")
         self.par=parent
+
+        self.fixed = gtk.Fixed()
         
         self.l_user = gtk.Label("User")
         self.e_user = DefaultEntry(default_message="username")
@@ -62,14 +79,15 @@ class NewProfile(gtk.Fixed):
         self.e_password.set_visibility(False)
         self.e_password_r.set_visibility(False)
         
-        
-        self.put(self.l_user,10,10)
-        self.put(self.e_user,110,10)
-        self.put(self.l_password,10,35)
-        self.put(self.e_password,110,35)
-        self.put(self.l_password_r,10,60)
-        self.put(self.e_password_r,110,60)
-        self.put(self.ok,110,85)
+        self.fixed.put(self.l_user,10,10)
+        self.fixed.put(self.e_user,110,10)
+        self.fixed.put(self.l_password,10,35)
+        self.fixed.put(self.e_password,110,35)
+        self.fixed.put(self.l_password_r,10,60)
+        self.fixed.put(self.e_password_r,110,60)
+        self.fixed.put(self.ok,110,85)
+
+        self.add(self.fixed)
         
         self.ok.connect("clicked", self.cb_OK)
         
@@ -82,21 +100,23 @@ class NewProfile(gtk.Fixed):
     def cb_OK(self,widget=None,data=None):
         pw1 = self.e_password.get_text()
         pw2 = self.e_password_r.get_text()
-        if (pw1==pw2):
-            username = self.e_user.get_text()
+        username = self.e_user.get_text()
+        if username and pw1 == pw2:
             try:
                 hash = hashlib.md5()
                 hash.update(pw1)
                 self.getApplication().createProfile(username,hash.hexdigest())
+                self.getApplication().getMainWindow().closeDialogPane()
             except Exception,e :
                 raise e
             
 
-class UseProfile(gtk.Fixed):
+class UseProfile(gtk.Frame):
     def __init__(self,parent):
-        gtk.Fixed.__init__(self)
+        gtk.Frame.__init__(self, "Login to profile")
         self.par=parent
         
+        self.fixed = gtk.Fixed()
         self.l_user = gtk.Label(u"User")
         self.e_user = DefaultEntry(default_message="username")
         self.l_password = gtk.Label(u"Password")
@@ -106,11 +126,13 @@ class UseProfile(gtk.Fixed):
         self.e_password.set_invisible_char("●")
         self.e_password.set_visibility(False)
         
-        self.put(self.l_user,10,10)
-        self.put(self.e_user,110,10)
-        self.put(self.l_password,10,35)
-        self.put(self.e_password,110,35)
-        self.put(self.ok,110,60)
+        self.fixed.put(self.l_user,10,10)
+        self.fixed.put(self.e_user,110,10)
+        self.fixed.put(self.l_password,10,35)
+        self.fixed.put(self.e_password,110,35)
+        self.fixed.put(self.ok,110,60)
+
+        self.add(self.fixed)
         
         self.ok.connect("clicked", self.cb_OK)
         
@@ -119,43 +141,17 @@ class UseProfile(gtk.Fixed):
 
     def getApplication(self):
         return self.par.getApplication()
-    
+
     def cb_OK(self,widget=None,date=None):
         username=self.e_user.get_text()
         password=self.e_password.get_text()
-        try:
-            hash = hashlib.md5()
-            hash.update(password)
-            self.getApplication().doLoginTry(username,hash.hexdigest())
-        except Exception,e :
-            raise e
-        self.getApplication().mainwin.closeDialogPane()
-
-class LoginWindow(gtk.Alignment):
-    def __init__(self, parent):
-        gtk.Alignment.__init__(self, 0.5, 0.5, 0, 0)
-        self.par = parent
-        #self.set_title("Scoville Admin Pro :: Login")
-        #self.set_icon_from_file("../data/icon/mp_logo.png")
-        
-        self.useprofile = UseProfile(self)
-        self.add(self.useprofile)
-        """
-        self.image = gtk.image_new_from_file("../data/login.png")
-        self.notebook = gtk.Notebook()
-        self.useprofile = UseProfile(self)
-        self.newprofile = NewProfile(self)
-        self.notebook.append_page(self.useprofile,gtk.Label("load profile"))
-        self.notebook.append_page(self.newprofile,gtk.Label("create profile"))
-        self.add(self.image)
-        self.add(self.notebook)
-        """
-        self.show_all()
-
-        self.useprofile.e_user.grab_focus()
-
-    def getPar(self):
-        return self.par
-
-    def getApplication(self):
-        return self.par.getApplication()
+        if username and password:
+            try:
+                hash = hashlib.md5()
+                hash.update(password)
+                self.getApplication().doLoginTry(username,hash.hexdigest())
+            except Exception,e :
+                raise e
+            else:
+                self.getPar().destroy()
+            self.getApplication().getMainWindow().closeDialogPane()

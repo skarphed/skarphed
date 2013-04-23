@@ -95,6 +95,9 @@ class Application(object):
     
     def getData(self):
         return data
+
+    def getMainWindow(self):
+        return self.mainwin
     
     def getLocalObjectById(self,obj_id):
         return self.getObjectStore().getLocalObjectById(obj_id)

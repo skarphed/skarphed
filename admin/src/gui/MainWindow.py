@@ -29,7 +29,7 @@ import gtk
 import sys
 
 from ServerPropertyWindow import ServerPropertyWindow
-from LoginWindow import LoginWindow
+from LoginPage import LoginPage
 from KeyWindow import KeyWindow
 from Toolbar import Toolbar
 from Tree import Tree
@@ -108,7 +108,7 @@ class MainWindow(gtk.Window):
         self.connect("delete_event",self.cb_Close)
         self.show_all()
 
-        self.openDialogPane(LoginWindow(self));
+        self.openDialogPane(LoginPage(self));
     
     def openDialogPane(self, dialog):
         if not self._dialogOpen:
@@ -161,7 +161,7 @@ class MainWindow(gtk.Window):
         #except Exception, e:
             #raise e
         #else:
-        self.openDialogPane(LoginWindow(self));
+        self.openDialogPane(LoginPage(self));
     
     def cb_AddServerButton(self,widget=None,data=None):
         ServerPropertyWindow(self)
