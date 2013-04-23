@@ -27,6 +27,7 @@ pygtk.require("2.0")
 import gtk
 
 import IconStock
+from data.Generic import GenericObjectStoreException
 
 class StoreException(Exception):pass
 
@@ -100,8 +101,7 @@ class Store(gtk.TreeStore):
             if id >= 0:
                 try:
                     obj = self.objectStore.getLocalObjectById(model.get_value(iter,2))
-                #except data.Generic.GenericObjectStoreException,e:
-                except Exception,e:
+                except GenericObjectStoreException,e:
                     self.itersToRemove.append(iter)
                 else:
                     if obj.__class__.__name__ == "Server":
@@ -113,9 +113,10 @@ class Store(gtk.TreeStore):
                         pass
                     model.set_value(iter,1,displayName)
                     self.objectsToAllocate.remove(id)
-                
+        
         objectsAllocated = 1
-        self.objectsToAllocate = self.objectStore.localObjects.keys()    
+        self.objectsToAllocate = self.objectStore.localObjects.keys()
+
         self.itersToRemove= []
         self.foreach(search)
         
@@ -132,4 +133,73 @@ class Store(gtk.TreeStore):
         for id in self.objectsToAllocate:
             self.addObject(id, True)
         
+class FilterStore(gtk.ListStore):
+    '''The Matchstore class is holding and managing the Data for the MatchTree. It communicates with the database'''
+    EXCLUDED_CLASSES = ("Operation",
+                        "OperationManager",
+                        "Action",
+                        "ActionList",
+                        "MenuItem",
+                        "ScovilleInstaller",
+                        "OperationDaemon")
+    def __init__(self,*args,**kwargs):
+        '''Constructor --'''
+        assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
+        gtk.ListStore.__init__(self,*args)
+        self.par = kwargs['parent']
+        self.objectStore  = kwargs['objectStore']
+        self.objectStore.addCallback(self.render)
+        self.filterString = None
+  
+    def getPar(self):
+        return self.par 
+
+    def getApplication(self):
+        return self.par.getApplication()
+
+    def addObject(self,obj,addToRootIfNoParent=True):
+        obj = self.objectStore.getLocalObjectById(obj)
+        if obj.__class__.__name__ in self.EXCLUDED_CLASSES:
+            return True
+        if self.filterString is not None and obj.getName().lower().find(self.filterString.lower()) < 0:
+            return True
         
+        self.append((IconStock.getAppropriateIcon(obj), obj.getName(),obj.getLocalId()))
+        return True
+        
+    def render(self, filterstring=None):
+        def search(model, path, rowiter):
+            nr = model.get_value(rowiter,2)
+            if nr >= 0:
+                try:
+                    obj = self.objectStore.getLocalObjectById(model.get_value(rowiter,2))
+                except GenericObjectStoreException,e:
+                    self.itersToRemove.append(rowiter)
+                else:
+                    if self.filterString is not None and obj.getName().lower().find(model.filterString.lower()) < 0:
+                        self.itersToRemove.append(rowiter)
+                        return
+                    if obj.__class__.__name__ == "Server":
+                        model.set_value(rowiter,0,IconStock.getServerIcon(obj))
+                    displayName = str(obj.getLocalId())
+                    try:
+                        displayName = obj.getName()
+                    except Exception,e:
+                        pass
+                    model.set_value(rowiter,1,displayName)
+                    self.objectsToAllocate.remove(nr)
+
+        self.objectsToAllocate = self.objectStore.localObjects.keys()
+
+        if filterstring is not None:
+            self.filterString = filterstring
+        print filterstring
+
+        self.itersToRemove= []
+        self.foreach(search)
+
+        for rowiter in self.itersToRemove:
+            self.remove(rowiter)
+
+        for nr in self.objectsToAllocate:
+            self.addObject(nr, True)

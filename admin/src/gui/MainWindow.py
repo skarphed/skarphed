@@ -35,7 +35,7 @@ from Toolbar import Toolbar
 from Tree import Tree
 from Tabs import Tabs
 from CssEditor import CssEditor
-
+from DefaultEntry import DefaultEntry
 
 class GetParentException(Exception):pass
 
@@ -62,6 +62,8 @@ class MainWindow(gtk.Window):
         self.treescroll = gtk.ScrolledWindow()
         self.treescroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.tree = Tree(self)
+        self.treeBox = gtk.VBox()
+        self.treeFilter = DefaultEntry(default_message="Filter")
         self.tabs = Tabs(self)
         self.status = gtk.Statusbar()
         self.progress = gtk.ProgressBar()
@@ -86,7 +88,9 @@ class MainWindow(gtk.Window):
         self.menu.add(self.menu_help)
         self.treescroll.add(self.tree)
         self.treescroll.set_size_request(250,0)
-        self.pane.add(self.treescroll)
+        self.treeBox.pack_start(self.treeFilter,False)
+        self.treeBox.pack_start(self.treescroll,True)
+        self.pane.add(self.treeBox)
         self.pane.add(self.tabs)
         
         self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"),False)
@@ -100,6 +104,7 @@ class MainWindow(gtk.Window):
         self.table.attach(self.status,0,1,4,5,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.add(self.table)
         
+        self.treeFilter.connect("changed", self.cb_changedFilter)
         self.connect("delete_event",self.cb_Close)
         self.show_all()
 
@@ -127,6 +132,12 @@ class MainWindow(gtk.Window):
             self._dialogObject = None
             self._dialogOpen = False
             self.show_all()
+
+    def cb_changedFilter(self, widget=None, data=None):
+        self.tree.render()
+
+    def getFilterText(self):
+        return self.treeFilter.get_text()
 
     def cb_ServerClicked(self,widget=None,data=None):        
         raise Exception("LOLOLOL")

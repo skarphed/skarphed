@@ -26,7 +26,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from Store import Store
+from Store import Store, FilterStore
 from TreeContextMenu import TreeContextMenu
 
 class Tree(gtk.TreeView):
@@ -35,9 +35,10 @@ class Tree(gtk.TreeView):
         gtk.TreeView.__init__(self)
         self.par = parent
         
-        #self.context = MatchTreeContextMenu(self.app,self)
+        self.stateFilter = False
         
         self.store = Store(gtk.gdk.Pixbuf, str,int ,parent=self.par, objectStore=self.getApplication().getObjectStore()) #Icon, Name, ID, type
+        self.filterstore = FilterStore(gtk.gdk.Pixbuf, str, int, parent=self.par, objectStore=self.getApplication().getObjectStore())
         self.context = TreeContextMenu(self)
         self.set_model(self.store)
         
@@ -66,15 +67,28 @@ class Tree(gtk.TreeView):
         self.connect("row-activated",self.cb_RowActivated)
         #self.connect("row-expanded",self.cb_RowExpanded)
         self.connect("button_press_event",self.cb_ButtonPressed)
-        self.connect("cursor-changed",self.cb_CursorChanged)
+        self.changeHandler = self.connect("cursor-changed",self.cb_CursorChanged)
+
+    def render(self):
+        filterString = self.getApplication().mainwin.getFilterText()
+        if filterString != "":
+            self.filterstore.render(filterString)
+            self.disconnect(self.changeHandler)
+            self.set_model(self.filterstore)
+            self.set_cursor((0,))
+            self.stateFilter = True
+        else:
+            self.set_model(self.store)
+            self.changeHandler = self.connect("cursor-changed",self.cb_CursorChanged)
+            self.stateFilter = False
   
     def cb_CursorChanged(self,data):
         selection = self.get_selection()
         rowiter = selection.get_selected()[1]
-        if rowiter is None:
+        if rowiter is None or not self.store.iter_is_valid(rowiter):
             return
         nr = self.store.get_value(rowiter,2)
-        if not nr >= 0:
+        if nr is not None and not nr >= 0:
             return
         obj = self.store.objectStore.getLocalObjectById(nr)
         self.getPar().getToolbar().renderContextButtons(obj)
@@ -97,14 +111,17 @@ class Tree(gtk.TreeView):
                 self.getPar().getToolbar().renderContextButtons(obj)
             
     
-    def cb_RowActivated(self,treeview,iter,path,wdata=None): 
+    def cb_RowActivated(self,treeview,rowiter,path,wdata=None): 
         '''This callbackmethod defines behaviour after doubleclicking a row. It is calling open match
            if the currently selected treeelement is representing a match'''
         selection = self.get_selection()
-        iter = selection.get_selected()[1]
-        id = self.store.get_value(iter,2)
-        if id >= 0:
-            object = self.getApplication().getLocalObjectById(id)
+        rowiter = selection.get_selected()[1]
+        if self.stateFilter:
+            nr = self.filterstore.get_value(rowiter,2)
+        else:
+            nr = self.store.get_value(rowiter,2)
+        if nr >= 0:
+            object = self.getApplication().getLocalObjectById(nr)
             self.getPar().getTabs().openPage(object)
 
     def setActiveObject(self, obj):
