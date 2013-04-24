@@ -155,6 +155,14 @@ class GenericScovilleObject(object):
         else:
             return self.getPar().isChildOf(obj)
     
+    def isParentOf(self, obj):
+        for child in self.children:
+            if child == obj:
+                return True
+            if child.isParentOf(obj):
+                return True
+        return False
+
     def addCallback(self, callback):
         if callback not in self.updateCallbacks:
             self.updateCallbacks.append(callback)
