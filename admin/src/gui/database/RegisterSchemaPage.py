@@ -29,19 +29,21 @@ import gtk
 from data.Generic import GenericObjectStoreException
 from gui.DefaultEntry import DefaultEntry
 
-class NewDatabase(gtk.Window):
-    def __init__(self,par,server):
+class RegisterSchemaPage(gtk.Frame):
+    def __init__(self, par, database):
         self.par = par
-        gtk.Window.__init__(self)
+        gtk.Frame.__init__(self, "Scoville Admin PRO :: Register Schema")
 
-        self.serverId = server.getLocalId()
+        self.databaseId = database.getLocalId()
 
         self.table = gtk.Table(4,2,False)
-        self.instruction = gtk.Label("Please enter DBA-Credentials here:")
-        self.dba_user_label = gtk.Label("DBA-User:")
-        self.dba_pass_label = gtk.Label("Password:")
-        self.dba_user_entry = DefaultEntry(default_message="SYSDBA")
-        self.dba_pass_entry = DefaultEntry(default_message="password")
+        self.instruction = gtk.Label("Please enter Credentials here:")
+        self.name_label = gtk.Label("Schema-Name")
+        self.user_label = gtk.Label("Schema-User:")
+        self.pass_label = gtk.Label("Schema-Password:")
+        self.user_entry = DefaultEntry(default_message="user")
+        self.pass_entry = DefaultEntry(default_message="password")
+        self.name_entry = DefaultEntry(default_message="schema")
         self.buttonhbox = gtk.HBox()
         self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
@@ -49,36 +51,40 @@ class NewDatabase(gtk.Window):
         self.buttonhbox.add(self.ok)
         
         self.table.attach(self.instruction,0,2,0,1)
-        self.table.attach(self.dba_user_label,0,1,1,2)
-        self.table.attach(self.dba_user_entry,1,2,1,2)
-        self.table.attach(self.dba_pass_label,0,1,2,3)
-        self.table.attach(self.dba_pass_entry,1,2,2,3)
-        self.table.attach(self.buttonhbox,1,2,3,4)
+        self.table.attach(self.name_label,0,1,1,2)
+        self.table.attach(self.name_entry,1,2,1,2)
+        self.table.attach(self.user_label,0,1,2,3)
+        self.table.attach(self.user_entry,1,2,2,3)
+        self.table.attach(self.pass_label,0,1,3,4)
+        self.table.attach(self.pass_entry,1,2,3,4)
+        self.table.attach(self.buttonhbox,1,2,4,5)
 
         self.ok.connect("clicked", self.cb_Ok)
         self.cancel.connect("clicked", self.cb_Cancel)
         self.connect("delete-event", self.cb_Cancel)
 
-        server.addCallback(self.render)
+        database.addCallback(self.render)
 
         self.table.set_border_width(10)
         self.add(self.table)
-        self.show_all()
+        self.getApplication().getMainWindow().openDialogPane(self)
 
 
     def cb_Ok(self,widget=None,data=None):
-        server = self.getApplication().getLocalObjectById(self.serverId)
-        server.setDatabase(self.dba_user_entry.get_text(), self.dba_pass_entry.get_text())
-        self.destroy()
+        database = self.getApplication().getLocalObjectById(self.databaseId)
+        database.registerSchema(self.name_entry.get_text(),
+                                self.user_entry.get_text(), 
+                                self.pass_entry.get_text())
+        self.getApplication().getMainWindow().closeDialogPane()
 
     def cb_Cancel(self, widget=None, data=None):
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
 
     def render(self):
         try:
-            server = self.getApplication().getLocalObjectById(self.serverId)
-        except GenericObjectStoreException, e:
-            self.destroy()
+            database = self.getApplication().getLocalObjectById(self.databaseId)
+        except GenericObjectStoreException:
+            self.getApplication().getMainWindow().closeDialogPane()
 
     def getPar(self):
         return self.par

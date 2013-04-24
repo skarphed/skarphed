@@ -313,8 +313,9 @@ class Repository(object):
         cur = environ['db'].query('SELECT TMP_DATA, TMP_SIGNATURE \
                 FROM TEMPLATES \
                 WHERE TMP_ID = ?;', ident)
-        result = cur.fetchonemap();
+        result = cur.fetchallmap()
         if result:
+            result = result[0]
             return (result['TMP_DATA'], result['TMP_SIGNATURE'])
         else:
             raise create_repository_exception(RepositoryErrorCode.TEMPLATE_NOT_FOUND,
@@ -623,7 +624,7 @@ class Repository(object):
         environ['db'].query('INSERT INTO TEMPLATES (TMP_ID, TMP_NAME, TMP_DESCRIPTION, \
                 TMP_AUTHOR, TMP_SIGNATURE, TMP_DATA) VALUES (?,?,?,?,?,?);',
                 (tmp_id, manifest['name'], manifest['description'], manifest['author'],
-                repo_signature, StringIO(base64.b64encode(data))), commit=True)
+                repo_signature, base64.b64encode(data)), commit=True)
 
 
     def delete_template(self, environ, ident):

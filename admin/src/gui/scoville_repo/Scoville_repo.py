@@ -30,7 +30,7 @@ import gtk
 from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from data.Generic import GenericObjectStoreException
-from gui.YesNoDialog import YesNoDialog
+from gui.YesNoPage import YesNoPage
 from gui.DefaultEntry import DefaultEntry
 
 class Scoville_repoPage (ObjectPageAbstract):
@@ -187,7 +187,7 @@ class Scoville_repoPage (ObjectPageAbstract):
         rowiter = selection.get_selected()[1]
         nr = self.templateList.store.get_value(rowiter,4)
         self.templateToDelete = nr
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Template from the Repository?", execute)
+        YesNoPage(self.getApplication().getMainWindow(), "Do you really want to delete this Template from the Repository?", execute)
 
 
 

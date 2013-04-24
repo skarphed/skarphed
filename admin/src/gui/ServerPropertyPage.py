@@ -29,30 +29,27 @@ import gtk
 
 from IconStock import SCOVILLE
 from ViewPasswordButton import ViewPasswordButton
-from InstanceWindow import InstanceWindow
+from InstancePage import InstancePage
 from data.Generic import GenericObjectStoreException
 
 from gui.DefaultEntry import DefaultEntry
 
-class ServerPropertyWindow(gtk.Window):
+class ServerPropertyPage(gtk.Frame):
     addWindowOpen=False
     MODE_EDIT = 0
     MODE_NEW = 1
-    def __init__(self,parent, server=None):
-        gtk.Window.__init__(self)
+
+    def __init__(self, parent, server=None):
+        gtk.Frame.__init__(self)
         self.par = parent
         self.serverId = None
         if server is None:
-            if ServerPropertyWindow.addWindowOpen:
-                self.destroy()
-                return
-            self.set_title("Scoville Admin Pro :: New Server")
-            ServerPropertyWindow.addWindowOpen = True
-            self.mode = ServerPropertyWindow.MODE_NEW
+            self.set_label("Scoville Admin Pro :: New Server")
+            self.mode = ServerPropertyPage.MODE_NEW
         else:
             self.serverId = server.getLocalId()
-            self.set_title("Scoville Admin Pro :: Server Properties of "+server.getIp())
-            self.mode = ServerPropertyWindow.MODE_EDIT
+            self.set_label("Scoville Admin Pro :: Server Properties of "+server.getIp())
+            self.mode = ServerPropertyPage.MODE_EDIT
             
         self.vbox = gtk.VBox()
         
@@ -132,18 +129,13 @@ class ServerPropertyWindow(gtk.Window):
         
         self.add(self.vbox)
         
-        self.set_transient_for(self.getPar())
-        self.set_position(gtk.WIN_POS_CENTER)
-        self.set_border_width(10)
-        self.set_size_request(500,600)
-        
         if server is not None:
             self.ipFrame_IPEntry.set_text(server.getIp())
             self.ipFrame_NameEntry.set_text(server.getRawName())
             self.sshFrame_NameEntry.set_text(server.getSSHName())
             self.sshFrame_PassEntry.set_text(server.getSSHPass())
             server.addCallback(self.render)
-        self.show_all()
+        self.getApplication().getMainWindow().openDialogPane(self)
         self.render()
     
     def render(self):
@@ -151,11 +143,11 @@ class ServerPropertyWindow(gtk.Window):
         try:
             server = self.getApplication().getLocalObjectById(self.serverId)
         except GenericObjectStoreException:
-            if self.mode == ServerPropertyWindow.MODE_EDIT:
-                self.destroy()
+            if self.mode == ServerPropertyPage.MODE_EDIT:
+                self.getApplication().getMainWindow().closeDialogPane()
                 return
         
-        self.instFrame.set_visible(self.mode == ServerPropertyWindow.MODE_EDIT)
+        self.instFrame.set_visible(self.mode == ServerPropertyPage.MODE_EDIT)
 
         self.instStore.clear()
         if server is not None:
@@ -171,7 +163,7 @@ class ServerPropertyWindow(gtk.Window):
     
     def cb_Add(self,widget=None,data=None):
         server = self.getApplication().getLocalObjectById(self.serverId)
-        InstanceWindow(self,server)
+        InstancePage(self,server)
     
     def cb_Remove(self,widget=None,data=None):
         instance = self.getCurrentInstance()
@@ -191,7 +183,7 @@ class ServerPropertyWindow(gtk.Window):
             server = None
         if instance is None or server is None:
             return
-        InstanceWindow(self,server,instance)
+        InstancePage(self,server,instance)
     
     def getCurrentInstance(self, onlyId=True):
         try:
@@ -212,7 +204,7 @@ class ServerPropertyWindow(gtk.Window):
             concernedServer = None
         if self.serverId is None:
             server = self.getApplication().getData().createServer()
-            self.mode = ServerPropertyWindow.MODE_EDIT
+            self.mode = ServerPropertyPage.MODE_EDIT
         else:
             server = concernedServer
         server.setIp(self.ipFrame_IPEntry.get_text())
@@ -222,12 +214,8 @@ class ServerPropertyWindow(gtk.Window):
         server.load = server.LOADED_PROFILE
         server.establishConnections()
         
-        if concernedServer is None:
-            ServerPropertyWindow.addWindowOpen = False
-        
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
     
     def cb_Cancel(self,widget=None,data=None):
-        ServerPropertyWindow.addWindowOpen = False
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
         

@@ -40,7 +40,7 @@ class Application(object):
     def __init__(self):
         os.environ['PYGTK_FATAL_EXCEPTIONS'] = '1'
         data.Generic.setApplicationReference(self)
-        self.mainwin= gui.MainWindow(self)
+        self.mainwin = gui.MainWindow(self)
         self.quitrequest = False
         self.tracker = net.Tracker.Tracker(self)
         self.tracker.start()
@@ -95,6 +95,9 @@ class Application(object):
     
     def getData(self):
         return data
+
+    def getMainWindow(self):
+        return self.mainwin
     
     def getLocalObjectById(self,obj_id):
         return self.getObjectStore().getLocalObjectById(obj_id)

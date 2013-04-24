@@ -32,19 +32,18 @@ from DefaultEntry import DefaultEntry
 from data.Server import Server
 from data.Generic import GenericObjectStoreException
 
-class NewScoville(gtk.Window):
+class NewScovillePage(gtk.Frame):
     def __init__(self,par,server=None):
         self.par = par
         self.serverId =None
         self.installerId = None
         if server is not None:
             self.serverId = server.getLocalId()
-        gtk.Window.__init__(self)
+        gtk.Frame.__init__(self, "Scoville Admin :: Create Instance")
         self.targetsRendered = False
 
 
         self.vbox = gtk.VBox()
-        self.set_title("Scoville Admin :: Create Instance")
         self.set_border_width(10)
         self.toplabel = gtk.Label("Please configure the new Installation")
 
@@ -151,9 +150,9 @@ class NewScoville(gtk.Window):
         self.cancel.connect("clicked", self.cb_Cancel)
         self.connect("delete-event",self.cb_Cancel)
 
-        self.set_icon_from_file("../data/icon/mp_logo.png")
+        #self.set_icon_from_file("../data/icon/mp_logo.png")
 
-        self.show_all()
+        self.getApplication().getMainWindow().openDialogPane(self)
         self.getApplication().getObjectStore().addCallback(self.render)
         self.render()
 
@@ -195,7 +194,7 @@ class NewScoville(gtk.Window):
         self.repo_combobox.destroy()
         self.db_db_combo.destroy()
         self.db_schema_combo.destroy()
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
 
     def cb_ToggledDb(self, widget=None, data=None):
         if data==1:

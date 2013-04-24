@@ -22,13 +22,13 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-from ServerPropertyWindow import ServerPropertyWindow
-from NewScoville import NewScoville
-from gui.database.NewDatabase import NewDatabase
-from gui.database.NewSchema import NewSchema
-from gui.database.RegisterSchema import RegisterSchema
+from ServerPropertyPage import ServerPropertyPage
+from NewScovillePage import NewScovillePage
+from gui.database.NewDatabasePage import NewDatabasePage
+from gui.database.NewSchemaPage import NewSchemaPage
+from gui.database.RegisterSchemaPage import RegisterSchemaPage
 from InputBox import InputBox
-from YesNoDialog import YesNoDialog
+from YesNoPage import YesNoPage
 import IconStock 
 
 class ActionRenderContext(object):
@@ -88,19 +88,19 @@ class ServerARC(ActionRenderContext):
     def removeServer(self,data=None):
         def execute():
             self.obj.destroy()
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to remove this Server?", execute)
+        YesNoPage(self.getApplication().mainwin, "Do you really want to remove this Server?", execute)
   
     def connectServer(self,data=None):
         self.obj.establishConnections()
         
     def Properties(self,data=None):
-        ServerPropertyWindow(self.getPar().getPar(),server=self.obj)
+        ServerPropertyPage(self.getPar().getPar(),server=self.obj)
     
     def createInstance(self,data=None):
-        NewScoville(self.getPar().getPar(),server=self.obj)
+        NewScovillePage(self.getPar().getPar(),server=self.obj)
     
     def registerDatabase(self, data=None):
-        NewDatabase(self.getPar().getPar(), self.obj)
+        NewDatabasePage(self.getPar().getPar(), self.obj)
 
 class ScovilleARC(ActionRenderContext):
     def __init__(self, par, scoville):
@@ -117,7 +117,7 @@ class ScovilleARC(ActionRenderContext):
     def removeInstance(self,data=None):
         def execute():
             self.obj.getServer().removeInstance(self.obj)
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Instance?", execute)
+        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Instance?", execute)
     
     def cssEditor(self,data=None):
         self.getApplication().mainwin.openCssEditor(self.obj)
@@ -144,7 +144,7 @@ class UserARC(ActionRenderContext):
     def deleteUser(self,data=None):
         def execute():
             self.obj.delete()        
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this User?", execute)
+        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this User?", execute)
 
 class ModuleARC(ActionRenderContext):
     def __init__(self, par, module):
@@ -164,7 +164,7 @@ class WidgetARC(ActionRenderContext):
     def deleteWidget(self, data=None):
         def execute():
             self.obj.delete()
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Widget?", execute)
+        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Widget?", execute)
     
 class SiteARC(ActionRenderContext):
     def __init__(self, par, site):
@@ -184,7 +184,7 @@ class MenuARC(ActionRenderContext):
     def deleteMenu(self, data=None):
         def execute():
             self.obj.delete()
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Menu?", execute)
+        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Menu?", execute)
 
 class RolesARC(ActionRenderContext):
     def __init__(self, par, roles):
@@ -204,7 +204,7 @@ class RoleARC(ActionRenderContext):
     def deleteRole(self, data=None):
         def execute():
             self.obj.delete()
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to delete this Role?", execute)
+        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Role?", execute)
     
 class DatabaseARC(ActionRenderContext):
     def __init__(self, par, database):
@@ -214,10 +214,10 @@ class DatabaseARC(ActionRenderContext):
         self.addAction('Create Schema', IconStock.SCHEMA, self.createSchema)
 
     def registerSchema(self, data=None):
-        RegisterSchema(self.getPar().getPar(), self.obj)
+        RegisterSchemaPage(self.getPar().getPar(), self.obj)
 
     def createSchema(self, data=None):
-        NewSchema(self.getPar().getPar(), self.obj)
+        NewSchemaPage(self.getPar().getPar(), self.obj)
 
 class SchemaARC(ActionRenderContext):
     def __init__(self, par,schema):
@@ -229,12 +229,12 @@ class SchemaARC(ActionRenderContext):
     def unregisterSchema(self, data=None):
         def execute():
             self.obj.getPar().unregisterSchema(self.obj)
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to remove this Schema?", execute)
+        YesNoPage(self.getApplication().mainwin, "Do you really want to remove this Schema?", execute)
 
     def destroySchema(self, data=None):
         def execute():
             self.obj.getPar().destroySchema(self.obj)
-        YesNoDialog(self.getApplication().mainwin, "Do you really want to destroy this Schema?", execute)
+        YesNoPage(self.getApplication().mainwin, "Do you really want to destroy this Schema?", execute)
 
 ARCMAP = {
                    "Server"           : ServerARC,

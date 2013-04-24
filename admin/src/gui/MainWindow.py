@@ -28,8 +28,8 @@ pygtk.require("2.0")
 import gtk
 import sys
 
-from ServerPropertyWindow import ServerPropertyWindow
-from LoginWindow import LoginWindow
+from ServerPropertyPage import ServerPropertyPage
+from LoginPage import LoginPage
 from KeyWindow import KeyWindow
 from Toolbar import Toolbar
 from Tree import Tree
@@ -46,8 +46,7 @@ class MainWindow(gtk.Window):
         self.app = app
         self.openCssEditors = {}
         
-        self._dialogOpen = False
-        self._dialogObject = None
+        self._dialogObjectStack = []
 
         self.set_title("Scoville Admin PRO")
         self.set_icon_from_file("../data/icon/mp_logo.png")
@@ -108,29 +107,29 @@ class MainWindow(gtk.Window):
         self.connect("delete_event",self.cb_Close)
         self.show_all()
 
-        self.openDialogPane(LoginWindow(self));
+        LoginPage(self)
     
     def openDialogPane(self, dialog):
-        if not self._dialogOpen:
-            self._dialogObject = dialog
-            self.pane.remove(self.tabs)
-            self.pane.add2(self._dialogObject)
-            self.tree.set_sensitive(False)
-            self.tool.set_sensitive(False)
-            self.menu.set_sensitive(False)
-            self._dialogOpen = True
-            self.show_all()
+        self._dialogObjectStack.append(dialog)
+        self.pane.remove(self.pane.get_child2()) 
+        self.pane.add2(dialog)
+        self.tree.set_sensitive(False)
+        self.tool.set_sensitive(False)
+        self.menu.set_sensitive(False)
+        self.show_all()
 
-    def closeDialogPane(self):
-        if self._dialogOpen:
-            self.pane.remove(self._dialogObject)
-            self.pane.add2(self.tabs)
-            self.tree.set_sensitive(True)
-            self.tool.set_sensitive(True)
-            self.menu.set_sensitive(True)
-            self._dialogObject.destroy()
-            self._dialogObject = None
-            self._dialogOpen = False
+    def closeDialogPane(self): # TODO implement close all feature
+        if self._dialogObjectStack:
+            dialog = self._dialogObjectStack.pop()
+            self.pane.remove(dialog)
+            dialog.destroy()
+            if self._dialogObjectStack:
+                self.pane.add2(self._dialogObjectStack[-1])
+            else:
+                self.pane.add2(self.tabs)
+                self.tree.set_sensitive(True)
+                self.tool.set_sensitive(True)
+                self.menu.set_sensitive(True)
             self.show_all()
 
     def cb_changedFilter(self, widget=None, data=None):
@@ -161,10 +160,10 @@ class MainWindow(gtk.Window):
         #except Exception, e:
             #raise e
         #else:
-        self.openDialogPane(LoginWindow(self));
+        LoginPage(self)
     
     def cb_AddServerButton(self,widget=None,data=None):
-        ServerPropertyWindow(self)
+        ServerPropertyPage(self)
     
     def cb_pkiButton(self,widget=None,data=None):
         KeyWindow(self, self.getApplication().activeProfile)

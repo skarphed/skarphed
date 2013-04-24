@@ -31,10 +31,9 @@ from  data.Server import DNSError
 
 from gui.DefaultEntry import DefaultEntry
 
-class InstanceWindow(gtk.Window):
-    addWindowOpen=False
+class InstancePage(gtk.Frame):
     def __init__(self,parent, server=None, instance = None):
-        gtk.Window.__init__(self)
+        gtk.Frame.__init__(self)
         self.par = parent
         self.serverId = None
         if server is not None:
@@ -44,7 +43,7 @@ class InstanceWindow(gtk.Window):
             self.instanceId = instance.getLocalId()
         self.instanceTypes = self.getApplication().getInstanceTypes()
         
-        self.set_title("Scoville Admin PRO :: Configure Instance")
+        self.set_label("Scoville Admin PRO :: Configure Instance")
         self.vbox = gtk.VBox()
         self.label = gtk.Label("Please configure the Instance")
         self.vspace = gtk.Label("")
@@ -53,7 +52,6 @@ class InstanceWindow(gtk.Window):
         
         self.table = gtk.Table(2,4,False)
         self.typeLabel = gtk.Label("InstanceType:")
-        
         
         self.typeStore = gtk.ListStore(str)
         self.typeCombo = gtk.ComboBox(self.typeStore)
@@ -97,7 +95,7 @@ class InstanceWindow(gtk.Window):
         self.vbox.pack_start(self.buttonBox,False)
         
         self.add(self.vbox)
-        self.show_all()
+        self.getApplication().getMainWindow().openDialogPane(self)
         if instance is not None:
             self.urlEntry.set_sensitive(False)
             self.render()
@@ -106,7 +104,7 @@ class InstanceWindow(gtk.Window):
         try:
             instance = self.getApplication().getLocalObjectById(self.instanceId)
         except GenericObjectStoreException:
-            self.destroy()
+            self.getApplication().getMainWindow().closeDialogPane(self)
             return
     
         self.urlEntry.set_text(instance.getUrl())
@@ -120,7 +118,7 @@ class InstanceWindow(gtk.Window):
         return None
     
     def cb_Cancel(self, widget=None, data=None):
-        self.destroy()    
+        self.getApplication().getMainWindow().closeDialogPane()
     
     def cb_Ok (self, widget=None, data=None):
         def errorMessage(msgId):
@@ -159,7 +157,7 @@ class InstanceWindow(gtk.Window):
                 server.createInstance(instanceType, url, username, password)
             except None:
                 return
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
 
         
     def getPar(self):
