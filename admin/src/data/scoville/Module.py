@@ -146,6 +146,7 @@ class Module(GenericScovilleObject):
             shutil.rmtree(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/"+libstring.split("/")[1])
             self.updated()
         else:
+            shutil.rmtree(modulepath+self.getModuleName()+"/"+self.getVersionFolderString())
             raise Exception("GuiData did not validate against Signature!")
             
 
