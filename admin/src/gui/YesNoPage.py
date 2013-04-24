@@ -28,14 +28,23 @@ import gtk
 
 class YesNoPage(gtk.Frame):
     def __init__(self, par, message, callback):
-        gtk.Frame.__init__(self, message)
+        gtk.Frame.__init__(self, "Yes/No")
         self.par = par
         self.hbox = gtk.HBox()
-        self.yes = gtk.Button("Yes");
-        self.no = gtk.Button("No")
+        self.vbox = gtk.VBox()
+        self.dummy = gtk.Label("")
+        self.label = gtk.Label(message)
+        self.yes = gtk.Button(stock=gtk.STOCK_YES);
+        self.no = gtk.Button(stock=gtk.STOCK_NO)
         self.hbox.pack_start(self.yes)
         self.hbox.pack_start(self.no)
-        self.add(self.hbox)
+        self.vbox.pack_start(self.label,False)
+        self.vbox.pack_start(self.hbox,False)
+        self.vbox.pack_start(self.dummy,True)
+        self.vbox.set_spacing(30)
+        self.alignment = gtk.Alignment(0.5,0.5,0.5,0.5)
+        self.alignment.add(self.vbox)
+        self.add(self.alignment)
 
         self.callback = callback
 
