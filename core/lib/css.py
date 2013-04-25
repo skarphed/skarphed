@@ -300,6 +300,30 @@ class CSSPropertySet(object):
         return filename
 
     @classmethod
+    def delete_definitions_with_module(cls, module):
+        """
+        Deletes all CSS-Definitions that concern the given module
+        and its children (Widget-related)
+        """
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM CSS WHERE CSS_MOD_ID = ? OR \
+                 CSS_WGT_ID IN (SELECT WGT_ID FROM WIDGETS WHERE WGT_MOD_ID = ? ) ;"
+        db.query(cls._core, stmnt, (module.get_id(),module.get_id()),commit=True)
+        cls.cleanup_css_sessiontable()
+        return
+
+    @classmethod
+    def delete_definitions_with_widget(cls, widget):
+        """
+        Deletes all Definitions that concern the given widget
+        """
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM CSS WHERE CSS_WGT_ID = ? ;"
+        db.query(cls._core, stmnt, (widget.get_id(),), commit=True)
+        cls.cleanup_css_sessiontable()
+        return
+
+    @classmethod
     def cleanup_css_sessiontable(cls):
         """
         Cleans up old css filenames

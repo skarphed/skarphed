@@ -252,6 +252,9 @@ class Widget(object):
         view_manager = self._core.get_view_manager()
         view_manager.delete_mappings_with_widget(self)
 
+        css_manager = self._core.get_css_manager()
+        css_manager.delete_definitions_with_widget(self)
+
         stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;"
         db.query(self._core,stmnt,(self._id,),commit=True)
 
@@ -421,6 +424,9 @@ class ModuleManager(object):
 
         view_manager = self._core.get_view_manager()
         view_manager.delete_mappings_with_module(module)
+
+        css_manager = self._core.get_css_manager()
+        css_manager.delete_definitions_with_module(module)
 
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()
@@ -648,7 +654,7 @@ class Repository(object):
         if self._jsonencoder is None:
             self._jsonencoder = JSONEncoder()
         url = self.get_host()+"?j="+quote(self._jsonencoder.encode(msg).encode('utf-8'))
-        http = urlopen(url)
+        http = urlopen(url,timeout=5)
         return self._jsondecoder.decode(http.read())
 
 
