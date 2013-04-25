@@ -172,14 +172,14 @@ class Scoville_repoPage (ObjectPageAbstract):
         pw1 = self.adminPasswordEntry.get_text()
         pw2 = self.adminRepeatEntry.get_text()
         if pw1 == pw2:
-            repo = self.getApplication().getLocalObjectById(self.repoId)
+            repo = self.getMyObject()
             repo.changePassword(pw1)
         else:
             pass #TODO: Implement error behaviour
 
     def cb_DeleteTemplate(self,widget=None,data=None): 
         def execute():
-            repo = self.getApplication().getLocalObjectById(self.repoId)
+            repo = self.getMyObject()
             repo.deleteTemplate(self.templateToDelete)
             self.templateToDelete = None
         
