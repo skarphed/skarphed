@@ -25,8 +25,6 @@
 
 from data.Generic import GenericScovilleObject
 
-import json as jayson
-
 class Widget(GenericScovilleObject):
     def __init__(self,parent, data = {}):
         GenericScovilleObject.__init__(self)
@@ -51,7 +49,7 @@ class Widget(GenericScovilleObject):
         self.updated()
     
     def loadCssPropertySetCallback(self,json):
-        self.cssPropertySet = jayson.JSONDecoder().decode(json)
+        self.cssPropertySet = json
         self.updated()
     
     def loadCssPropertySet(self):

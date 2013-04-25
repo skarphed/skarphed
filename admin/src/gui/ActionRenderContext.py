@@ -151,20 +151,28 @@ class ModuleARC(ActionRenderContext):
         ActionRenderContext.__init__(self, par, module)
 
         self.addAction('Create Widget', IconStock.WIDGET, self.createWidget)
+        self.addAction('CSS Editor', IconStock.CSS, self.cssEditor)
     
     def createWidget(self,data=None):
         InputBox(self,"what should be the name of the new Widget?", self.obj.createWidget)
+
+    def cssEditor(self,data=None):
+        self.getApplication().mainwin.openCssEditor(self.obj)
 
 class WidgetARC(ActionRenderContext):
     def __init__(self, par, widget):
         ActionRenderContext.__init__(self, par, widget)
 
         self.addAction('Delete', IconStock.DELETE, self.deleteWidget)
+        self.addAction('CSS Editor', IconStock.CSS, self.cssEditor)
 
     def deleteWidget(self, data=None):
         def execute():
             self.obj.delete()
         YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Widget?", execute)
+
+    def cssEditor(self,data=None):
+        self.getApplication().mainwin.openCssEditor(self.obj)
     
 class SiteARC(ActionRenderContext):
     def __init__(self, par, site):

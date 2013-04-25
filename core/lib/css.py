@@ -491,12 +491,12 @@ class CSSPropertySet(object):
                     css += value['t']+":"+value['v']+";\n"
                 css += "}\n\n"
         
-        elif self.typ == CSSPropertySet.MODULE:
+        elif self._typ == CSSPropertySet.MODULE:
             selectorlist = {}
             module_name = module_manager.get_module(self._module_id).get_name()
             # TODO: Assert That modulenames do not contain dots
             for key, value in self.get_non_inherited().items():
-                splitselector = key.split(CSSPropertySet.SPLT)
+                splitselector = key.split(CSSPropertySet.SPLIT)
                 if len(splitselector) == 1:
                     splitselector.insert(0,"")
                 selector, tag = splitselector
@@ -510,11 +510,11 @@ class CSSPropertySet(object):
                     css += value['t']+":"+value['v']+";\n"
                 css += "}\n\n";
 
-        elif self.typ == CSSPropertySet.WIDGET:
+        elif self._typ == CSSPropertySet.WIDGET:
             selectorlist = {}
 
             for key, value in self.get_non_inherited().items():
-                splitselector = key.split(CSSPropertySet.SPLT)
+                splitselector = key.split(CSSPropertySet.SPLIT)
                 if len(splitselector) == 1:
                     splitselector.insert(0,"")
                 selector, tag = splitselector
@@ -523,12 +523,12 @@ class CSSPropertySet(object):
                 selectorlist[selector].append({'t':tag,'v':value['v']})
 
             for selector, values in selectorlist.items():
-                css += ".w"+self.get_widget_id()+" "+selector+" {\n"
+                css += ".w"+str(self.get_widget_id())+" "+selector+" {\n"
                 for value in values:
                     css += value['t']+":"+value['v']+";\n"
                 css += "}\n\n";
 
-        elif self.typ == CSSPropertySet.SESSION:
+        elif self._typ == CSSPropertySet.SESSION:
             pass #TODO Implement sessiondependent behaviour
 
         return css
