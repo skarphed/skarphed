@@ -71,6 +71,12 @@ class Widget(GenericScovilleObject):
     
     def deleteCallback(self,json):
         self.getModule().loadWidgets()
+        # update views because viewmappings with this widgets have been deleted
+        self.getModule().getModules().getScoville().getViews().refresh()
+        # update actionlists because viewmappings with this widgets have been deleted
+        actionlists = self.getApplication().getObjectStore().getAllOfClass("ActionList",parent=self.getModule().getModules().getScoville())
+        for actionlist in actionlists:
+            actionlist.loadActions()
         self.destroy()
     
     def delete(self):

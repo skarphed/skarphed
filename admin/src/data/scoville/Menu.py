@@ -377,6 +377,10 @@ class ActionList(GenericScovilleObject):
                 self.children.append(Action(self,action))
             else:
                 self.getActionById(action['id']).update(action)
+        result_action_ids = [a['id'] for a in json]
+        for action in self.children:
+            if action.getId() not in result_action_ids:
+                self.removeChild(action)
         self.updated()
             
     
