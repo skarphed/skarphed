@@ -57,6 +57,8 @@ class CSSManager(object):
         self.get_css_file = CSSPropertySet.get_css_file
         self.get_css_url = CSSPropertySet.get_css_url
         self.cleanup_css_sessiontable = CSSPropertySet.cleanup_css_sessiontable
+        self.delete_definitions_with_module = CSSPropertySet.delete_definitions_with_module
+        self.delete_definitions_with_widget = CSSPropertySet.delete_definitions_with_widget
 
 
 class CSSPropertySet(object):
