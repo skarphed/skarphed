@@ -246,6 +246,9 @@ class Widget(object):
         if self._id is None:
             raise ModuleCoreException(ModuleCoreException.get_msg(2))
 
+        action_manager = self._core.get_action_manager()
+        action_manager.delete_actions_with_widget(self)
+
         stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;"
         db.query(self._core,stmnt,(self._id,),commit=True)
 
@@ -409,6 +412,9 @@ class ModuleManager(object):
         if module.__class__.__name__ != "Module":
             nr = self._get_module_id_from_name(module_meta["name"])
             module = self.get_module(nr)
+
+        action_manager = self._core.get_action_manager()
+        action_manager.delete_actions_with_module(module)
 
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()

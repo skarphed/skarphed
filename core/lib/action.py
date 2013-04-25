@@ -50,6 +50,8 @@ class ActionManager(object):
         Menu.set_core(core)
 
         self.create_action = Action.create_action
+        self.delete_actions_with_widget = Action.delete_actions_with_widget
+        self.delete_actions_with_module = Action.delete_actions_with_module
         self.create_action_list = ActionList.create_action_list
         self.create_menu_item = MenuItem.create_menu_item
         self.create_menu = Menu.create_menu
@@ -58,7 +60,7 @@ class ActionManager(object):
         self.get_menu_item_by_id = MenuItem.get_menu_item_by_id
         self.get_menu_by_id = Menu.get_menu_by_id
         self.get_menus_of_page = Menu.get_menus_of_page
-
+ 
 class Action(object):
     """
     An Action represents anything that can happen when
@@ -132,6 +134,26 @@ class Action(object):
                                      action.get_view_id(), action.get_space(), action.get_widget_id(),
                                      action.get_url(), action.get_order()),commit=True)
         return action
+
+    @classmethod
+    def delete_actions_with_widget(cls, widget):
+        """
+        Deletes all actions that contain this widget
+        """
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM ACTIONS WHERE ACT_WGT_ID = ? ;"
+        db.query(cls._core,stmnt,(widget.get_id(),),commit=True)
+        return
+
+    @classmethod
+    def delete_actions_with_module(cls, module):
+        """
+        Deletes all actions that contain this widget
+        """
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM ACTIONS WHERE ACT_WGT_ID IN (SELECT WGT_ID FROM WIDGETS WHERE WGT_MOD_ID = ?) ;"
+        db.query(cls._core,stmnt,(module.get_id(),),commit=True)
+        return
 
     @classmethod
     def get_action_by_id(cls, action_id):
