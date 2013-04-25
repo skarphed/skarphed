@@ -249,6 +249,9 @@ class Widget(object):
         action_manager = self._core.get_action_manager()
         action_manager.delete_actions_with_widget(self)
 
+        view_manager = self._core.get_view_manager()
+        view_manager.delete_mappings_with_widget(self)
+
         stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;"
         db.query(self._core,stmnt,(self._id,),commit=True)
 
@@ -415,6 +418,9 @@ class ModuleManager(object):
 
         action_manager = self._core.get_action_manager()
         action_manager.delete_actions_with_module(module)
+
+        view_manager = self._core.get_view_manager()
+        view_manager.delete_mappings_with_module(module)
 
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()

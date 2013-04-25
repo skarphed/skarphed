@@ -252,6 +252,32 @@ class View(object):
                        VALUES (?,2,'default',1) ;"
             db.query(cls._core, stmnt, (view_id,), commit=True)
 
+    @classmethod
+    def delete_mappings_with_module(cls, module):
+        """
+        Delete all mappings that concern the given widget
+        Usually called when a whole module is uninstalled 
+        """
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_WGT_ID IN (SELECT WGT_ID FROM WIDGETS WHERE WGT_MOD_ID = ? ) ;"
+        db.query(cls._core, stmnt, (module.get_id(),),commit=True)
+        stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VWP_WGT_ID IN (SELECT WGT_ID FROM WIDGETS WHERE WGT_MOD_ID = ? ) ;"
+        db.query(cls._core, stmnt, (module.get_id(),),commit=True)
+        return
+
+    @classmethod
+    def delete_mappings_with_widget(cls, widget):
+        """
+        Delete all mappings that concern the given widget
+        Usually called when a widget is deleted 
+        """
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_WGT_ID = ? ;"
+        db.query(cls._core, stmnt, (widget.get_id(),),commit=True)
+        stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VWP_WGT_ID = ? ;"
+        db.query(cls._core, stmnt, (widget.get_id(),),commit=True)
+        return
+
     def __init__(self,core):
         """
         initializes View for rendering
@@ -427,8 +453,8 @@ class View(object):
         <html>
           <head>
             <title>%(title)s</title>
-            <link href="%(scv_css)s" rel="stylesheet" type="text/css">
             <link href="/static/%(page_css)s" rel="stylesheet" type="text/css">
+            <link href="%(scv_css)s" rel="stylesheet" type="text/css">
             %(head)s
           </head>
           <body>
@@ -577,6 +603,8 @@ class ViewManager(object):
         self.create_default_view = View.create_default_view
         self.get_currently_rendering_view = View.get_currently_rendering_view
         self.create = View.create
+        self.delete_mappings_with_widget = View.delete_mappings_with_widget
+        self.delete_mappings_with_module = View.delete_mappings_with_module
 
 
 class Page(object):
