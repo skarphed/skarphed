@@ -657,14 +657,14 @@ class Repository(object):
         else:
             return True
 
-    def _http_call(self,msg):
+    def _http_call(self,msg, timeout=5):
         if self._jsondecoder is None:
             self._jsondecoder = JSONDecoder()
         if self._jsonencoder is None:
             self._jsonencoder = JSONEncoder()
         url = self.get_host()+"?j="+quote(self._jsonencoder.encode(msg).encode('utf-8'))
         try:
-            http = urlopen(url,timeout=5)
+            http = urlopen(url,timeout=timeout)
         except URLError:
             raise ModuleCoreException(ModuleCoreException.get_msg(9))
         return self._jsondecoder.decode(http.read())
@@ -726,7 +726,7 @@ class Repository(object):
         if type(module) != dict:
             modulemanager = self._core.get_module_manager()
             module = modulemanager.get_meta_from_module(module)
-        result = self._http_call({'c':5,'m':module})
+        result = self._http_call({'c':5,'m':module},timeout=1800)
         if result is None:
             raise ModuleCoreException(ModuleCoreException.get_msg(2))
         data = base64.b64decode(result["data"])
