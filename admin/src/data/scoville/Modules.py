@@ -33,19 +33,28 @@ class Modules(GenericScovilleObject):
         self.par = parent
         self.updated()
         self.refresh()
-    
+        self._repo_state = False
+
     def refreshCallback(self,data):
+        remote_modules = data['modules']
+        self._repo_state = data['repostate']
         modulenames = [m.getModuleName() for m in self.children]
-        for module in data:
+        for module in remote_modules:
             if module['name'] not in modulenames:
                 self.addChild(Module(self,module))
             else:
                 self.getModuleByName(module['name']).refresh(module)
-        result_modulenames = [m['name'] for m in data]
+        result_modulenames = [m['name'] for m in remote_modules]
         for module in self.children:
             if module.getModuleName() not in result_modulenames:
                 self.removeChild(module)
         self.updated()       
+    
+    def refresh(self):
+        self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getModules",[False])
+    
+    def getRepoState(self):
+        return self._repo_state
     
     def getModuleByName(self,name):
         for module in self.children:
@@ -58,10 +67,6 @@ class Modules(GenericScovilleObject):
             if module.getId() == moduleId:
                 return module
         return None
-    
-    
-    def refresh(self):
-        self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getModules",[False])
     
     def getName(self):
         return "Modules"

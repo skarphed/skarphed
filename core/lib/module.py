@@ -23,7 +23,7 @@
 ###########################################################
 
 from json import JSONDecoder, JSONEncoder
-from urllib2 import urlopen, quote
+from urllib2 import urlopen, quote, URLError
 import base64
 import Crypto.PublicKey.RSA as RSA
 import os
@@ -42,7 +42,8 @@ class ModuleCoreException(Exception):
         5:"""Module already exists!""",
         6:"""This module does not exist""",
         7:"""This widget does not exist""",
-        8:"""Template Signature is not valid! Packet may be compromised"""
+        8:"""Template Signature is not valid! Packet may be compromised""",
+        9:"""Error HTTP-Requesting Repository"""
     }
 
     @classmethod
@@ -518,7 +519,7 @@ class ModuleManager(object):
         """
         registers an operation, that installs a module
         """
-        operationmanager = self._core.get_operation_manager()
+        operationmanager = self._core.get_operation_manager() # Call is needed to initialize OPM with Core
         op = ModuleInstallOperation(self._core)
         op.set_values(module_meta)
         op.store()
@@ -527,7 +528,7 @@ class ModuleManager(object):
         """
         registers an operation, that updates a module
         """
-        operationmanager = self._core.get_operation_manager()
+        oprationmanager = self._core.get_operation_manager() # Call is needed to initialize OPM with Core
         op = ModuleUpdateOperation(self._core)
         op.set_values(module_meta)
         op.store()
@@ -536,7 +537,7 @@ class ModuleManager(object):
         """
         registers an operation, that uninstalls a module
         """
-        operationmanager = self._core.get_operation_manager()
+        operationmanager = self._core.get_operation_manager() # Call is needed to initialize OPM with Core
         op = ModuleUninstallOperation(self._core)
         op.set_values(module_meta)
         op.store()
@@ -648,13 +649,24 @@ class Repository(object):
         else:
             return "http://"+self._ip+":"+str(self._port)+"/"
 
+    def ping(self):
+        try:
+            self.load_public_key()
+        except ModuleCoreException:
+            return False
+        else:
+            return True
+
     def _http_call(self,msg):
         if self._jsondecoder is None:
             self._jsondecoder = JSONDecoder()
         if self._jsonencoder is None:
             self._jsonencoder = JSONEncoder()
         url = self.get_host()+"?j="+quote(self._jsonencoder.encode(msg).encode('utf-8'))
-        http = urlopen(url,timeout=5)
+        try:
+            http = urlopen(url,timeout=5)
+        except URLError:
+            raise ModuleCoreException(ModuleCoreException.get_msg(9))
         return self._jsondecoder.decode(http.read())
 
 

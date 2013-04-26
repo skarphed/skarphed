@@ -283,8 +283,11 @@ class Rpc(object):
         get_installed_only = bool(params[0])
 
         module_manager = self._core.get_module_manager()
-        modules = module_manager.get_module_info(get_installed_only)
-        return modules
+        repo_state = True
+        repo_state = module_manager.get_repository().ping()
+        
+        modules = module_manager.get_module_info(get_installed_only or not repo_state)
+        return {'modules':modules,'repostate':repo_state}
 
     def getGuiForModule(self, params):
         module_id = int(params[0])

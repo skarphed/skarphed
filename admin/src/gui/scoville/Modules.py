@@ -59,6 +59,7 @@ class ModulesPage(ObjectPageAbstract):
         self.modbox.set_border_width(10)
         
         self.mod_label = gtk.Label("please drag a module into the opposing list to install/uninstall it:\n")
+        self.mod_norepo_label = gtk.Label("Repository not reachable")
         self.mod_labelInstalled = gtk.Label("installed modules")
         self.mod_labelAvailable = gtk.Label("available modules")
         self.mod_labelProcessed = gtk.Label("currently processed modules")
@@ -181,6 +182,13 @@ class ModulesPage(ObjectPageAbstract):
         modules = self.getMyObject()
         if not modules:
             return
+
+        if modules.getRepoState():
+            self.modbox.remove(self.mod_norepo_label)
+            self.modbox.attach(self.mod_AListScroll,1,2,2,3)
+        else:
+            self.modbox.remove(self.mod_AListScroll)
+            self.modbox.attach(self.mod_norepo_label,1,2,2,3)
 
         self.processedIListIds = []
         self.processedAListIds = []
