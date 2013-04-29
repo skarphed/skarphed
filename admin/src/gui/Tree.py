@@ -89,6 +89,7 @@ class Tree(gtk.TreeView):
             return
         nr = self.store.get_value(rowiter,2)
         if nr is not None and not nr >= 0:
+            self.getPar().getToolbar().clearButtons()
             return
         obj = self.store.objectStore.getLocalObjectById(nr)
         self.getPar().getToolbar().renderContextButtons(obj)
@@ -106,6 +107,9 @@ class Tree(gtk.TreeView):
                 selection = self.get_selection()
                 rowiter = selection.get_selected()[1]
                 nr = self.store.get_value(rowiter,2)
+                if nr == -2: #is Root-object:
+                    self.getPar().getToolbar().clearButtons()
+                    return
                 obj = self.store.objectStore.getLocalObjectById(nr)
                 self.context.popup(obj,event.button,event.get_time())
                 self.getPar().getToolbar().renderContextButtons(obj)

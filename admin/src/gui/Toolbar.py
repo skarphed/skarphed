@@ -71,6 +71,13 @@ class Toolbar(gtk.Toolbar):
 
         self.show_all()
 
+    def clearButtons(self):
+        for item in self.contextButtons:
+            self.remove(item)
+        self.contextButtons = []
+
+        self.show_all()
+
     def getPar(self):
         return self.par
 
