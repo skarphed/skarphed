@@ -104,7 +104,6 @@ class RolePage(ObjectPageAbstract):
         perm = self.perm_permlist.get_value(rowiter,1)
         val = 1-self.perm_permlist.get_value(rowiter,0)
         role = self.getApplication().getLocalObjectById(self.roleId)
-        print val
         if val == 1:
             role.assignPermission(perm)
         else:

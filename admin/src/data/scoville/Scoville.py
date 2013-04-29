@@ -47,6 +47,8 @@ import gobject
 from net.MultiPartForm import MultiPartForm
 from net.ScovilleUpload import ScovilleUpload
 
+import logging
+
 class ScovilleInstaller(GenericScovilleObject):
     class InstallThread(Thread):
         def __init__(self, installer):
@@ -157,7 +159,7 @@ class ScovilleInstaller(GenericScovilleObject):
         con = self.server.getSSH()
         con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/scvinst"+str(self.installationId)+"; tar xvfz scv_install.tar.gz -C / ; chmod 755 install.sh ; ./install.sh ")
 
-        print con_stdout.read()
+        logging.debug(con_stdout.read())
         
         shutil.rmtree(self.BUILDPATH)
         self.status = 100
@@ -314,7 +316,6 @@ class Scoville(Instance):
         else:
             self.scv_loggedin = self.SCV_UNLOCKED
             self.serverRights = result
-            print self.serverRights
         self.updated()
         self.loadScovilleChildren()
         

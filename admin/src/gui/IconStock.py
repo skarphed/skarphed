@@ -30,7 +30,6 @@ import gtk
 import sys
 
 PATH = sys.path[0]
-print PATH
 
 #LOGO                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/mp_logo.png",16,16)
 

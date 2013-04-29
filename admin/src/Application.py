@@ -30,6 +30,7 @@ import net.HTTPRpc
 import net.Tracker
 import net.SSH
 import os
+import logging
 
 class ApplicationException(Exception): pass
 
@@ -47,6 +48,11 @@ class Application(object):
         self.state = self.STATE_LOGGEDOUT
         self.activeProfile=None
         self.instanceTypes = []
+        
+        if not os.path.exists(os.path.expanduser('~/.scovilleadmin/')):
+            os.mkdir(os.path.expanduser('~/.scovilleadmin/'))
+
+        logging.basicConfig(filename=os.path.expanduser('~/.scovilleadmin/generic.log'),level=logging.DEBUG)
         
         from data import scoville
     
@@ -110,7 +116,7 @@ class Application(object):
     
     def createServerFromInstanceUrl(self, instanceurl):
         return data.createServerFromInstanceUrl(instanceurl)
-    
+
 application = Application()
 application.run()
 

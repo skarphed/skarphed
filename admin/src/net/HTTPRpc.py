@@ -29,6 +29,7 @@ import time
 import json
 import gobject
 from Tracker import Tracker
+import logging
 
 COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
 cookiejar = cookielib.LWPCookieJar()
@@ -78,13 +79,14 @@ class ScovilleRPC(threading.Thread):
             result = {'error':'HTTP-ERROR'}
     
         Tracker().removeProcess()
+
         if result.has_key('error'):
             if self.errorcallback is None:
-                print result['error']
+                logging.debug(result['error'])
             else:
                 gobject.idle_add(self.errorcallback,result)
         else:
-            print result
+            logging.debug(result)
             gobject.idle_add(self._callbackWrapper, self.callback,result['result'])
 
     def _callbackWrapper(self, callback, result):

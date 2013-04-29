@@ -30,6 +30,7 @@ import json
 import gobject
 from Tracker import Tracker
 from MultiPartForm import MultiPartForm
+import logging
 
 COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
 cookiejar = cookielib.LWPCookieJar()
@@ -137,7 +138,7 @@ class ScovilleRepository(threading.Thread):
         
         answer = urllib2.urlopen(self.request)
         plaintext = answer.read()
-        print plaintext
+        logging.debug(plaintext)
         result = json_dec.decode(plaintext)
     
         Tracker().removeProcess()

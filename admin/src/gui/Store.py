@@ -193,7 +193,6 @@ class FilterStore(gtk.ListStore):
 
         if filterstring is not None:
             self.filterString = filterstring
-        print filterstring
 
         self.itersToRemove= []
         self.foreach(search)

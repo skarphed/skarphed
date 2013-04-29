@@ -122,8 +122,6 @@ class CssEditor(gtk.Window):
         self.listview.model_selector.clear()
         self.listview.model_property.clear()
         self.listview.model_value.clear()
-        print propertySet
-        print type(propertySet)
         
         addedToSelectorList = {}
         addedToPropertyList = {}
