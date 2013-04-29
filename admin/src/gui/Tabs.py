@@ -154,9 +154,12 @@ class PageGenerator(object):
         instanceType = self.getInstanceOfObject(self.obj)
         page = ObjectPage(self.par,self.obj)
         if instanceType is not None:
-            exec "from "+instanceType.instanceTypeName+"."+self.obj.__class__.__name__+\
-             " import "+self.obj.__class__.__name__+"Page"
-            exec "page = "+self.obj.__class__.__name__+"Page(self.par, self.obj)"            
+            try:
+                exec "from "+instanceType.instanceTypeName+"."+self.obj.__class__.__name__+\
+                 " import "+self.obj.__class__.__name__+"Page"
+                exec "page = "+self.obj.__class__.__name__+"Page(self.par, self.obj)"            
+            except ImportError:
+                pass
         return page
 
 class Tabs(gtk.Notebook):
