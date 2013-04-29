@@ -233,9 +233,9 @@ class CSSPropertySet(object):
             widget_sets = cls.get_csspropertyset(None,cls.ALL,None)
 
             css+= generic_set.render()
-            for module_set in module_sets:
+            for module_set in module_sets.values():
                 css+= module_set.render()
-            for widget_set in widget_sets:
+            for widget_set in widget_sets.values():
                 css+= widget_set.render()
 
         if not os.path.exists(os.path.dirname(filename)):
@@ -272,7 +272,7 @@ class CSSPropertySet(object):
                 db.query(cls._core,stmnt,(current_session.get_id(),filename),commit=True)
                 rerendering_necessary = True
         else:
-            stmnt = "SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SES_ID = -1 AND CSE_OUTDATED = 0 ;"
+            stmnt = "SELECT CSE_FILE FROM CSSSESSION WHERE CSE_SES_ID = '-1' AND CSE_OUTDATED = 0 ;"
             cur = db.query(cls._core,stmnt)
             row = cur.fetchonemap()
             if row is not None:
@@ -280,7 +280,7 @@ class CSSPropertySet(object):
             else:
                 filename= css_folder+"general.css"
                 #TODO: This was eventually fail! ↓
-                stmnt = "UPDATE OR INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES (-1,?,0) MATCHING (CSE_SES_ID) ;"
+                stmnt = "UPDATE OR INSERT INTO CSSSESSION (CSE_SES_ID,CSE_FILE,CSE_OUTDATED) VALUES ('-1',?,0) MATCHING (CSE_SES_ID) ;"
                 db.query(cls._core,stmnt,(filename,),commit=True)
                 rerendering_necessary = True
 
