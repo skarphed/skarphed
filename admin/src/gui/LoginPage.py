@@ -36,7 +36,8 @@ class LoginPage(gtk.Frame):
         gtk.Frame.__init__(self, "Scoville Admin Pro :: Login")
         self.par = parent
 
-        self.image = gtk.image_new_from_file("../data/login.png")
+        self.image = gtk.image_new_from_file("../data/loginbanner.png")
+        self.alignment = gtk.Alignment(0.5,0.2,0.1,0.1)
         self.vbox = gtk.VBox()
         self.hbox = gtk.HBox(True)
         self.newprofile = NewProfile(self)
@@ -48,7 +49,8 @@ class LoginPage(gtk.Frame):
         self.vbox.pack_start(self.image, False, False)
         self.vbox.pack_start(self.hbox)
 
-        self.add(self.vbox)
+        self.alignment.add(self.vbox)
+        self.add(self.alignment)
 
         self.getPar().openDialogPane(self)
 

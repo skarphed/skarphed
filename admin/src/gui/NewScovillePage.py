@@ -42,7 +42,7 @@ class NewScovillePage(gtk.Frame):
         gtk.Frame.__init__(self, "Scoville Admin :: Create Instance")
         self.targetsRendered = False
 
-
+        self.alignment = gtk.Alignment(0.5,0.5,0.1,0.2)
         self.vbox = gtk.VBox()
         self.set_border_width(10)
         self.toplabel = gtk.Label("Please configure the new Installation")
@@ -144,7 +144,8 @@ class NewScovillePage(gtk.Frame):
         self.vbox.pack_start(self.frm_apache)
         self.vbox.pack_start(self.vboxdummy)
         self.vbox.pack_start(self.buttonhbox)
-        self.add(self.vbox)
+        self.alignment.add(self.vbox)
+        self.add(self.alignment)
 
         self.ok.connect("clicked", self.cb_Ok)
         self.cancel.connect("clicked", self.cb_Cancel)

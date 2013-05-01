@@ -41,7 +41,8 @@ class InputBox(gtk.Frame):
         
         self.hbox = gtk.HBox()
         self.vbox = gtk.VBox()
-        
+        self.alignment = gtk.Alignment(0.5,0.5,0.1,0.05)
+
         self.hbox.pack_start(self.space,True)
         self.hbox.pack_start(self.ok,False)
         
@@ -50,10 +51,12 @@ class InputBox(gtk.Frame):
         self.vbox.pack_start(self.hbox,False)
         
         self.ok.connect("clicked", self.okCallback)
+        self.entry.connect("activate", self.okCallback)
         self.cb = callback
         self.typeWanted = typeWanted
         
-        self.add(self.vbox)
+        self.alignment.add(self.vbox)
+        self.add(self.alignment)
         self.getApplication().getMainWindow().openDialogPane(self)
 
         self.entry.grab_focus()
