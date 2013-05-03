@@ -80,7 +80,7 @@ class Database(object):
                         user=self._user, 
                         password=self._password)
         except fdb.fbcore.DatabaseError, e:
-            raise DatabaseException(e.value)
+            raise DatabaseException(e.args[0])
         return
 
     def set_ip(self, ip):
