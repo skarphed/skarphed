@@ -580,7 +580,7 @@ class ModuleManager(object):
                 for meta_record in meta_records:
                     if repomodule["name"] == meta_record["name"]:
                         if self.compare_versions(repomodule, meta_record) == 1:
-                            meta_record["toUpdate"] == True
+                            meta_record["toUpdate"] = True
                         for repository_joblock in repository_joblocks:
                             if repository_joblock["name"] == meta_record["name"]:
                                 meta_record["processing"] = 'Uninstalling'
