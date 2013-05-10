@@ -36,7 +36,6 @@ import gui.IconStock
 class ModulesPage(ObjectPageAbstract):
     def __init__(self,parent,modules):
         ObjectPageAbstract.__init__(self,parent,modules)
-        print "LE MODULES: "+modules.__class__.__name__
         
         self.info = PageFrame(self,"Information", gui.IconStock.REPO)
         self.infobox = gtk.VBox()
