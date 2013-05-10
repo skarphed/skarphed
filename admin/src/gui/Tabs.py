@@ -49,6 +49,9 @@ class GenericPage(gtk.ScrolledWindow):
         #the page only scrolls if it outgrows the space that is there
         self.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 
+    def __del__(self):
+        self.getApplication().getObjectStore().removeCallback(self.render)
+
     def render(self):
         pass #to be overridden by descendants
 
