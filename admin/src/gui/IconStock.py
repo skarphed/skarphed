@@ -94,15 +94,22 @@ icon_object_map = {
                    }
 
 def getServerIcon(server):
-    
     if server.getSSHState() == server.SSH_UNLOCKED:
         return SERVER_ONLINE
     return SERVER
 
-def getAppropriateIcon(object):
-    if object.__class__.__name__ == "Server":
-        return getServerIcon(object)
-    if icon_object_map.has_key(object.__class__.__name__):
-        return icon_object_map[object.__class__.__name__]
+def getModuleIcon(module):
+    if module.data.has_key('toUpdate') and module.data['toUpdate'] == True:
+        return MODULE_UPDATEABLE
+    else:
+        return MODULE
+
+def getAppropriateIcon(obj):
+    if obj.__class__.__name__ == "Server":
+        return getServerIcon(obj)
+    if obj.__class__.__name__ == "Module":
+        return getModuleIcon(obj)
+    if icon_object_map.has_key(obj.__class__.__name__):
+        return icon_object_map[obj.__class__.__name__]
     else:
         return SCOVILLE

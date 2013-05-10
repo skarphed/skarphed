@@ -199,15 +199,9 @@ class ModulesPage(ObjectPageAbstract):
             if module.data.has_key('installed') and module.data['installed'] == True:
                 rowiter = self.getModuleIterById(self.mod_IListStore,module.getLocalId())
                 if rowiter is None:
-                    if module.data.has_key('toUpdate') and module.data['toUpdate'] == True:
-                        self.mod_IListStore.append((gui.IconStock.MODULE_UPDATEABLE, module.getName(), module.getLocalId() ))
-                    else:
-                        self.mod_IListStore.append((gui.IconStock.MODULE, module.getName(), module.getLocalId() ))
+                    self.mod_IListStore.append((gui.IconStock.getAppropriateIcon(module), module.getName(), module.getLocalId() ))
                 else:
-                    if module.data.has_key('toUpdate') and module.data['toUpdate'] == True:
-                        self.mod_IListStore.set_value(rowiter,0,gui.IconStock.MODULE_UPDATEABLE)
-                    else:
-                        self.mod_IListStore.set_value(rowiter,0,gui.IconStock.MODULE)
+                    self.mod_IListStore.set_value(rowiter,0,gui.IconStock.getAppropriateIcon(module))
                 self.processedIListIds.append(module.getLocalId())
             else:
                 rowiter = self.getModuleIterById(self.mod_AListStore,module.getLocalId())
