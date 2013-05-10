@@ -31,9 +31,9 @@ class Modules(GenericScovilleObject):
     def __init__(self,parent):
         GenericScovilleObject.__init__(self)
         self.par = parent
+        self._repo_state = False
         self.updated()
         self.refresh()
-        self._repo_state = False
 
     def refreshCallback(self,data):
         remote_modules = data['modules']
