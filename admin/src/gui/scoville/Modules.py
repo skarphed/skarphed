@@ -36,6 +36,7 @@ import gui.IconStock
 class ModulesPage(ObjectPageAbstract):
     def __init__(self,parent,modules):
         ObjectPageAbstract.__init__(self,parent,modules)
+        print "LE MODULES: "+modules.__class__.__name__
         
         self.info = PageFrame(self,"Information", gui.IconStock.REPO)
         self.infobox = gtk.VBox()
@@ -157,7 +158,7 @@ class ModulesPage(ObjectPageAbstract):
         modules = self.getMyObject()
         if not modules:
             return
-        modules.uninstallModule(module)    
+        modules.uninstallModule(module)
     
     def getModuleIterById(self, moduleList, moduleId):
         def search(model, path, rowiter, moduleId):
@@ -181,6 +182,7 @@ class ModulesPage(ObjectPageAbstract):
         
         modules = self.getMyObject()
         if not modules:
+            self.destroy()
             return
 
         if modules.getRepoState():

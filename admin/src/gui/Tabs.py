@@ -100,6 +100,7 @@ class ObjectPage(ObjectPageAbstract):
     def render(self):
         obj = self.getMyObject()
         if not obj:
+            self.destroy()
             return
         self.labeltop.set_text(obj.getName())
 
