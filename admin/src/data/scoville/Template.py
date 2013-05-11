@@ -55,6 +55,7 @@ class Template(GenericScovilleObject):
 
     def installFromRepoCallback(self, res=None):
         self.getRepoTemplates()
+        self.getScoville().loadTemplate()
 
     def installFromRepo(self, nr):
         self.getApplication().doRPCCall(self.getScoville(),self.installFromRepoCallback, "installTemplateFromRepo", [nr])
