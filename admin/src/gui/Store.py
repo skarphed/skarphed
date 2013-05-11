@@ -46,7 +46,7 @@ class Store(gtk.TreeStore):
         gtk.TreeStore.__init__(self,*args)
         self.par = kwargs['parent']
         self.objectStore  = kwargs['objectStore']
-        self.objectStore.addCallback(self.render)
+        self.objectStore.setMainTreeCallback(self.render)
         self.busy = False # Prevent threadcollisions 
         root = self.append(None,(IconStock.SCOVILLE,"Scoville Infrastructure",-2))
         #self.append(root,(IconStock.SCOVILLE,'Scoville Infrastructure',-2))

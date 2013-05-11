@@ -37,6 +37,7 @@ class ObjectStore(object):
     localObjects = {}
     localIDcounter = 0
     callbacks = []
+    mainTreeCallback = None
     
     
     def getLocalObjectById(self,obj_id):
@@ -51,6 +52,11 @@ class ObjectStore(object):
             if element.getLocalId() == obj.getLocalId():
                 res.append(element)
         return res
+
+    def setMainTreeCallback(self, cb):
+        ObjectStore.mainTreeCallback = cb
+        ObjectStore.callbacks.append(cb)
+
     def addCallback(self, cb):
         ObjectStore.callbacks.append(cb)
     
@@ -91,6 +97,8 @@ class ObjectStore(object):
 
         for element in rootelements:
             element.destroy()
+        ObjectStore.callbacks = [ObjectStore.mainTreeCallback]
+        
         ObjectStore.localIDcounter = 0
         self.updated()
         
