@@ -152,12 +152,17 @@ class ModuleARC(ActionRenderContext):
 
         self.addAction('Create Widget', IconStock.WIDGET, self.createWidget)
         self.addAction('CSS Editor', IconStock.CSS, self.cssEditor)
+        if module.isUpdateable():
+            self.addAction('Update', IconStock.UPDATE, self.update)
     
     def createWidget(self,data=None):
         InputBox(self,"what should be the name of the new Widget?", self.obj.createWidget)
 
     def cssEditor(self,data=None):
         self.getApplication().mainwin.openCssEditor(self.obj)
+    
+    def update(self, data=None):
+        self.obj.update()
 
 class WidgetARC(ActionRenderContext):
     def __init__(self, par, widget):

@@ -72,6 +72,21 @@ class Module(GenericScovilleObject):
         else:
             return None
     
+    def isUpdateable(self):
+        """
+        Returns if this Module is updateable
+        """
+        if self.data.has_key('toUpdate'):
+            return self.data['toUpdate']
+        else:
+            return False
+
+    def updateCallback(self, result):
+        self.getModules().getScoville().getOperationManager().refresh()
+
+    def update(self):
+        self.getApplication().doRPCCall(self.getModules().getScoville(),self.updateCallback, "updateModule", [self.getId()])
+
     def refresh(self,data):
         self.data = data
         self.updated()
@@ -111,7 +126,7 @@ class Module(GenericScovilleObject):
                 wgt.destroy()
         self.updated()
         self.getModules().updated()
-        
+
     def loadWidgets(self):
         self.getApplication().doRPCCall(self.getModules().getScoville(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getId()])
     

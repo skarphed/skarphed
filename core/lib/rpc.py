@@ -316,6 +316,15 @@ class Rpc(object):
         return {"id":repo.get_id(), "ip":repo.get_ip(), 
                 "port":repo.get_port(), "name": repo.get_name()}
 
+    def updateModule(self, params):
+        nr = str(params[0])
+
+        module_manager = self._core.get_module_manager()
+        module = module_manager.get_module(nr)
+        module_meta = module_manager.get_meta_from_module(module)
+        module_manager.invoke_update(module_meta)
+        return True
+
     def updateModules(self, params):
         module_manager = self._core.get_module_manager()
         module_manager.updateModules()
