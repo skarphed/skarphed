@@ -71,6 +71,14 @@ class ViewPage(ObjectPageAbstract):
         self.compose.add(self.compose_scroll)
         self.pack_start(self.compose, True)
 
+        self.saveframe = gtk.HBox()
+        self.savedummy = gtk.Label()
+        self.savebutton = gtk.Button(stock=gtk.STOCK_SAVE)
+        self.saveframe.pack_start(self.savedummy,True)
+        self.saveframe.pack_start(self.savebutton,False)
+        self.pack_start(self.saveframe, False)
+
+        self.savebutton.connect("clicked", self.saveCallback)
         self.page_combobox.connect("changed", self.changedPageCallback)
 
         if not view.isFullyLoaded():
@@ -102,6 +110,21 @@ class ViewPage(ObjectPageAbstract):
                 if spaceId not in processed_spaces:
                     self.compose_spacewidgets[spaceId].destroy()
 
+    def saveCallback(self, widget=None, data=None):
+        try:
+            view = self.getMyObject()
+        except GenericObjectStoreException:
+            return
+
+        for spacewidget in self.compose_spacewidgets.values():
+            widget = spacewidget.getWidgetCombo().getSelected()
+            if (widget is None and spacewidget.getWidgetId() is None) or (widget is not None and widget.getId() == spacewidget.getWidgetId()):
+                return
+            if widget is not None:
+                view.setWidgetIntoSpace(spacewidget.getSpaceId(), widget)
+            else:
+                view.removeWidgetFromSpace(spacewidget.getSpaceId())
+
     def changedPageCallback(self, widget=None, data=None):
         pass
 
@@ -131,8 +154,6 @@ class SpaceWidget(gtk.Frame):
         self.vbox.pack_start(self.expander,False)
         self.add(self.vbox)
 
-        self.widget_combo.connect("changed", self.changedWidgetCallback)
-
         self.show_all()
         self.render()
 
@@ -157,20 +178,15 @@ class SpaceWidget(gtk.Frame):
         self.widget_combo.setSelected(widget)
         self.param_widget.setWidget(widget)
         self.param_widget.render()
+    
+    def getWidgetId(self):
+        return self.widgetId
 
-    def changedWidgetCallback(self,widget=None,data=None):
-        try:
-            view = self.getApplication().getLocalObjectById(self.viewId)
-        except GenericObjectStoreException:
-            self.destroy()
-            return
-        widget = self.widget_combo.getSelected()
-        if (widget is None and self.widgetId is None) or (widget is not None and widget.getId() == self.widgetId):
-            return
-        if widget is not None:
-            view.setWidgetIntoSpace(self.spaceId, widget)
-        else:
-            view.removeWidgetFromSpace(self.spaceId)
+    def getSpaceId(self):
+        return self.spaceId
+
+    def getWidgetCombo(self):
+        return self.widget_combo
 
     def getSpaceId(self):
         return self.spaceId
