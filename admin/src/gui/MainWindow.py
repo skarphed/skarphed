@@ -52,9 +52,7 @@ class MainWindow(gtk.Window):
         self.set_icon_from_file("../data/icon/mp_logo.png")
         self.maximize()
         
-        self.table = gtk.Table(5,1,False)
-        self.headerbox = gtk.HBox()
-        self.header = gtk.image_new_from_file("../data/header.png")
+        self.table = gtk.Table(4,1,False)
         self.menu = gtk.MenuBar()
         self.tool = Toolbar(self)
         self.pane = gtk.HPaned()
@@ -95,8 +93,6 @@ class MainWindow(gtk.Window):
         self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"),False)
         self.status.pack_end(self.progress,False)
         
-        self.headerbox.pack_start(self.header, False)
-        self.table.attach(self.headerbox,0,1,0,1,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.table.attach(self.menu,0,1,1,2,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.table.attach(self.tool,0,1,2,3,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.table.attach(self.pane,0,1,3,4,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.EXPAND,0,0)
