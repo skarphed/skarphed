@@ -408,7 +408,6 @@ class ModuleManager(object):
             db.update_tables_for_module(updated_module)
             permissionmanager = self._core.get_permission_manager()
             permissionmanager.update_permissions_for_module(updated_module)
-        self._core.log("ended update job")
 
 
     def uninstall_module(self,module, hard=False):

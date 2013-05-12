@@ -530,7 +530,7 @@ class Permission(object):
         stmnt = "SELECT RIG_NAME FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
         cur = db.query(cls._core,stmnt,(module.get_name()+".",))
         rows = cur.fetchallmap()
-        rows = rows.values()
+        rows = [s['RIG_NAME'] for s in rows]
         return rows
 
 
