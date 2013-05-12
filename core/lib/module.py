@@ -383,9 +383,9 @@ class ModuleManager(object):
         latest_version = repo.get_latest_version(module)
 
         latest_path = libpath+"/"+latest_version["name"]+"/v"+\
-                              latest_version["version_major"]+"_"+ \
-                              latest_version["version_minor"]+"_"+ \
-                              latest_version["revision"]
+                              str(latest_version["version_major"])+"_"+ \
+                              str(latest_version["version_minor"])+"_"+ \
+                              str(latest_version["revision"])
 
         if self.compare_versions(latest_version, module) == 1:
             if not os.path.exists(latest_path):
@@ -408,6 +408,7 @@ class ModuleManager(object):
             db.update_tables_for_module(updated_module)
             permissionmanager = self._core.get_permission_manager()
             permissionmanager.update_permissions_for_module(updated_module)
+        self._core.log("ended update job")
 
 
     def uninstall_module(self,module, hard=False):
@@ -494,10 +495,12 @@ class ModuleManager(object):
         if module 2 is newer, returns -1
         if equal, returns 0
         """
+
+        module_manager = self._core.get_module_manager()
         if type(module1) != dict:
-            module1 = module1.get_meta_from_module()
+            module1 = module_manager.get_meta_from_module(module1)
         if type(module2) != dict:
-            module2 = module2.get_meta_from_module()
+            module2 = module_manager.get_meta_from_module(module2)
         if module1["version_major"] > module2["version_major"]:
             return 1
         elif module1["version_major"] == module2["version_major"]:

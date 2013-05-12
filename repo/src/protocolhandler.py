@@ -68,14 +68,17 @@ class ProtocolHandler(object):
         except ValueError, e:
             raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
 
-    def verify_module(self):
+    def verify_module(self, need_signature=True):
         """
         Verifies that the json 'm' key's value is a valid modules, that means it contains the following keys:
         name, hrname, version_major, version_minor, revision, signature
         """
         try:
             module = self.subject['m']
-            if not all([module[key] != None for key in ['name', 'hrname', 'version_major', 'version_minor', 'revision', 'signature']]):
+            keys = ['name', 'hrname', 'version_major', 'version_minor', 'revision']
+            if need_signature:
+                keys.append('signature')
+            if not all([module[key] != None for key in keys]):
                 raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
         except KeyError, e:
             raise create_repository_exception(RepositoryErrorCode.INVALID_JSON)
@@ -127,7 +130,7 @@ class ProtocolHandler(object):
             return json.dumps({'r' : publickey})
         
         elif c == CommandType.GET_LATEST_VERSION:
-            self.verify_module()
+            self.verify_module(False)
             module = self.repository.get_latest_version(environ, self.subject['m'])
             return json.dumps({'r' : module})
 

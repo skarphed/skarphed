@@ -551,6 +551,7 @@ class PermissionManager(object):
         self.create_permissions_for_module = Permission.create_permissions_for_module
         self.remove_permissions_for_module = Permission.remove_permissions_for_module
         self.remove_permission = Permission.remove_permission
+        self.update_permissions_for_module = Permission.update_permissions_for_module
         self.get_permissions_for_user = Permission.get_permissions_for_user
         self.get_grantable_permissions = Permission.get_grantable_permissions
         self.get_grantable_roles = Role.get_grantable_roles
