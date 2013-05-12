@@ -346,7 +346,7 @@ class Scoville(Instance):
         self.getApplication().doRPCCall(self,self.loadTemplateCallback, "getCurrentTemplate")
     
     def setRepositoryCallback(self,res):
-        self.loadRepository()
+        self.modules.refresh()
         
     def setRepository(self,host,port):
         self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [host,port])
