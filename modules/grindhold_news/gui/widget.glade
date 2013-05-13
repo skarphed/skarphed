@@ -2,7 +2,35 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkVBox" id="vbox1">
+  <object class="GtkListStore" id="commentstore">
+    <columns>
+      <!-- column-name delete -->
+      <column type="gboolean"/>
+      <!-- column-name date -->
+      <column type="gchararray"/>
+      <!-- column-name author -->
+      <column type="gchararray"/>
+      <!-- column-name content -->
+      <column type="gchararray"/>
+      <!-- column-name id -->
+      <column type="gint"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="newsstore">
+    <columns>
+      <!-- column-name show -->
+      <column type="gboolean"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+      <!-- column-name author -->
+      <column type="gchararray"/>
+      <!-- column-name date -->
+      <column type="gchararray"/>
+      <!-- column-name id -->
+      <column type="gint"/>
+    </columns>
+  </object>
+  <object class="GtkVBox" id="widget">
     <property name="visible">True</property>
     <property name="orientation">vertical</property>
     <child>
@@ -19,6 +47,50 @@
               <object class="GtkTreeView" id="newsview">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="model">newsstore</property>
+                <signal name="cursor_changed" handler="choose_news_cb"/>
+                <child>
+                  <object class="GtkTreeViewColumn" id="col_title">
+                    <property name="title">Title</property>
+                    <child>
+                      <object class="GtkCellRendererToggle" id="ren_show"/>
+                      <attributes>
+                        <attribute name="active">0</attribute>
+                      </attributes>
+                    </child>
+                    <child>
+                      <object class="GtkCellRendererText" id="ren_title"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn" id="col_author">
+                    <property name="title">Author</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="ren_author"/>
+                      <attributes>
+                        <attribute name="text">2</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn" id="col_date">
+                    <property name="min_width">1</property>
+                    <property name="title">Date</property>
+                    <property name="sort_indicator">True</property>
+                    <property name="sort_order">descending</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="ren_date"/>
+                      <attributes>
+                        <attribute name="text">3</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
@@ -99,6 +171,53 @@
                   <object class="GtkTreeView" id="commentview">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="model">commentstore</property>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="com_col_delete">
+                        <property name="title">Del</property>
+                        <child>
+                          <object class="GtkCellRendererToggle" id="com_ren_delete"/>
+                          <attributes>
+                            <attribute name="active">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="com_col_date">
+                        <property name="title">Date</property>
+                        <property name="sort_indicator">True</property>
+                        <property name="sort_order">descending</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="com_ren_date"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="com_col_author">
+                        <property name="title">Author</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="com_ren_author"/>
+                          <attributes>
+                            <attribute name="text">2</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="com_col_content">
+                        <property name="title">Content</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="com_ren_content"/>
+                          <attributes>
+                            <attribute name="text">3</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -131,7 +250,13 @@
       <object class="GtkHBox" id="hbox1">
         <property name="visible">True</property>
         <child>
-          <placeholder/>
+          <object class="GtkLabel" id="load">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Loading ...</property>
+          </object>
+          <packing>
+            <property name="position">0</property>
+          </packing>
         </child>
         <child>
           <object class="GtkButton" id="new">
@@ -140,6 +265,7 @@
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="use_stock">True</property>
+            <signal name="clicked" handler="new_cb"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -156,6 +282,7 @@
             <property name="receives_default">True</property>
             <property name="use_stock">True</property>
             <property name="xalign">0.4699999988079071</property>
+            <signal name="clicked" handler="save_cb"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -170,6 +297,4 @@
       </packing>
     </child>
   </object>
-  <object class="GtkListStore" id="newsstore"/>
-  <object class="GtkListStore" id="commentstore"/>
 </interface>
