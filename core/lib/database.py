@@ -190,8 +190,15 @@ class Database(object):
         """
         Yields the next value of a given sequence (e.g. 'MOD_GEN') 
         and increments it
+        if the sequence contains a "$"-character, tries to resolve name of table
         """
         cur = self._connection.cursor()
+        if sequenceId.startswith("${"):
+            statement = "SELECT MDT_ID FROM MODULETABLES INNER JOIN MODULES ON MOD_ID = MDT_MOD_ID WHERE MOD_NAME = ? AND MDT_NAME = ? ;"
+            args = tuple(sequenceId[2:-1].split("."))
+            cur.execute(statement, args)
+            res = cur.fetchone()
+            sequenceId = "SEQ_"+"0"*(6-len(res[0]))+res[0]
         statement = "SELECT GEN_ID ( %s , 1) FROM RDB$DATABASE ;"%str(sequenceId)
         cur.execute(statement)
         res = cur.fetchone()
@@ -203,6 +210,12 @@ class Database(object):
         without incrementing it
         """
         cur = self._connection.cursor()
+        if sequenceId.startswith("${"):
+            statement = "SELECT MDT_ID FROM MODULETABLES INNER JOIN MODULES ON MOD_ID = MDT_MOD_ID WHERE MOD_NAME = ? AND MDT_NAME = ? ;"
+            args = tuple(sequenceId[2:-1].split("."))
+            cur.execute(statement, args)
+            res = cur.fetchone()
+            sequenceId = "SEQ_"+"0"*(6-len(res[0]))+res[0]
         statement = "SELECT GEN_ID ( %s , 0) FROM RDB$DATABASE ;"%str(sequenceId)
         cur.execute(statement)
         res = cur.fetchone()
