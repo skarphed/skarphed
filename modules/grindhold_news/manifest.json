@@ -7,15 +7,17 @@
   "tables":[
     {"name":"news",
      "columns":[
-       {"name": "NWS_ID",     "type": "INT", "autoincrement" : true},
+       {"name": "NWS_ID",     "type": "INT"},
        {"name": "NWS_TITLE",  "type": "VARCHAR(255)"},
        {"name": "NWS_TEXT",   "type": "VARCHAR(5000)"},
-       {"name": "NWS_AUTHOR", "type": "INT"}
+       {"name": "NWS_USR_AUTHOR", "type": "INT"},
+       {"name": "NWS_SHOW",   "type": "INT"}
        
      ]},
     {"name":"comments",
      "columns" : [
-       {"name": "COM_ID",      "type": "INT", "autoincrement" : true},
+       {"name": "COM_ID",      "type": "INT"},
+       {"name": "COM_DATE",    "type": "TIMESTAMP"}
        {"name": "COM_NWS_ID", "type": "INT", "foreign":"news.ID"},
        {"name": "COM_TEXT",    "type": "VARCHAR(5000)"},
        {"name": "COM_AUTHOR",  "type": "INT"}

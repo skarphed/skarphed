@@ -34,3 +34,16 @@ class Module(AbstractModule):
 
     def render_javascript(self,widget_id,args={}):
         return """<script type="text/javascript"> alert('LOL');</script>"""
+
+    def get_news(self,widget_id):
+        db = self._core.get_db()
+        stmnt = "SELECT NWS_ID, NWS_BLUB_ID"
+
+    def get_news_entry(self,widget_id, entry_id):
+        pass
+
+    def save_news_entry(self, widget_id, entry_data):
+        pass
+
+    def create_news_entry(self, widget_id):
+        pass

@@ -34,7 +34,8 @@ class WidgetPage(gtk.VBox):
         gtk.VBox.__init__(self)
         self.widgetId = widget.getLocalId()
 
-        self._newslist = []
+        self._news = {}
+        self._current_entry = {}
 
         path = os.path.realpath(__file__)
         path = path.replace("widget.pyc","")
@@ -42,5 +43,151 @@ class WidgetPage(gtk.VBox):
 
         self.builder = gtk.Builder()
         self.builder.add_from_file(self._path+"widget.glade")
+        self.handlers = {
+            "save_cb"       : self.saveCallback,
+            "new_cb"        : self.newCallback,
+            "choose_news_cb": self.chooseNewsCallback
+        }
+        self.builder.connect_signals(self.handlers)
 
+        self.widget = self.builder.get_object("widget")
+
+        self._newsstore = self.builder.get_object("newsstore")
+        self._commentstore = self.builder.get_object("commentstore")
+
+        self.add(self.widget)
+        self.loadNews()
+
+    def render(self):
+        def search_news(model,path,rowiter):
+            nr = model.get_value(rowiter,4)
+            if nr not in self._news.keys():
+                self._itersToRemove.append(rowiter)
+            else:
+                model.set_value(rowiter,0,self._news[nr]["show"])
+                model.set_value(rowiter,1,self._news[nr]["title"])
+                model.set_value(rowiter,2,self._news[nr]["author"])
+                model.set_value(rowiter,3,self._news[nr]["date"])
+            self._news_handled.append(nr)
         
+        def search_comments(model,path,rowiter):
+            nr = model.get_value(rowiter,4)
+            if nr not in self._news.keys():
+                self._itersToRemove.append(rowiter)
+            else:
+                model.set_value(rowiter,0,comments[nr]["del"])
+                model.set_value(rowiter,1,comments[nr]["date"])
+                model.set_value(rowiter,2,comments[nr]["author"])
+                model.set_value(rowiter,3,comments[nr]["content"])
+            self._news_handled.append(nr)
+        
+
+        self._news_handled = []
+        self._itersToRemove = []
+        self._newsstore.foreach(search_news)
+
+        for rowiter in self.itersToRemove:
+            self._newsstore.remove(rowiter)
+
+        for nr in self._news.keys():
+            if nr not in self._news_handled:
+                self._newsstore.append((self._news[nr]["show"],
+                                        self._news[nr]["title"],
+                                        self._news[nr]["author"],
+                                        self._news[nr]["date"],
+                                        nr))
+
+        del(self._news_handled)
+
+        if self._current_entry != {}:
+            self._itersToRemove = []
+            self._comments_handled = []
+
+            self._commentstore.foreach(search_comments)
+
+            for rowiter in self.itersToRemove:
+                self._commentstore.remove(rowiter)
+
+            for nr in self._current_entry["comments"].keys():
+                if nr not in self._comments_handled:
+                    self._commentstore.append((self._current_entry["comments"][nr]["del"],
+                                               self._current_entry["comments"][nr]["date"],
+                                               self._current_entry["comments"][nr]["author"],
+                                               self._current_entry["comments"][nr]["content"],
+                                               nr))
+            del(self._comments_handled)
+            self.builder.get_object("title").set_text(self._current_entry["title"])
+            self.builder.get_object("content").get_buffer().set_text(self._current_entry["content"])
+
+        del(self._itersToRemove)
+
+    def loadNewsCallback(self,data):
+        self._news = data
+        self.render()
+
+    def loadNews(self):
+        try:
+            widget = self.getApplication().getLocalObjectById(self.widgetId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+        module = widget.getModule()
+
+        scv = module.getModules().getScoville()
+        self.getApplication().doRPCCall(scv, self.loadNewsCallback, "executeModuleMethod", [module.getId(), "get_news", [widget.getId()]])
+
+
+    def loadNewsEntryCallback(self,data):
+        self._current_entry = data
+        for comment in self._current_entry["comments"].values():
+            comment["del"] = False
+
+        self.render()
+
+
+    def loadNewsEntry(self, entry_id):
+        try:
+            widget = self.getApplication().getLocalObjectById(self.widgetId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+        module = widget.getModule()
+
+        scv = module.getModules().getScoville()
+        self.getApplication().doRPCCall(scv, self.loadNewsEntryCallback, "executeModuleMethod", [module.getId(), "get_news_entry", [widget.getId(), entry_id]])
+
+    def chooseNewsCallback(self, tree=None, path=None, data=None):
+        selection = self.builder.get_object("newstree").get_selection()
+        rowiter = selection.get_selected()[1]
+        nr = self._newsstore.get_value(rowiter,4)
+        self.loadNewsEntry(nr)
+
+    def savedEntryCallback(self, data):
+        self.loadNewsEntry(self._current_entry["id"])
+
+    def saveCallback(self, widget=None, data=None):
+        self._saving_entry = self._current_entry
+
+        self._saving_entry["title"] = self.builder.get_object("title").get_text()
+        self._saving_entry["content"] = self.builder.get_object("content").get_buffer().get_text()
+
+        try:
+            widget = self.getApplication().getLocalObjectById(self.widgetId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+        module = widget.getModule()
+
+        scv = module.getModules().getScoville()
+        self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "save_news_entry", [widget.getId(), self._saving_entry]])
+
+    def createNewEntryCallback(self, data):
+        self.loadNews()
+
+    def newCallback(self, widget=None, data=None):
+        try:
+            widget = self.getApplication().getLocalObjectById(self.widgetId)
+        except GenericObjectStoreException, e:
+            self.destroy()
+        module = widget.getModule()
+
+        scv = module.getModules().getScoville()
+        self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "create_news_entry", [widget.getId()]])
+
