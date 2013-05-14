@@ -3,7 +3,7 @@
   "hrname":"News",
   "version_major":0,
   "version_minor":0,
-  "permissions":["write","delete","edit","deletecomments"],
+  "permissions":["create","delete","edit","deletecomments"],
   "tables":[
     {"name":"news",
      "columns":[
@@ -11,6 +11,7 @@
        {"name": "NWS_TITLE",  "type": "VARCHAR(255)"},
        {"name": "NWS_TEXT",   "type": "VARCHAR(5000)"},
        {"name": "NWS_USR_AUTHOR", "type": "INT"},
+       {"name": "NWS_DATE",   "type": "TIMESTAMP"},
        {"name": "NWS_SHOW",   "type": "INT"}
        
      ]},
@@ -20,7 +21,7 @@
        {"name": "COM_DATE",    "type": "TIMESTAMP"}
        {"name": "COM_NWS_ID", "type": "INT", "foreign":"news.ID"},
        {"name": "COM_TEXT",    "type": "VARCHAR(5000)"},
-       {"name": "COM_AUTHOR",  "type": "INT"}
+       {"name": "COM_AUTHOR",  "type": "VARCHAR(100)"}
      ]
     }
   ]

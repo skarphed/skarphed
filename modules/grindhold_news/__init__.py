@@ -1,7 +1,31 @@
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+
+###########################################################
+# Copyright 2011 Daniel 'grindhold' Brendle and Team
+#
+# This file is part of Scoville.
+#
+# Scoville is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License 
+# as published by the Free Software Foundation, either 
+# version 3 of the License, or (at your option) any later 
+# version.
+#
+# Scoville is distributed in the hope that it will be 
+# useful, but WITHOUT ANY WARRANTY; without even the implied 
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+# PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public 
+# License along with Scoville. 
+# If not, see http://www.gnu.org/licenses/.
+###########################################################
+
 import os
+from StringIO import StringIO
 
 from module import AbstractModule
-#from moduleexpansion import ModuleExpansion
 
 class ModuleException(Exception): 
     ERRORS = {
@@ -27,7 +51,24 @@ class Module(AbstractModule):
     """
 
     def render_pure_html(self,widget_id,args={}):
-        return "<h3>news! %s %s</h3>"%(ModuleExpansion().a,self._core.c)
+        db = self._core.get_db()
+        ret = StringIO()
+        if args.has_key("n"): #if specific newsentry is wanted:
+            stmnt = "SELECT NWS_TITLE, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USER ON USR_ID = NWS_USR_AUTHOR WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ? ;"
+            cur = db.query(self, stmnt, (int(args["n"]), int(widget_id)))
+            row = cur.fetchonemap()
+            if row is None:
+                return "<h2> Nothing... </h2><p> Seriously, there is nothing like that here</p><p> We're sorry</p>"
+            ret.write("<h3> %s </h3>"%row["NWS_TITLE"])
+            ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["NWS_AUTHOR"],row["NWS_DATE"]))
+            ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;">%s</div>')
+            ret.write('<p>%s</p>'%row["NWS_TEXT"])
+
+            #TODO: Implement Comment section
+
+            return ret.getvalue()
+        else: # Generic newspage requested
+            pass
 
     def render_html(self,widget_id,args={}):
         return "<h3>news! %s %s</h3>"%(ModuleExpansion().a,self._core.c)
@@ -37,13 +78,77 @@ class Module(AbstractModule):
 
     def get_news(self,widget_id):
         db = self._core.get_db()
-        stmnt = "SELECT NWS_ID, NWS_BLUB_ID"
+        stmnt = "SELECT NWS_ID, USR_NAME, NWS_DATE, NWS_SHOW, NWS_TITLE FROM ${news} INNER JOIN USERS ON USR_ID = NWS_USR_AUTOR WHERE MOD_INSTANCE_ID = ?;"
+        cur = db.query(self, stmnt, (int(widget_id,)))
+        ret = {}
+        for row in cur.fetchallmap():
+            ret[row["NWS_ID"]] = {"author":row["NWS_AUTHOR"],
+                                  "title":row["NWS_TITLE"],
+                                  "date":row["NWS_DATE"],
+                                  "show":row["NWS_SHOW"]}
+        return ret 
+
 
     def get_news_entry(self,widget_id, entry_id):
-        pass
+        db = self._core.get_db()
+        stmnt = "SELECT USR_NAME, NWS_DATE, NWS_SHOW, NWS_TITLE FROM ${news} INNER JOIN UNSERS ON USR_ID = NWS_USR_AUTHOR WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ?;"
+        stmnt_comment = "SELECT COM_AUTHOR, COM_DATE, COM_TEXT, COM_ID FROM ${comments} WHERE COM_NWS_ID = ? AND MOD_INSTANCE_ID = ?;"
+
+        cur = db.query(self,stmnt,(int(entry_id),int(widget_id)))
+        row = cur.fetchonemap()
+        ret = {}
+        if not row:
+            return ret
+        else:
+            ret["author"] = row["USR_NAME"]
+            ret["date"] = row["NWS_DATE"]
+            ret["title"] = row["NWS_TITLE"]
+            ret["content"] = row["NWS_TEXT"]
+            ret["id"] = int(row["NWS_ID"])
+            ret["show"] = bool(row["NWS_SHOW"])
+            ret["comments"] = {}
+            cur = db.query(self,stmnt_comment, (int(entry_id), int(widget_id)))
+            for commentrow in cur.fetchallmap():
+                ret["comments"][commentrow["COM_ID"]] = {
+                        "date": commentrow["COM_DATE"],
+                        "author":commentrow["COM_AUTHOR"],
+                        "content":commentrow["COM_TEXT"],
+                    }
 
     def save_news_entry(self, widget_id, entry_data):
-        pass
+        session_manager = self._core.get_session_manager()
+        current_user = session_manager.get_current_session_user()
+        
+        if not current_user.check_permission("grindhold_news.edit"):
+            return False
+
+        db = self._core.get_db()
+
+        stmnt = "UPDATE ${news} SET NWS_TITLE = ?, NWS_TEXT = ?, NWS_SHOW = ?  WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ? ;"
+        db.query(self, stmnt, (entry_data["title"], entry_data["content"], int(entry_data["show"]), int(entry_data["id"]), widget_id), commit=True)
+
+        if not current_user.check_permission("grindhold_news.deletecomments"):
+            return False
+
+        stmnt = "DELETE FROM ${comments} WHERE COM_ID = ? AND MOD_INSTANCE_ID = ?;"
+        for comment in entry_data["comments"].keys():
+            if entry_data["comments"][comment].has_key("del") and entry_data["comments"][comment]["del"]:
+                db.query(self, stmnt, (int(comment), int(widget_id)), commit=True)
+        return True
 
     def create_news_entry(self, widget_id):
+        session_manager = self._core.get_session_manager()
+        current_user = session_manager.get_current_session_user()
+        
+        if not current_user.check_permission("grindhold_news.create"):
+            return False
+
+        db = self._core.get_db()
+        new_id = db.get_seq_next("${grindhold_news.news}")
+
+        stmnt = "INSERT INTO ${news} (NWS_ID, NWS_USR_AUTHOR, NWS_SHOW, NWS_DATE, MOD_INSTANCE_ID) VALUES (?, ?, 0, CURRENT_TIMESTAMP, ?) ;"
+        db.query(self, stmnt, (new_id, current_user.get_id(), int(widget_id)), commit=True)
+        return True
+
+    def store_comment(self, author, comment):
         pass
