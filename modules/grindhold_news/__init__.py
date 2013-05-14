@@ -53,6 +53,9 @@ class Module(AbstractModule):
     def render_pure_html(self,widget_id,args={}):
         db = self._core.get_db()
         ret = StringIO()
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_currently_rendered_view()
+
         if args.has_key("n"): #if specific newsentry is wanted:
             stmnt = "SELECT NWS_TITLE, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USER ON USR_ID = NWS_USR_AUTHOR WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ? ;"
             cur = db.query(self, stmnt, (int(args["n"]), int(widget_id)))
@@ -60,21 +63,57 @@ class Module(AbstractModule):
             if row is None:
                 return "<h2> Nothing... </h2><p> Seriously, there is nothing like that here</p><p> We're sorry</p>"
             ret.write("<h3> %s </h3>"%row["NWS_TITLE"])
-            ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["NWS_AUTHOR"],row["NWS_DATE"]))
+            ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["USR_NAME"],row["NWS_DATE"]))
             ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;">%s</div>')
             ret.write('<p>%s</p>'%row["NWS_TEXT"])
 
-            #TODO: Implement Comment section
+            stmnt = "SELECT COM_AUTHOR, COM_DATE, COM_TEXT FROM ${comments} WHERE COM_NWS_ID = ? AND MOD_INSTANCE_ID = ?"
+            cur = db.query(self, stmnt, (int(args["n"]),int(widget_id)))
+
+            for row in cur.fetchallmap():
+                ret.write('<div class="commentauthor">Comment by %s</div><div class="commentdate">%s</div>'%(row["COM_AUTHOR"],row["COM_DATE"]))
+                ret.write('<blockquote>%s</blockquote>'%row["COM_TEXT"])
+
+            target_view = {'p':widget_id, 'c':{widget_id:{"n":args["n"]}}}
+            comment_link = view.generate_link_from_dict(target_view)
+
+            ret.write("""
+                <form action="%s" method="post">
+                    <h4>Leave a Comment:</h4>
+                    <p>Name: <input type="text" name="author"></p>
+                    <p><textarea name="text" style="width:90%; height:200px;"></textarea></p>
+                </form>
+                """%comment_link)
 
             return ret.getvalue()
         else: # Generic newspage requested
-            pass
+            skipstring = ""
+            if args.has_key("p"):
+                skipstring = " SKIP %d "%int(args["p"])
+            stmnt = "SELECT FIRST 10 %s NWS_TITLE, NWS_ID, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USER ON USR_ID = NWS_USR_AUTHOR WHERE MOD_INSTANCE_ID = ? ;"%skipstring
+            cur = db.query(self, stmnt, (widget_id))
+            for row in cur.fetchallmap():
+                text = self._shorten_newsentry(row["NWS_TXT"])
+
+                target_view = {'c':{widget_id:{"n":row["NWS_ID"]}}}
+                read_on_link = view.generate_link_from_dict(target_view)
+
+                ret.write("<h3> %s </h3>"%row["NWS_TITLE"])
+                ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["USR_NAME"],row["NWS_DATE"]))
+                ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;">%s</div>')
+                ret.write('<p>%s<a href="%s">[ Read on ... ]</a></p><p>&nbsp;</p>'%(text,read_on_link))
+            return ret.getvalue()
 
     def render_html(self,widget_id,args={}):
-        return "<h3>news! %s %s</h3>"%(ModuleExpansion().a,self._core.c)
+        return "<h3>news! with js</h3>"
 
     def render_javascript(self,widget_id,args={}):
         return """<script type="text/javascript"> alert('LOL');</script>"""
+
+    def _shorten_newsentry(self,newsentry):
+        while newsentry[-1:] != "" or newsentry[-1:] != "\n":
+            newsentry = newsentry[:-1]
+        return newsentry
 
     def get_news(self,widget_id):
         db = self._core.get_db()
