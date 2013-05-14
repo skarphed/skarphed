@@ -22,9 +22,6 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-from json import JSONEncoder
-from urllib2 import quote
-
 class ActionException(Exception):
     """
     Exceptions for Database-Module
@@ -627,31 +624,9 @@ class ActionList(object):
         """
         view_manager = self._core.get_view_manager()
         view = view_manager.get_currently_rendering_view()
-        target = {}
-        target['s'] = view.get_page()
-        target['v'] = view.get_space_widget_mapping()
-        target['c'] = view.get_widget_param_mapping()
         if view is None:
             return ""
-        else:
-            for action in self.get_actions():
-                if action.get_url() is not None:
-                    return action.get_url()
-                elif action.get_view_id() is not None:
-                    view = self._core.get_view_manager().get_from_id(action.get_view_id())
-                    name = view.get_name()
-                    return "/web/"+quote(name)
-                elif action.get_space() is not None and action.get_widget_id() is not None:
-                    target['v'][action.get_space()] = action.get_widget_id()
-
-            encoder = JSONEncoder()
-            viewjsonstring = quote(encoder.encode(target))
-            checkview = view_manager.get_from_json(viewjsonstring)
-            existing_name = checkview.check_has_name()
-            if existing_name == False:
-                return "/web/?"+viewjsonstring
-            else:
-                return "/web/"+existing_name
+        return view.generate_link_from_actionlist(self)
 
 class MenuItem(object):
     """

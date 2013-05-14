@@ -23,7 +23,7 @@
 ###########################################################
 
 from json import JSONDecoder, JSONEncoder
-from urllib2 import unquote
+from urllib2 import unquote, quote
 import StringIO
 import re
 
@@ -192,7 +192,7 @@ class View(object):
 
         {'s':<page_id>,
          'v':{'<space_id>':<widget_id>,'<space_id>':<widget_id>,[...]},
-         'c':{'wgt_id>': {<widget_args},'wgt_id':{<widget_args>}}
+         'c':{'<wgt_id>': {<widget_args>},'wgt_id':{<widget_args>},[...]}
          'p':<wgt_id>
         }
 
@@ -437,12 +437,65 @@ class View(object):
         """
         pass
 
+    def generate_link_from_json(self, dct):
+        """
+        Creates a link by analyzing a view-dictionary and merging it to this view
+        The incoming dictionary can be thought of as a diff that is added to the 
+        existing view.
+        Does not affect the View itself.
+        """
+        target = {}
+        target['s'] = self.get_page()
+        target['v'] = self.get_space_widget_mapping()
+        target['c'] = self.get_widget_param_mapping()
+        
+        if dct.has_key('s'):
+            target['s'] = dct['s']
+        if dct.has_key('v'):
+            target['v'].update(dct['v'])
+        if dct.has_key('c'):
+            for widget_id in dct['c'].keys():
+                target['c'] = dct['c'][widget_id]
+        
+        encoder = JSONEncoder()
+        viewjsonstring = quote(encoder.encode(target))
+        view_manager = self._core.get_view_manager()
+        checkview = view_manager.get_from_json(viewjsonstring)
+        existing_name = checkview.check_has_name()
+        if existing_name == False:
+            return "/web/?"+viewjsonstring
+        else:
+            return "/web/"+existing_name
+
 
     def generate_link_from_actionlist(self,actionlist):
         """
         returns a link that describes a call to a view that results of the actionlist
         """
-        pass
+        target = {}
+        target['s'] = self.get_page()
+        target['v'] = self.get_space_widget_mapping()
+        target['c'] = self.get_widget_param_mapping()
+        
+        for action in actionlist.get_actions():
+            if action.get_url() is not None:
+                return action.get_url()
+            elif action.get_view_id() is not None:
+                view = actionlist._core.get_view_manager().get_from_id(action.get_view_id())
+                name = view.get_name()
+                return "/web/"+quote(name)
+            elif action.get_space() is not None and action.get_widget_id() is not None:
+                target['v'][action.get_space()] = action.get_widget_id()
+
+        encoder = JSONEncoder()
+        viewjsonstring = quote(encoder.encode(target))
+        view_manager = self._core.get_view_manager()
+        checkview = view_manager.get_from_json(viewjsonstring)
+        existing_name = checkview.check_has_name()
+        if existing_name == False:
+            return "/web/?"+viewjsonstring
+        else:
+            return "/web/"+existing_name
 
     def render_pure(self):
         """
