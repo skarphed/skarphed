@@ -18,7 +18,7 @@
     {"name":"comments",
      "columns" : [
        {"name": "COM_ID",      "type": "INT"},
-       {"name": "COM_DATE",    "type": "TIMESTAMP"}
+       {"name": "COM_DATE",    "type": "TIMESTAMP"},
        {"name": "COM_NWS_ID", "type": "INT", "foreign":"news.ID"},
        {"name": "COM_TEXT",    "type": "VARCHAR(5000)"},
        {"name": "COM_AUTHOR",  "type": "VARCHAR(100)"}

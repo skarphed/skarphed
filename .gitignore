@@ -2,5 +2,6 @@
 templates/default_template/default_template.tar.gz
 modules/grindhold_plainhtml/grindhold_plainhtml.tar.gz
 modules/grindhold_flatmenu/grindhold_flatmenu.tar.gz
+modules/grindhold_news/grindhold_news.tar.gz
 *.swp
 *.deb
