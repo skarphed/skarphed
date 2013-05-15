@@ -164,6 +164,15 @@ class ModuleARC(ActionRenderContext):
     def update(self, data=None):
         self.obj.update()
 
+class ModulesARC(ActionRenderContext):
+    def __init__(self, par, module):
+        ActionRenderContext.__init__(self, par, module)
+
+        self.addAction('Refresh', IconStock.RELOAD, self.refresh)
+    
+    def refresh(self,data=None):
+        self.obj.refresh()
+    
 class WidgetARC(ActionRenderContext):
     def __init__(self, par, widget):
         ActionRenderContext.__init__(self, par, widget)
@@ -254,6 +263,7 @@ ARCMAP = {
                    "Users"            : UsersARC,
                    "User"             : UserARC,
                    "Module"           : ModuleARC,
+                   "Modules"          : ModulesARC,
                    "Roles"            : RolesARC,
                    "Role"             : RoleARC,
                    "Site"             : SiteARC,
