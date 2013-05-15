@@ -24,6 +24,7 @@
 
 from json import JSONDecoder, JSONEncoder
 from urllib2 import unquote, quote
+from cgi import FieldStorage
 import StringIO
 import re
 
@@ -497,7 +498,7 @@ class View(object):
         else:
             return "/web/"+existing_name
 
-    def render_pure(self):
+    def render_pure(self, environ):
         """
         renders this view with pure http-abilities. no script needed
         """
@@ -535,8 +536,11 @@ class View(object):
             if self._widget_param_mapping.has_key(str(widget_id)):
                 args.update(self._widget_param_mapping[str(widget_id)])
             if self._post_widget_id == widget_id:
-                # TODO: Implement arguments getting prepared from POSTDATA
-                pass
+                # Check whether the viewjson-string is included here, too:
+                # if so, eliminate it.
+                post_args = FieldStorage(fp=environ['wsgi.input'],environ=environ)
+                for key in post_args.keys():
+                    args[key] = post_args[key]
 
             widget_html = widget.render_pure_html(args)
             body = re.sub(r"<%%\s?%s\s?%%>"%space_name,widget_html,body)
@@ -558,11 +562,11 @@ class View(object):
                       'body':body}
 
 
-    def render_ajax(self):
+    def render_ajax(self, environ):
         #TODO: Implement
         pass
 
-    def render(self):
+    def render(self,environ):
         """
         render this view
         """
@@ -571,9 +575,9 @@ class View(object):
         rendermode = configuration.get_entry("core.rendermode")
         result = None
         if rendermode == "pure":
-            result = self.render_pure()
+            result = self.render_pure(environ)
         elif rendermode == "ajax":
-            result = self.render_ajax()
+            result = self.render_ajax(environ)
         View.set_currently_rendering_view(None)
         return result
 
