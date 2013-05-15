@@ -213,7 +213,9 @@ class Core(object):
                 self.log(str(e)+"Q:: "+environment["QUERY_STRING"])
                 view = None # Maybe get some cool error-view in the future
 
+
         ext = view.render(environment)
+
         self.log(type(ext))
         self.response_body.append(ext.encode('utf-8'))
 
