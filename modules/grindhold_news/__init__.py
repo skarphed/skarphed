@@ -57,6 +57,11 @@ class Module(AbstractModule):
         view = view_manager.get_currently_rendered_view()
 
         if args.has_key("n"): #if specific newsentry is wanted:
+            if "author" in args.keys() and "text" in args.keys():
+                new_comment_id = db.get_seq_next("${comments}")
+                #TODO: Escape incoming strings
+                stmnt = "INSERT INTO ${comments} (COM_ID, COM_AUTHOR, COM_TEXT) VALUES (?,?,?);"
+                db.query(self,stmnt, (new_comment_id, args["author"], args["text"]),commit=True)
             stmnt = "SELECT NWS_TITLE, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USER ON USR_ID = NWS_USR_AUTHOR WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ? ;"
             cur = db.query(self, stmnt, (int(args["n"]), int(widget_id)))
             row = cur.fetchonemap()
