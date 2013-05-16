@@ -68,7 +68,7 @@ class Module(AbstractModule):
                 return "<h2> Nothing... </h2><p> Seriously, there is nothing like that here</p><p> We're sorry</p>"
             ret.write("<h3> %s </h3>"%row["NWS_TITLE"])
             ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["USR_NAME"],str(row["NWS_DATE"])))
-            ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;">%s</div>')
+            ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;"></div>')
             ret.write('<p>%s</p>'%row["NWS_TEXT"])
 
             stmnt = "SELECT COM_AUTHOR, COM_DATE, COM_TEXT FROM ${comments} WHERE COM_NWS_ID = ? AND MOD_INSTANCE_ID = ?"
@@ -97,14 +97,14 @@ class Module(AbstractModule):
             stmnt = "SELECT FIRST 10 %s NWS_TITLE, NWS_ID, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USERS ON USR_ID = NWS_USR_AUTHOR WHERE MOD_INSTANCE_ID = ? ;"%skipstring
             cur = db.query(self, stmnt, (widget_id,))
             for row in cur.fetchallmap():
-                text = self._shorten_newsentry(row["NWS_TEXT"])
+                text = self._shorten_newsentry(row["NWS_TEXT"][:200])
 
                 target_view = {'c':{widget_id:{"n":row["NWS_ID"]}}}
                 read_on_link = view.generate_link_from_dict(target_view)
 
                 ret.write("<h3> %s </h3>"%row["NWS_TITLE"])
                 ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["USR_NAME"],str(row["NWS_DATE"])))
-                ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;">%s</div>')
+                ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;"></div>')
                 ret.write('<p>%s<a href="%s">[ Read on ... ]</a></p><p>&nbsp;</p>'%(text,read_on_link))
             return ret.getvalue()
 
@@ -115,9 +115,9 @@ class Module(AbstractModule):
         return """<script type="text/javascript"> alert('LOL');</script>"""
 
     def _shorten_newsentry(self,newsentry):
-        while len(newsentry) > 0 and (newsentry[-1:] != " " or newsentry[-1:] != "\n"):
+        while len(newsentry) > 0 and not (newsentry[-1:] == " " or newsentry[-1:] == "\n"):
             newsentry = newsentry[:-1]
-        return newsentry
+        return newsentry+"..."
 
     def get_news(self,widget_id):
         db = self._core.get_db()
