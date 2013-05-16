@@ -63,25 +63,25 @@ class WidgetPage(gtk.VBox):
     def render(self):
         def search_news(model,path,rowiter):
             nr = model.get_value(rowiter,4)
-            if nr not in self._news.keys():
+            if str(nr) not in self._news.keys():
                 self._itersToRemove.append(rowiter)
             else:
-                model.set_value(rowiter,0,self._news[nr]["show"])
-                model.set_value(rowiter,1,self._news[nr]["title"])
-                model.set_value(rowiter,2,self._news[nr]["author"])
-                model.set_value(rowiter,3,self._news[nr]["date"])
+                model.set_value(rowiter,0,self._news[str(nr)]["show"])
+                model.set_value(rowiter,1,self._news[str(nr)]["title"])
+                model.set_value(rowiter,2,self._news[str(nr)]["author"])
+                model.set_value(rowiter,3,self._news[str(nr)]["date"])
             self._news_handled.append(nr)
         
         def search_comments(model,path,rowiter):
             comments = self._current_entry["comments"]
             nr = model.get_value(rowiter,4)
-            if nr not in self._news.keys():
+            if str(nr) not in self._news.keys():
                 self._itersToRemove.append(rowiter)
             else:
-                model.set_value(rowiter,0,comments[nr]["del"])
-                model.set_value(rowiter,1,comments[nr]["date"])
-                model.set_value(rowiter,2,comments[nr]["author"])
-                model.set_value(rowiter,3,comments[nr]["content"])
+                model.set_value(rowiter,0,comments[str(nr)]["del"])
+                model.set_value(rowiter,1,comments[str(nr)]["date"])
+                model.set_value(rowiter,2,comments[str(nr)]["author"])
+                model.set_value(rowiter,3,comments[str(nr)]["content"])
             self._news_handled.append(nr)
         
 
@@ -89,16 +89,16 @@ class WidgetPage(gtk.VBox):
         self._itersToRemove = []
         self._newsstore.foreach(search_news)
 
-        for rowiter in self.itersToRemove:
+        for rowiter in self._itersToRemove:
             self._newsstore.remove(rowiter)
 
         for nr in self._news.keys():
-            if nr not in self._news_handled:
+            if int(nr) not in self._news_handled:
                 self._newsstore.append((self._news[nr]["show"],
                                         self._news[nr]["title"],
                                         self._news[nr]["author"],
                                         self._news[nr]["date"],
-                                        nr))
+                                        int(nr)))
 
         del(self._news_handled)
 
@@ -108,16 +108,16 @@ class WidgetPage(gtk.VBox):
 
             self._commentstore.foreach(search_comments)
 
-            for rowiter in self.itersToRemove:
+            for rowiter in self._itersToRemove:
                 self._commentstore.remove(rowiter)
 
             for nr in self._current_entry["comments"].keys():
-                if nr not in self._comments_handled:
+                if int(nr) not in self._comments_handled:
                     self._commentstore.append((self._current_entry["comments"][nr]["del"],
                                                self._current_entry["comments"][nr]["date"],
                                                self._current_entry["comments"][nr]["author"],
                                                self._current_entry["comments"][nr]["content"],
-                                               nr))
+                                               int(nr)))
             del(self._comments_handled)
             self.builder.get_object("title").set_text(self._current_entry["title"])
             self.builder.get_object("content").get_buffer().set_text(self._current_entry["content"])
@@ -158,7 +158,7 @@ class WidgetPage(gtk.VBox):
         self.getApplication().doRPCCall(scv, self.loadNewsEntryCallback, "executeModuleMethod", [module.getId(), "get_news_entry", [widget.getId(), entry_id]])
 
     def chooseNewsCallback(self, tree=None, path=None, data=None):
-        selection = self.builder.get_object("newstree").get_selection()
+        selection = self.builder.get_object("newsview").get_selection()
         rowiter = selection.get_selected()[1]
         nr = self._newsstore.get_value(rowiter,4)
         self.loadNewsEntry(nr)
@@ -170,7 +170,8 @@ class WidgetPage(gtk.VBox):
         self._saving_entry = self._current_entry
 
         self._saving_entry["title"] = self.builder.get_object("title").get_text()
-        self._saving_entry["content"] = self.builder.get_object("content").get_buffer().get_text()
+        textbuffer = self.builder.get_object("content").get_buffer()
+        self._saving_entry["content"] = textbuffer.get_text(textbuffer.get_start_iter(),textbuffer.get_end_iter())
 
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
