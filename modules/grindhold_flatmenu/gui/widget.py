@@ -29,6 +29,7 @@ import gtk
 import os
 
 from gui.ObjectCombo import ObjectCombo
+from data.Generic import GenericObjectStoreException
 
 class WidgetPage(gtk.VBox):
     HORIZONTALLY = 0
@@ -75,7 +76,7 @@ class WidgetPage(gtk.VBox):
     def render(self):
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.destroy()
 
         page = None
@@ -123,7 +124,7 @@ class WidgetPage(gtk.VBox):
     def loadContent(self):
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.destroy()
         module = widget.getModule()
 
@@ -146,7 +147,7 @@ class WidgetPage(gtk.VBox):
         
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.destroy()
         module = widget.getModule()
 

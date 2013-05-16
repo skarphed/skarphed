@@ -28,6 +28,8 @@ import gtk
 
 import os
 
+from data.Generic import GenericObjectStoreException
+
 class WidgetPage(gtk.VBox):
     def __init__(self, parent, widget):
         self.par = parent
@@ -71,6 +73,7 @@ class WidgetPage(gtk.VBox):
             self._news_handled.append(nr)
         
         def search_comments(model,path,rowiter):
+            comments = self._current_entry["comments"]
             nr = model.get_value(rowiter,4)
             if nr not in self._news.keys():
                 self._itersToRemove.append(rowiter)
@@ -128,7 +131,7 @@ class WidgetPage(gtk.VBox):
     def loadNews(self):
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.destroy()
         module = widget.getModule()
 
@@ -147,7 +150,7 @@ class WidgetPage(gtk.VBox):
     def loadNewsEntry(self, entry_id):
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.destroy()
         module = widget.getModule()
 
@@ -171,7 +174,7 @@ class WidgetPage(gtk.VBox):
 
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.destroy()
         module = widget.getModule()
 
@@ -184,10 +187,15 @@ class WidgetPage(gtk.VBox):
     def newCallback(self, widget=None, data=None):
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.destroy()
         module = widget.getModule()
 
         scv = module.getModules().getScoville()
         self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "create_news_entry", [widget.getId()]])
 
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()

@@ -28,6 +28,8 @@ import gtk
 
 import os
 
+from data.Generic import GenericObjectStoreException
+
 class WidgetPage(gtk.VBox):
     def __init__(self, parent, widget):
         self.par = parent
