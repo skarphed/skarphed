@@ -504,8 +504,6 @@ class Permission(object):
         module_name = module.get_name()
         permissions = module.get_permissions()
         current = [s.replace(module_name+".","",1) for s in cls.get_permissions_for_module(module)]
-        cls._core.log(current)
-        cls._core.log(permissions)
         for permission in permissions:
             if permission not in current:
                 cls.create_permission(permission, module_name)

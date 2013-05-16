@@ -54,8 +54,7 @@ class Module(AbstractModule):
         db = self._core.get_db()
         ret = StringIO()
         view_manager = self._core.get_view_manager()
-        view = view_manager.get_currently_rendered_view()
-
+        view = view_manager.get_currently_rendering_view()
         if args.has_key("n"): #if specific newsentry is wanted:
             if "author" in args.keys() and "text" in args.keys():
                 new_comment_id = db.get_seq_next("${grindhold_news.comments}")
@@ -95,10 +94,10 @@ class Module(AbstractModule):
             skipstring = ""
             if args.has_key("p"):
                 skipstring = " SKIP %d "%int(args["p"])
-            stmnt = "SELECT FIRST 10 %s NWS_TITLE, NWS_ID, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USER ON USR_ID = NWS_USR_AUTHOR WHERE MOD_INSTANCE_ID = ? ;"%skipstring
-            cur = db.query(self, stmnt, (widget_id))
+            stmnt = "SELECT FIRST 10 %s NWS_TITLE, NWS_ID, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USERS ON USR_ID = NWS_USR_AUTHOR WHERE MOD_INSTANCE_ID = ? ;"%skipstring
+            cur = db.query(self, stmnt, (widget_id,))
             for row in cur.fetchallmap():
-                text = self._shorten_newsentry(row["NWS_TXT"])
+                text = self._shorten_newsentry(row["NWS_TEXT"])
 
                 target_view = {'c':{widget_id:{"n":row["NWS_ID"]}}}
                 read_on_link = view.generate_link_from_dict(target_view)
@@ -116,7 +115,7 @@ class Module(AbstractModule):
         return """<script type="text/javascript"> alert('LOL');</script>"""
 
     def _shorten_newsentry(self,newsentry):
-        while newsentry[-1:] != "" or newsentry[-1:] != "\n":
+        while len(newsentry) > 0 and (newsentry[-1:] != " " or newsentry[-1:] != "\n"):
             newsentry = newsentry[:-1]
         return newsentry
 
@@ -143,7 +142,7 @@ class Module(AbstractModule):
         ret = {}
         if row:
             ret["author"] = row["USR_NAME"]
-            ret["date"] = row["NWS_DATE"]
+            ret["date"] = str(row["NWS_DATE"])
             ret["title"] = row["NWS_TITLE"]
             ret["content"] = row["NWS_TEXT"]
             ret["id"] = int(entry_id)
