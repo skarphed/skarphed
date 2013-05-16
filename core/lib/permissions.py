@@ -503,7 +503,9 @@ class Permission(object):
         """
         module_name = module.get_name()
         permissions = module.get_permissions()
-        current = cls.get_permissions_for_module(module)
+        current = [s.replace(module_name+".","",1) for s in cls.get_permissions_for_module(module)]
+        cls._core.log(current)
+        cls._core.log(permissions)
         for permission in permissions:
             if permission not in current:
                 cls.create_permission(permission, module_name)
@@ -528,9 +530,9 @@ class Permission(object):
         """
         db = cls._core.get_db()
         stmnt = "SELECT RIG_NAME FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
-        cur = db.query(cls._core,stmnt,(module.get_name()+".",))
+        cur = db.query(cls._core,stmnt,(module.get_name()+".%",))
         rows = cur.fetchallmap()
-        rows = [s['RIG_NAME'] for s in rows]
+        rows = [s['RIG_NAME'] for s in rows]        
         return rows
 
 
