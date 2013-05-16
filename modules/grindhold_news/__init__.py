@@ -58,7 +58,7 @@ class Module(AbstractModule):
 
         if args.has_key("n"): #if specific newsentry is wanted:
             if "author" in args.keys() and "text" in args.keys():
-                new_comment_id = db.get_seq_next("${comments}")
+                new_comment_id = db.get_seq_next("${grindhold_news.comments}")
                 #TODO: Escape incoming strings
                 stmnt = "INSERT INTO ${comments} (COM_ID, COM_AUTHOR, COM_TEXT) VALUES (?,?,?);"
                 db.query(self,stmnt, (new_comment_id, args["author"], args["text"]),commit=True)
@@ -122,8 +122,8 @@ class Module(AbstractModule):
 
     def get_news(self,widget_id):
         db = self._core.get_db()
-        stmnt = "SELECT NWS_ID, USR_NAME, NWS_DATE, NWS_SHOW, NWS_TITLE FROM ${news} INNER JOIN USERS ON USR_ID = NWS_USR_AUTOR WHERE MOD_INSTANCE_ID = ?;"
-        cur = db.query(self, stmnt, (int(widget_id,)))
+        stmnt = "SELECT NWS_ID, USR_NAME, NWS_DATE, NWS_SHOW, NWS_TITLE FROM ${news} INNER JOIN USERS ON USR_ID = NWS_USR_AUTHOR WHERE MOD_INSTANCE_ID = ?;"
+        cur = db.query(self, stmnt, (int(widget_id),))
         ret = {}
         for row in cur.fetchallmap():
             ret[row["NWS_ID"]] = {"author":row["NWS_AUTHOR"],

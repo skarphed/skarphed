@@ -198,7 +198,8 @@ class Database(object):
             args = tuple(sequenceId[2:-1].split("."))
             cur.execute(statement, args)
             res = cur.fetchone()
-            sequenceId = "SEQ_"+"0"*(6-len(res[0]))+res[0]
+            seqnum = str(res[0])
+            sequenceId = "SEQ_"+"0"*(6-len(seqnum))+seqnum
         statement = "SELECT GEN_ID ( %s , 1) FROM RDB$DATABASE ;"%str(sequenceId)
         cur.execute(statement)
         res = cur.fetchone()
@@ -215,7 +216,8 @@ class Database(object):
             args = tuple(sequenceId[2:-1].split("."))
             cur.execute(statement, args)
             res = cur.fetchone()
-            sequenceId = "SEQ_"+"0"*(6-len(res[0]))+res[0]
+            seqnum = str(res[0])
+            sequenceId = "SEQ_"+"0"*(6-len(seqnum))+seqnum
         statement = "SELECT GEN_ID ( %s , 0) FROM RDB$DATABASE ;"%str(sequenceId)
         cur.execute(statement)
         res = cur.fetchone()
