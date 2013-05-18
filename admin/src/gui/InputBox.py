@@ -28,7 +28,7 @@ pygtk.require("2.0")
 import gtk
 
 class InputBox(gtk.Frame):
-    def __init__(self,par,text,callback,typeWanted=False):
+    def __init__(self,par,text,callback,typeWanted=False,notEmpty=False):
         self.par = par
         gtk.Frame.__init__(self, "Input Box") # TODO title
         
@@ -54,6 +54,7 @@ class InputBox(gtk.Frame):
         self.entry.connect("activate", self.okCallback)
         self.cb = callback
         self.typeWanted = typeWanted
+        self.notEmpty = notEmpty
         
         self.alignment.add(self.vbox)
         self.add(self.alignment)
@@ -64,14 +65,19 @@ class InputBox(gtk.Frame):
     def okCallback(self,widget=None,data=None):
         def errorMessage(msgId):
             msgs = ("This is not a valid int number",
+                    "Empty input is not valid"
                     )
-            dia = gtk.MessageDialog(parent=self.getPar().getPar(), flags=0, type=gtk.MESSAGE_WARNING, \
+            dia = gtk.MessageDialog(parent=None, flags=0, type=gtk.MESSAGE_WARNING, \
                                   buttons=gtk.BUTTONS_OK, message_format=msgs[msgId])
             dia.run()
             dia.destroy()
         
         value = self.entry.get_text()
         
+        if self.notEmpty and value == "":
+            errorMessage(1)
+            return
+
         if self.typeWanted == int:
             try:
                 value = int(value)

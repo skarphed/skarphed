@@ -40,7 +40,10 @@ class UserException(Exception):
         7:"""Revoking Permission: This Sessionuser is not allowed to grant or revoke Permissions!""",
         8:"""A User cannot revoke a permission that he does not possess himself""",
         9:"""There is no user with the name """,
-        10:"""Get Users: This user is not allowed to view users"""
+        10:"""Get Users: This user is not allowed to view users""",
+        11:"""There is no user with the ID """,
+        12:"""Cant create an user with an empty username""",
+        13:"""Cant create an user with an empty password"""
     }
 
     @classmethod
@@ -309,7 +312,7 @@ class User(object):
         res = cur.fetchonemap()
 
         if res is None:
-            raise UserException(UserException.get_msg(9,username))
+            raise UserException(UserException.get_msg(11,nr))
         user = User(cls._core)
         user.set_id(res['USR_ID'])
         user.set_name(res['USR_NAME'])
@@ -338,10 +341,19 @@ class User(object):
         return users
 
     @classmethod
+    def _check_password(cls, password):
+        if password == "":
+            raise UserException(UserException.get_msg(13))
+        return True
+
+    @classmethod
     def create_user(cls, username, password):
         """
         creates a new user
         """
+        if username == "":
+            raise UserException(UserException.get_msg(12))
+        cls._check_password(password)
         user = User(cls._core)
         user.set_name(username)
         user.set_password("")
