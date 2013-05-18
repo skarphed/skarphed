@@ -25,6 +25,8 @@
 from hashlib import sha512
 from random import randrange
 
+ROOT_USER_ID = 1
+
 class UserException(Exception):
     """
     Exceptions for User-Module
@@ -43,7 +45,8 @@ class UserException(Exception):
         10:"""Get Users: This user is not allowed to view users""",
         11:"""There is no user with the ID """,
         12:"""Cant create an user with an empty username""",
-        13:"""Cant create an user with an empty password"""
+        13:"""Cant create an user with an empty password""",
+        14:"""One does not simply delete the root user"""
     }
 
     @classmethod
@@ -161,6 +164,9 @@ class User(object):
         """
         deletes this user from database
         """
+        if self.get_id() == ROOT_USER_ID:
+            raise UserException(UserException.get_msg(14))
+
         db = self._core.get_db()
 
         stmnt_uri="DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? ;"
@@ -209,7 +215,7 @@ class User(object):
         permissionmanager = self._core.get_permission_manager()
         return permissionmanager.get_roles_for_user(self)        
 
-    def grant_permission(self, permission):
+    def grant_permission(self, permission, ignore_check=False):
         """
         grants a permission to the user
         """
@@ -220,12 +226,12 @@ class User(object):
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
-        if not session_user.check_permission(permission):
+        if not ignore_check and not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(6))
         stmnt = "UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;"
         db.query(self._core,stmnt,(self._id,permission_id),commit=True)
 
-    def revoke_permission(self,permission):
+    def revoke_permission(self,permission, ignore_check=False):
         """
         revokes a permission from the user
         """
@@ -236,7 +242,7 @@ class User(object):
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
-        if not session_user.check_permission(permission):
+        if not ignore_check and not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(8))            
         stmnt = "DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? ;"
         db.query(self._core,stmnt,(self._id,permission_id),commit=True)
@@ -299,6 +305,10 @@ class User(object):
         user.set_password(res['USR_PASSWORD'])
         user.set_salt(res['USR_SALT'])
         return user
+
+    @classmethod
+    def get_root_user(cls):
+        return cls.get_user_by_id(ROOT_USER_ID)
 
     @classmethod
     def get_user_by_id(cls,nr):
@@ -386,6 +396,7 @@ class UserManager(object):
 
         self.get_user_by_id = User.get_user_by_id
         self.get_user_by_name = User.get_user_by_name
+        self.get_root_user = User.get_root_user
         self.get_users = User.get_users
         self.create_user = User.create_user
         self.get_users_for_admin_interface = User.get_users_for_admin_interface

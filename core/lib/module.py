@@ -127,7 +127,7 @@ class AbstractModule(object):
         """
         cretes a widget of this module and returns it
         """
-        if name="":
+        if name=="":
             raise ModuleCoreException(ModuleCoreException.get_msg(10))
         w = Widget(self._core, self)
         w.set_name(name)
