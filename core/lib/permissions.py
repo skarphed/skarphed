@@ -381,6 +381,8 @@ class Permission(object):
                 where uri_usr_id = ?) ; " \
         
         cur = db.query(cls._core,stmnt,(permission,user_id,user_id))
+        if res is None:
+            return False
         res = cur.fetchone()[0]
         return res == 1
 
