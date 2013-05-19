@@ -235,6 +235,9 @@ class Template(object):
 
         # BEGIN TO WRITE DATA
 
+        #release maintenance mode at the end?
+        release_maintenance_mode = not cls.is_template_installed()
+
         #uninstall old template
         if cls.is_template_installed():
             old_template = cls.get_current_template()
@@ -289,6 +292,9 @@ class Template(object):
         #create a defaultview if there isnt
         view_manager = cls._core.get_view_manager()
         view_manager.create_default_view()
+
+        if release_maintenance_mode:
+            cls._core.deactivate_maintenance_mode()
 
         return errorlog
 

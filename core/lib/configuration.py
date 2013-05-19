@@ -26,7 +26,8 @@ from json import JSONDecoder
 
 class ConfigurationException(Exception):
     ERRORS = {
-        1:"""This Configurationentry does not exist!"""
+        1:"""This Configurationentry does not exist!""",
+        2:"""Can only override entries in database"""
     }
 
     @classmethod
@@ -68,6 +69,7 @@ class Configuration(object):
 
         configjson = open(self._configuration["core.webpath"]+"/config.json").read()
         self._configuration.update(JSONDecoder().decode(configjson))
+        self._local_config_keys = self._configuration.keys()
         self._state = self.CONF_LOAD_LOCAL
 
     def init_from_db(self):
@@ -76,8 +78,8 @@ class Configuration(object):
         """
         db = self._core.get_db()
         cur = db.query(self._core, "SELECT PARAM,VAL FROM CONFIG ;")
-        for res in res.fetchallmap():
-            self._configuration.update(res)
+        for res in cur.fetchallmap():
+            self._configuration[res["PARAM"]] = res["VAL"]
         self._state = self.CONF_LOAD_DB
 
     def get_entry(self, entry):
@@ -88,6 +90,16 @@ class Configuration(object):
             return self._configuration[entry]
         raise ConfigurationException(ConfigurationException.get_msg(1))
 
+    def set_entry(self, entry, value):
+        """
+        Sets an entry of this core's configuration
+        """
+        if entry not in self._local_config_keys:
+            db = self._core.get_db()
+            stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL) VALUES (?,?) MATCHING (PARAM) ;"
+            db.query(self._core,stmnt,(entry,str(value)),commit=True)
+        else:
+            raise ConfigurationException(ConfigurationException.get_msg(2))
 
     def get_parent(self):
         """
@@ -100,5 +112,3 @@ class Configuration(object):
         returns Confiuration's coreobject
         """
         return self._core
-        
-
