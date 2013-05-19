@@ -28,7 +28,7 @@ pygtk.require("2.0")
 import gtk
 
 class InputBox(gtk.Frame):
-    def __init__(self,par,text,callback,typeWanted=False,notEmpty=False):
+    def __init__(self,par,text,callback,typeWanted=False,notEmpty=False,cancel=True):
         self.par = par
         gtk.Frame.__init__(self, "Input Box") # TODO title
         
@@ -38,12 +38,16 @@ class InputBox(gtk.Frame):
         self.entry = gtk.Entry()
         self.space = gtk.Label()
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
+        if cancel:
+            self.cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
         
         self.hbox = gtk.HBox()
         self.vbox = gtk.VBox()
         self.alignment = gtk.Alignment(0.5,0.5,0.1,0.05)
 
         self.hbox.pack_start(self.space,True)
+        if cancel:
+            self.hbox.pack_start(self.cancel,False)
         self.hbox.pack_start(self.ok,False)
         
         self.vbox.pack_start(self.label,True)
@@ -51,6 +55,8 @@ class InputBox(gtk.Frame):
         self.vbox.pack_start(self.hbox,False)
         
         self.ok.connect("clicked", self.okCallback)
+        if cancel:
+            self.cancel.connect("clicked", self.cancelCallback)
         self.entry.connect("activate", self.okCallback)
         self.cb = callback
         self.typeWanted = typeWanted
@@ -86,7 +92,9 @@ class InputBox(gtk.Frame):
                 return
         self.getApplication().getMainWindow().closeDialogPane()
         self.cb(value)
-        
+    
+    def cancelCallback(self,widget=None, data=None):
+        self.getApplication().getMainWindow().closeDialogPane()
         
     def getPar(self):
         return self.par
