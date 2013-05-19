@@ -65,6 +65,8 @@ SPACE                   = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 TEMPLATE                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/template.png",16,16)
 UPDATE                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/update.png",16,16)
 USER                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/user.png",16,16)
+USER_CURRENT            = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/user_current.png",16,16)
+USER_ROOT               = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/user_root.png",16,16)
 VIEW                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/view.png",16,16)
 WEB                     = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/web.png",16,16)
 WIDGET                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/widget.png",16,16)
@@ -105,11 +107,20 @@ def getModuleIcon(module):
     else:
         return MODULE
 
+def getUserIcon(user):
+    if user.getName() == user.getUsers().getScoville().getUsername():
+        return USER_CURRENT
+    if user.getName() == 'root':
+        return USER_ROOT
+    return USER
+
 def getAppropriateIcon(obj):
     if obj.__class__.__name__ == "Server":
         return getServerIcon(obj)
     if obj.__class__.__name__ == "Module":
         return getModuleIcon(obj)
+    if obj.__class__.__name__ == "User":
+        return getUserIcon(obj)
     if icon_object_map.has_key(obj.__class__.__name__):
         return icon_object_map[obj.__class__.__name__]
     else:
