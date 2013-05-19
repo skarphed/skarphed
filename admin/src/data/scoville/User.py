@@ -122,7 +122,16 @@ class User(GenericScovilleObject):
                                       "deleteUser",
                                       [self.getId()]
                                       )
+
+    def alterPasswordCallback(self, json):
+        return True
     
+    def alterPassword(self, new_password, old_password=None):
+        self.getApplication().doRPCCall(self.getUsers().getScoville(),
+                                        self.alterPasswordCallback,
+                                        "alterPassword",
+                                        [self.getId(), new_password, old_password])
+
     def getPar(self):
         return self.par
     
