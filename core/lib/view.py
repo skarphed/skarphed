@@ -227,7 +227,7 @@ class View(object):
 
         if json.has_key('c'):
             for key, value in json['c'].items(): #transform indices back to int
-                json['v'][int(key)] = value
+                json['c'][int(key)] = value
                 del(json['c'][key])
             view.set_widget_param_mapping(json['c'])
         else:
@@ -438,7 +438,7 @@ class View(object):
         """
         pass
 
-    def generate_link_from_json(self, dct):
+    def generate_link_from_dict(self, dct):
         """
         Creates a link by analyzing a view-dictionary and merging it to this view
         The incoming dictionary can be thought of as a diff that is added to the 
@@ -456,7 +456,7 @@ class View(object):
             target['v'].update(dct['v'])
         if dct.has_key('c'):
             for widget_id in dct['c'].keys():
-                target['c'] = dct['c'][widget_id]
+                target['c'][widget_id] = dct['c'][widget_id]
         
         encoder = JSONEncoder()
         viewjsonstring = quote(encoder.encode(target))
@@ -516,7 +516,6 @@ class View(object):
           </body>
         </html>
         """
-        
         page_manager = self._core.get_page_manager()
         page = page_manager.get_page(self._page) 
 
@@ -524,7 +523,6 @@ class View(object):
         body = page.get_html_body()
 
         module_manager = self._core.get_module_manager()
-
         # Find placeholders to substitute
         
         space_name_map = page.get_space_names()
@@ -544,7 +542,6 @@ class View(object):
 
             widget_html = widget.render_pure_html(args)
             body = re.sub(r"<%%\s?%s\s?%%>"%space_name,widget_html,body)
-
         body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
 
         css_manager = self._core.get_css_manager()

@@ -102,6 +102,23 @@ class Rpc(object):
                 session.delete()
             return False
 
+    def alterPassword(self, params):
+        user_id = params[0]
+        new_password = params[1]
+        old_password = params[2]
+
+        session_manager = self._core.get_session_manager()
+        session_user = session_manager.get_current_session_user()
+
+        if user_id == session_user.get_id():
+            session_user.alter_password(new_password,old_password)
+        else:
+            if session_user.check_permission("scoville.users.alter_password"):
+                user_manager = self._core.get_user_manager()
+                user = user_manager.get_user_by_id(user_id)
+                user.alter_password(new_password,"",True)
+        return True
+
     def getPublicKey(self, params):
         pki_manager = self._core.get_pki_manager()
         return pki_manager.get_public_key(as_string=True)

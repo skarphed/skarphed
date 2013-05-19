@@ -109,7 +109,41 @@ class UserPage(ObjectPageAbstract):
         
         self.perm.add(self.permbox)
         self.pack_start(self.perm,False)
-        
+
+        self.alterpw = PageFrame(self, "Alter Password", gui.IconStock.CREDENTIAL)
+        self.alterpwhbox = gtk.HBox()
+        self.alterpwdummy = gtk.Label("")
+        self.alterpwbox = gtk.Table(2,4,False)
+        self.alterpwbox.set_row_spacings(10)
+        self.alterpwbox.set_col_spacings(10)
+        self.alterpwbox.set_border_width(10)
+        self.alterpw_oldpw_label = gtk.Label("Old Password:")
+        self.alterpw_newpw1_label = gtk.Label("New Password:")
+        self.alterpw_newpw2_label = gtk.Label("Repeat Password:")
+        self.alterpw_oldpw_entry = gtk.Entry()
+        self.alterpw_oldpw_entry.set_invisible_char("●")
+        self.alterpw_oldpw_entry.set_visibility(False)
+        self.alterpw_newpw1_entry = gtk.Entry()
+        self.alterpw_newpw1_entry.set_invisible_char("●")
+        self.alterpw_newpw1_entry.set_visibility(False)
+        self.alterpw_newpw2_entry = gtk.Entry()
+        self.alterpw_newpw2_entry.set_invisible_char("●")
+        self.alterpw_newpw2_entry.set_visibility(False)
+        self.alterpw_ok = gtk.Button("Alter Password")
+        self.alterpwbox.attach(self.alterpw_oldpw_label,0,1,0,1)
+        self.alterpwbox.attach(self.alterpw_oldpw_entry,1,2,0,1)
+        self.alterpwbox.attach(self.alterpw_newpw1_label,0,1,1,2)
+        self.alterpwbox.attach(self.alterpw_newpw1_entry,1,2,1,2)
+        self.alterpwbox.attach(self.alterpw_newpw2_label,0,1,2,3)
+        self.alterpwbox.attach(self.alterpw_newpw2_entry,1,2,2,3)
+        self.alterpwbox.attach(self.alterpw_ok,1,2,3,4)
+        self.alterpwhbox.pack_start(self.alterpwbox,False)
+        self.alterpwhbox.pack_start(self.alterpwdummy,True)
+        self.alterpw.add(self.alterpwhbox)
+        self.alterpw_ok.connect("clicked", self.alterPassword)
+        self.pack_start(self.alterpw,False)
+
+
         self.show_all()
         
         self.render()
@@ -130,6 +164,36 @@ class UserPage(ObjectPageAbstract):
             self.perm_rolelist.clear()
             for role in user.roledata:
                 self.perm_rolelist.append((int(role['granted']), str(role['name']), '', role['id']))
+
+        alter_pw_permitted = user.getUsers().getScoville().checkPermission("scoville.users.alter_password")
+        is_active_user = user.getUsers().getScoville().getUsername() == user.getName()
+        if alter_pw_permitted or is_active_user:
+            self.alterpw.set_visible(True)
+            self.alterpw_oldpw_entry.set_visible(is_active_user)
+            self.alterpw_oldpw_label.set_visible(is_active_user)
+        else:
+            self.alterpw.set_visible(False)
+
+    def alterPassword(self, widget=None, data=None):
+        user = self.getMyObject()
+        if not user:
+            return 
+
+        alter_pw_permitted = user.getUsers().getScoville().checkPermission("scoville.users.alter_password")
+        is_active_user = user.getUsers().getScoville().getUsername() == user.getName()
+        if alter_pw_permitted or is_active_user:
+            if is_active_user:
+                oldpw = self.alterpw_oldpw_entry.get_text()
+            newpw1 = self.alterpw_newpw1_entry.get_text()
+            newpw2 = self.alterpw_newpw2_entry.get_text()
+            if newpw2 != newpw1:
+                return False # Password repeat not successful
+            if newpw1 == "":
+                return False # New password is empty
+            if is_active_user:
+                user.alterPassword(newpw1,oldpw)
+            else:
+                user.alterPassword(newpw1)
     
     def toggledRole(self,render=None,path=None):
         rowiter = self.perm_rolelist.get_iter(path)

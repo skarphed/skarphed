@@ -54,8 +54,7 @@ class Module(AbstractModule):
         db = self._core.get_db()
         ret = StringIO()
         view_manager = self._core.get_view_manager()
-        view = view_manager.get_currently_rendered_view()
-
+        view = view_manager.get_currently_rendering_view()
         if args.has_key("n"): #if specific newsentry is wanted:
             if "author" in args.keys() and "text" in args.keys():
                 new_comment_id = db.get_seq_next("${grindhold_news.comments}")
@@ -68,15 +67,15 @@ class Module(AbstractModule):
             if row is None:
                 return "<h2> Nothing... </h2><p> Seriously, there is nothing like that here</p><p> We're sorry</p>"
             ret.write("<h3> %s </h3>"%row["NWS_TITLE"])
-            ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["USR_NAME"],row["NWS_DATE"]))
-            ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;">%s</div>')
+            ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["USR_NAME"],str(row["NWS_DATE"])))
+            ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;"></div>')
             ret.write('<p>%s</p>'%row["NWS_TEXT"])
 
             stmnt = "SELECT COM_AUTHOR, COM_DATE, COM_TEXT FROM ${comments} WHERE COM_NWS_ID = ? AND MOD_INSTANCE_ID = ?"
             cur = db.query(self, stmnt, (int(args["n"]),int(widget_id)))
 
             for row in cur.fetchallmap():
-                ret.write('<div class="commentauthor">Comment by %s</div><div class="commentdate">%s</div>'%(row["COM_AUTHOR"],row["COM_DATE"]))
+                ret.write('<div class="commentauthor">Comment by %s</div><div class="commentdate">%s</div>'%(row["COM_AUTHOR"],str(row["COM_DATE"])))
                 ret.write('<blockquote>%s</blockquote>'%row["COM_TEXT"])
 
             target_view = {'p':widget_id, 'c':{widget_id:{"n":args["n"]}}}
@@ -95,17 +94,17 @@ class Module(AbstractModule):
             skipstring = ""
             if args.has_key("p"):
                 skipstring = " SKIP %d "%int(args["p"])
-            stmnt = "SELECT FIRST 10 %s NWS_TITLE, NWS_ID, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USER ON USR_ID = NWS_USR_AUTHOR WHERE MOD_INSTANCE_ID = ? ;"%skipstring
-            cur = db.query(self, stmnt, (widget_id))
+            stmnt = "SELECT FIRST 10 %s NWS_TITLE, NWS_ID, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USERS ON USR_ID = NWS_USR_AUTHOR WHERE MOD_INSTANCE_ID = ? ;"%skipstring
+            cur = db.query(self, stmnt, (widget_id,))
             for row in cur.fetchallmap():
-                text = self._shorten_newsentry(row["NWS_TXT"])
+                text = self._shorten_newsentry(row["NWS_TEXT"][:200])
 
                 target_view = {'c':{widget_id:{"n":row["NWS_ID"]}}}
                 read_on_link = view.generate_link_from_dict(target_view)
 
                 ret.write("<h3> %s </h3>"%row["NWS_TITLE"])
-                ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["USR_NAME"],row["NWS_DATE"]))
-                ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;">%s</div>')
+                ret.write('<div class="newsauthor">%s</div><div class="newsdate">%s</div>'%(row["USR_NAME"],str(row["NWS_DATE"])))
+                ret.write('<div class="newsseparator" style="height:1px; border-bottom:1px dotted silver;"></div>')
                 ret.write('<p>%s<a href="%s">[ Read on ... ]</a></p><p>&nbsp;</p>'%(text,read_on_link))
             return ret.getvalue()
 
@@ -116,9 +115,9 @@ class Module(AbstractModule):
         return """<script type="text/javascript"> alert('LOL');</script>"""
 
     def _shorten_newsentry(self,newsentry):
-        while newsentry[-1:] != "" or newsentry[-1:] != "\n":
+        while len(newsentry) > 0 and not (newsentry[-1:] == " " or newsentry[-1:] == "\n"):
             newsentry = newsentry[:-1]
-        return newsentry
+        return newsentry+"..."
 
     def get_news(self,widget_id):
         db = self._core.get_db()
@@ -126,38 +125,37 @@ class Module(AbstractModule):
         cur = db.query(self, stmnt, (int(widget_id),))
         ret = {}
         for row in cur.fetchallmap():
-            ret[row["NWS_ID"]] = {"author":row["NWS_AUTHOR"],
+            ret[row["NWS_ID"]] = {"author":row["USR_NAME"],
                                   "title":row["NWS_TITLE"],
-                                  "date":row["NWS_DATE"],
-                                  "show":row["NWS_SHOW"]}
+                                  "date":str(row["NWS_DATE"]),
+                                  "show":bool(row["NWS_SHOW"])}
         return ret 
 
 
     def get_news_entry(self,widget_id, entry_id):
         db = self._core.get_db()
-        stmnt = "SELECT USR_NAME, NWS_DATE, NWS_SHOW, NWS_TITLE FROM ${news} INNER JOIN UNSERS ON USR_ID = NWS_USR_AUTHOR WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ?;"
-        stmnt_comment = "SELECT COM_AUTHOR, COM_DATE, COM_TEXT, COM_ID FROM ${comments} WHERE COM_NWS_ID = ? AND MOD_INSTANCE_ID = ?;"
+        stmnt = "SELECT USR_NAME, NWS_DATE, NWS_SHOW, NWS_TITLE, NWS_TEXT FROM ${news} INNER JOIN USERS ON USR_ID = NWS_USR_AUTHOR WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ? ;"
+        stmnt_comment = "SELECT COM_AUTHOR, COM_DATE, COM_TEXT, COM_ID FROM ${comments} WHERE COM_NWS_ID = ? AND MOD_INSTANCE_ID = ? ;"
 
         cur = db.query(self,stmnt,(int(entry_id),int(widget_id)))
         row = cur.fetchonemap()
         ret = {}
-        if not row:
-            return ret
-        else:
+        if row:
             ret["author"] = row["USR_NAME"]
-            ret["date"] = row["NWS_DATE"]
+            ret["date"] = str(row["NWS_DATE"])
             ret["title"] = row["NWS_TITLE"]
             ret["content"] = row["NWS_TEXT"]
-            ret["id"] = int(row["NWS_ID"])
+            ret["id"] = int(entry_id)
             ret["show"] = bool(row["NWS_SHOW"])
             ret["comments"] = {}
             cur = db.query(self,stmnt_comment, (int(entry_id), int(widget_id)))
             for commentrow in cur.fetchallmap():
                 ret["comments"][commentrow["COM_ID"]] = {
-                        "date": commentrow["COM_DATE"],
+                        "date": str(commentrow["COM_DATE"]),
                         "author":commentrow["COM_AUTHOR"],
                         "content":commentrow["COM_TEXT"],
                     }
+        return ret
 
     def save_news_entry(self, widget_id, entry_data):
         session_manager = self._core.get_session_manager()
@@ -190,7 +188,7 @@ class Module(AbstractModule):
         db = self._core.get_db()
         new_id = db.get_seq_next("${grindhold_news.news}")
 
-        stmnt = "INSERT INTO ${news} (NWS_ID, NWS_USR_AUTHOR, NWS_SHOW, NWS_DATE, MOD_INSTANCE_ID) VALUES (?, ?, 0, CURRENT_TIMESTAMP, ?) ;"
+        stmnt = "INSERT INTO ${news} (NWS_ID, NWS_USR_AUTHOR, NWS_SHOW, NWS_DATE, MOD_INSTANCE_ID, NWS_TEXT, NWS_TITLE) VALUES (?, ?, 0, CURRENT_TIMESTAMP, ?, '',  '') ;"
         db.query(self, stmnt, (new_id, current_user.get_id(), int(widget_id)), commit=True)
         return True
 

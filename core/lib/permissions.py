@@ -381,9 +381,11 @@ class Permission(object):
                 where uri_usr_id = ?) ; " \
         
         cur = db.query(cls._core,stmnt,(permission,user_id,user_id))
+
+        res = cur.fetchone()
         if res is None:
             return False
-        res = cur.fetchone()[0]
+        res = res[0]
         return res == 1
 
     @classmethod #MODULEINVOLVED
@@ -395,6 +397,7 @@ class Permission(object):
         new_id = db.get_seq_next('RIG_GEN')
         stmnt = "INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (?,?) ;"
         db.query(cls._core,stmnt,(new_id,module+"."+permission),commit=True)
+        return module+"."+permission
 
     @classmethod
     def remove_permission(cls, permission, module=""):
@@ -493,22 +496,29 @@ class Permission(object):
         """
         creates the permissions of a newly installed module
         """
+        user_manager = cls._core.get_user_manager()
+        rootuser = user_manager.get_root_user()
         module_name = module.get_name()
         permissions = module.get_permissions()
         for permission in permissions:
-            cls.create_permission(permission,module_name)
+            new_permission = cls.create_permission(permission,module_name)
+            rootuser.grant_permission(new_permission,ignore_check=True)
+
 
     @classmethod
     def update_permissions_for_module(cls,module):
         """
         updates the permissions of a module
         """
+        user_manager = cls._core.get_user_manager()
+        rootuser = user_manager.get_root_user()
         module_name = module.get_name()
         permissions = module.get_permissions()
-        current = cls.get_permissions_for_module(module)
+        current = [s.replace(module_name+".","",1) for s in cls.get_permissions_for_module(module)]
         for permission in permissions:
             if permission not in current:
-                cls.create_permission(permission, module_name)
+                new_permission = cls.create_permission(permission, module_name)
+                rootuser.grant_permission(new_permission,ignore_check=True)
         for permission in current:
             if permission not in permissions:
                 cls.remove_permission(permission, module_name)
@@ -530,9 +540,9 @@ class Permission(object):
         """
         db = cls._core.get_db()
         stmnt = "SELECT RIG_NAME FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
-        cur = db.query(cls._core,stmnt,(module.get_name()+".",))
+        cur = db.query(cls._core,stmnt,(module.get_name()+".%",))
         rows = cur.fetchallmap()
-        rows = [s['RIG_NAME'] for s in rows]
+        rows = [s['RIG_NAME'] for s in rows]        
         return rows
 
 

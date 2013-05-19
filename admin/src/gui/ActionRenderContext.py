@@ -133,7 +133,7 @@ class UsersARC(ActionRenderContext):
         self.addAction('Create User', IconStock.USER, self.createUser)
 
     def createUser(self,data=None):
-        InputBox(self,"what should be the name of the new User?", self.obj.createUser)
+        InputBox(self,"what should be the name of the new User?", self.obj.createUser,notEmpty=True)
     
 class UserARC(ActionRenderContext):
     def __init__(self, par, user):
@@ -156,7 +156,7 @@ class ModuleARC(ActionRenderContext):
             self.addAction('Update', IconStock.UPDATE, self.update)
     
     def createWidget(self,data=None):
-        InputBox(self,"what should be the name of the new Widget?", self.obj.createWidget)
+        InputBox(self,"what should be the name of the new Widget?", self.obj.createWidget, notEmpty=True)
 
     def cssEditor(self,data=None):
         self.getApplication().mainwin.openCssEditor(self.obj)

@@ -39,6 +39,8 @@ from rpc import Rpc
 from template import TemplateManager
 from pki import PkiManager
 
+from maintenance import MAINTENANCE_HTML
+
 class CoreException(Exception):
     ERRORS = {
         1:"""Only the Configuration-class is authorized to access this variable"""
@@ -61,6 +63,7 @@ class Core(object):
 
         self._configuration = Configuration(self)
         self._database = Database(self)
+        self._configuration.init_from_db()
         self._user_manager = None
         self._permission_manager = None
         self._operation_manager = None
@@ -160,6 +163,19 @@ class Core(object):
         if hasattr(self,"environment"):
             print >> self.environment["wsgi.errors"] , "SCVDEBUG>>>"+str(message)
 
+    def activate_maintenance_mode(self):
+        configuration = self.get_configuration()
+        configuration.set_entry("core.maintenance_mode", "True")
+
+    def deactivate_maintenance_mode(self):
+        configuration = self.get_configuration()
+        configuration.set_entry("core.maintenance_mode", "False")
+
+    def is_maintenance_mode(self):
+        configuration = self.get_configuration()
+        val = configuration.get_entry("core.maintenance_mode")
+        return val == "True"
+
     def rpc_call(self, environment):
         if self.get_configuration().get_entry("core.debug") == True:
             self.environment = environment
@@ -187,6 +203,11 @@ class Core(object):
 
         self.response_body = []
         self.response_header = []
+
+        if self.is_maintenance_mode():
+            self.response_body.append(MAINTENANCE_HTML.encode('utf-8'))
+            return {"body":self.response_body,"header":self.response_header}
+
         if environment.has_key("HTTP_COOKIE"):
             session_manager =  self.get_session_manager()
             session_manager.set_current_session(session_manager.get_session(environment['HTTP_COOKIE']))
@@ -220,4 +241,3 @@ class Core(object):
         self.response_body.append(ext.encode('utf-8'))
 
         return {"body":self.response_body, "header":self.response_header}
-

@@ -459,25 +459,26 @@ INSERT INTO USERS (USR_ID, USR_NAME, USR_PASSWORD, USR_SALT)
 
 INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (1, 'scoville.manageserverdata');
 INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (2, 'scoville.users.create');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (3, 'scoville.users.delete');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (4, 'scoville.users.modify');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (5, 'scoville.users.grant_revoke');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (6, 'scoville.roles.create');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (7, 'scoville.roles.delete');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (8, 'scoville.roles.modify');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (9, 'scoville.modules.install');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (10, 'scoville.modules.uninstall');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (11, 'scoville.modules.enter_repo');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (12, 'scoville.modules.erase_repo');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (13, 'scoville.sites.create');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (14, 'scoville.sites.delete');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (15, 'scoville.sites.modify');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (16, 'scoville.widget.create');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (17, 'scoville.widget.delete');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (18, 'scoville.widget.modify');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (19, 'scoville.users.view');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (20, 'scoville.roles.view');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (21, 'scoville.css.edit');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (3, 'scoville.users.alter_password');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (4, 'scoville.users.delete');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (5, 'scoville.users.modify');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (6, 'scoville.users.grant_revoke');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (7, 'scoville.roles.create');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (8, 'scoville.roles.delete');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (9, 'scoville.roles.modify');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (10, 'scoville.modules.install');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (11, 'scoville.modules.uninstall');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (12, 'scoville.modules.enter_repo');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (13, 'scoville.modules.erase_repo');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (14, 'scoville.sites.create');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (15, 'scoville.sites.delete');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (16, 'scoville.sites.modify');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (17, 'scoville.widget.create');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (18, 'scoville.widget.delete');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (19, 'scoville.widget.modify');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (20, 'scoville.users.view');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (21, 'scoville.roles.view');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (22, 'scoville.css.edit');
 
 INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (1,'admin');
 
@@ -508,6 +509,8 @@ INSERT INTO USERROLES (URO_ROL_ID, URO_USR_ID) VALUES (1,1);
 INSERT INTO REPOSITORIES VALUES (1,'%(REPO)s','%(REPO)s',80,NULL,'');
 
 INSERT INTO SITES VALUES (1, 'Mainsite', NULL, '<div id=\"h1\"><div id=\"s1\"></div></div><div id=\"h2\"><div id=\"s2\"><div id=\"v1\"></div><div id=\"s3\"></div></div><div id=\"v2\"><div id=\"s4\"></div></div><div id=\"v3\"><div id=\"s5\"></div></div></div><div id=\"h3\"><div id=\"template_bottom\"><span>This Site is using Scoville </span> <span style=\"color:#f00;\">&lt;</span><span style=\"color:#0f0;\">}-</span><span> a CMS by masterprogs &copy; 2011</span></div></div>', 'Mainsite for Content', 5, 'mainsite.html', 1);
+
+INSERT INTO CONFIG (PARAM,VAL) VALUES ('core.maintenance_mode','True');
 
 SET GENERATOR REP_GEN TO 1;
 SET GENERATOR SIT_GEN TO 1;

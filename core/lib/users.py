@@ -25,6 +25,8 @@
 from hashlib import sha512
 from random import randrange
 
+ROOT_USER_ID = 1
+
 class UserException(Exception):
     """
     Exceptions for User-Module
@@ -40,7 +42,11 @@ class UserException(Exception):
         7:"""Revoking Permission: This Sessionuser is not allowed to grant or revoke Permissions!""",
         8:"""A User cannot revoke a permission that he does not possess himself""",
         9:"""There is no user with the name """,
-        10:"""Get Users: This user is not allowed to view users"""
+        10:"""Get Users: This user is not allowed to view users""",
+        11:"""There is no user with the ID """,
+        12:"""Cant create an user with an empty username""",
+        13:"""Cant create an user with an empty password""",
+        14:"""One does not simply delete the root user"""
     }
 
     @classmethod
@@ -158,6 +164,9 @@ class User(object):
         """
         deletes this user from database
         """
+        if self.get_id() == ROOT_USER_ID:
+            raise UserException(UserException.get_msg(14))
+
         db = self._core.get_db()
 
         stmnt_uri="DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? ;"
@@ -206,7 +215,7 @@ class User(object):
         permissionmanager = self._core.get_permission_manager()
         return permissionmanager.get_roles_for_user(self)        
 
-    def grant_permission(self, permission):
+    def grant_permission(self, permission, ignore_check=False):
         """
         grants a permission to the user
         """
@@ -217,12 +226,12 @@ class User(object):
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
-        if not session_user.check_permission(permission):
+        if not ignore_check and not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(6))
         stmnt = "UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;"
         db.query(self._core,stmnt,(self._id,permission_id),commit=True)
 
-    def revoke_permission(self,permission):
+    def revoke_permission(self,permission, ignore_check=False):
         """
         revokes a permission from the user
         """
@@ -233,7 +242,7 @@ class User(object):
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
-        if not session_user.check_permission(permission):
+        if not ignore_check and not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(8))            
         stmnt = "DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? ;"
         db.query(self._core,stmnt,(self._id,permission_id),commit=True)
@@ -298,6 +307,10 @@ class User(object):
         return user
 
     @classmethod
+    def get_root_user(cls):
+        return cls.get_user_by_id(ROOT_USER_ID)
+
+    @classmethod
     def get_user_by_id(cls,nr):
         """
         returns the user with the given id or raises exception
@@ -309,7 +322,7 @@ class User(object):
         res = cur.fetchonemap()
 
         if res is None:
-            raise UserException(UserException.get_msg(9,username))
+            raise UserException(UserException.get_msg(11,nr))
         user = User(cls._core)
         user.set_id(res['USR_ID'])
         user.set_name(res['USR_NAME'])
@@ -338,10 +351,19 @@ class User(object):
         return users
 
     @classmethod
+    def _check_password(cls, password):
+        if password == "":
+            raise UserException(UserException.get_msg(13))
+        return True
+
+    @classmethod
     def create_user(cls, username, password):
         """
         creates a new user
         """
+        if username == "":
+            raise UserException(UserException.get_msg(12))
+        cls._check_password(password)
         user = User(cls._core)
         user.set_name(username)
         user.set_password("")
@@ -374,6 +396,7 @@ class UserManager(object):
 
         self.get_user_by_id = User.get_user_by_id
         self.get_user_by_name = User.get_user_by_name
+        self.get_root_user = User.get_root_user
         self.get_users = User.get_users
         self.create_user = User.create_user
         self.get_users_for_admin_interface = User.get_users_for_admin_interface

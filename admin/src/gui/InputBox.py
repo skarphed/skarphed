@@ -28,7 +28,7 @@ pygtk.require("2.0")
 import gtk
 
 class InputBox(gtk.Frame):
-    def __init__(self,par,text,callback,typeWanted=False):
+    def __init__(self,par,text,callback,typeWanted=False,notEmpty=False,cancel=True):
         self.par = par
         gtk.Frame.__init__(self, "Input Box") # TODO title
         
@@ -38,12 +38,16 @@ class InputBox(gtk.Frame):
         self.entry = gtk.Entry()
         self.space = gtk.Label()
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
+        if cancel:
+            self.cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
         
         self.hbox = gtk.HBox()
         self.vbox = gtk.VBox()
         self.alignment = gtk.Alignment(0.5,0.5,0.1,0.05)
 
         self.hbox.pack_start(self.space,True)
+        if cancel:
+            self.hbox.pack_start(self.cancel,False)
         self.hbox.pack_start(self.ok,False)
         
         self.vbox.pack_start(self.label,True)
@@ -51,9 +55,12 @@ class InputBox(gtk.Frame):
         self.vbox.pack_start(self.hbox,False)
         
         self.ok.connect("clicked", self.okCallback)
+        if cancel:
+            self.cancel.connect("clicked", self.cancelCallback)
         self.entry.connect("activate", self.okCallback)
         self.cb = callback
         self.typeWanted = typeWanted
+        self.notEmpty = notEmpty
         
         self.alignment.add(self.vbox)
         self.add(self.alignment)
@@ -64,14 +71,19 @@ class InputBox(gtk.Frame):
     def okCallback(self,widget=None,data=None):
         def errorMessage(msgId):
             msgs = ("This is not a valid int number",
+                    "Empty input is not valid"
                     )
-            dia = gtk.MessageDialog(parent=self.getPar().getPar(), flags=0, type=gtk.MESSAGE_WARNING, \
+            dia = gtk.MessageDialog(parent=None, flags=0, type=gtk.MESSAGE_WARNING, \
                                   buttons=gtk.BUTTONS_OK, message_format=msgs[msgId])
             dia.run()
             dia.destroy()
         
         value = self.entry.get_text()
         
+        if self.notEmpty and value == "":
+            errorMessage(1)
+            return
+
         if self.typeWanted == int:
             try:
                 value = int(value)
@@ -80,7 +92,9 @@ class InputBox(gtk.Frame):
                 return
         self.getApplication().getMainWindow().closeDialogPane()
         self.cb(value)
-        
+    
+    def cancelCallback(self,widget=None, data=None):
+        self.getApplication().getMainWindow().closeDialogPane()
         
     def getPar(self):
         return self.par

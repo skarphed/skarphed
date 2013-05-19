@@ -318,6 +318,9 @@ class Scoville(Instance):
             self.serverRights = result
         self.updated()
         self.loadScovilleChildren()
+
+    def checkPermission(self, permission):
+        return permission in self.serverRights
         
     def authenticate(self):
         self.getApplication().doRPCCall(self,self.authenticateCallback, "authenticateUser", [self.username,self.password])

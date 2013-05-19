@@ -43,7 +43,8 @@ class ModuleCoreException(Exception):
         6:"""This module does not exist""",
         7:"""This widget does not exist""",
         8:"""Template Signature is not valid! Packet may be compromised""",
-        9:"""Error HTTP-Requesting Repository"""
+        9:"""Error HTTP-Requesting Repository""",
+        10:"""Cant create a widget with an empty name"""
     }
 
     @classmethod
@@ -126,6 +127,8 @@ class AbstractModule(object):
         """
         cretes a widget of this module and returns it
         """
+        if name=="":
+            raise ModuleCoreException(ModuleCoreException.get_msg(10))
         w = Widget(self._core, self)
         w.set_name(name)
         w.store()
