@@ -98,6 +98,7 @@ class Configuration(object):
             db = self._core.get_db()
             stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL) VALUES (?,?) MATCHING (PARAM) ;"
             db.query(self._core,stmnt,(entry,str(value)),commit=True)
+            self._configuration[entry] = str(value)
         else:
             raise ConfigurationException(ConfigurationException.get_msg(2))
 

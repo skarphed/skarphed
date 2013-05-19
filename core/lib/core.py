@@ -165,11 +165,11 @@ class Core(object):
 
     def activate_maintenance_mode(self):
         configuration = self.get_configuration()
-        configuration.set_entry("core.maintance_mode", "True")
+        configuration.set_entry("core.maintenance_mode", "True")
 
     def deactivate_maintenance_mode(self):
         configuration = self.get_configuration()
-        configuration.set_entry("core.maintance_mode", "False")
+        configuration.set_entry("core.maintenance_mode", "False")
 
     def is_maintenance_mode(self):
         configuration = self.get_configuration()
