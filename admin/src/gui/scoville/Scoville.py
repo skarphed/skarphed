@@ -74,6 +74,16 @@ class ScovillePage(ObjectPageAbstract):
         self.pki.add(self.pki_vbox)
         self.pack_start(self.pki, False)
 
+        self.maintenance = PageFrame(self, "Maintenance Mode", gui.IconStock.SCOVILLE)
+        self.maintenance_hbox = gtk.HBox()
+        self.maintenance_checkbox = gtk.CheckButton(label="Maintenancemode active")
+        self.maintenance_dummy = gtk.Label()
+        self.maintenance_hbox.pack_start(self.maintenance_checkbox,False)
+        self.maintenance_hbox.pack_start(self.maintenance_dummy,True)
+        self.maintenance.add(self.maintenance_hbox)
+        self.maintenance_checkbox.connect("toggled", self.cb_maintenance)
+        self.pack_start(self.maintenance,False)
+
         self.show_all()
         
         self.render()
@@ -91,8 +101,19 @@ class ScovillePage(ObjectPageAbstract):
         if public_key is not None:
             self.pki_textbuffer.set_text(public_key)
         else:
-            self.pki_textbuffer.set_text("")    
-        
+            self.pki_textbuffer.set_text("")
+
+        self.maintenance_checkbox.set_active(scoville.isMaintenanceMode())
+
+    def cb_maintenance(self,widget=None,data=None):
+        scoville = self.getMyObject()
+        if not scoville:
+            self.destroy()
+            return
+
+        state = self.maintenance_checkbox.get_active()
+        scoville.setMaintenanceMode(state)
+
     def cb_changeRepo(self, widget=None, data=None):
         scoville = self.getMyObject()
         if not scoville:
