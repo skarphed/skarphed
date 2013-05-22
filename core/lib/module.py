@@ -31,6 +31,8 @@ import tarfile
 import shutil
 
 from operation import ModuleInstallOperation, ModuleUninstallOperation, ModuleUpdateOperation, ModuleOperation
+from database import DatabaseException
+from permissions import PermissionException
 
 class ModuleCoreException(Exception):
     ERRORS = {
@@ -353,14 +355,38 @@ class ModuleManager(object):
         manifest = JSONDecoder().decode(manifest_file.read())
         manifest_file.close()
 
-        nr = self._register_module(manifest)
+        # REGISTER THE MODULE IN DB
+        try:
+            nr = self._register_module(manifest)
+        except DatabaseException: #revert stuff on error
+            shutil.rmtree(modulepath)
+            os.remove(datapath)
+            return
+
         module = self.get_module(nr)
 
         permissionmanager = self._core.get_permission_manager()
         db = self._core.get_db()
 
-        permissionmanager.create_permissions_for_module(module)
-        db.create_tables_for_module(module)
+        # CREATE PERMISSIONS FOR MOUDLE
+        try:
+            permissionmanager.create_permissions_for_module(module)
+        except PermissionException: #revert on error
+            self._unregister_module(module)
+            shutil.rmtree(modulepath)
+            os.remove(datapath)
+            return
+
+        # CREATE DATBASE TABLES FOR MODULE
+        try:
+            db.create_tables_for_module(module)
+        except DatabaseException:
+            self._unregister_module(module)
+            shutil.rmtree(modulepath)
+            permissionmanager.remove_permissions_for_module(module)
+            os.remove(datapath)
+            return            
+
         
         os.remove(datapath)
 
