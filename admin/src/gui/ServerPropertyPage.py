@@ -109,6 +109,7 @@ class ServerPropertyPage(gtk.Frame):
         self.instAdd.connect("clicked",self.cb_Add)
         self.instRemove.connect("clicked",self.cb_Remove)
         self.instEdit.connect("clicked",self.cb_Edit)
+        self.instList.connect("cursor-changed", self.cb_cursorChanged)
         self.instFrame.add(self.instFrameT)
         self.vbox.pack_start(self.instFrame,False)
         
@@ -154,7 +155,8 @@ class ServerPropertyPage(gtk.Frame):
             for instance in server.getInstances():
                 icon = SCOVILLE #TODO: Implement Icon
                 self.instStore.append((icon,instance.getName(),instance.getLocalId()))
-        
+        self.cb_cursorChanged()
+
     def getPar(self):
         return self.par
 
@@ -174,6 +176,10 @@ class ServerPropertyPage(gtk.Frame):
         except GenericObjectStoreException:
             server = None
         server.removeInstance(instance)
+        selection = self.instList.get_selection()
+        rowiter = selection.get_selected()[1]
+        self.instStore.remove(rowiter)
+        self.render()
     
     def cb_Edit(self,widget=None,data=None):
         instance = self.getCurrentInstance()
@@ -184,6 +190,16 @@ class ServerPropertyPage(gtk.Frame):
         if instance is None or server is None:
             return
         InstancePage(self,server,instance)
+
+    def cb_cursorChanged(self, tree=None, path=None, data=None):
+        selection = self.instList.get_selection()
+        if selection is None:
+            state = False
+        else:
+            rowiter = selection.get_selected()[1]
+            state = rowiter is not None
+        self.instEdit.set_sensitive(state)
+        self.instRemove.set_sensitive(state)
     
     def getCurrentInstance(self, onlyId=True):
         try:
