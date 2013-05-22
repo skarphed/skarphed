@@ -362,8 +362,9 @@ class View(object):
             space = self._page.get_space_id_by_name(space)
         else:
             raise ViewException(ViewException.get_msg(1))
-
-        del(self._space_widget_mapping[space])
+            
+        if self._space_widget_mapping.has_key(space):
+            del(self._space_widget_mapping[space])
 
     def set_params_for_widget(self, widget, params):
         if type(widget) != int:

@@ -118,9 +118,7 @@ class ViewPage(ObjectPageAbstract):
 
         for spacewidget in self.compose_spacewidgets.values():
             widget = spacewidget.getWidgetCombo().getSelected()
-            if (widget is None and spacewidget.getWidgetId() is None) or (widget is not None and widget.getId() == spacewidget.getWidgetId()):
-                return
-            if widget is not None:
+            if widget is not None and spacewidget.getWidgetId() is not None:
                 view.setWidgetIntoSpace(spacewidget.getSpaceId(), widget)
             else:
                 view.removeWidgetFromSpace(spacewidget.getSpaceId())
