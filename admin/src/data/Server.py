@@ -32,6 +32,9 @@ from Generic import ObjectStore
 from Instance import InstanceType
 
 class Server(GenericScovilleObject):
+    URL_PROT_STRIP = re.compile(r".+://")
+    URL_TAIL_STRIP = re.compile(r"(:(\d{1}|\d{2}|\d{3}|\d{4}|\d{5}))?/.+")
+
     STATE_OFFLINE = 0
     STATE_ONLINE = 1
     
@@ -154,6 +157,11 @@ class Server(GenericScovilleObject):
 
     def createInstance(self,instanceType, url, username, password):
         instance = None
+        if url != "":
+            hostname = re.sub(self.URL_TAIL_STRIP,"",re.sub(self.URL_PROT_STRIP,"",url))
+            host = socket.gethostbyname(hostname)
+            if host != self.getIp():
+                return False
         exec "from "+instanceType.instanceTypeName+"."+instanceType.instanceTypeName.capitalize()+\
              " import "+instanceType.instanceTypeName.capitalize()
         exec "instance = "+instanceType.instanceTypeName.capitalize()+"(self, url, username, password)"

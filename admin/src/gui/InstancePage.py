@@ -27,7 +27,8 @@ pygtk.require("2.0")
 import gtk
 
 from ViewPasswordButton import ViewPasswordButton
-from  data.Server import DNSError
+from data.Server import DNSError
+from gui.MessagePage import MessagePage
 
 from gui.DefaultEntry import DefaultEntry
 
@@ -154,7 +155,9 @@ class InstancePage(gtk.Frame):
             username = self.userEntry.get_text()
             password = self.passEntry.get_text()
             try:
-                server.createInstance(instanceType, url, username, password)
+                if not server.createInstance(instanceType, url, username, password):
+                    MessagePage(self, "This URL resolves to another server. You can't add that here.")
+                    return
             except None:
                 return
         self.getApplication().getMainWindow().closeDialogPane()
