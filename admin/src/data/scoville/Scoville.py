@@ -221,6 +221,7 @@ class Scoville(Instance):
         self.operationManager = None
         self.operationDaemon = None
 
+        self.maintenance_mode = True
         
         self.cssPropertySet = None
         
@@ -282,8 +283,25 @@ class Scoville(Instance):
     def getServerInfo(self):
         self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getServerInfo")
     
+    def getMaintenanceModeCallback(self,data):
+        self.maintenance_mode = data
+        self.updated()
+
+    def getMaintenanceMode(self):
+        self.getApplication().doRPCCall(self,self.getMaintenanceModeCallback, "getMaintenanceMode")
+
+    def setMaintenanceModeCallback(self,data):
+        self.getMaintenanceMode()
+
+    def setMaintenanceMode(self, active):
+        self.getApplication().doRPCCall(self,self.setMaintenanceModeCallback, "setMaintenanceMode", [active])    
+
+    def isMaintenanceMode(self):
+        return self.maintenance_mode
+
     def loadScovilleChildren(self):
         self.loadPublicKey()
+        self.getMaintenanceMode()
         if 'scoville.users.view' in self.serverRights:
             self.users = Users(self)
             self.addChild(self.users)
@@ -364,6 +382,7 @@ class Scoville(Instance):
         #TODO: SOMEHOW DISPLAY ERRORLOG
         if not severe_error_happened:
             self.loadTemplate()
+            self.getMaintenanceMode()
     
     def uploadTemplate(self, filepath):
         template_file = open(filepath,'r')

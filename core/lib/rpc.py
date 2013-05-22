@@ -822,3 +822,20 @@ class Rpc(object):
         binary = binary_manager.create(data, "benis/unknown", filename)
         binary.store()
         return binary.get_id()
+
+    def setMaintenanceMode(self, params):
+        state = bool(params[0])
+
+        session_user = self._core.get_session_manager().get_current_session_user()
+        if not session_user.check_permission('scoville.manageserverdata'):
+            return False
+
+        if state:
+            self._core.activate_maintenance_mode()
+        else:
+            self._core.deactivate_maintenance_mode()
+
+        return True
+
+    def getMaintenanceMode(self, params):
+        return self._core.is_maintenance_mode()
