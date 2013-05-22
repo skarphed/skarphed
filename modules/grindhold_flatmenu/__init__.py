@@ -41,11 +41,7 @@ class Module(AbstractModule):
     VERTICALLY = 1
     def __init__(self, core):
         AbstractModule.__init__(self,core)
-
-        path = os.path.realpath(__file__)
-        path = path.replace("__init__.pyc","")
-        self._path = path.replace("__init__.py","")
-
+        self._path = os.path.dirname(__file__)
         self._load_manifest()
 
     """
