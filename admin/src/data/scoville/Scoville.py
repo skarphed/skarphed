@@ -167,7 +167,10 @@ class ScovilleInstaller(GenericScovilleObject):
         gobject.idle_add(self.addInstanceToServer)
 
     def addInstanceToServer(self):
-        self.server.createInstance(InstanceType("scoville","Scoville"), "http://"+self.data['apache.domain'], "root", "root")
+        if self.data['apache.domain'] != "":
+            self.server.createInstance(InstanceType("scoville","Scoville"), "http://"+self.data['apache.domain'], "root", "root")
+        else:
+            self.server.createInstance(InstanceType("scoville","Scoville"), "http://"+self.server.getIp(), "root", "root")
         self.destroy()
 
 
