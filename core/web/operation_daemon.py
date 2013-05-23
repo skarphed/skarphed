@@ -44,6 +44,13 @@ if len(sys.argv) == 2 or len(sys.argv) == 3:
     elif sys.argv[1] == 'restart':
         opd.restart()
         success = True
+    elif sys.argv[1] == 'status':
+        if os.path.exists(pidfile):
+          print 0
+          sys.exit(0)
+        else:
+          print 1
+          sys.exit(1)
 
 if not success:
     print """

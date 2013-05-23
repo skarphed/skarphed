@@ -28,6 +28,7 @@ from StringIO import StringIO
 from operation import OperationDaemon
 import base64
 import os
+import subprocess
 
 class Rpc(object):
     def __init__(self, core):
@@ -748,7 +749,6 @@ class Rpc(object):
         return 0
 
     def startOperationDaemon(self,params):
-        permission_manager = self._core.get_permission_manager()
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
         if not session_user.check_permission("scoville.manageserverdata"):
@@ -759,7 +759,6 @@ class Rpc(object):
                   "/operation_daemon.py start "+ configuration.get_entry("core.instance_id"))
 
     def stopOperationDaemon(self,params):
-        permission_manager = self._core.get_permission_manager()
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
         if not session_user.check_permission("scoville.manageserverdata"):
@@ -770,7 +769,6 @@ class Rpc(object):
                   "/operation_daemon.py stop "+ configuration.get_entry("core.instance_id"))
 
     def restartOperationDaemon(self,params):
-        permission_manager = self._core.get_permission_manager()
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
         if not session_user.check_permission("scoville.manageserverdata"):
@@ -782,12 +780,14 @@ class Rpc(object):
 
     def getOperationDaemonStatus(self,params):
         configuration = self._core.get_configuration()
-        pidfile = configuration.get_entry("global.webpath")+\
-                  configuration.get_entry("core.instance_id")+\
-                  "/operationd.pid"
+        res = os.system("python "+configuration.get_entry("core.webpath")+\
+                  "/operation_daemon.py status "+ configuration.get_entry("core.instance_id"))
 
-        opd = OperationDaemon(self._core,pidfile)
-        return opd.is_running()
+        if res == 0:
+            running = True
+        else:
+            running = False
+        return running
 
     def getViews(self, params):
         view_manager = self._core.get_view_manager()
