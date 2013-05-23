@@ -136,9 +136,6 @@ class Role(object):
         """
         returns all permissions assigned to this role as an array of strings
         """
-        sessionmanager = self._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
-
         db = self._core.get_db()
         stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) \
                     WHERE RRI_ROL_ID = ? ;"         
@@ -150,9 +147,6 @@ class Role(object):
         """
         checks if this role has a specific permission
         """
-        sessionmanager = self._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
-        
         db = self._core.get_db()
         stmnt = "SELECT RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) \
                     WHERE RRI_ROL_ID = ? AND RIG_NAME = ?;"
@@ -171,9 +165,6 @@ class Role(object):
         """
         deletes this role from the database
         """
-        sessionmanager = self._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
-
         db = self._core.get_db()
         stmnt = "DELETE FROM ROLES WHERE ROL_ID = ? ;"
         db.query(self._core,stmnt,(self._id,),commit=True)
@@ -326,8 +317,6 @@ class Role(object):
             raise PermissionException(PermissionException.get_msg(11))
 
         db = cls._core.get_db()
-        sessionmanager = cls._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
 
         role_id = db.get_seq_next("ROL_GEN")
         role = Role(cls._core)
