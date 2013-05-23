@@ -221,7 +221,9 @@ class User(object):
         """
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()
-        session_user = self._core.get_session_manager().get_current_session_user()
+        session_user = None
+        if not ignore_check:
+            session_user = self._core.get_session_manager().get_current_session_user()
 
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:
@@ -237,7 +239,9 @@ class User(object):
         """
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()
-        session_user = self._core.get_session_manager().get_current_session_user()
+        session_user = None
+        if not ignore_check:
+            session_user = self._core.get_session_manager().get_current_session_user()
 
         permission_id = permissionmanager.get_id_for_permission(permission)
         if permission_id is None:

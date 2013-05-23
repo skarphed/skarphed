@@ -23,6 +23,7 @@
 ###########################################################
 
 import os
+import logging
 
 from configuration import Configuration
 from database import Database
@@ -162,6 +163,13 @@ class Core(object):
     def log(self, message):
         if hasattr(self,"environment"):
             print >> self.environment["wsgi.errors"] , "SCVDEBUG>>>"+str(message)
+        else:
+            if not hasattr(self, "logging_initialized"):
+                configuration = self.get_configuration()
+                logging.basicConfig(filename=configuration.get_entry("core.webpath")+"/generic.log",level=logging.DEBUG)
+                self.logging_initialized = True
+            
+            logging.debug(message)
 
     def activate_maintenance_mode(self):
         configuration = self.get_configuration()

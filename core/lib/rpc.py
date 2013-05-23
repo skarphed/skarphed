@@ -27,6 +27,7 @@ from traceback import print_exc
 from StringIO import StringIO
 from operation import OperationDaemon
 import base64
+import os
 
 class Rpc(object):
     def __init__(self, core):
@@ -747,32 +748,37 @@ class Rpc(object):
         return 0
 
     def startOperationDaemon(self,params):
-        #TODO: implement permissioncheck
-        configuration = self._core.get_configuration()
-        pidfile = configuration.get_entry("global.webpath")+\
-                  configuration.get_entry("core.instance_id")+\
-                  "/operationd.pid"
+        permission_manager = self._core.get_permission_manager()
+        session_manager = self._core.get_session_manager()
+        session_user = session_manager.get_current_session_user()
+        if not session_user.check_permission("scoville.manageserverdata"):
+            return False
 
-        opd = OperationDaemon(self._core,pidfile)
-        opd.start()
+        configuration = self._core.get_configuration()
+        os.system("python "+configuration.get_entry("core.webpath")+\
+                  "/operation_daemon.py start "+ configuration.get_entry("core.instance_id"))
 
     def stopOperationDaemon(self,params):
-        configuration = self._core.get_configuration()
-        pidfile = configuration.get_entry("global.webpath")+\
-                  configuration.get_entry("core.instance_id")+\
-                  "/operationd.pid"
+        permission_manager = self._core.get_permission_manager()
+        session_manager = self._core.get_session_manager()
+        session_user = session_manager.get_current_session_user()
+        if not session_user.check_permission("scoville.manageserverdata"):
+            return False
 
-        opd = OperationDaemon(self._core,pidfile)
-        opd.stop()
+        configuration = self._core.get_configuration()
+        os.system("python "+configuration.get_entry("core.webpath")+\
+                  "/operation_daemon.py stop "+ configuration.get_entry("core.instance_id"))
 
     def restartOperationDaemon(self,params):
-        configuration = self._core.get_configuration()
-        pidfile = configuration.get_entry("global.webpath")+\
-                  configuration.get_entry("core.instance_id")+\
-                  "/operationd.pid"
+        permission_manager = self._core.get_permission_manager()
+        session_manager = self._core.get_session_manager()
+        session_user = session_manager.get_current_session_user()
+        if not session_user.check_permission("scoville.manageserverdata"):
+            return False
 
-        opd = OperationDaemon(self._core,pidfile)
-        opd.restart()
+        configuration = self._core.get_configuration()
+        os.system("python "+configuration.get_entry("core.webpath")+\
+                  "/operation_daemon.py restart "+ configuration.get_entry("core.instance_id"))
 
     def getOperationDaemonStatus(self,params):
         configuration = self._core.get_configuration()
