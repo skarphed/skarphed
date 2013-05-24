@@ -59,5 +59,6 @@ touch /var/log/apache2/www_scv_$instanceid/access.log
 echo $instanceid > /etc/scoville/GEN_INSTANCE
 
 /etc/init.d/apache2 restart
+python $SCV_WEBPATH$instanceid/operation_daemon.py start $instanceid
 
 echo Installation Finished successfully.
