@@ -458,7 +458,9 @@ class View(object):
         if dct.has_key('c'):
             for widget_id in dct['c'].keys():
                 target['c'][widget_id] = dct['c'][widget_id]
-        
+        if dct.has_key('p'):
+            target['p'] = dct['p']
+
         encoder = JSONEncoder()
         viewjsonstring = quote(encoder.encode(target))
         view_manager = self._core.get_view_manager()
@@ -532,14 +534,14 @@ class View(object):
             widget = module_manager.get_widget(widget_id)
 
             args = {} 
-            if self._widget_param_mapping.has_key(str(widget_id)):
-                args.update(self._widget_param_mapping[str(widget_id)])
+            if self._widget_param_mapping.has_key(widget_id):
+                args.update(self._widget_param_mapping[widget_id])
             if self._post_widget_id == widget_id:
                 # Check whether the viewjson-string is included here, too:
                 # if so, eliminate it.
                 post_args = FieldStorage(fp=environ['wsgi.input'],environ=environ)
                 for key in post_args.keys():
-                    args[key] = post_args[key]
+                    args[key] = post_args[key].value
 
             widget_html = widget.render_pure_html(args)
             body = re.sub(r"<%%\s?%s\s?%%>"%space_name,widget_html,body)

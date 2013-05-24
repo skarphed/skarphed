@@ -76,7 +76,7 @@ class AbstractModule(object):
         """
         loads metadata into the module from the modules manifest.json-file
         """
-        manifest_file = open(self._path+"manifest.json")
+        manifest_file = open(self._path+"/manifest.json")
         manifest_data = manifest_file.read()
         manifest_file.close()
         manifest = JSONDecoder().decode(manifest_data)
