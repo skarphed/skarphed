@@ -127,10 +127,12 @@ class Database(object):
         it is necessary to determine tablenames
         """
         mutex = self._core.get_configuration().get_entry("core.webpath")+"/db.mutex"
-        while os.path.exists(mutex):
-            time.sleep(0.000001)
 
-        os.mkdir(mutex)
+        if commit: #only if writing stuff
+            while os.path.exists(mutex):
+                time.sleep(0.000001)
+
+            os.mkdir(mutex)
         if self._connection is None:
             raise DatabaseException(DatabaseException.get_msg(2))
         if module.get_name() != "de.masterprogs.scoville.core":
@@ -143,7 +145,7 @@ class Database(object):
             raise e
         if commit:
             self.commit()
-        os.rmdir(mutex)
+            os.rmdir(mutex)
         return cur
 
     def _replace_module_tables(self, module, query):
