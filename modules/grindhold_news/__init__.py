@@ -55,9 +55,9 @@ class Module(AbstractModule):
             if "author" in args.keys() and "text" in args.keys():
                 new_comment_id = db.get_seq_next("${grindhold_news.comments}")
                 #TODO: Escape incoming strings
-                stmnt = "INSERT INTO ${comments} (COM_ID, COM_AUTHOR, COM_TEXT) VALUES (?,?,?);"
-                db.query(self,stmnt, (new_comment_id, args["author"], args["text"]),commit=True)
-            stmnt = "SELECT NWS_TITLE, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USER ON USR_ID = NWS_USR_AUTHOR WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ? ;"
+                stmnt = "INSERT INTO ${comments} (COM_ID, COM_AUTHOR, COM_TEXT, COM_NWS_ID, COM_DATE, MOD_INSTANCE_ID) VALUES (?,?,?,?,CURRENT_TIMESTAMP,?);"
+                db.query(self,stmnt, (new_comment_id, args["author"], args["text"], int(args["n"]),int(widget_id)),commit=True)
+            stmnt = "SELECT NWS_TITLE, NWS_TEXT, USR_NAME, NWS_DATE FROM ${news} INNER JOIN USERS ON USR_ID = NWS_USR_AUTHOR WHERE NWS_ID = ? AND MOD_INSTANCE_ID = ? ;"
             cur = db.query(self, stmnt, (int(args["n"]), int(widget_id)))
             row = cur.fetchonemap()
             if row is None:
@@ -81,7 +81,8 @@ class Module(AbstractModule):
                 <form action="%s" method="post">
                     <h4>Leave a Comment:</h4>
                     <p>Name: <input type="text" name="author"></p>
-                    <p><textarea name="text" style="width:90%; height:200px;"></textarea></p>
+                    <p><textarea name="text" style="width:90%%; height:200px;"></textarea></p>
+                    <p><input type="submit" value="Post"></p>
                 </form>
                 """%comment_link)
 
