@@ -34,7 +34,7 @@ from Instance import InstanceType
 class Server(GenericScovilleObject):
     URL_PROT_STRIP = re.compile(r".+://")
     URL_TAIL_STRIP = re.compile(r"(:(\d{1}|\d{2}|\d{3}|\d{4}|\d{5}))?/.+")
-
+    URL_2NDL_STRIP = re.compile(r"[^.]+\.[^.]+$")
     STATE_OFFLINE = 0
     STATE_ONLINE = 1
     
@@ -158,9 +158,20 @@ class Server(GenericScovilleObject):
     def createInstance(self,instanceType, url, username, password):
         instance = None
         if url != "":
-            hostname = re.sub(self.URL_TAIL_STRIP,"",re.sub(self.URL_PROT_STRIP,"",url))
-            host = socket.gethostbyname(hostname)
-            if host != self.getIp():
+            hostname = re.sub(self.URL_TAIL_STRIP,"",re.sub(self.URL_PROT_STRIP,"",url)) # String Protocol identifier , eventually port, path and querystring
+            if re.match(r'\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b',hostname):
+                # Hostname is a valid IP 
+                host = hostname 
+            else:
+                # Hostname is a domain that must be resolved
+                hostname = re.search(self.URL_2NDL_STRIP,hostname) # strip subdomains
+                if hostname:
+                    hostname = hostname.group(0)
+                    print hostname
+                else:
+                    return False
+                host = socket.gethostbyname(hostname)
+            if host != self.getIp(): # check wheter the resulting IP belongs to this server
                 return False
         exec "from "+instanceType.instanceTypeName+"."+instanceType.instanceTypeName.capitalize()+\
              " import "+instanceType.instanceTypeName.capitalize()
