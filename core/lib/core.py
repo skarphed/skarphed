@@ -44,7 +44,8 @@ from maintenance import MAINTENANCE_HTML
 
 class CoreException(Exception):
     ERRORS = {
-        1:"""Only the Configuration-class is authorized to access this variable"""
+        1:"""Only the Configuration-class is authorized to access this variable""",
+        2:"""There is no such render_mode as """
     }
 
     @classmethod
@@ -178,6 +179,17 @@ class Core(object):
     def deactivate_maintenance_mode(self):
         configuration = self.get_configuration()
         configuration.set_entry("core.maintenance_mode", "False")
+
+    def set_rendermode(self, mode):
+        if not mode in ("pure", "ajax"):
+            raise CoreException(CoreException.get_msg(2,mode))
+
+        configuration = self.get_configuration()
+        configuration.set_entry("core.rendermode", mode)
+
+    def get_rendermode(self):
+        configuration = self.get_configuration()
+        return configuration.get_entry("core.rendermode")
 
     def is_maintenance_mode(self):
         configuration = self.get_configuration()

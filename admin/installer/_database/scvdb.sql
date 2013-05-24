@@ -512,6 +512,8 @@ INSERT INTO REPOSITORIES VALUES (1,'%(REPO)s','%(REPO)s',80,NULL,'');
 INSERT INTO SITES VALUES (1, 'Mainsite', NULL, '<div id=\"h1\"><div id=\"s1\"></div></div><div id=\"h2\"><div id=\"s2\"><div id=\"v1\"></div><div id=\"s3\"></div></div><div id=\"v2\"><div id=\"s4\"></div></div><div id=\"v3\"><div id=\"s5\"></div></div></div><div id=\"h3\"><div id=\"template_bottom\"><span>This Site is using Scoville </span> <span style=\"color:#f00;\">&lt;</span><span style=\"color:#0f0;\">}-</span><span> a CMS by masterprogs &copy; 2011</span></div></div>', 'Mainsite for Content', 5, 'mainsite.html', 1);
 
 INSERT INTO CONFIG (PARAM,VAL) VALUES ('core.maintenance_mode','True');
+INSERT INTO CONFIG (PARAM,VAL) VALUES ('core.rendermode','pure');
+INSERT INTO CONFIG (PARAM,VAL) VALUES ('core.css_folder','/css');
 
 SET GENERATOR REP_GEN TO 1;
 SET GENERATOR SIT_GEN TO 1;

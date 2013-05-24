@@ -103,8 +103,6 @@ class ScovilleInstaller(GenericScovilleObject):
             "core.session_duration":2,
             "core.session_extend":1,
             "core.cookielaw":1,
-            "core.rendermode":"pure",
-            "core.css_folder":"/css",
             "core.debug":True
         }
 
@@ -225,7 +223,8 @@ class Scoville(Instance):
         self.operationDaemon = None
 
         self.maintenance_mode = True
-        
+        self.rendermode = None
+
         self.cssPropertySet = None
         
     def setUrl(self,url):
@@ -302,9 +301,26 @@ class Scoville(Instance):
     def isMaintenanceMode(self):
         return self.maintenance_mode
 
+    def loadRendermodeCallback(self, data):
+        self.rendermode = data
+        self.updated()
+
+    def loadRendermode(self):
+        self.getApplication().doRPCCall(self,self.loadRendermodeCallback, "getRendermode")
+
+    def setRendermodeCallback(self, data):
+        self.loadRendermode()
+
+    def setRendermode(self, mode):
+        self.getApplication().doRPCCall(self,self.setRendermodeCallback, "setRendermode", [mode])
+
+    def getRendermode(self):
+        return self.rendermode
+
     def loadScovilleChildren(self):
         self.loadPublicKey()
         self.getMaintenanceMode()
+        self.loadRendermode()
         if 'scoville.users.view' in self.serverRights:
             self.users = Users(self)
             self.addChild(self.users)

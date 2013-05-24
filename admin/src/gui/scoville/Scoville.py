@@ -34,6 +34,8 @@ from gui.DefaultEntry import DefaultEntry
 import gui.IconStock
 
 class ScovillePage(ObjectPageAbstract):
+    RENDER_PURE = 0
+    RENDER_AJAX = 1
     def __init__(self,par,scoville):
         ObjectPageAbstract.__init__(self,par,scoville)
 
@@ -74,15 +76,31 @@ class ScovillePage(ObjectPageAbstract):
         self.pki.add(self.pki_vbox)
         self.pack_start(self.pki, False)
 
-        self.maintenance = PageFrame(self, "Maintenance Mode", gui.IconStock.SCOVILLE)
-        self.maintenance_hbox = gtk.HBox()
-        self.maintenance_checkbox = gtk.CheckButton(label="Maintenancemode active")
-        self.maintenance_dummy = gtk.Label()
-        self.maintenance_hbox.pack_start(self.maintenance_checkbox,False)
-        self.maintenance_hbox.pack_start(self.maintenance_dummy,True)
-        self.maintenance.add(self.maintenance_hbox)
-        self.maintenance_checkbox.connect("toggled", self.cb_maintenance)
-        self.pack_start(self.maintenance,False)
+        self.settings = PageFrame(self, "Server Settings", gui.IconStock.SCOVILLE)
+        self.settings_vbox = gtk.VBox()
+        self.settings_maintenance_toggle_lock = False
+        self.settings_maintenance_hbox = gtk.HBox()
+        self.settings_maintenance_checkbox = gtk.CheckButton(label="Maintenancemode active")
+        self.settings_maintenance_dummy = gtk.Label()
+        self.settings_maintenance_hbox.pack_start(self.settings_maintenance_checkbox,False)
+        self.settings_maintenance_hbox.pack_start(self.settings_maintenance_dummy,True)
+        self.settings_maintenance_checkbox.connect("toggled", self.cb_maintenance)
+        self.settings_vbox.pack_start(self.settings_maintenance_hbox,False)
+
+        self.settings_rendermode_toggle_lock = False
+        self.settings_rendermode_table = gtk.Table(2,2,False)
+        self.settings_rendermode_pure = gtk.RadioButton(label="Pure (only static HTML)")
+        self.settings_rendermode_ajax = gtk.RadioButton(group=self.settings_rendermode_pure,label="AJAX (requires JS)")
+        self.settings_rendermode_dummy = gtk.Label("")
+        self.settings_rendermode_pure.connect("toggled", self.cb_rendermode, ScovillePage.RENDER_PURE)
+        self.settings_rendermode_ajax.connect("toggled", self.cb_rendermode, ScovillePage.RENDER_AJAX)
+        self.settings_rendermode_table.attach(self.settings_rendermode_pure,0,1,0,1,gtk.FILL|gtk.SHRINK,gtk.FILL|gtk.SHRINK)
+        self.settings_rendermode_table.attach(self.settings_rendermode_ajax,0,1,1,2,gtk.FILL|gtk.SHRINK,gtk.FILL|gtk.SHRINK)
+        self.settings_rendermode_table.attach(self.settings_rendermode_dummy,1,2,0,2,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.EXPAND)
+        self.settings_vbox.pack_start(self.settings_rendermode_table,False)
+
+        self.settings.add(self.settings_vbox)
+        self.pack_start(self.settings,False)
 
         self.show_all()
         
@@ -103,16 +121,45 @@ class ScovillePage(ObjectPageAbstract):
         else:
             self.pki_textbuffer.set_text("")
 
-        self.maintenance_checkbox.set_active(scoville.isMaintenanceMode())
+        self.settings_maintenance_toggle_lock = True
+        self.settings_maintenance_checkbox.set_active(scoville.isMaintenanceMode())
+        
+        rendermode = scoville.getRendermode()
+        if rendermode is not None:
+            self.settings_rendermode_toggle_lock = True
+            self.settings_rendermode_pure.set_active(rendermode == "pure")
+            self.settings_rendermode_toggle_lock = True
+            self.settings_rendermode_ajax.set_active(rendermode == "ajax")
 
     def cb_maintenance(self,widget=None,data=None):
+        if self.settings_maintenance_toggle_lock:
+            self.settings_maintenance_toggle_lock = False
+            return
+
         scoville = self.getMyObject()
         if not scoville:
             self.destroy()
             return
 
-        state = self.maintenance_checkbox.get_active()
+        state = self.settings_maintenance_checkbox.get_active()
         scoville.setMaintenanceMode(state)
+
+    def cb_rendermode(self,widget=None,data=None):
+        if self.settings_rendermode_toggle_lock:
+            self.settings_rendermode_toggle_lock = False
+            return
+
+        scoville = self.getMyObject()
+        if not scoville:
+            self.destroy()
+            return
+
+        rendermode = scoville.getRendermode()
+        if data == ScovillePage.RENDER_PURE and rendermode != "pure":
+            scoville.setRendermode("pure")
+
+        if data == ScovillePage.RENDER_AJAX and rendermode != "ajax":
+            scoville.setRendermode("ajax")
 
     def cb_changeRepo(self, widget=None, data=None):
         scoville = self.getMyObject()

@@ -855,3 +855,15 @@ class Rpc(object):
 
     def getMaintenanceMode(self, params):
         return self._core.is_maintenance_mode()
+
+    def setRendermode(self,params):
+        mode = str(params[0])
+
+        session_user = self._core.get_session_manager().get_current_session_user()
+        if not session_user.check_permission('scoville.manageserverdata'):
+            return False
+
+        return self._core.set_rendermode(mode)
+
+    def getRendermode(self,params):
+        return self._core.get_rendermode()
