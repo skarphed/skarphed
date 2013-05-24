@@ -490,6 +490,10 @@ class View(object):
                 return "/web/"+quote(name)
             elif action.get_space() is not None and action.get_widget_id() is not None:
                 target['v'][action.get_space()] = action.get_widget_id()
+                #delete any parameters of this widget. otherwise link will only
+                #load current state of that widget again
+                if target['c'].has_key(action.get_widget_id()):
+                    del(target['c'][action.get_widget_id()])
 
         encoder = JSONEncoder()
         viewjsonstring = quote(encoder.encode(target))
