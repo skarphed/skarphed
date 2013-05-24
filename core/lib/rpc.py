@@ -809,6 +809,16 @@ class Rpc(object):
         }
         return ret
 
+    def setSpaceWidgetMapping(self, params):
+        view_id = int(params[0])
+        mapping = dict(params[1])
+
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_from_id(view_id)
+        view.set_space_widget_mapping(mapping)
+        view.store()
+        return True
+
     def setWidgetParamMapping(self, params):
         view_id = int(params[0])
         widget_id = int(params[1])

@@ -95,11 +95,14 @@ class View(GenericScovilleObject):
     def setWidgetParamMapping(self, widget, mapping):
         self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "setWidgetParamMapping", [self.getId(), widget.getId(), mapping])
 
-    def setWidgetIntoSpace(self, space_id, widget):
-        self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "assignWidgetToSpace", [self.getId(), space_id, widget.getId()])
+    def setSpaceWidgetMapping(self, mapping):
+        self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "setSpaceWidgetMapping", [self.getId(), mapping])
 
-    def removeWidgetFromSpace(self, space_id):
-        self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "removeWidgetFromSpace", [self.getId(), space_id])
+    #def setWidgetIntoSpace(self, space_id, widget):
+    #    self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "assignWidgetToSpace", [self.getId(), space_id, widget.getId()])
+
+    #def removeWidgetFromSpace(self, space_id):
+    #    self.getApplication().doRPCCall(self.getViews().getScoville(),self.changeWidgetCallback, "removeWidgetFromSpace", [self.getId(), space_id])
     
     def getPar(self):
         return self.par

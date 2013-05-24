@@ -115,14 +115,13 @@ class ViewPage(ObjectPageAbstract):
             view = self.getMyObject()
         except GenericObjectStoreException:
             return
-
+        mapping = {}
         for spacewidget in self.compose_spacewidgets.values():
-            widget = spacewidget.getWidgetCombo().getSelected()
-            if widget is not None and spacewidget.getWidgetId() is not None:
-                view.setWidgetIntoSpace(spacewidget.getSpaceId(), widget)
-            else:
-                view.removeWidgetFromSpace(spacewidget.getSpaceId())
-
+            widgetId = spacewidget.getWidgetId()
+            if widgetId is not None:
+                mapping[spacewidget.getSpaceId()]= widgetId
+        view.setSpaceWidgetMapping(mapping)
+            
     def changedPageCallback(self, widget=None, data=None):
         pass
 
@@ -178,7 +177,11 @@ class SpaceWidget(gtk.Frame):
         self.param_widget.render()
     
     def getWidgetId(self):
-        return self.widgetId
+        widget = self.widget_combo.getSelected()
+        if widget is None:
+            return None
+        else:
+            return widget.getId()
 
     def getSpaceId(self):
         return self.spaceId

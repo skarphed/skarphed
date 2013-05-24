@@ -599,7 +599,7 @@ class View(object):
         for space_id, widget_id in self._space_widget_mapping.items():
             db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
             try:
-                del(dbSpaceWidgetMap[space_id])
+                del(dbSpaceWidgetMap[int(space_id)])
             except KeyError, e: pass
 
         #delete Removed Widgets
