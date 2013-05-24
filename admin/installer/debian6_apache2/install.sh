@@ -11,7 +11,7 @@ else
 	
 	#external component installation
 
-	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev
+	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev sudo
 
 	pip install fdb pycrypto tinycss
 
@@ -59,6 +59,6 @@ touch /var/log/apache2/www_scv_$instanceid/access.log
 echo $instanceid > /etc/scoville/GEN_INSTANCE
 
 /etc/init.d/apache2 restart
-python $SCV_WEBPATH$instanceid/operation_daemon.py start $instanceid
+sudo -u www-data python $SCV_WEBPATH$instanceid/operation_daemon.py start $instanceid
 
 echo Installation Finished successfully.
