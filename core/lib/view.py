@@ -392,7 +392,7 @@ class View(object):
         stmnt = "SELECT COUNT(VIW_VIE_ID) AS CNT, VIW_VIE_ID FROM VIEWWIDGETS INNER JOIN VIEWS ON VIW_VIE_ID = VIE_ID WHERE 1=0"
         for space_id , widget_id in self._space_widget_mapping.items():
             stmnt += " OR VIW_SPA_ID = ? AND VIW_WGT_ID = ? AND VIE_SIT_ID = ? "
-            stmnt_params.extend((space_id, widget_id, self._page))
+            stmnt_params.extend((int(space_id), int(widget_id), self._page))
         stmnt += " GROUP BY VIW_VIE_ID ;"
 
         stmnt2_params = []
@@ -400,7 +400,7 @@ class View(object):
         for wgt_id, params in self._widget_param_mapping.items():
             for key, value in params.items():
                 stmnt2 += " OR VWP_WGT_ID = ? AND VWP_KEY = ? AND VWP_VALUE = ? AND VIE_SIT_ID = ? "
-                stmnt2_params.extend((wgt_id, key, value, self._page))
+                stmnt2_params.extend((int(wgt_id), str(key), str(value), self._page))
         stmnt2 += " GROUP BY VWP_VIE_ID ;"
 
         db_param_mappingcounts = {}
@@ -421,7 +421,7 @@ class View(object):
                 for wgt_id , params in self._widget_param_mapping.items():
                     view_paramcount += len(params)
                 if (db_param_mappingcounts.has_key(row["VIW_VIE_ID"]) and db_param_mappingcounts[row["VIW_VIE_ID"]] == view_paramcount) \
-                        or len(db_param_mappingcounts) == 0:
+                        or (len(db_param_mappingcounts) == 0 and len(self._widget_param_mapping) == 0):
                     possible_views.append(row["VIW_VIE_ID"])
 
         if len(possible_views) > 0:
