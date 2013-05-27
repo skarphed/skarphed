@@ -208,7 +208,7 @@ class View(object):
         jd = JSONDecoder()
         try:
             json = jd.decode(json)
-        except ValueError, e:
+        except ValueError:
             raise ViewException(ViewException.get_msg(7))
 
         view = View(cls._core)
@@ -448,8 +448,8 @@ class View(object):
         """
         target = {}
         target['s'] = self.get_page()
-        target['v'] = self.get_space_widget_mapping()
-        target['c'] = self.get_widget_param_mapping()
+        target['v'] = self.get_space_widget_mapping().copy()
+        target['c'] = self.get_widget_param_mapping().copy()
         
         if dct.has_key('s'):
             target['s'] = dct['s']
@@ -478,8 +478,8 @@ class View(object):
         """
         target = {}
         target['s'] = self.get_page()
-        target['v'] = self.get_space_widget_mapping()
-        target['c'] = self.get_widget_param_mapping()
+        target['v'] = self.get_space_widget_mapping().copy()
+        target['c'] = self.get_widget_param_mapping().copy()
         
         for action in actionlist.get_actions():
             if action.get_url() is not None:
@@ -540,6 +540,9 @@ class View(object):
             args = {} 
             if self._widget_param_mapping.has_key(widget_id):
                 args.update(self._widget_param_mapping[widget_id])
+            elif self._widget_param_mapping.has_key(str(widget_id)):
+                args.update(self._widget_param_mapping[str(widget_id)])
+            
             if self._post_widget_id == widget_id:
                 # Check whether the viewjson-string is included here, too:
                 # if so, eliminate it.
