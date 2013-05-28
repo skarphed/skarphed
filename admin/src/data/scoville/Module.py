@@ -132,6 +132,8 @@ class Module(GenericScovilleObject):
     
     def loadGuiCallback(self, result):
         modulepath = os.path.expanduser("~/.scovilleadmin/modulegui/")
+        if not os.path.exists(modulepath):
+            os.mkdir(modulepath)
         if not os.path.exists(modulepath+self.getModuleName()):
             os.mkdir(modulepath+self.getModuleName())
 
