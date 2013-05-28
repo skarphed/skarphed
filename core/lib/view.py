@@ -294,6 +294,14 @@ class View(object):
         self._post_widget_id = None
         self._default = False
 
+    def clone(self):
+        view = View()
+        view.set_space_widget_mapping(self.get_space_widget_mapping().copy())
+        view.set_widget_param_mapping(self.get_widget_param_mapping().copy())
+        view.set_page(self.get_page())
+        view.set_post_widget_id(self.get_post_widget_id())
+        return view
+
     def set_name(self, name):
         """
         trivial
@@ -326,6 +334,9 @@ class View(object):
 
     def set_default(self, default):
         self._default = bool(default)
+
+    def get_post_widget_id(self):
+        return self._post_widget_id
 
     def get_default(self):
         return self._default
@@ -609,7 +620,7 @@ class View(object):
             db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
             try:
                 del(dbSpaceWidgetMap[int(space_id)])
-            except KeyError, e: pass
+            except KeyError: pass
 
         #delete Removed Widgets
         stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? AND VIW_SPA_ID = ? ;"
@@ -630,7 +641,7 @@ class View(object):
                 db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)),commit=True)
                 try:
                     del(dbWidgetParamMap[(widget_id,key)])
-                except KeyError, e: pass
+                except KeyError: pass
 
         stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VPW_VIE_ID = ? AND VWP_WGT_ID = ? AND VWP_KEY = ? ;"
         for widget_id, key in dbWidgetParamMap.keys():
@@ -649,6 +660,8 @@ class View(object):
         stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ;"
         db.query(self._core, stmnt, (self._id,),commit=True)
         stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
+        db.query(self._core, stmnt, (self._id,),commit=True)
+        stmnt = "UPDATE WIDGETS SET WGT_VIE_BASEVIEW = NULL, WGT_SPA_BASESPACE = NULL WHERE WGT_VIE_BASEVIEW = ? ;"
         db.query(self._core, stmnt, (self._id,),commit=True)
         stmnt = "DELETE FROM VIEWS WHERE VIE_ID = ? ;"
         db.query(self._core, stmnt, (self._id,),commit=True)

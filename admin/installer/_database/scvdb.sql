@@ -297,7 +297,8 @@ CREATE TABLE WIDGETS
   WGT_NAME Varchar(64),
   WGT_SIT_ID Integer,
   WGT_MOD_ID Integer,
-  WGT_SPACE Integer,
+  WGT_VIE_BASEVIEW Integer DEFAULT NULL,
+  WGT_SPA_BASESPACE Integer DEFAULT NULL,
   CONSTRAINT WGT_PK PRIMARY KEY (WGT_ID)
 );
 /********************* VIEWS **********************/

@@ -140,13 +140,15 @@ class AbstractModule(object):
         returns an instance of thre requested module with a set instanceId
         """
         db = self._core.get_db()
-        stmnt = "SELECT WGT_ID, WGT_NAME FROM WIDGETS WHERE WGT_MOD_ID = ? AND WGT_ID = ? ;"
+        stmnt = "SELECT WGT_ID, WGT_NAME, WGT_VIE_BASEVIEW, WGT_SPA_BASESPACE FROM WIDGETS WHERE WGT_MOD_ID = ? AND WGT_ID = ? ;"
         cur = db.query(self._core, stmnt, (self._id,widget_id))
 
         row = cur.fetchonemap()
         if row is not None:
             widget = Widget(self._core, self, row["WGT_ID"])
             widget.set_name(row["WGT_NAME"])
+            widget.set_baseview_id(row["WGT_VIE_BASEVIEW"])
+            widget.set_baseview_space_id(row["WGT_SPA_BASESPACE"])
             return widget
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(7))
@@ -213,6 +215,13 @@ class AbstractModule(object):
         else:    
             return configuration.get_entry(entry,module=self)
 
+    def generate_view(self, widget_id, viewname, commands):
+        """
+        Acutally generates a named view according to the configuration of the widget
+        """
+        module_manager = self._core.get_module_manager()
+        widget = module_manager.get_widget(widget_id)
+        widget.generate_view(viewname, commands)
 
 class Widget(object):
     def __init__(self, core, module, nr=None):
@@ -220,8 +229,9 @@ class Widget(object):
         self._id = nr
         self._module= module
         self._name = None
-        self._space = None
         self._site_id = None
+        self._baseview_id = None
+        self._baseview_space_id = None
 
     def set_id(self,nr):
         self._id = int(nr)
@@ -229,14 +239,20 @@ class Widget(object):
     def set_name(self,name):
         self._name=str(name)
 
+    #TODO: Check if Widgets really still net Site-reference
     def set_site(self,site):
         if type(site)==int:
             self._site_id = site
         elif site.__class__.__name__ == "Site":
             self._site_id = site.get_id()
 
-    def set_space(self,space):
-        self._space = int(space)
+    def set_baseview_id(self, baseview_id):
+        if type(baseview_id) == int or baseview_id is None:
+            self._baseview_id = baseview_id
+
+    def set_baseview_space_id(self, baseview_space_id):
+        if type(baseview_space_id) == int or baseview_space_id is None:
+            self._baseview_space_id = baseview_space_id
 
     def get_id(self):
         return self._id
@@ -244,11 +260,15 @@ class Widget(object):
     def get_name(self):
         return self._name
 
-    def get_space(self):
-        return self._space
-
-    def get_site_id(self):
+    #TODO: Check if Widgets really still net Site-reference
+    def get_site_id(self): 
         return self._site_id
+
+    def get_baseview_id(self):
+        return self._baseview_id
+
+    def get_baseview_space_id(self):
+        return self._baseview_space_id
 
     def render_pure_html(self,args={}):
         rendered = self._module.render_pure_html(self._id,args)
@@ -270,9 +290,9 @@ class Widget(object):
         if self._module is None:
             raise ModuleCoreException(ModuleCoreException.get_msg(1))
 
-        stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_SPACE) \
-                    VALUES (?,?,?,?,?) MATCHING (WGT_ID) ;"
-        db.query(self._core,stmnt,(self._id,self._name, self._site_id,self._module.get_id(), self._space ),commit=True)
+        stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_VIE_BASEVIEW, WGT_SPA_BASESPACE) \
+                    VALUES (?,?,?,?,?,?) MATCHING (WGT_ID) ;"
+        db.query(self._core,stmnt,(self._id,self._name, self._site_id,self._module.get_id(), self._baseview_id, self._baseview_space_id ),commit=True)
 
     def get_module(self):
         """
@@ -298,6 +318,54 @@ class Widget(object):
 
         stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;"
         db.query(self._core,stmnt,(self._id,),commit=True)
+
+    def activate_viewgeneration(self, baseview, space_id):
+        """
+        Initializes the viewgeneration-feature.
+        This feature allows the method generate_view to be used
+        from within the module implementation-code
+
+        It inherits from a baseview (most of the time this will
+        typically be the defaultview)
+
+        The space_id indicates in which space the widget of 
+        this module should be rendered in the resulting
+        named view.
+        """
+        self.set_baseview_id(baseview.get_id())
+        self.set_baseview_space_id(space_id)
+        self.store()
+
+        module = self.get_module()
+        module.set_config_entry("generate_views", "True", self.get_id())
+
+
+    def generate_view(self, viewname, commands):
+        """
+        Actually generates a named view of the viewname,
+        The baseview for this Widget, the space that has been set
+        to be the target in the baseview and the set of
+        commands provided in the dictionary commands
+        """
+        module = self.get_module()
+        if module.get_config_entry("generate_views", self.get_id()) == "True":
+            viewmanager = self._core.get_view_manager()
+            newview = viewmanager.get_from_id(self.get_baseview_id()).clone()
+            newview.set_name(viewname)
+            newview.get_space_widget_mapping()[self.get_baseview_space_id()] = self.get_id()
+            newview.get_widget_param_mapping()[self.get_id()] = commands
+            newview.store()
+
+    def deactivate_viewgeneration(self):
+        """
+        Deactivate Generating views
+        """
+        self.set_baseview_id(None)
+        self.set_baseview_space_id(None)
+        self.store()
+
+        module = self.get_module()
+        module.set_config_entry("generate_views", "False", self.get_id())
 
 
 class ModuleManager(object):
