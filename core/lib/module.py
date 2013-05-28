@@ -367,6 +367,17 @@ class Widget(object):
         module = self.get_module()
         module.set_config_entry("generate_views", "False", self.get_id())
 
+    def is_generating_views(self):
+        """
+        Returns True if this widget is generating named views of its entries.
+        Returns False if not.
+        """
+        module = self.get_module()
+        try:
+            return module.get_config_entry("generate_views", self.get_id()) == "True"
+        except:
+            return False
+
 
 class ModuleManager(object):
     def __init__(self,core):

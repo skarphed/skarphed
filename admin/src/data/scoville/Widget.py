@@ -47,15 +47,27 @@ class Widget(GenericScovilleObject):
     def refresh(self,data):
         self.data = data
         self.updated()
+
+    def getBaseView(self):
+        if self.data['baseview'] is None:
+            return None
+        else:
+            return self.getApplication().getLocalObjectById(self.data['baseview'])
+
+    def getBaseSpaceId(self):
+        if self.data['basespace'] is None:
+            return None
+        else:
+            return self.data['basespace']
     
     def loadCssPropertySetCallback(self,json):
         self.cssPropertySet = json
         self.updated()
     
     def loadCssPropertySet(self):
-        id = self.getId()
-        if id is not None:
-            self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.loadCssPropertySetCallback, "getCssPropertySet", [None,id,None])
+        nr = self.getId()
+        if nr is not None:
+            self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.loadCssPropertySetCallback, "getCssPropertySet", [None,nr,None])
     
     def getCssPropertySet(self):
         return self.cssPropertySet
@@ -68,6 +80,21 @@ class Widget(GenericScovilleObject):
     
     def saveCssPropertySet(self):
         self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+
+    def activateGeneratingViewsCallback(self, data):
+        self.getModule().loadWidgets()
+
+    def activateGeneratingViews(self, view, spaceId):
+        self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.activateGeneratingViewsCallback, "widgetActivateViewGeneration", [self.getId(), view.getId(), spaceId])
+
+    def deactivateGeneratingViewsCallback(self, data):
+        self.getModule().loadWidgets()
+
+    def deactivateGeneratingViews(self):
+        self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.deactivateGeneratingViewsCallback, "widgetDeactivateViewGeneration", [self.getId()])
+
+    def isGeneratingViews(self):
+        return self.data['gview']
     
     def deleteCallback(self,json):
         self.getModule().loadWidgets()

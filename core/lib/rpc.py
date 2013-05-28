@@ -512,7 +512,7 @@ class Rpc(object):
         module = module_manager.get_module(module_id)
         widgets = module.get_widgets()
 
-        return [{'id':widget.get_id(), 'name':widget.get_name()} for widget in widgets]
+        return [{'id':widget.get_id(), 'name':widget.get_name(), 'gviews':widget.is_generating_views(), 'baseview':widget.get_baseview_id(), 'basespace':widget.get_baseview_space_id()} for widget in widgets]
 
     def getMenusOfSite(self,params):
         page_id = int(params[0])
@@ -867,3 +867,23 @@ class Rpc(object):
 
     def getRendermode(self,params):
         return self._core.get_rendermode()
+
+    def widgetActivateViewGeneration(self, params):
+        widget_id = int(params[0])
+        view_id = int(params[1])
+        space_id = int(params[2])
+
+        module_manager = self._core.get_module_manager()
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_from_id(view_id)
+        widget = module_manager.get_widget(widget_id)
+        widget.activate_viewgeneration(view, space_id)
+        return
+
+    def widgetDeactivateViewGeneration(self, params):
+        widget_id = int(params[0])
+
+        module_manager = self._core.get_module_manager()
+        widget = module_manager.get_widget(widget_id)
+        widget.deactivate_viewgeneration()
+        return
