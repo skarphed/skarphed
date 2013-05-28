@@ -30,6 +30,8 @@ import os
 
 from data.Generic import GenericObjectStoreException
 
+from gui.scoville.ViewGenerationWidget import ViewGenerationControl
+
 class WidgetPage(gtk.VBox):
     def __init__(self, parent, widget):
         self.par = parent
@@ -56,6 +58,8 @@ class WidgetPage(gtk.VBox):
 
         self._newsstore = self.builder.get_object("newsstore")
         self._commentstore = self.builder.get_object("commentstore")
+
+        self.widget.pack_start(ViewGenerationControl(self, widget))
 
         self.add(self.widget)
         self.loadNews()
