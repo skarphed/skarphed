@@ -77,28 +77,60 @@ class Configuration(object):
         Loads the values vom the table CONFIG into the config
         """
         db = self._core.get_db()
-        cur = db.query(self._core, "SELECT PARAM,VAL FROM CONFIG ;")
+        stmnt = """SELECT PARAM,VAL,MOD_NAME,CNF_WGT_ID 
+                       FROM CONFIG INNER JOIN MODULES ON (MOD_ID = CNF_MOD_ID) 
+                           WHERE CNF_MOD_ID IS NOT NULL AND CNF_WGT_ID IS NULL
+                       UNION 
+                   SELECT PARAM,VAL,MOD_NAME,CNF_WGT_ID 
+                       FROM CONFIG INNER JOIN WIDGETS ON (WIDGETS.WGT_ID = CNF_WGT_ID) INNER JOIN MODULES ON (WGT_MOD_ID = MOD_ID) 
+                           WHERE CNF_WGT_ID IS NOT NULL AND CNF_MOD_ID IS NULL
+                       UNION 
+                   SELECT PARAM,VAL,'',NULL FROM CONFIG WHERE CNF_MOD_ID IS NULL AND CNF_WGT_ID IS NULL;"""
+        cur = db.query(self._core, stmnt)
         for res in cur.fetchallmap():
-            self._configuration[res["PARAM"]] = res["VAL"]
+            if res["MOD_NAME"] is not None:
+                prefix = res["MOD_NAME"]+"::"
+            elif res["CNF_WGT_ID"] is not None:
+                prefix = res["MOD_NAME"]+"::"+str(res["CNF_WGT_ID"])+"::"
+            else:
+                prefix = ""
+            self._configuration[prefix+res["PARAM"]] = res["VAL"]
         self._state = self.CONF_LOAD_DB
 
-    def get_entry(self, entry):
+    def get_entry(self, entry, module=None, widget=None):
         """
         Returns a entry of this core's configuration
         """
+        if module is not None:
+            prefix = module.get_name()+"::"
+        elif widget is not None:
+            prefix = widget.get_module().get_name()+"::"+str(widget.get_id())+"::"
+        else:
+            prefix = ""
+
+        entry = prefix+entry    
         if entry in self._configuration.keys():
             return self._configuration[entry]
         raise ConfigurationException(ConfigurationException.get_msg(1))
 
-    def set_entry(self, entry, value):
+    def set_entry(self, entry, value, module=None, widget=None):
         """
         Sets an entry of this core's configuration
         """
         if entry not in self._local_config_keys:
             db = self._core.get_db()
-            stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL) VALUES (?,?) MATCHING (PARAM) ;"
-            db.query(self._core,stmnt,(entry,str(value)),commit=True)
-            self._configuration[entry] = str(value)
+            if module is not None:
+                stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL,CNF_MOD_ID) VALUES (?,?,?) MATCHING (PARAM,CNF_MOD_ID) ;"
+                db.query(self._core,stmnt,(entry,str(value),module.get_id()),commit=True)
+                self._configuration[module.get_name()+"::"+entry] = str(value)
+            elif widget is not None:
+                stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL,CNF_WGT_ID) VALUES (?,?,?) MATCHING (PARAM,CNF_WGT_ID) ;"
+                db.query(self._core,stmnt,(entry,str(value),widget.get_id()),commit=True)
+                self._configuration[widget.get_module().get_name()+"::"+str(widget.get_id())+"::"+entry] = str(value)
+            else:
+                stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL) VALUES (?,?) MATCHING (PARAM) ;"
+                db.query(self._core,stmnt,(entry,str(value)),commit=True)
+                self._configuration[entry] = str(value)
         else:
             raise ConfigurationException(ConfigurationException.get_msg(2))
 

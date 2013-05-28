@@ -185,6 +185,34 @@ class AbstractModule(object):
         os.unlink(modulepath+"/gui.tar.gz")
         return data
 
+    def set_config_entry(self, entry, value, widget_id=None):
+        """
+        Sets a configuration entry for this module.
+        If there is a widget id given, it changes the same
+        configuration value of this widget.
+        """
+        configuration = self._core.get_configuration()
+        if widget_id is not None:
+            module_manager = self._core.get_module_manager()
+            widget = module_manager.get_widget(widget_id)
+            configuration.set_entry(entry,value,widget=widget)
+        else:    
+            configuration.set_entry(entry,value,module=self)
+
+    def get_config_entry(self, entry, widget_id=None):
+        """
+        Yields a configuration entry for this module.
+        If there is a widget id given, it returns the
+        configuration value of this widget. (MUST EXIST)
+        """
+        configuration = self._core.get_configuration()
+        if widget_id is not None:
+            module_manager = self._core.get_module_manager()
+            widget = module_manager.get_widget(widget_id)
+            return configuration.get_entry(entry,widget=widget)
+        else:    
+            return configuration.get_entry(entry,module=self)
+
 
 class Widget(object):
     def __init__(self, core, module, nr=None):
@@ -245,6 +273,13 @@ class Widget(object):
         stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_SPACE) \
                     VALUES (?,?,?,?,?) MATCHING (WGT_ID) ;"
         db.query(self._core,stmnt,(self._id,self._name, self._site_id,self._module.get_id(), self._space ),commit=True)
+
+    def get_module(self):
+        """
+        Returns the module of this widget
+        """
+        module_manager = self._core.get_module_manager()
+        return module_manager.get_module_from_widget_id(self.get_id())
 
     def delete(self):
         db = self._core.get_db()
@@ -311,6 +346,9 @@ class ModuleManager(object):
             return int(row["MOD_ID"])
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(6))
+    
+    def get_module_from_widget_id(self,widget_id):
+        return self._get_module_from_widget_id(widget_id)
 
     def _get_module_from_widget_id(self,widget_id):
         """
