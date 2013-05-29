@@ -29,10 +29,14 @@ import Crypto.PublicKey.RSA as RSA
 import os
 import tarfile
 import shutil
+import math
 
 from operation import ModuleInstallOperation, ModuleUninstallOperation, ModuleUpdateOperation, ModuleOperation
 from database import DatabaseException
 from permissions import PermissionException
+from view import ViewException
+
+from helper import sluggify
 
 class ModuleCoreException(Exception):
     ERRORS = {
@@ -353,6 +357,16 @@ class Widget(object):
         if module.get_config_entry("generate_views", self.get_id()) == "True":
             viewmanager = self._core.get_view_manager()
             newview = viewmanager.get_from_id(self.get_baseview_id()).clone()
+            viewname = sluggify(viewname)
+            extcount = 0
+            while True:
+                try:
+                    viewmanager.get_from_name(viewname)
+                except ViewException:
+                    break
+                else:
+                    extcount +=1
+                    viewname = viewname[:-int(1+(math.ceil(math.log(extcount,10))))]+str(extcount)
             newview.set_name(viewname)
             newview.get_space_widget_mapping()[self.get_baseview_space_id()] = self.get_id()
             newview.get_widget_param_mapping()[self.get_id()] = commands

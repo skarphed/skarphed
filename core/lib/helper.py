@@ -22,6 +22,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+import re
+
 def datetime2fdbTimestamp(datetime):
     y = str(datetime.year)
     if datetime.month < 10:
@@ -49,3 +51,19 @@ def datetime2fdbTimestamp(datetime):
 
 def fdbTimestamp2datetime(fdb_timestamp):
     pass
+
+STRIP_SPACES = re.compile(r"\s+")
+STRIP_THREE_LETTER_WORDS = re.compile(r"\w{3}\s")
+def sluggify(s):
+    """
+    This method creates a slog from e.g. the title of a blogpost
+    """
+    s = s.strip()
+    s = s.lower()
+
+    #strip whitespace
+    s = re.sub(STRIP_SPACES, " ", s)
+    s = s.replace(" ","_")
+
+    return s[:128]
+
