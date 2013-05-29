@@ -123,6 +123,7 @@ class ScovillePage(ObjectPageAbstract):
 
         self.settings_maintenance_toggle_lock = True
         self.settings_maintenance_checkbox.set_active(scoville.isMaintenanceMode())
+        self.settings_maintenance_toggle_lock = False
         
         rendermode = scoville.getRendermode()
         if rendermode is not None:
