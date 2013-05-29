@@ -433,8 +433,10 @@ class View(object):
                 view_paramcount = 0
                 for wgt_id , params in self._widget_param_mapping.items():
                     view_paramcount += len(params)
+                if db_param_mappingcounts.has_key(row["VIW_VIE_ID"]) and view_paramcount == 0:
+                    continue
                 if (db_param_mappingcounts.has_key(row["VIW_VIE_ID"]) and db_param_mappingcounts[row["VIW_VIE_ID"]] == view_paramcount) \
-                        or (len(db_param_mappingcounts) == 0 and len(self._widget_param_mapping) == 0):
+                        or view_paramcount == 0:
                     possible_views.append(row["VIW_VIE_ID"])
 
         if len(possible_views) > 0:
@@ -633,7 +635,7 @@ class View(object):
         cur = db.query(self._core, stmnt, (self.get_id(),))
         dbWidgetParamMap = {}
         for row in cur.fetchallmap():
-            dbWidgetParamMap[(row["VPT_WGT_ID"],row["VWP_KEY"])] = 1
+            dbWidgetParamMap[(row["VWP_WGT_ID"],row["VWP_KEY"])] = 1
 
 
         stmnt = "UPDATE OR INSERT INTO VIEWWIDGETPARAMS (VWP_VIE_ID, VWP_WGT_ID, VWP_KEY, VWP_VALUE) \
