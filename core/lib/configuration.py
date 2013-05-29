@@ -77,24 +77,34 @@ class Configuration(object):
         Loads the values vom the table CONFIG into the config
         """
         db = self._core.get_db()
-        stmnt = """SELECT PARAM,VAL,MOD_NAME,CNF_WGT_ID 
-                       FROM CONFIG INNER JOIN MODULES ON (MOD_ID = CNF_MOD_ID) 
-                           WHERE CNF_MOD_ID IS NOT NULL AND CNF_WGT_ID IS NULL
-                       UNION 
-                   SELECT PARAM,VAL,MOD_NAME,CNF_WGT_ID 
-                       FROM CONFIG INNER JOIN WIDGETS ON (WIDGETS.WGT_ID = CNF_WGT_ID) INNER JOIN MODULES ON (WGT_MOD_ID = MOD_ID) 
-                           WHERE CNF_WGT_ID IS NOT NULL AND CNF_MOD_ID IS NULL
-                       UNION 
-                   SELECT PARAM,VAL,'',NULL FROM CONFIG WHERE CNF_MOD_ID IS NULL AND CNF_WGT_ID IS NULL;"""
+        stmnt = """ SELECT CNF_PARAM, CNF_VAL, MOD_NAME , NULL AS CNO_WGT_ID
+                        FROM CONFIG INNER JOIN CONFIGOWNERS ON (CNF_CNO_ID = CNO_ID) 
+                        INNER JOIN MODULES ON (CNO_MOD_ID = MOD_ID)
+                            WHERE CNO_MOD_ID IS NOT NULL AND CNO_WGT_ID IS NULL
+                        UNION
+                    SELECT CNF_PARAM, CNF_VAL, MOD_NAME, CNO_WGT_ID
+                        FROM CONFIG INNER JOIN CONFIGOWNERS ON (CNF_CNO_ID = CNO_ID)
+                        INNER JOIN WIDGETS ON (CNO_WGT_ID = WGT_ID)
+                        INNER JOIN MODULES ON (WGT_MOD_ID = MOD_ID)
+                            WHERE CNO_MOD_ID IS NULL AND CNO_WGT_ID IS NOT NULL
+                        UNION
+                    SELECT CNF_PARAM, CNF_VAL, NULL AS MOD_NAME, NULL AS CNO_WGT_ID
+                        FROM CONFIG INNER JOIN CONFIGOWNERS ON (CNF_CNO_ID = CNO_ID)
+                            WHERE CNO_MOD_ID IS NULL AND CNO_WGT_ID IS NULL ;
+                """
+
+        
+
+
         cur = db.query(self._core, stmnt)
         for res in cur.fetchallmap():
-            if res["MOD_NAME"] is not None:
+            if res["CNO_WGT_ID"] is not None:
+                prefix = res["MOD_NAME"]+"::"+str(res["CNO_WGT_ID"])+"::"
+            elif res["MOD_NAME"] is not None:
                 prefix = res["MOD_NAME"]+"::"
-            elif res["CNF_WGT_ID"] is not None:
-                prefix = res["MOD_NAME"]+"::"+str(res["CNF_WGT_ID"])+"::"
             else:
                 prefix = ""
-            self._configuration[prefix+res["PARAM"]] = res["VAL"]
+            self._configuration[prefix+res["CNF_PARAM"]] = res["CNF_VAL"]
         self._state = self.CONF_LOAD_DB
 
     def get_entry(self, entry, module=None, widget=None):
@@ -120,17 +130,53 @@ class Configuration(object):
         if entry not in self._local_config_keys:
             db = self._core.get_db()
             if module is not None:
-                stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL,CNF_MOD_ID) VALUES (?,?,?) MATCHING (PARAM,CNF_MOD_ID) ;"
-                db.query(self._core,stmnt,(entry,str(value),module.get_id()),commit=True)
-                self._configuration[module.get_name()+"::"+entry] = str(value)
+                stmnt = "SELECT CNF_PARAM, CNO_ID FROM CONFIG INNER JOIN CONFIGOWNERS ON (CNF_CNO_ID = CNO_ID) \
+                            WHERE CNF_PARAM = ? AND CNO_MOD_ID = ? ;"
+                res = db.query(self._core, stmnt, (str(entry), module.get_id()))
+                row = res.fetchonemap()
+                if row is not None:
+                    cnf_relation_id = row["CNO_ID"]
+                    stmnt = "UPDATE CONFIG SET CNF_VAL = ? WHERE CNF_CNO_ID = ? ;"
+                    db.query(self._core, stmnt, (str(value), cnf_relation_id), commit=True)
+                else:
+                    cnf_relation_id = db.get_seq_next("CNO_GEN")
+                    stmnt = "INSERT INTO CONFIGOWNERS (CNO_ID, CNO_MOD_ID, CNO_WGT_ID) VALUES (?,?,NULL) ;"
+                    db.query(self._core, stmnt, (cnf_relation_id, module.get_id()),commit=True)
+                    stmnt = "INSERT INTO CONFIG (CNF_PARAM, CNF_VAL, CNF_CNO_ID) VALUES (?,?,?) ;"
+                    db.query(self._core, stmnt, (str(entry), str(value), str(cnf_relation_id)), commit=True)
+
             elif widget is not None:
-                stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL,CNF_WGT_ID) VALUES (?,?,?) MATCHING (PARAM,CNF_WGT_ID) ;"
-                db.query(self._core,stmnt,(entry,str(value),widget.get_id()),commit=True)
-                self._configuration[widget.get_module().get_name()+"::"+str(widget.get_id())+"::"+entry] = str(value)
+                stmnt = "SELECT CNF_PARAM, CNO_ID FROM CONFIG INNER JOIN CONFIGOWNERS ON (CNF_CNO_ID = CNO_ID) \
+                            WHERE CNF_PARAM = ? AND CNO_WGT_ID = ? ;"
+                res = db.query(self._core, stmnt, (str(entry), widget.get_id()))
+                row = res.fetchonemap()
+                if row is not None:
+                    cnf_relation_id = row["CNO_ID"]
+                    stmnt = "UPDATE CONFIG SET CNF_VAL = ? WHERE CNF_CNO_ID = ? ;"
+                    db.query(self._core, stmnt, (str(value), cnf_relation_id), commit=True)
+                else:
+                    cnf_relation_id = db.get_seq_next("CNO_GEN")
+                    stmnt = "INSERT INTO CONFIGOWNERS (CNO_ID, CNO_MOD_ID, CNO_WGT_ID) VALUES (?,NULL,?) ;"
+                    db.query(self._core, stmnt, (cnf_relation_id, widget.get_id()),commit=True)
+                    stmnt = "INSERT INTO CONFIG (CNF_PARAM, CNF_VAL, CNF_CNO_ID) VALUES (?,?,?) ;"
+                    db.query(self._core, stmnt, (str(entry), str(value), str(cnf_relation_id)), commit=True)
+
             else:
-                stmnt = "UPDATE OR INSERT INTO CONFIG (PARAM,VAL) VALUES (?,?) MATCHING (PARAM) ;"
-                db.query(self._core,stmnt,(entry,str(value)),commit=True)
-                self._configuration[entry] = str(value)
+                stmnt = "SELECT CNF_PARAM, CNO_ID FROM CONFIG INNER JOIN CONFIGOWNERS ON (CNF_CNO_ID = CNO_ID) \
+                            WHERE CNF_PARAM = ? AND CNO_MOD_ID IS NULL AND CNO_WGT_ID IS NULL;"
+                res = db.query(self._core, stmnt, (str(entry),))
+                row = res.fetchonemap()
+                if row is not None:
+                    cnf_relation_id = row["CNO_ID"]
+                    stmnt = "UPDATE CONFIG SET CNF_VAL = ? WHERE CNF_CNO_ID = ? ;"
+                    db.query(self._core, stmnt, (str(value), cnf_relation_id), commit=True)
+                else:
+                    cnf_relation_id = db.get_seq_next("CNO_GEN")
+                    stmnt = "INSERT INTO CONFIGOWNERS (CNO_ID, CNO_MOD_ID, CNO_WGT_ID) VALUES (?,NULL,NULL) ;"
+                    db.query(self._core, stmnt, (cnf_relation_id),commit=True)
+                    stmnt = "INSERT INTO CONFIG (CNF_PARAM, CNF_VAL, CNF_CNO_ID) VALUES (?,?,?) ;"
+                    db.query(self._core, stmnt, (str(entry), str(value), str(cnf_relation_id)), commit=True)
+                
         else:
             raise ConfigurationException(ConfigurationException.get_msg(2))
 
