@@ -175,7 +175,7 @@ class Module(AbstractModule):
                 db.query(self, stmnt, (int(comment), int(widget_id)), commit=True)
         return True
 
-    def create_news_entry(self, widget_id):
+    def create_news_entry(self, widget_id, title=""):
         session_manager = self._core.get_session_manager()
         current_user = session_manager.get_current_session_user()
         
@@ -185,10 +185,10 @@ class Module(AbstractModule):
         db = self._core.get_db()
         new_id = db.get_seq_next("${grindhold_news.news}")
 
-        self.generate_view(widget_id, "newsentry"+str(new_id), {"n":new_id})
+        self.generate_view(widget_id, str(title), {"n":new_id})
 
-        stmnt = "INSERT INTO ${news} (NWS_ID, NWS_USR_AUTHOR, NWS_SHOW, NWS_DATE, MOD_INSTANCE_ID, NWS_TEXT, NWS_TITLE) VALUES (?, ?, 0, CURRENT_TIMESTAMP, ?, '',  '') ;"
-        db.query(self, stmnt, (new_id, current_user.get_id(), int(widget_id)), commit=True)
+        stmnt = "INSERT INTO ${news} (NWS_ID, NWS_USR_AUTHOR, NWS_SHOW, NWS_DATE, MOD_INSTANCE_ID, NWS_TEXT, NWS_TITLE) VALUES (?, ?, 0, CURRENT_TIMESTAMP, ?, '',  ?) ;"
+        db.query(self, stmnt, (new_id, current_user.get_id(), int(widget_id), str(title)), commit=True)
         return True
 
     def store_comment(self, author, comment):

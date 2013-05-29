@@ -30,7 +30,8 @@ import os
 
 from data.Generic import GenericObjectStoreException
 
-from gui.scoville.ViewGenerationWidget import ViewGenerationControl
+from gui.scoville.ViewGenerationControl import ViewGenerationControl
+from gui.InputBox import InputBox
 
 class WidgetPage(gtk.VBox):
     def __init__(self, parent, widget):
@@ -190,6 +191,9 @@ class WidgetPage(gtk.VBox):
         self.loadNews()
 
     def newCallback(self, widget=None, data=None):
+        InputBox(self, "Please enter the title of the new news-entry", self.executeNew, notEmpty=True)
+
+    def executeNew(self, title):
         try:
             widget = self.getApplication().getLocalObjectById(self.widgetId)
         except GenericObjectStoreException:
@@ -197,7 +201,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getScoville()
-        self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "create_news_entry", [widget.getId()]])
+        self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "create_news_entry", [widget.getId(), title]])
 
     def getPar(self):
         return self.par
