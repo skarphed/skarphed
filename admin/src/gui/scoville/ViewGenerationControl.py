@@ -29,9 +29,9 @@ import gtk
 from data.Generic import GenericObjectStoreException
 
 from gui.ObjectCombo import ObjectCombo
-from gui.Scoville.Menu import SpaceCombo
+from gui.scoville.Menu import SpaceCombo
 
-class ViewGenerationWidget(gtk.Frame):
+class ViewGenerationControl(gtk.Frame):
     def __init__(self, par, widget):
         self.par = par
         gtk.Frame.__init__(self)
@@ -39,7 +39,7 @@ class ViewGenerationWidget(gtk.Frame):
         self._change_for_render = False
 
         self.toggle = gtk.CheckButton("Automatically generate Views")
-        self.set_label(self.toggle)
+        self.set_label_widget(self.toggle)
 
         self.table = gtk.Table(3,3,False)
         self.label_view = gtk.Label("Baseview:")
@@ -47,8 +47,9 @@ class ViewGenerationWidget(gtk.Frame):
         self.combo_view = ObjectCombo(self, 
                                      "View",
                                      selectFirst=True,
+                                     noneElement=True,
                                      virtualRootObject=widget.getModule().getModules().getScoville())
-        self.combo_space = SpaceCombo()
+        self.combo_space = gtk.ComboBox()
         self.savebutton = gtk.Button(stock=gtk.STOCK_SAVE)
         self.dummy = gtk.Label("")
 
@@ -79,16 +80,21 @@ class ViewGenerationWidget(gtk.Frame):
         active = widget.isGeneratingViews()
         self._change_for_render = True
         self.toggle.set_active(active)
+        self._change_for_render = False
         self.combo_view.set_sensitive(active)
         self.combo_space.set_sensitive(active)
         self.savebutton.set_sensitive(active)
 
         if active:
-            self.combo_view.setSelected(widget.getBaseview())
-            self.combo_space.setSelected(widget.getBaseSpaceId())
+            self.combo_view.setSelected(widget.getBaseView())
+            try:
+                self.combo_space.setSpaceId(widget.getBaseSpaceId())
+            except AttributeError: pass
         else:
             self.combo_view.setSelected(None)
-            self.combo_space.setSelected(None)
+            try:
+                self.combo_space.setSpaceId(None)
+            except AttributeError: pass
 
     def toggleCallback(self, widget=None, data=None):
         try:
@@ -103,6 +109,11 @@ class ViewGenerationWidget(gtk.Frame):
 
         if not self.toggle.get_active():
             widget.deactivateGeneratingViews()
+        else:
+            self.combo_view.set_sensitive(True)
+            self.combo_space.set_sensitive(True)
+            self.savebutton.set_sensitive(True)
+
 
     def saveCallback(self, widget=None, data=None):
         try:
@@ -115,11 +126,19 @@ class ViewGenerationWidget(gtk.Frame):
 
     def viewChangedCallback(self, widget=None, data=None):
         self.combo_space.destroy()
-        view = self.cobo_view.getSelected()
+        view = self.combo_view.getSelected()
         if view is None:
             return
+
+        if not view.isFullyLoaded():
+            view.addCallback(self.viewChangedCallback)
+            view.loadFull()
+            return 
+        view.removeCallback(self.viewChangedCallback)
+
         page = view.getPage()
-        self.combo_space = SpaceCombo(page)
+        self.combo_space = SpaceCombo(self,page)
+        self.combo_space.show()
         self.table.attach(self.combo_space,1,2,1,2,gtk.FILL|gtk.SHRINK, gtk.FILL|gtk.SHRINK)
 
 

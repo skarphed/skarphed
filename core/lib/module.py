@@ -158,13 +158,15 @@ class AbstractModule(object):
         returns an instance of thre requested module with a set instanceId
         """
         db = self._core.get_db()
-        stmnt = "SELECT WGT_ID, WGT_NAME FROM WIDGETS WHERE WGT_MOD_ID = ? ;"
+        stmnt = "SELECT WGT_ID, WGT_NAME, WGT_VIE_BASEVIEW, WGT_SPA_BASESPACE FROM WIDGETS WHERE WGT_MOD_ID = ? ;"
         cur = db.query(self._core, stmnt, (self._id,))
 
         widgets = []
         for row in cur.fetchallmap():
             widget = Widget(self._core, self, row["WGT_ID"])
             widget.set_name(row["WGT_NAME"])
+            widget.set_baseview_id(row["WGT_VIE_BASEVIEW"])
+            widget.set_baseview_space_id(row["WGT_SPA_BASESPACE"])
             widgets.append(widget)        
         return widgets
 

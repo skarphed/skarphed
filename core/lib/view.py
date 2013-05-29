@@ -127,7 +127,7 @@ class View(object):
         for row in rows:
             if not widget_param_mapping.has_key(row["VWP_WGT_ID"]):
                 widget_param_mapping[row["VWP_WGT_ID"]] = {}
-            widget_param_mapping["VWP_WGT_ID"][row["VWP_KEY"]]= row["VWP_VALUE"]
+            widget_param_mapping[row["VWP_WGT_ID"]][row["VWP_KEY"]]= row["VWP_VALUE"]
         view.set_widget_param_mapping(widget_param_mapping)
 
         return view
@@ -181,7 +181,7 @@ class View(object):
         for row in rows:
             if not widget_param_mapping.has_key(row["VWP_WGT_ID"]):
                 widget_param_mapping[row["VWP_WGT_ID"]] = {}
-            widget_param_mapping["VWP_WGT_ID"][row["VWP_KEY"]]= row["VWP_VALUE"]
+            widget_param_mapping[row["VWP_WGT_ID"]][row["VWP_KEY"]]= row["VWP_VALUE"]
         view.set_widget_param_mapping(widget_param_mapping)
 
         return view
@@ -295,11 +295,13 @@ class View(object):
         self._default = False
 
     def clone(self):
-        view = View()
+        view = View(self._core)
         view.set_space_widget_mapping(self.get_space_widget_mapping().copy())
         view.set_widget_param_mapping(self.get_widget_param_mapping().copy())
         view.set_page(self.get_page())
-        view.set_post_widget_id(self.get_post_widget_id())
+        postwidget_id = self.get_post_widget_id()
+        if postwidget_id is not None:
+            view.set_post_widget_id(postwidget_id)
         return view
 
     def set_name(self, name):

@@ -52,7 +52,7 @@ class Widget(GenericScovilleObject):
         if self.data['baseview'] is None:
             return None
         else:
-            return self.getApplication().getLocalObjectById(self.data['baseview'])
+            return self.getModule().getModules().getScoville().getViews().getViewById(self.data['baseview'])
 
     def getBaseSpaceId(self):
         if self.data['basespace'] is None:
@@ -94,7 +94,7 @@ class Widget(GenericScovilleObject):
         self.getApplication().doRPCCall(self.getModule().getModules().getScoville(),self.deactivateGeneratingViewsCallback, "widgetDeactivateViewGeneration", [self.getId()])
 
     def isGeneratingViews(self):
-        return self.data['gview']
+        return self.data['gviews']
     
     def deleteCallback(self,json):
         self.getModule().loadWidgets()
