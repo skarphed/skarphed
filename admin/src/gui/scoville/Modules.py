@@ -33,15 +33,17 @@ from GenericObject import PageFrame
 from gui.OperationTool import OperationTool
 import gui.IconStock
 
+from lng import _
+
 class ModulesPage(ObjectPageAbstract):
     def __init__(self,parent,modules):
         ObjectPageAbstract.__init__(self,parent,modules)
         
-        self.info = PageFrame(self,"Information", gui.IconStock.REPO)
+        self.info = PageFrame(self,_("Information"), gui.IconStock.REPO)
         self.infobox = gtk.VBox()
         self.info_table = gtk.Table(2,2,False)
-        self.info_labelName = gtk.Label("name:")
-        self.info_labelHost = gtk.Label("host:")
+        self.info_labelName = gtk.Label(_("Name:"))
+        self.info_labelHost = gtk.Label(_("Host:"))
         self.info_displayName = gtk.Label()
         self.info_displayHost = gtk.Label()
         self.info_table.attach(self.info_labelName,0,1,0,1)
@@ -52,17 +54,17 @@ class ModulesPage(ObjectPageAbstract):
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.mod = PageFrame(self,"available and installed modules", gui.IconStock.MODULE)
+        self.mod = PageFrame(self,_("Available and installed modules"), gui.IconStock.MODULE)
         self.modbox = gtk.Table(5,2,False)
         self.modbox.set_row_spacings(10)
         self.modbox.set_col_spacings(10)
         self.modbox.set_border_width(10)
         
-        self.mod_label = gtk.Label("please drag a module into the opposing list to install/uninstall it:\n")
-        self.mod_norepo_label = gtk.Label("Repository not reachable")
-        self.mod_labelInstalled = gtk.Label("installed modules")
-        self.mod_labelAvailable = gtk.Label("available modules")
-        self.mod_labelProcessed = gtk.Label("currently processed modules")
+        self.mod_label = gtk.Label(_("Please drag a module into the opposing list to install/uninstall it:\n"))
+        self.mod_norepo_label = gtk.Label(_("Repository not reachable"))
+        self.mod_labelInstalled = gtk.Label(_("Installed modules"))
+        self.mod_labelAvailable = gtk.Label(_("Available modules"))
+        self.mod_labelProcessed = gtk.Label(_("Currently processed modules"))
         
         self.mod_IListScroll = gtk.ScrolledWindow()
         self.mod_IListScroll.set_size_request(200,250)
@@ -70,7 +72,7 @@ class ModulesPage(ObjectPageAbstract):
         self.mod_IList = gtk.TreeView()
         self.mod_IListStore = gtk.ListStore(gtk.gdk.Pixbuf, str, int)
         self.mod_IList.set_model(self.mod_IListStore)
-        self.mod_IList_col_module = gtk.TreeViewColumn('module name')
+        self.mod_IList_col_module = gtk.TreeViewColumn(_('Modulename'))
         self.mod_IList_ren_icon = gtk.CellRendererPixbuf()
         self.mod_IList_ren_name = gtk.CellRendererText()
         self.mod_IList.append_column(self.mod_IList_col_module)
@@ -87,7 +89,7 @@ class ModulesPage(ObjectPageAbstract):
         self.mod_AList = gtk.TreeView()
         self.mod_AListStore = gtk.ListStore(gtk.gdk.Pixbuf, str, int)
         self.mod_AList.set_model(self.mod_AListStore)
-        self.mod_AList_col_module = gtk.TreeViewColumn('module name')
+        self.mod_AList_col_module = gtk.TreeViewColumn(_('Modulename'))
         self.mod_AList_ren_icon = gtk.CellRendererPixbuf()
         self.mod_AList_ren_name = gtk.CellRendererText()
         self.mod_AList.append_column(self.mod_AList_col_module)

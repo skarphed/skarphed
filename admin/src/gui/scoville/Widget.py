@@ -27,10 +27,11 @@ import os
 from GenericObject import ObjectPageAbstract
 from data.Generic import GenericObjectStoreException
 
-
 import pygtk
 pygtk.require("2.0")
 import gtk
+
+from lng import _
 
 class WidgetPage(ObjectPageAbstract):
     def __init__(self,par,widget):
@@ -38,7 +39,7 @@ class WidgetPage(ObjectPageAbstract):
 
         self.widgetGuiLoaded = False
 
-        self.label = gtk.Label("Wait a Second. Loading GUI")
+        self.label = gtk.Label(_("Wait a Second. Loading GUI"))
         self.add(self.label)
 
         module = widget.getModule()

@@ -35,31 +35,32 @@ from gui.IconStock import WIDGET, SITE, VIEW, SPACE
 from gui.ObjectCombo import ObjectCombo
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
 
 class ViewPage(ObjectPageAbstract):
     def __init__(self, par, view):
         ObjectPageAbstract.__init__(self, par, view)
 
-        self.view = PageFrame(self, "View", VIEW)
+        self.view = PageFrame(self, _("View"), VIEW)
         self.view_hbox = gtk.HBox(spacing=10)
-        self.view_label = gtk.Label("Name of this View: ")
+        self.view_label = gtk.Label(_("Name of this View: "))
         self.view_entry = DefaultEntry()
-        self.view_entry.set_default_message("name_of_view")
+        self.view_entry.set_default_message(_("name_of_view"))
         self.view_hbox.pack_start(self.view_label,False)
         self.view_hbox.pack_start(self.view_entry,True)
         self.view.add(self.view_hbox)
         self.pack_start(self.view, False)
 
-        self.page = PageFrame(self, "Site", SITE)
+        self.page = PageFrame(self, _("Site"), SITE)
         self.page_hbox = gtk.HBox(spacing=10)
-        self.page_label = gtk.Label("Site to Render: ")
+        self.page_label = gtk.Label(_("Site to Render: "))
         self.page_combobox = ObjectCombo(self, "Site", virtualRootObject=view.getViews().getScoville().getSites())
         self.page_hbox.pack_start(self.page_label,False)
         self.page_hbox.pack_start(self.page_combobox,False)
         self.page.add(self.page_hbox)
         self.pack_start(self.page,False)
 
-        self.compose = PageFrame(self, "Compositing", WIDGET)
+        self.compose = PageFrame(self, _("Compositing"), WIDGET)
         self.compose_dummy = gtk.Label()
         self.compose_scroll = gtk.ScrolledWindow()
         self.compose_scroll.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
@@ -136,13 +137,13 @@ class SpaceWidget(gtk.Frame):
 
         self.vbox = gtk.VBox()
         self.hbox = gtk.HBox(spacing=10)
-        self.framelabel = FrameLabel(self,"Space: ", SPACE)
+        self.framelabel = FrameLabel(self,_("Space: "), SPACE)
         self.set_label_widget(self.framelabel)
-        self.spacelabel = gtk.Label("Widget in this Space:")
+        self.spacelabel = gtk.Label(_("Widget in this Space:"))
 
         self.widget_combo = ObjectCombo(self, "Widget", virtualRootObject=view.getViews().getScoville().getModules(), noneElement=True)
         self.expander = gtk.Expander()
-        self.expander.set_label_widget(gtk.Label("Edit Widget Parameters"))
+        self.expander.set_label_widget(gtk.Label(_("Edit Widget Parameters")))
         self.param_widget = ParamWidget(self, view)
         self.expander.add(self.param_widget)
         self.hbox.pack_start(self.spacelabel,False)
@@ -162,7 +163,7 @@ class SpaceWidget(gtk.Frame):
             return
         site = view.getPage()
         spaceName = site.getNameOfSpace(self.spaceId)
-        self.framelabel.setText("Space: "+spaceName)
+        self.framelabel.setText(_("Space: ")+spaceName)
         spaceWidgetMapping = view.getSpaceWidgetMapping()
         try:
             widgetId = spaceWidgetMapping[str(self.spaceId)]
@@ -214,8 +215,8 @@ class ParamWidget(gtk.VBox):
         self.liststore = gtk.ListStore(str,str,str)
         self.treeview = gtk.TreeView()
         self.treeview.set_model(self.liststore)
-        self.col_param = gtk.TreeViewColumn('Parameter')
-        self.col_value = gtk.TreeViewColumn('Value')
+        self.col_param = gtk.TreeViewColumn(_('Parameter'))
+        self.col_value = gtk.TreeViewColumn(_('Value'))
         self.treeview.append_column(self.col_param)
         self.treeview.append_column(self.col_value)
         self.ren_param = gtk.CellRendererText()

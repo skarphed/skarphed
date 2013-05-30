@@ -33,13 +33,15 @@ from data.Generic import GenericObjectStoreException
 from gui.ObjectCombo import ObjectCombo
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
+
 class MenuPage(ObjectPageAbstract):
     def __init__(self, par, menu):
         ObjectPageAbstract.__init__(self,par,menu)
         
-        self.info = PageFrame(self, "Name", IconStock.SITE)
+        self.info = PageFrame(self, _("Name"), IconStock.SITE)
         self.infobox = gtk.HBox()
-        self.info_labelName = gtk.Label("Name:")
+        self.info_labelName = gtk.Label(_("Name:"))
         self.info_entryName = gtk.Entry()
         self.info_saveName = gtk.Button(stock=gtk.STOCK_SAVE)
         self.infobox.pack_start(self.info_labelName,False)
@@ -49,7 +51,7 @@ class MenuPage(ObjectPageAbstract):
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.edit = PageFrame(self, "Edit Items", IconStock.MENU)
+        self.edit = PageFrame(self, _("Edit Items"), IconStock.MENU)
         self.editbox = gtk.HPaned()
         self.edit_left_box = gtk.VBox()
         self.edit_toolbar = gtk.Toolbar()
@@ -80,7 +82,7 @@ class MenuPage(ObjectPageAbstract):
         self.edit_toolbar.add(self.bottombutton)
         
         self.edit_menutree = MenuItemTree(self,menu)
-        self.edit_right_box = gtk.Frame("ACTIONS")
+        self.edit_right_box = gtk.Frame(_("Actions"))
         self.actionListItem = None
         self.edit_left_box.pack_start(self.edit_toolbar,False)
         self.edit_left_box.pack_start(self.edit_menutree,True)
@@ -250,11 +252,11 @@ class ActionWidgetLabel(gtk.HBox):
             self.getPar().destroy()
             return
         if action.data['type'] == 'url':
-            self.actionDisplay.set_text('Goto URL: '+str(action.data['url']))
+            self.actionDisplay.set_text(_('Goto URL: ')+str(action.data['url']))
         elif action.data['type'] == 'widgetSpaceConstellation':
-            self.actionDisplay.set_text('Move Widget '+str(action.data['widgetId'])+' into Space '+str(action.data['space']))
+            self.actionDisplay.set_text(_('Move Widget ')+str(action.data['widgetId'])+_(' into Space ')+str(action.data['space']))
         elif action.data['type'] == 'site':
-            self.actionDisplay.set_text('Goto Site '+str(action.data['siteId']))
+            self.actionDisplay.set_text(_('Goto Site ')+str(action.data['siteId']))
 
     def getPar(self):
         return self.par
@@ -268,11 +270,11 @@ class ActionWidgetConfig(gtk.Table):
         gtk.Table.__init__(self,4,4,False)
         self.actionId = action.getLocalId()
         
-        self.radio_url = gtk.RadioButton(None, "URL:")
-        self.radio_widgetSpaceConstellation = gtk.RadioButton(self.radio_url, "Widget into Space:")
-        self.radio_view = gtk.RadioButton(self.radio_url, "Other View:")
+        self.radio_url = gtk.RadioButton(None, _("URL:"))
+        self.radio_widgetSpaceConstellation = gtk.RadioButton(self.radio_url, _("Widget into Space:"))
+        self.radio_view = gtk.RadioButton(self.radio_url, _("Other View:"))
         
-        self.entry_url = DefaultEntry(default_message="http://www.example.org")
+        self.entry_url = DefaultEntry(default_message=_("http://www.example.org"))
         self.entry_widget = ObjectCombo(self, 
                                      "Widget",
                                      selectFirst=True,
@@ -450,8 +452,8 @@ class MenuItemTree(gtk.TreeView):
         self.store = MenuItemStore(gtk.gdk.Pixbuf,str,int,int,parent=self.par, objectStore = self.getApplication().getObjectStore(),menu=menu)
         
         self.set_model(self.store)
-        self.col_name = gtk.TreeViewColumn("MenuItem")
-        self.col_order = gtk.TreeViewColumn("order")
+        self.col_name = gtk.TreeViewColumn(_("MenuItem"))
+        self.col_order = gtk.TreeViewColumn(_("Order"))
         self.append_column(self.col_name)
         self.append_column(self.col_order)
         self.renderer_icon = gtk.CellRendererPixbuf()
@@ -495,7 +497,7 @@ class MenuItemTree(gtk.TreeView):
 class MenuItemStore(gtk.TreeStore):
     WHITELISTED_CLASSES = ("Menu","MenuItem")
     def __init__(self,*args,**kwargs):
-        assert kwargs['objectStore'] is not None, "need objectStore!"
+        assert kwargs['objectStore'] is not None, _("Need ObjectStore")
         gtk.TreeStore.__init__(self,*args)
         self.par = kwargs['parent']
         self.objectStore = kwargs['objectStore']
@@ -562,7 +564,7 @@ class MenuItemStore(gtk.TreeStore):
                         model.set_value(rowiter,3,obj.getOrder())
                         try:
                             self.objectsToAllocate.remove(obj)
-                        except ValueError,e:
+                        except ValueError:
                             print obj, self.objectsToAllocate
                     else:
                         model.set_value(rowiter,0,IconStock.MENU)

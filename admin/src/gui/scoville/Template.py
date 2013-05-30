@@ -31,6 +31,8 @@ from GenericObject import PageFrame
 
 import gui.IconStock
 
+from lng import _
+
 class TemplatePageException(Exception): pass
 
 class TemplatePage(ObjectPageAbstract):
@@ -40,12 +42,12 @@ class TemplatePage(ObjectPageAbstract):
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
         
-        self.info = PageFrame(self,"Currently Installed", gui.IconStock.TEMPLATE)
+        self.info = PageFrame(self,_("Currently Installed"), gui.IconStock.TEMPLATE)
         self.infobox = gtk.VBox()
         self.info_table = gtk.Table(2,3,False)
-        self.info_labelName = gtk.Label("name:")
-        self.info_labelDescription = gtk.Label("description:")
-        self.info_labelAuthor = gtk.Label("author:")
+        self.info_labelName = gtk.Label(_("Name:"))
+        self.info_labelDescription = gtk.Label(_("Description:"))
+        self.info_labelAuthor = gtk.Label(_("Author:"))
         self.info_displayName = gtk.Label()
         self.info_displayDescription = gtk.Label()
         self.info_displayAuthor = gtk.Label()
@@ -59,10 +61,10 @@ class TemplatePage(ObjectPageAbstract):
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.upload = PageFrame(self,"Upload new Template", gui.IconStock.TEMPLATE)
+        self.upload = PageFrame(self,_("Upload new Template"), gui.IconStock.TEMPLATE)
         self.uploadbox = gtk.HBox()
         self.uploadbox.set_border_width(10)
-        self.upload_label = gtk.Label("Please choose the template and click OK")
+        self.upload_label = gtk.Label(_("Please choose the template and click OK"))
         self.upload_filechoose = gtk.FileChooserButton("Select Template", None)
         self.upload_filechoose.connect("file-set", self.fileChosen)
         self.upload_filechoose.set_size_request(200,30)
@@ -76,20 +78,20 @@ class TemplatePage(ObjectPageAbstract):
         self.upload.add(self.uploadbox)
         self.pack_start(self.upload,False)
         
-        self.repo = PageFrame(self,"Install Template from Repository", gui.IconStock.TEMPLATE)
+        self.repo = PageFrame(self,_("Install Template from Repository"), gui.IconStock.TEMPLATE)
         self.repoVBox = gtk.VBox()
         self.repoButtonbox = gtk.HBox()
         self.repoDummy = gtk.Label("")
-        self.repoInstallButton = gtk.Button("Install")
+        self.repoInstallButton = gtk.Button(_("Install"))
         self.repoRefreshButton = gtk.Button(stock=gtk.STOCK_REFRESH)
         self.repostore = gtk.ListStore(gtk.gdk.Pixbuf, str, str, str, int)
         self.repotree = gtk.TreeView()
         self.repotree.set_model(self.repostore)
         self.reposcroll = gtk.ScrolledWindow()
         self.reposcroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.repocol_name = gtk.TreeViewColumn("Template")
-        self.repocol_description = gtk.TreeViewColumn("Description")
-        self.repocol_author = gtk.TreeViewColumn("Author")
+        self.repocol_name = gtk.TreeViewColumn(_("Template"))
+        self.repocol_description = gtk.TreeViewColumn(_("Description"))
+        self.repocol_author = gtk.TreeViewColumn(_("Author"))
         self.reporen_icon = gtk.CellRendererPixbuf()
         self.reporen_name = gtk.CellRendererText()
         self.reporen_description = gtk.CellRendererText()
@@ -148,7 +150,7 @@ class TemplatePage(ObjectPageAbstract):
         if self.fileToUpload is not None and self.fileToUpload != "":
             template.getScoville().uploadTemplate(self.fileToUpload)
         else:
-            raise Exception("No File specified")
+            raise Exception(_("No File specified"))
 
     def installRowCallback(self,treeview=None,iter=None,path=None,data=None):
         template = self.getMyObject()
@@ -158,7 +160,7 @@ class TemplatePage(ObjectPageAbstract):
         selection = self.repotree.get_selection()
         rowiter = selection.get_selected()[1]
         if rowiter is None:
-            raise TemplatePageException("You must select a Template to install it")
+            raise TemplatePageException(_("You must select a Template to install it"))
         nr = self.repostore.get_value(rowiter,4)
         template.installFromRepo(nr)
 

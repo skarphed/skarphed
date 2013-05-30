@@ -31,6 +31,8 @@ from data.Generic import GenericObjectStoreException
 from gui.ObjectCombo import ObjectCombo
 from gui.scoville.Menu import SpaceCombo
 
+from lng import _
+
 class ViewGenerationControl(gtk.Frame):
     def __init__(self, par, widget):
         self.par = par
@@ -38,12 +40,12 @@ class ViewGenerationControl(gtk.Frame):
         self.widgetId = widget.getLocalId()
         self._change_for_render = False
 
-        self.toggle = gtk.CheckButton("Automatically generate Views")
+        self.toggle = gtk.CheckButton(_("Automatically generate Views"))
         self.set_label_widget(self.toggle)
 
         self.table = gtk.Table(3,3,False)
-        self.label_view = gtk.Label("Baseview:")
-        self.label_space = gtk.Label("Targetspace:")
+        self.label_view = gtk.Label(_("Baseview:"))
+        self.label_space = gtk.Label(_("Targetspace:"))
         self.combo_view = ObjectCombo(self, 
                                      "View",
                                      selectFirst=True,

@@ -32,6 +32,8 @@ from GenericObject import PageFrame
 from GenericObject import FrameLabel
 import gui.IconStock
 
+from lng import _
+
 class RolePage(ObjectPageAbstract):
     def __init__(self,parent,role):
         ObjectPageAbstract.__init__(self,parent,role)
@@ -41,25 +43,25 @@ class RolePage(ObjectPageAbstract):
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
         
-        self.info = PageFrame(self,"Information", gui.IconStock.ROLE)
+        self.info = PageFrame(self,_("Information"), gui.IconStock.ROLE)
         self.infobox = gtk.VBox()
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.perm = PageFrame(self,"Permissions", gui.IconStock.PERMISSION)
+        self.perm = PageFrame(self,_("Permissions"), gui.IconStock.PERMISSION)
         self.permbox = gtk.Table(1,2,False)
         self.permbox.set_row_spacings(10)
         self.permbox.set_col_spacings(10)
         self.permbox.set_border_width(10)
         
-        self.perm_permlabel = FrameLabel(self,"Please choose the Permissions you want to assign to the user here:", gui.IconStock.PERMISSION)
+        self.perm_permlabel = FrameLabel(self,_("Please choose the Permissions you want to assign to the user here:"), gui.IconStock.PERMISSION)
         
         self.perm_permlistview = gtk.TreeView()
         self.perm_permlist = gtk.ListStore(int, str,str)
         self.perm_permlistview.set_model(self.perm_permlist)
         self.perm_permlist_col_checkbox = gtk.TreeViewColumn('')
-        self.perm_permlist_col_identifier = gtk.TreeViewColumn('Permission Identifier')
-        self.perm_permlist_col_name = gtk.TreeViewColumn('Permission Name')
+        self.perm_permlist_col_identifier = gtk.TreeViewColumn(_('Permission Identifier'))
+        self.perm_permlist_col_name = gtk.TreeViewColumn(_('Permission Name'))
         self.perm_permlistview.append_column(self.perm_permlist_col_checkbox)
         self.perm_permlistview.append_column(self.perm_permlist_col_identifier)
         self.perm_permlistview.append_column(self.perm_permlist_col_name)
@@ -91,7 +93,7 @@ class RolePage(ObjectPageAbstract):
         if not role:
             return
 
-        self.headline.set_markup("<b>Edit Role: "+role.getName()+"</b>")
+        self.headline.set_markup(_("<b>Edit Role: "+role.getName()+"</b>"))
         
         if role.permissiondata is not None:
             self.perm_permlist.clear()

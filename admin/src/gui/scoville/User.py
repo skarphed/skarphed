@@ -33,6 +33,7 @@ from GenericObject import FrameLabel
 
 import gui.IconStock
 
+from lng import _
 
 class UserPage(ObjectPageAbstract):
     def __init__(self,par,user):
@@ -44,26 +45,26 @@ class UserPage(ObjectPageAbstract):
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
         
-        self.info = PageFrame(self,"Information", gui.IconStock.USER)
+        self.info = PageFrame(self,_("Information"), gui.IconStock.USER)
         self.infobox = gtk.VBox()
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.perm = PageFrame(self,"Permissions / Roles", gui.IconStock.ROLE)
+        self.perm = PageFrame(self,_("Permissions / Roles"), gui.IconStock.ROLE)
         self.permbox = gtk.Table(2,2,False)
         self.permbox.set_row_spacings(10)
         self.permbox.set_col_spacings(10)
         self.permbox.set_border_width(10)
         
-        self.perm_permlabel = FrameLabel(self,"Please choose the Permissions you want to assign to the user here:",gui.IconStock.PERMISSION)
-        self.perm_rolelabel = FrameLabel(self,"Please choose the Rights you want to assign to the user here:",gui.IconStock.ROLE)
+        self.perm_permlabel = FrameLabel(self,_("Please choose the Permissions you want to assign to the user here:"),gui.IconStock.PERMISSION)
+        self.perm_rolelabel = FrameLabel(self,_("Please choose the Rights you want to assign to the user here:"),gui.IconStock.ROLE)
         
         self.perm_permlistview = gtk.TreeView()
         self.perm_permlist = gtk.ListStore(int, str,str)
         self.perm_permlistview.set_model(self.perm_permlist)
         self.perm_permlist_col_checkbox = gtk.TreeViewColumn('')
-        self.perm_permlist_col_identifier = gtk.TreeViewColumn('Permission Identifier')
-        self.perm_permlist_col_name = gtk.TreeViewColumn('Permission Name')
+        self.perm_permlist_col_identifier = gtk.TreeViewColumn(_('Permission Identifier'))
+        self.perm_permlist_col_name = gtk.TreeViewColumn(_('Permission Name'))
         self.perm_permlistview.append_column(self.perm_permlist_col_checkbox)
         self.perm_permlistview.append_column(self.perm_permlist_col_identifier)
         self.perm_permlistview.append_column(self.perm_permlist_col_name)
@@ -84,8 +85,8 @@ class UserPage(ObjectPageAbstract):
         self.perm_rolelist = gtk.ListStore(int, str,str,int)
         self.perm_rolelistview.set_model(self.perm_rolelist)
         self.perm_rolelist_col_checkbox = gtk.TreeViewColumn('')
-        self.perm_rolelist_col_identifier = gtk.TreeViewColumn('Role Identifier')
-        self.perm_rolelist_col_name = gtk.TreeViewColumn('RoleName')
+        self.perm_rolelist_col_identifier = gtk.TreeViewColumn(_('Role Identifier'))
+        self.perm_rolelist_col_name = gtk.TreeViewColumn(_('RoleName'))
         self.perm_rolelistview.append_column(self.perm_rolelist_col_checkbox)
         self.perm_rolelistview.append_column(self.perm_rolelist_col_identifier)
         self.perm_rolelistview.append_column(self.perm_rolelist_col_name)
@@ -110,16 +111,16 @@ class UserPage(ObjectPageAbstract):
         self.perm.add(self.permbox)
         self.pack_start(self.perm,False)
 
-        self.alterpw = PageFrame(self, "Alter Password", gui.IconStock.CREDENTIAL)
+        self.alterpw = PageFrame(self, _("Alter Password"), gui.IconStock.CREDENTIAL)
         self.alterpwhbox = gtk.HBox()
         self.alterpwdummy = gtk.Label("")
         self.alterpwbox = gtk.Table(2,4,False)
         self.alterpwbox.set_row_spacings(10)
         self.alterpwbox.set_col_spacings(10)
         self.alterpwbox.set_border_width(10)
-        self.alterpw_oldpw_label = gtk.Label("Old Password:")
-        self.alterpw_newpw1_label = gtk.Label("New Password:")
-        self.alterpw_newpw2_label = gtk.Label("Repeat Password:")
+        self.alterpw_oldpw_label = gtk.Label(_("Old Password:"))
+        self.alterpw_newpw1_label = gtk.Label(_("New Password:"))
+        self.alterpw_newpw2_label = gtk.Label(_("Repeat Password:"))
         self.alterpw_oldpw_entry = gtk.Entry()
         self.alterpw_oldpw_entry.set_invisible_char("●")
         self.alterpw_oldpw_entry.set_visibility(False)
@@ -129,7 +130,7 @@ class UserPage(ObjectPageAbstract):
         self.alterpw_newpw2_entry = gtk.Entry()
         self.alterpw_newpw2_entry.set_invisible_char("●")
         self.alterpw_newpw2_entry.set_visibility(False)
-        self.alterpw_ok = gtk.Button("Alter Password")
+        self.alterpw_ok = gtk.Button(_("Alter Password"))
         self.alterpwbox.attach(self.alterpw_oldpw_label,0,1,0,1)
         self.alterpwbox.attach(self.alterpw_oldpw_entry,1,2,0,1)
         self.alterpwbox.attach(self.alterpw_newpw1_label,0,1,1,2)
@@ -153,7 +154,7 @@ class UserPage(ObjectPageAbstract):
         if not user:
             return 
 
-        self.headline.set_markup("<b>Settings for User: "+user.getName()+"</b>")
+        self.headline.set_markup(_("<b>Settings for User: ")+user.getName()+"</b>")
         
         if user.permissiondata is not None:
             self.perm_permlist.clear()

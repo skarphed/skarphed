@@ -30,13 +30,15 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from lng import _
+
 class ModulePage(ObjectPageAbstract):
     def __init__(self,par,module):
         ObjectPageAbstract.__init__(self, par, module)
 
         self.moduleGuiLoaded = False
 
-        self.label = gtk.Label("Wait a Second. Loading GUI")
+        self.label = gtk.Label(_("Wait a Second. Loading GUI"))
         self.add(self.label)
 
         if not module.isGuiAvailable():

@@ -33,22 +33,24 @@ from OperationDaemonControl import OperationDaemonControl
 from gui.DefaultEntry import DefaultEntry
 import gui.IconStock
 
+from lng import _
+
 class ScovillePage(ObjectPageAbstract):
     RENDER_PURE = 0
     RENDER_AJAX = 1
     def __init__(self,par,scoville):
         ObjectPageAbstract.__init__(self,par,scoville)
 
-        self.headline = gtk.Label("Scoville Instance")
+        self.headline = gtk.Label(_("Scoville Instance"))
         self.pack_start(self.headline,False)
         
-        self.repo = PageFrame(self,"Repository", gui.IconStock.REPO)
+        self.repo = PageFrame(self,_("Repository"), gui.IconStock.REPO)
         self.repoDummy = gtk.Label("")
         self.repoHBox = gtk.HBox()
         self.repotable = gtk.Table(2,3)
-        self.repoLabel = gtk.Label("Repository")
-        self.repoEntry = DefaultEntry(default_message="example_repo.org:80")
-        self.repoInfoLabel = gtk.Label("Please enter Repository URL here:")
+        self.repoLabel = gtk.Label(_("Repository"))
+        self.repoEntry = DefaultEntry(default_message=_("example_repo.org:80"))
+        self.repoInfoLabel = gtk.Label(_("Please enter Repository URL here:"))
         self.repoOkButton = gtk.Button(stock=gtk.STOCK_OK)
         self.repoOkButton.connect("clicked", self.cb_changeRepo)
         
@@ -65,8 +67,8 @@ class ScovillePage(ObjectPageAbstract):
         self.opd = OperationDaemonControl(self,scoville.getOperationDaemon())
         self.pack_start(self.opd,False)
         
-        self.pki = PageFrame(self, "Public Key", gui.IconStock.CREDENTIAL)
-        self.pki_label = gtk.Label("Instance Public Key:")
+        self.pki = PageFrame(self, _("Public Key"), gui.IconStock.CREDENTIAL)
+        self.pki_label = gtk.Label(_("Instance Public Key:"))
         self.pki_textview = gtk.TextView()
         self.pki_textbuffer = gtk.TextBuffer()
         self.pki_textview.set_buffer(self.pki_textbuffer)
@@ -76,11 +78,11 @@ class ScovillePage(ObjectPageAbstract):
         self.pki.add(self.pki_vbox)
         self.pack_start(self.pki, False)
 
-        self.settings = PageFrame(self, "Server Settings", gui.IconStock.SCOVILLE)
+        self.settings = PageFrame(self, _("Server Settings"), gui.IconStock.SCOVILLE)
         self.settings_vbox = gtk.VBox()
         self.settings_maintenance_toggle_lock = False
         self.settings_maintenance_hbox = gtk.HBox()
-        self.settings_maintenance_checkbox = gtk.CheckButton(label="Maintenancemode active")
+        self.settings_maintenance_checkbox = gtk.CheckButton(label=_("Maintenancemode active"))
         self.settings_maintenance_dummy = gtk.Label()
         self.settings_maintenance_hbox.pack_start(self.settings_maintenance_checkbox,False)
         self.settings_maintenance_hbox.pack_start(self.settings_maintenance_dummy,True)
@@ -89,8 +91,8 @@ class ScovillePage(ObjectPageAbstract):
 
         self.settings_rendermode_toggle_lock = False
         self.settings_rendermode_table = gtk.Table(2,2,False)
-        self.settings_rendermode_pure = gtk.RadioButton(label="Pure (only static HTML)")
-        self.settings_rendermode_ajax = gtk.RadioButton(group=self.settings_rendermode_pure,label="AJAX (requires JS)")
+        self.settings_rendermode_pure = gtk.RadioButton(label=_("Pure (only static HTML)"))
+        self.settings_rendermode_ajax = gtk.RadioButton(group=self.settings_rendermode_pure,label=_("AJAX (requires JS)"))
         self.settings_rendermode_dummy = gtk.Label("")
         self.settings_rendermode_pure.connect("toggled", self.cb_rendermode, ScovillePage.RENDER_PURE)
         self.settings_rendermode_ajax.connect("toggled", self.cb_rendermode, ScovillePage.RENDER_AJAX)

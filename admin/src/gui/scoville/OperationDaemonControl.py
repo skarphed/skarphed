@@ -32,20 +32,22 @@ from GenericObject import FrameLabel
 from data.Generic import GenericObjectStoreException
 import gui.IconStock
 
+from lng import _
+
 class OperationDaemonControl(PageFrame):
     def __init__(self, par, opdaemon):
-        PageFrame.__init__(self, par,"Operation Daemon",gui.IconStock.OPERATION)
+        PageFrame.__init__(self, par,_("Operation Daemon"),gui.IconStock.OPERATION)
         self.par = par
 
         self.operationdaemonId = opdaemon.getLocalId()
 
-        self.opdLabel = gtk.Label("Control the status of the OperationDaemon here:")
-        self.opdStatusLabel = gtk.Label("Current status:")
+        self.opdLabel = gtk.Label(_("Control the status of the OperationDaemon here:"))
+        self.opdStatusLabel = gtk.Label(_("Current status:"))
         self.opdStatusDisplay = gtk.Label("")
-        self.opdStartButton = gtk.Button("Start")
-        self.opdStopButton = gtk.Button("Stop")
-        self.opdRestartButton = gtk.Button("Restart")
-        self.opdRefreshButton = gtk.Button("Refresh")
+        self.opdStartButton = gtk.Button(_("Start"))
+        self.opdStopButton = gtk.Button(_("Stop"))
+        self.opdRestartButton = gtk.Button(_("Restart"))
+        self.opdRefreshButton = gtk.Button(_("Refresh"))
 
         self.opdVBox = gtk.VBox()
         self.opdLabelBox = gtk.HBox()
