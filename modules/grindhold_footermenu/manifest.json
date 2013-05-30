@@ -1,0 +1,15 @@
+{
+  "name":"grindhold_footermenu",
+  "hrname":"Footer Menu",
+  "version_major":0,
+  "version_minor":0,
+  "permissions":["edit"],
+  "tables":[
+    {"name":"footermenu",
+     "columns":[
+       {"name": "FMN_SIT_ID",  "type": "INT"},
+       {"name": "FMN_MNU_ID",  "type": "INT"}
+     ]}
+  ]
+
+}
