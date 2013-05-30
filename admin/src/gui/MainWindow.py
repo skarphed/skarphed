@@ -37,6 +37,8 @@ from Tabs import Tabs
 from CssEditor import CssEditor
 from DefaultEntry import DefaultEntry
 
+from lng import _
+
 class GetParentException(Exception):pass
 
 class MainWindow(gtk.Window):
@@ -48,7 +50,7 @@ class MainWindow(gtk.Window):
         
         self._dialogObjectStack = []
 
-        self.set_title("Scoville Admin PRO")
+        self.set_title(_("Scoville Admin PRO"))
         self.set_icon_from_file("../data/icon/mp_logo.png")
         self.maximize()
         
