@@ -34,6 +34,8 @@ from data.Generic import GenericObjectStoreException
 
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
+
 class NewSchemaPage(gtk.Frame):
     class Pulse(Thread):
         def __init__(self, window):
@@ -50,7 +52,7 @@ class NewSchemaPage(gtk.Frame):
 
 
     def __init__(self,par,database):
-        gtk.Frame.__init__(self, "Scoville Admin PRO :: New Schema")
+        gtk.Frame.__init__(self, _("Scoville Admin PRO :: New Schema"))
         self.par = par
 
         self.databaseId = database.getLocalId()
@@ -59,12 +61,12 @@ class NewSchemaPage(gtk.Frame):
 
         self.table = gtk.Table(4,2,False)
         
-        self.instruction = gtk.Label("Enter the name of the new schema.\n\
+        self.instruction = gtk.Label(_("Enter the name of the new schema.\n\
          The first user (root) of the new scoville db will have the password 'root'.\n\
-         Please change this password after your first login.")
+         Please change this password after your first login."))
 
-        self.name_label = gtk.Label("Name:")
-        self.name_entry = DefaultEntry(default_message="new_database_name")
+        self.name_label = gtk.Label(_("Name:"))
+        self.name_entry = DefaultEntry(default_message=_("new_database_name"))
         self.buttonhbox = gtk.HBox()
         self.progress = gtk.ProgressBar()
         self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)
@@ -99,7 +101,7 @@ class NewSchemaPage(gtk.Frame):
     def render(self):
         try:
             database = self.getApplication().getLocalObjectById(self.databaseId)
-        except GenericObjectStoreException, e:
+        except GenericObjectStoreException:
             self.getApplication().getMainWindow().closeDialogPane()
         if database.installFinished is not None and database.installFinished:
             self.working=False

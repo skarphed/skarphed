@@ -29,21 +29,23 @@ import gtk
 from data.Generic import GenericObjectStoreException
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
+
 class RegisterSchemaPage(gtk.Frame):
     def __init__(self, par, database):
         self.par = par
-        gtk.Frame.__init__(self, "Scoville Admin PRO :: Register Schema")
+        gtk.Frame.__init__(self, _("Scoville Admin PRO :: Register Schema"))
 
         self.databaseId = database.getLocalId()
 
         self.table = gtk.Table(4,2,False)
-        self.instruction = gtk.Label("Please enter Credentials here:")
-        self.name_label = gtk.Label("Schema-Name")
-        self.user_label = gtk.Label("Schema-User:")
-        self.pass_label = gtk.Label("Schema-Password:")
-        self.user_entry = DefaultEntry(default_message="user")
-        self.pass_entry = DefaultEntry(default_message="password")
-        self.name_entry = DefaultEntry(default_message="schema")
+        self.instruction = gtk.Label(_("Please enter Credentials here:"))
+        self.name_label = gtk.Label(_("Schema-Name"))
+        self.user_label = gtk.Label(_("Schema-User:"))
+        self.pass_label = gtk.Label(_("Schema-Password:"))
+        self.user_entry = DefaultEntry(default_message=_("user"))
+        self.pass_entry = DefaultEntry(default_message=_("password"))
+        self.name_entry = DefaultEntry(default_message=_("schema"))
         self.buttonhbox = gtk.HBox()
         self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
@@ -82,7 +84,7 @@ class RegisterSchemaPage(gtk.Frame):
 
     def render(self):
         try:
-            database = self.getApplication().getLocalObjectById(self.databaseId)
+            self.getApplication().getLocalObjectById(self.databaseId)
         except GenericObjectStoreException:
             self.getApplication().getMainWindow().closeDialogPane()
 

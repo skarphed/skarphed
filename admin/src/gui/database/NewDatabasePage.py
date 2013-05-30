@@ -29,19 +29,21 @@ import gtk
 from data.Generic import GenericObjectStoreException
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
+
 class NewDatabasePage(gtk.Frame):
     def __init__(self,par,server):
         self.par = par
-        gtk.Frame.__init__(self, "Scoville Admin PRO :: Register Database")
+        gtk.Frame.__init__(self, _("Scoville Admin PRO :: Register Database"))
 
         self.serverId = server.getLocalId()
 
         self.table = gtk.Table(4,2,False)
-        self.instruction = gtk.Label("Please enter DBA-Credentials here:")
-        self.dba_user_label = gtk.Label("DBA-User:")
-        self.dba_pass_label = gtk.Label("Password:")
+        self.instruction = gtk.Label(_("Please enter DBA-Credentials here:"))
+        self.dba_user_label = gtk.Label(_("DBA-User:"))
+        self.dba_pass_label = gtk.Label(_("Password:"))
         self.dba_user_entry = DefaultEntry(default_message="SYSDBA")
-        self.dba_pass_entry = DefaultEntry(default_message="password")
+        self.dba_pass_entry = DefaultEntry(default_message=_("password"))
         self.buttonhbox = gtk.HBox()
         self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
