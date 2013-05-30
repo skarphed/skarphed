@@ -27,10 +27,12 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from lng import _
+
 class InputBox(gtk.Frame):
     def __init__(self,par,text,callback,typeWanted=False,notEmpty=False,cancel=True):
         self.par = par
-        gtk.Frame.__init__(self, "Input Box") # TODO title
+        gtk.Frame.__init__(self, _("Input Box")) # TODO title
         
         self.set_border_width(10)
         
@@ -70,8 +72,8 @@ class InputBox(gtk.Frame):
     
     def okCallback(self,widget=None,data=None):
         def errorMessage(msgId):
-            msgs = ("This is not a valid int number",
-                    "Empty input is not valid"
+            msgs = (_("This is not a valid int number"),
+                    _("Empty input is not valid")
                     )
             dia = gtk.MessageDialog(parent=None, flags=0, type=gtk.MESSAGE_WARNING, \
                                   buttons=gtk.BUTTONS_OK, message_format=msgs[msgId])

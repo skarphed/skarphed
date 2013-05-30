@@ -31,6 +31,8 @@ from IconStock import SCOVILLE
 from ViewPasswordButton import ViewPasswordButton
 from data.Generic import GenericObjectStoreException
 
+from lng import _
+
 class KeyWindow(gtk.Window):
     addWindowOpen=False
     def __init__(self,parent, profile=None):
@@ -41,13 +43,13 @@ class KeyWindow(gtk.Window):
         self.par = parent
         self.serverId = None
         self.profile = profile
-        self.set_title("Scoville Admin Pro :: Public Key Infrastructure")
+        self.set_title(_("Scoville Admin Pro :: Public Key Infrastructure"))
         
-        self.label = gtk.Label('Scoville uses public keys to sign modules. If you are a developer' + \
-                               ' and want to submit modules to Scoville repositories, you can create and' +\
-                               ' view your public Keys here.')
+        self.label = gtk.Label(_('Scoville uses public keys to sign modules. If you are a developer\
+ and want to submit modules to Scoville repositories, you can create and\
+ view your public Keys here.'))
         
-        self.generateButton = gtk.Button("Generate PKI")
+        self.generateButton = gtk.Button(_("Generate PKI"))
         self.closeButton = gtk.Button(stock=gtk.STOCK_CLOSE)
         self.generateButton.connect("clicked", self.cb_generateKeys)
         self.closeButton.connect("clicked", self.cb_close)
@@ -55,8 +57,8 @@ class KeyWindow(gtk.Window):
         self.publicview = gtk.TextView()
         self.privateview = gtk.TextView()
         
-        self.publicframe = gtk.Frame("Public Key")
-        self.privateframe = gtk.Frame("Private Key")
+        self.publicframe = gtk.Frame(_("Public Key"))
+        self.privateframe = gtk.Frame(_("Private Key"))
         
         self.publicframe.add(self.publicview)
         self.privateframe.add(self.privateview)

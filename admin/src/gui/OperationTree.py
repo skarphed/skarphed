@@ -29,6 +29,8 @@ import gtk
 from OperationStore import OperationStore
 from TreeContextMenu import TreeContextMenu
 
+from lng import _
+
 class OperationTree(gtk.TreeView):
     def __init__(self, parent, server=None):
         '''Constructor --'''
@@ -48,8 +50,8 @@ class OperationTree(gtk.TreeView):
         
         
         self.col_active = gtk.TreeViewColumn('')
-        self.col_name = gtk.TreeViewColumn("Operation")
-        self.col_invoked = gtk.TreeViewColumn("Invoked")
+        self.col_name = gtk.TreeViewColumn(_("Operation"))
+        self.col_invoked = gtk.TreeViewColumn(_("Invoked"))
         self.append_column(self.col_active)
         self.append_column(self.col_name)
         self.append_column(self.col_invoked)

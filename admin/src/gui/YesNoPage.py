@@ -26,9 +26,11 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from lng import _
+
 class YesNoPage(gtk.Frame):
     def __init__(self, par, message, callback):
-        gtk.Frame.__init__(self, "Yes/No")
+        gtk.Frame.__init__(self, _("Yes/No"))
         self.par = par
         self.hbox = gtk.HBox()
         self.vbox = gtk.VBox()

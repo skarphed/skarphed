@@ -42,6 +42,7 @@ from lng import _
 class GetParentException(Exception):pass
 
 class MainWindow(gtk.Window):
+    WEBSITE = "http://www.temporary.invalid"
     def __init__(self,app):
         gtk.Window.__init__(self)
         
@@ -66,19 +67,19 @@ class MainWindow(gtk.Window):
         self.tabs = Tabs(self)
         self.status = gtk.Statusbar()
         self.progress = gtk.ProgressBar()
-        self.progress.set_text("No Processes")
+        self.progress.set_text(_("No Processes"))
         self.progress.set_pulse_step(0.01)
                 
         #testkrempel
-        self.testmenu = gtk.MenuItem("Server")
+        self.testmenu = gtk.MenuItem(_("Server"))
         self.testmenu.connect("activate", self.cb_ServerClicked)
         
         
         #menue
         self.menu_help_ = gtk.Menu()
-        self.menu_help = gtk.MenuItem("Help")
+        self.menu_help = gtk.MenuItem(_("Help"))
         self.menu_help.set_submenu(self.menu_help_)
-        self.menu_help_about = gtk.MenuItem("About...")
+        self.menu_help_about = gtk.MenuItem(_("About..."))
         self.menu_help_about.connect("activate", self.cb_AboutClicked)
         self.menu_help_.add(self.menu_help_about)
         
@@ -92,7 +93,7 @@ class MainWindow(gtk.Window):
         self.pane.add(self.treeBox)
         self.pane.add(self.tabs)
         
-        self.status.pack_end(gtk.LinkButton("http://www.masterprogs.de/","See masteprogs.de for further information and support"),False)
+        self.status.pack_end(gtk.LinkButton(MainWindow.WEBSITE,_("See website for further information and support")),False)
         self.status.pack_end(self.progress,False)
         
         self.table.attach(self.menu,0,1,1,2,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
@@ -141,11 +142,11 @@ class MainWindow(gtk.Window):
     
     def cb_AboutClicked(self,widget=None,data=None):
         about = gtk.AboutDialog()
-        about.set_program_name("Scoville Admin PRO")
-        about.set_version("0.1")
-        about.set_copyright("© Masterprogs")
-        about.set_comments("Scoville Admin PRO is a professional tool to manage your Scoville installations")
-        about.set_website("http://www.masterprogs.de")
+        about.set_program_name(_("Scoville Admin PRO"))
+        about.set_version(_("0.1"))
+        about.set_copyright(_("© Masterprogs"))
+        about.set_comments(_("Scoville Admin PRO is a professional tool to manage your Scoville installations"))
+        about.set_website(MainWindow.WEBSITE)
         about.set_logo(gtk.gdk.pixbuf_new_from_file(sys.path[0]+"/../data/login.png"))
         about.set_border_width(0)
         about.run()
@@ -207,11 +208,11 @@ class MainWindow(gtk.Window):
     
     def pulseProgress(self,count):
         if count == 0:
-            self.progress.set_text("No Processes")
+            self.progress.set_text(_("No Processes"))
             self.progress.set_fraction(0)
         elif count == 1:
-            self.progress.set_text("1 Process")
+            self.progress.set_text(_("1 Process"))
             self.progress.pulse()
         else:
-            self.progress.set_text(str(count)+" Processes")
+            self.progress.set_text(str(count)+_(" Processes"))
             self.progress.pulse()

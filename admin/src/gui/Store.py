@@ -29,6 +29,8 @@ import gtk
 import IconStock
 from data.Generic import GenericObjectStoreException
 
+from lng import _
+
 class StoreException(Exception):pass
 
 class Store(gtk.TreeStore):
@@ -42,13 +44,13 @@ class Store(gtk.TreeStore):
                         "OperationDaemon")
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
-        assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
+        assert kwargs['objectStore'] is not None, _("Need ObjectStore")
         gtk.TreeStore.__init__(self,*args)
         self.par = kwargs['parent']
         self.objectStore  = kwargs['objectStore']
         self.objectStore.setMainTreeCallback(self.render)
         self.busy = False # Prevent threadcollisions 
-        root = self.append(None,(IconStock.SCOVILLE,"Scoville Infrastructure",-2))
+        root = self.append(None,(IconStock.SCOVILLE,_("Scoville Infrastructure"),-2))
         #self.append(root,(IconStock.SCOVILLE,'Scoville Infrastructure',-2))
   
     def getPar(self):
@@ -101,7 +103,7 @@ class Store(gtk.TreeStore):
             if id >= 0:
                 try:
                     obj = self.objectStore.getLocalObjectById(model.get_value(iter,2))
-                except GenericObjectStoreException,e:
+                except GenericObjectStoreException:
                     self.itersToRemove.append(iter)
                 else:
                     if obj.__class__.__name__ == "Server":
@@ -109,7 +111,7 @@ class Store(gtk.TreeStore):
                     displayName = str(obj.getLocalId())
                     try:
                         displayName = obj.getName()
-                    except Exception,e:
+                    except Exception:
                         pass
                     model.set_value(iter,1,displayName)
                     self.objectsToAllocate.remove(id)
@@ -144,7 +146,7 @@ class FilterStore(gtk.ListStore):
                         "OperationDaemon")
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
-        assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
+        assert kwargs['objectStore'] is not None, _("Need ObjectStore")
         gtk.ListStore.__init__(self,*args)
         self.par = kwargs['parent']
         self.objectStore  = kwargs['objectStore']
@@ -173,7 +175,7 @@ class FilterStore(gtk.ListStore):
             if nr >= 0:
                 try:
                     obj = self.objectStore.getLocalObjectById(model.get_value(rowiter,2))
-                except GenericObjectStoreException,e:
+                except GenericObjectStoreException:
                     self.itersToRemove.append(rowiter)
                 else:
                     if self.filterString is not None and obj.getName().lower().find(model.filterString.lower()) < 0:
@@ -184,7 +186,7 @@ class FilterStore(gtk.ListStore):
                     displayName = str(obj.getLocalId())
                     try:
                         displayName = obj.getName()
-                    except Exception,e:
+                    except Exception:
                         pass
                     model.set_value(rowiter,1,displayName)
                     self.objectsToAllocate.remove(nr)

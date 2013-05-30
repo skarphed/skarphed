@@ -34,6 +34,8 @@ from data.Generic import GenericObjectStoreException
 
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
+
 class ServerPropertyPage(gtk.Frame):
     addWindowOpen=False
     MODE_EDIT = 0
@@ -44,36 +46,36 @@ class ServerPropertyPage(gtk.Frame):
         self.par = parent
         self.serverId = None
         if server is None:
-            self.set_label("Scoville Admin Pro :: New Server")
+            self.set_label(_("Scoville Admin Pro :: New Server"))
             self.mode = ServerPropertyPage.MODE_NEW
         else:
             self.serverId = server.getLocalId()
-            self.set_label("Scoville Admin Pro :: Server Properties of "+server.getIp())
+            self.set_label(_("Scoville Admin Pro :: Server Properties of ")+server.getIp())
             self.mode = ServerPropertyPage.MODE_EDIT
             
         self.vbox = gtk.VBox()
         
-        self.instructionlabel = gtk.Label("Please enter the Server credentials")
+        self.instructionlabel = gtk.Label(_("Please enter the Server credentials"))
         self.vbox.pack_start(self.instructionlabel,False)
         
-        self.ipFrame = gtk.Frame("Common")
+        self.ipFrame = gtk.Frame(_("Common"))
         self.ipFrameT = gtk.Table(2,2,False)
-        self.ipFrame_IPLabel = gtk.Label("IP:")
+        self.ipFrame_IPLabel = gtk.Label(_("IP:"))
         self.ipFrame_IPEntry = DefaultEntry(default_message="172.16.13.37")
         self.ipFrameT.attach(self.ipFrame_IPLabel, 0,1,0,1)
         self.ipFrameT.attach(self.ipFrame_IPEntry, 1,2,0,1)
-        self.ipFrame_NameLabel = gtk.Label("Name:")
+        self.ipFrame_NameLabel = gtk.Label(_("Name:"))
         self.ipFrame_NameEntry = DefaultEntry(default_message="Server1")
         self.ipFrameT.attach(self.ipFrame_NameLabel, 0,1,1,2)
         self.ipFrameT.attach(self.ipFrame_NameEntry, 1,2,1,2)
         self.ipFrame.add(self.ipFrameT)
         self.vbox.pack_start(self.ipFrame,False)
                 
-        self.sshFrame = gtk.Frame("SSH")
+        self.sshFrame = gtk.Frame(_("SSH"))
         self.sshFrameT = gtk.Table(2,2,False)
-        self.sshFrame_NameLabel = gtk.Label("Username:")
+        self.sshFrame_NameLabel = gtk.Label(_("Username:"))
         self.sshFrame_NameEntry = DefaultEntry(default_message="root")
-        self.sshFrame_PassLabel = gtk.Label("Password:")
+        self.sshFrame_PassLabel = gtk.Label(_("Password:"))
         self.sshFrame_PassEntry = gtk.Entry()
         self.sshFrame_PassEntry.set_visibility(False)
         self.sshFrame_PassEntry.set_invisible_char("●")
@@ -84,13 +86,13 @@ class ServerPropertyPage(gtk.Frame):
         self.sshFrame.add(self.sshFrameT)
         self.vbox.pack_start(self.sshFrame,False)
         
-        self.instFrame = gtk.Frame("Instances")
+        self.instFrame = gtk.Frame(_("Instances"))
         self.instFrameT = gtk.Table(2,4,False)
         self.instList = gtk.TreeView()
         self.instStore = gtk.ListStore(gtk.gdk.Pixbuf,str,int)
         self.instList.set_model(self.instStore)
         self.instCol_Icon = gtk.TreeViewColumn()
-        self.instCol_Name = gtk.TreeViewColumn('Instance')
+        self.instCol_Name = gtk.TreeViewColumn(_('Instance'))
         self.instRen_Icon = gtk.CellRendererPixbuf()
         self.instRen_Name = gtk.CellRendererText()
         self.instCol_Icon.pack_start(self.instRen_Icon,False)

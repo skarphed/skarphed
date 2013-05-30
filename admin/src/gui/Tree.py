@@ -29,6 +29,8 @@ import gtk
 from Store import Store, FilterStore
 from TreeContextMenu import TreeContextMenu
 
+from lng import _
+
 class Tree(gtk.TreeView):
     def __init__(self, parent):
         '''Constructor --'''
@@ -42,7 +44,7 @@ class Tree(gtk.TreeView):
         self.context = TreeContextMenu(self)
         self.set_model(self.store)
         
-        self.col_id = gtk.TreeViewColumn('Environment')
+        self.col_id = gtk.TreeViewColumn(_('Environment'))
         #self.col_name = gtk.TreeViewColumn("ObjectId")
         self.append_column(self.col_id)
         #self.append_column(self.col_name)

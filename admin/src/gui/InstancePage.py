@@ -32,6 +32,8 @@ from gui.MessagePage import MessagePage
 
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
+
 class InstancePage(gtk.Frame):
     def __init__(self,parent, server=None, instance = None):
         gtk.Frame.__init__(self)
@@ -44,15 +46,15 @@ class InstancePage(gtk.Frame):
             self.instanceId = instance.getLocalId()
         self.instanceTypes = self.getApplication().getInstanceTypes()
         
-        self.set_label("Scoville Admin PRO :: Configure Instance")
+        self.set_label(_("Scoville Admin PRO :: Configure Instance"))
         self.vbox = gtk.VBox()
-        self.label = gtk.Label("Please configure the Instance")
+        self.label = gtk.Label(_("Please configure the Instance"))
         self.vspace = gtk.Label("")
         self.vbox.pack_start(self.label,False)
         self.vbox.pack_start(self.vspace,True)
         
         self.table = gtk.Table(2,4,False)
-        self.typeLabel = gtk.Label("InstanceType:")
+        self.typeLabel = gtk.Label(_("InstanceType:"))
         
         self.typeStore = gtk.ListStore(str)
         self.typeCombo = gtk.ComboBox(self.typeStore)
@@ -62,12 +64,12 @@ class InstancePage(gtk.Frame):
         for instanceType in self.instanceTypes:
             self.typeStore.append((instanceType.displayName,))
         self.typeCombo.set_active(0)
-        self.urlLabel = gtk.Label("URL:")
+        self.urlLabel = gtk.Label(_("URL:"))
         self.urlEntry = DefaultEntry(default_message="http://instance.org")
         self.urlEntry.set_text("http://")
-        self.userLabel = gtk.Label("Username:")
-        self.userEntry = DefaultEntry(default_message="username")
-        self.passLabel = gtk.Label("Password:")
+        self.userLabel = gtk.Label(_("Username:"))
+        self.userEntry = DefaultEntry(default_message=_("username"))
+        self.passLabel = gtk.Label(_("Password:"))
         self.passEntry = gtk.Entry()
         self.passEntry.set_visibility(False)
         self.passEntry.set_invisible_char("●")
@@ -123,8 +125,7 @@ class InstancePage(gtk.Frame):
     
     def cb_Ok (self, widget=None, data=None):
         def errorMessage(msgId):
-            msgs = ("This URL cannot be resolved",
-                    "VAGINA"
+            msgs = (_("This URL cannot be resolved"),
                     )
             dia = gtk.MessageDialog(parent=self.getPar().getPar(), flags=0, type=gtk.MESSAGE_WARNING, \
                                   buttons=gtk.BUTTONS_OK, message_format=msgs[msgId])
@@ -156,7 +157,7 @@ class InstancePage(gtk.Frame):
             password = self.passEntry.get_text()
             try:
                 if not server.createInstance(instanceType, url, username, password):
-                    MessagePage(self, "This URL resolves to another server. You can't add that here.")
+                    MessagePage(self, _("This URL resolves to another server. You can't add that here."))
                     return
             except None:
                 return

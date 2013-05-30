@@ -32,6 +32,8 @@ from DefaultEntry import DefaultEntry
 from data.Server import Server
 from data.Generic import GenericObjectStoreException
 
+from lng import _
+
 class NewScovillePage(gtk.Frame):
     def __init__(self,par,server=None):
         self.par = par
@@ -39,19 +41,19 @@ class NewScovillePage(gtk.Frame):
         self.installerId = None
         if server is not None:
             self.serverId = server.getLocalId()
-        gtk.Frame.__init__(self, "Scoville Admin :: Create Instance")
+        gtk.Frame.__init__(self, _("Scoville Admin :: Create Instance"))
         self.targetsRendered = False
 
         self.alignment = gtk.Alignment(0.5,0.5,0.1,0.2)
         self.vbox = gtk.VBox()
         self.set_border_width(10)
-        self.toplabel = gtk.Label("Please configure the new Installation")
+        self.toplabel = gtk.Label(_("Please configure the new Installation"))
 
-        self.frm_srv = gtk.Frame("Server")
-        self.frm_repo = gtk.Frame("Repository")
-        self.frm_db = gtk.Frame("Database")
-        self.frm_target = gtk.Frame("Target-OS")
-        self.frm_apache = gtk.Frame("Apache2")
+        self.frm_srv = gtk.Frame(_("Server"))
+        self.frm_repo = gtk.Frame(_("Repository"))
+        self.frm_db = gtk.Frame(_("Database"))
+        self.frm_target = gtk.Frame(_("Target-OS"))
+        self.frm_apache = gtk.Frame(_("Apache2"))
 
         self.frm_srv_tbl = gtk.Table(2,2,False)
         self.frm_repo_tbl = gtk.Table(2,1,False)
@@ -62,9 +64,9 @@ class NewScovillePage(gtk.Frame):
 
         self.srv_combobox = ObjectCombo(self,"Server", server)
 
-        self.srv_label = gtk.Label("Server:")
-        self.srv_name_label = gtk.Label("New Instance Name:")
-        self.srv_name_entry = DefaultEntry(default_message="Instance-Name")
+        self.srv_label = gtk.Label(_("Server:"))
+        self.srv_name_label = gtk.Label(_("New Instance Name:"))
+        self.srv_name_entry = DefaultEntry(default_message=_("Instance-Name"))
 
         self.frm_srv_tbl.attach(self.srv_label,0,1,0,1)
         self.frm_srv_tbl.attach(self.srv_combobox,1,2,0,1)
@@ -73,14 +75,14 @@ class NewScovillePage(gtk.Frame):
         self.frm_srv.add(self.frm_srv_tbl)
 
         self.repo_combobox = ObjectCombo(self,"Scoville_repo", selectFirst=True)
-        self.repo_label = gtk.Label("Repository")
+        self.repo_label = gtk.Label(_("Repository"))
 
         self.frm_repo_tbl.attach(self.repo_label,0,1,0,1)
         self.frm_repo_tbl.attach(self.repo_combobox,1,2,0,1)
         self.frm_repo.add(self.frm_repo_tbl)
 
-        self.db_radio_new = gtk.RadioButton(None,"Create new on Database:")
-        self.db_radio_use = gtk.RadioButton(self.db_radio_new,"Use existing Schema:")
+        self.db_radio_new = gtk.RadioButton(None,_("Create new on Database:"))
+        self.db_radio_use = gtk.RadioButton(self.db_radio_new,_("Use existing Schema:"))
         self.db_db_combo = ObjectCombo(self,"Database", selectFirst=True)
         self.db_schema_combo = ObjectCombo(self,"Schema", selectFirst=True)
         self.db_schema_combo.set_sensitive(False)
@@ -94,27 +96,25 @@ class NewScovillePage(gtk.Frame):
         self.frm_db_tbl.attach(self.db_schema_combo,1,2,1,2)
         self.frm_db.add(self.frm_db_tbl)        
 
-        self.target_label = gtk.Label("Target-OS:")
+        self.target_label = gtk.Label(_("Target-OS:"))
         self.target_combobox_model = gtk.ListStore(str)
         self.target_combobox_renderer = gtk.CellRendererText()
         self.target_combobox = gtk.ComboBox(self.target_combobox_model)
         self.target_combobox.pack_start(self.target_combobox_renderer,True)
         self.target_combobox.add_attribute(self.target_combobox_renderer,'text',0)
-        self.target_custombutton = gtk.Button("Customize")
 
         self.frm_target_tbl.attach(self.target_label,0,1,0,1)
         self.frm_target_tbl.attach(self.target_combobox,1,2,0,1)
-        self.frm_target_tbl.attach(self.target_custombutton,2,3,0,1)
         self.frm_target.add(self.frm_target_tbl)
 
-        self.apache_ip_label = gtk.Label("Listen-IP:")
-        self.apache_ip_entry = DefaultEntry(default_message="255.255.255.255 or *")
-        self.apache_port_label = gtk.Label("Listen-Port:")
+        self.apache_ip_label = gtk.Label(_("Listen-IP:"))
+        self.apache_ip_entry = DefaultEntry(default_message=_("255.255.255.255 or *"))
+        self.apache_port_label = gtk.Label(_("Listen-Port:"))
         self.apache_port_entry = DefaultEntry(default_message="80")
-        self.apache_domain_label = gtk.Label("ServerName:")
-        self.apache_domain_entry = DefaultEntry(default_message="[subdomain.]domain.tld or leave empty")
-        self.apache_subdomain_label = gtk.Label("ServerAlias:")
-        self.apache_subdomain_entry = DefaultEntry(default_message="[subdomain.]domain.tld or leave empty")
+        self.apache_domain_label = gtk.Label(_("ServerName:"))
+        self.apache_domain_entry = DefaultEntry(default_message=_("[subdomain.]domain.tld or leave empty"))
+        self.apache_subdomain_label = gtk.Label(_("ServerAlias:"))
+        self.apache_subdomain_entry = DefaultEntry(default_message=_("[subdomain.]domain.tld or leave empty"))
 
         self.frm_apache_tbl.attach(self.apache_ip_label,0,1,0,1)
         self.frm_apache_tbl.attach(self.apache_ip_entry,1,2,0,1)
@@ -223,10 +223,10 @@ class NewScovillePage(gtk.Frame):
             try:
                 installer = self.getApplication().getLocalObjectById(self.installerId)
                 self.progress.set_fraction(installer.getStatus()/100)
-                self.progress.set_text("Installing ... %d %%"%(installer.getStatus(),))
+                self.progress.set_text(_("Installing ... %d %%")%(installer.getStatus(),))
                 
                 sensitive = installer.status == 100
-            except GenericObjectStoreException, e:
+            except GenericObjectStoreException:
                 sensitive = True
 
             self.srv_combobox.set_sensitive(sensitive)

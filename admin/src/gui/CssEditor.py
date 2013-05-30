@@ -31,19 +31,21 @@ from gui.Tabs import FrameLabel
 
 from IconStock import CSS
 
+from lng import _
+
 class CssEditor(gtk.Window):
     def __init__(self, par, obj):
         gtk.Window.__init__(self)
         self.par = par
         self.objId = obj.getLocalId()
         
-        self.set_title("Scoville Admin PRO :: CssEditor :: "+obj.getName())
+        self.set_title(_("Scoville Admin PRO :: CssEditor :: ")+obj.getName())
         self.set_icon(CSS)
         self.set_size_request(600,500)
         
         self.set_border_width(10)
-        self.cssframe = PageFrame(self,"Css-Properties",CSS)
-        self.label = gtk.Label("Edit CSS Settings for "+obj.getName())
+        self.cssframe = PageFrame(self,_("Css-Properties"),CSS)
+        self.label = gtk.Label(_("Edit CSS Settings for ")+obj.getName())
         self.store = CssStore(str, str, str, bool, bool, parent=self)
         self.listview = CssView(self)
         self.listview.set_model(self.store)
@@ -156,11 +158,11 @@ class CssView(gtk.TreeView):
         gtk.TreeView.__init__(self)
         self.par = par
         
-        self.col_selector = gtk.TreeViewColumn('selector')
-        self.col_property = gtk.TreeViewColumn('property')
-        self.col_value = gtk.TreeViewColumn('value')
-        self.col_inherited = gtk.TreeViewColumn('inherited')
-        self.col_delete = gtk.TreeViewColumn('delete')
+        self.col_selector = gtk.TreeViewColumn(_('Selector'))
+        self.col_property = gtk.TreeViewColumn(_('Property'))
+        self.col_value = gtk.TreeViewColumn(_('Value'))
+        self.col_inherited = gtk.TreeViewColumn(_('Inherited'))
+        self.col_delete = gtk.TreeViewColumn(_('Delete'))
         
         self.append_column(self.col_selector)
         self.append_column(self.col_property)

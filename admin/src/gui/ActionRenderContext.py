@@ -31,6 +31,8 @@ from InputBox import InputBox
 from YesNoPage import YesNoPage
 import IconStock 
 
+from lng import _
+
 class ActionRenderContext(object):
     """
     An action render context defines wich actions
@@ -79,16 +81,16 @@ class ServerARC(ActionRenderContext):
     def __init__(self, par, server):
         ActionRenderContext.__init__(self, par, server)
 
-        self.addAction('Remove', IconStock.DELETE, self.removeServer)
-        self.addAction('Connect', IconStock.WIDGET, self.connectServer)
-        self.addAction('Properties', IconStock.SERVER, self.Properties)
-        self.addAction('Create Instance', IconStock.SCOVILLE, self.createInstance)
-        self.addAction('Register Database', IconStock.DATABASE, self.registerDatabase)
+        self.addAction(_('Remove...'), IconStock.DELETE, self.removeServer)
+        self.addAction(_('Connect...'), IconStock.WIDGET, self.connectServer)
+        self.addAction(_('Properties...'), IconStock.SERVER, self.Properties)
+        self.addAction(_('Create Instance...'), IconStock.SCOVILLE, self.createInstance)
+        self.addAction(_('Register Database...'), IconStock.DATABASE, self.registerDatabase)
 
     def removeServer(self,data=None):
         def execute():
             self.obj.destroy()
-        YesNoPage(self.getApplication().mainwin, "Do you really want to remove this Server?", execute)
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to remove this Server?"), execute)
   
     def connectServer(self,data=None):
         self.obj.establishConnections()
@@ -106,10 +108,10 @@ class ScovilleARC(ActionRenderContext):
     def __init__(self, par, scoville):
         ActionRenderContext.__init__(self, par,scoville)
 
-        self.addAction('Destroy', IconStock.DELETE, self.destroyInstance)
-        self.addAction('Remove', IconStock.DELETE, self.removeInstance)
-        self.addAction('CSS Editor', IconStock.CSS, self.cssEditor)
-        self.addAction('Update Modules', IconStock.MODULE_UPDATEABLE, self.updateModules)
+        self.addAction(_('Destroy...'), IconStock.DELETE, self.destroyInstance)
+        self.addAction(_('Remove...'), IconStock.DELETE, self.removeInstance)
+        self.addAction(_('CSS Editor...'), IconStock.CSS, self.cssEditor)
+        self.addAction(_('Update Modules'), IconStock.MODULE_UPDATEABLE, self.updateModules)
 
     def destroyInstance(self,data=None):
         pass
@@ -117,7 +119,7 @@ class ScovilleARC(ActionRenderContext):
     def removeInstance(self,data=None):
         def execute():
             self.obj.getServer().removeInstance(self.obj)
-        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Instance?", execute)
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to delete this Instance?"), execute)
     
     def cssEditor(self,data=None):
         self.getApplication().mainwin.openCssEditor(self.obj)
@@ -130,33 +132,33 @@ class UsersARC(ActionRenderContext):
     def __init__(self, par, users):
         ActionRenderContext.__init__(self, par,users)
 
-        self.addAction('Create User', IconStock.USER, self.createUser)
+        self.addAction(_('Create User...'), IconStock.USER, self.createUser)
 
     def createUser(self,data=None):
-        InputBox(self,"what should be the name of the new User?", self.obj.createUser,notEmpty=True)
+        InputBox(self,_("What should be the name of the new User?"), self.obj.createUser,notEmpty=True)
     
 class UserARC(ActionRenderContext):
     def __init__(self, par, user):
         ActionRenderContext.__init__(self, par,user)
 
-        self.addAction('Delete', IconStock.DELETE, self.deleteUser)
+        self.addAction(_('Delete...'), IconStock.DELETE, self.deleteUser)
 
     def deleteUser(self,data=None):
         def execute():
             self.obj.delete()        
-        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this User?", execute)
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to delete this User?"), execute)
 
 class ModuleARC(ActionRenderContext):
     def __init__(self, par, module):
         ActionRenderContext.__init__(self, par, module)
 
-        self.addAction('Create Widget', IconStock.WIDGET, self.createWidget)
-        self.addAction('CSS Editor', IconStock.CSS, self.cssEditor)
+        self.addAction(_('Create Widget...'), IconStock.WIDGET, self.createWidget)
+        self.addAction(_('CSS Editor...'), IconStock.CSS, self.cssEditor)
         if module.isUpdateable():
-            self.addAction('Update', IconStock.UPDATE, self.update)
+            self.addAction(_('Update'), IconStock.UPDATE, self.update)
     
     def createWidget(self,data=None):
-        InputBox(self,"what should be the name of the new Widget?", self.obj.createWidget, notEmpty=True)
+        InputBox(self,_("what should be the name of the new Widget?"), self.obj.createWidget, notEmpty=True)
 
     def cssEditor(self,data=None):
         self.getApplication().mainwin.openCssEditor(self.obj)
@@ -168,7 +170,7 @@ class ModulesARC(ActionRenderContext):
     def __init__(self, par, module):
         ActionRenderContext.__init__(self, par, module)
 
-        self.addAction('Refresh', IconStock.RELOAD, self.refresh)
+        self.addAction(_('Refresh'), IconStock.RELOAD, self.refresh)
     
     def refresh(self,data=None):
         self.obj.refresh()
@@ -177,13 +179,13 @@ class WidgetARC(ActionRenderContext):
     def __init__(self, par, widget):
         ActionRenderContext.__init__(self, par, widget)
 
-        self.addAction('Delete', IconStock.DELETE, self.deleteWidget)
-        self.addAction('CSS Editor', IconStock.CSS, self.cssEditor)
+        self.addAction(_('Delete...'), IconStock.DELETE, self.deleteWidget)
+        self.addAction(_('CSS Editor...'), IconStock.CSS, self.cssEditor)
 
     def deleteWidget(self, data=None):
         def execute():
             self.obj.delete()
-        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Widget?", execute)
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to delete this Widget?"), execute)
 
     def cssEditor(self,data=None):
         self.getApplication().mainwin.openCssEditor(self.obj)
@@ -192,7 +194,7 @@ class SiteARC(ActionRenderContext):
     def __init__(self, par, site):
         ActionRenderContext.__init__(self, par, site)
 
-        self.addAction('Create Menu', IconStock.MENU, self.createMenu)
+        self.addAction(_('Create Menu'), IconStock.MENU, self.createMenu)
 
     def createMenu(self, data=None):
         self.obj.createMenu()
@@ -201,39 +203,39 @@ class MenuARC(ActionRenderContext):
     def __init__(self, par, menu):
         ActionRenderContext.__init__(self, par, menu)
 
-        self.addAction('Delete Menu', IconStock.DELETE, self.deleteMenu)
+        self.addAction(_('Delete Menu...'), IconStock.DELETE, self.deleteMenu)
 
     def deleteMenu(self, data=None):
         def execute():
             self.obj.delete()
-        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Menu?", execute)
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to delete this Menu?"), execute)
 
 class RolesARC(ActionRenderContext):
     def __init__(self, par, roles):
         ActionRenderContext.__init__(self, par, roles)
 
-        self.addAction('Create Role', IconStock.ROLE, self.createRole)
+        self.addAction(_('Create Role...'), IconStock.ROLE, self.createRole)
 
     def createRole(self, data=None):
-        InputBox(self,"what should be the name of the new Widget?", self.obj.createRole)
+        InputBox(self,_("What should be the name of the new Widget?"), self.obj.createRole)
     
 class RoleARC(ActionRenderContext):
     def __init__(self, par, role):
         ActionRenderContext.__init__(self, par, role)
 
-        self.addAction('Delete Role', IconStock.DELETE, self.deleteRole)
+        self.addAction(_('Delete Role...'), IconStock.DELETE, self.deleteRole)
 
     def deleteRole(self, data=None):
         def execute():
             self.obj.delete()
-        YesNoPage(self.getApplication().mainwin, "Do you really want to delete this Role?", execute)
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to delete this Role?"), execute)
     
 class DatabaseARC(ActionRenderContext):
     def __init__(self, par, database):
         ActionRenderContext.__init__(self, par, database)
 
-        self.addAction('Register Schema', IconStock.SCHEMA, self.registerSchema)
-        self.addAction('Create Schema', IconStock.SCHEMA, self.createSchema)
+        self.addAction(_('Register Schema...'), IconStock.SCHEMA, self.registerSchema)
+        self.addAction(_('Create Schema...'), IconStock.SCHEMA, self.createSchema)
 
     def registerSchema(self, data=None):
         RegisterSchemaPage(self.getPar().getPar(), self.obj)
@@ -245,18 +247,18 @@ class SchemaARC(ActionRenderContext):
     def __init__(self, par,schema):
         ActionRenderContext.__init__(self, par, schema)
 
-        self.addAction('Unregister Schema', IconStock.DELETE, self.unregisterSchema)
-        self.addAction('Destroy Schema', IconStock.DELETE, self.destroySchema)
+        self.addAction(_('Unregister Schema...'), IconStock.DELETE, self.unregisterSchema)
+        self.addAction(_('Destroy Schema...'), IconStock.DELETE, self.destroySchema)
 
     def unregisterSchema(self, data=None):
         def execute():
             self.obj.getPar().unregisterSchema(self.obj)
-        YesNoPage(self.getApplication().mainwin, "Do you really want to remove this Schema?", execute)
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to remove this Schema?"), execute)
 
     def destroySchema(self, data=None):
         def execute():
             self.obj.getPar().destroySchema(self.obj)
-        YesNoPage(self.getApplication().mainwin, "Do you really want to destroy this Schema?", execute)
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to destroy this Schema?"), execute)
 
 ARCMAP = {
                    "Server"           : ServerARC,

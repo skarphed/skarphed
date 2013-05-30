@@ -28,6 +28,8 @@ import gtk
 
 import IconStock
 
+from lng import _
+
 class StoreException(Exception):pass
 
 class OperationStore(gtk.TreeStore):
@@ -35,7 +37,7 @@ class OperationStore(gtk.TreeStore):
     WHITELISTED_CLASSES = ("Operation",)
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
-        assert kwargs['objectStore'] is not None, "brauhe nen objectstore, verdammtnochmal!"
+        assert kwargs['objectStore'] is not None, _("Need ObjectStore")
         gtk.TreeStore.__init__(self,*args)
         self.par = kwargs['parent']
         self.objectStore  = kwargs['objectStore']
@@ -48,7 +50,7 @@ class OperationStore(gtk.TreeStore):
             self.objectStore.addCallback(self.render)
                 
         self.busy = False # Prevent threadcollisions 
-        self.root = self.append(None,(IconStock.ERROR,IconStock.OPERATION,"Operationtree","",-2))
+        self.root = self.append(None,(IconStock.ERROR,IconStock.OPERATION,_("Operationtree"),"",-2))
         #self.append(root,(IconStock.SCOVILLE,'Scoville Infrastructure',-2))
   
     def getPar(self):

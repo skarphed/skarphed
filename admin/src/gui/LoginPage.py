@@ -30,10 +30,11 @@ import hashlib
 
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
 
 class LoginPage(gtk.Frame):
     def __init__(self, parent):
-        gtk.Frame.__init__(self, "Scoville Admin Pro :: Login")
+        gtk.Frame.__init__(self, _("Scoville Admin Pro :: Login"))
         self.par = parent
 
         self.image = gtk.image_new_from_file("../data/loginbanner.png")
@@ -65,16 +66,16 @@ class LoginPage(gtk.Frame):
 
 class NewProfile(gtk.Frame):
     def __init__(self, parent):
-        gtk.Frame.__init__(self, "Create a new profile")
+        gtk.Frame.__init__(self, _("Create a new profile"))
         self.par=parent
 
         self.fixed = gtk.Fixed()
         
-        self.l_user = gtk.Label("User")
-        self.e_user = DefaultEntry(default_message="username")
-        self.l_password = gtk.Label("Password")
+        self.l_user = gtk.Label(_("User"))
+        self.e_user = DefaultEntry(default_message=_("username"))
+        self.l_password = gtk.Label(_("Password"))
         self.e_password = gtk.Entry()
-        self.l_password_r = gtk.Label ("Repeat password")
+        self.l_password_r = gtk.Label (_("Repeat password"))
         self.e_password_r = gtk.Entry()
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
         
@@ -117,13 +118,13 @@ class NewProfile(gtk.Frame):
 
 class UseProfile(gtk.Frame):
     def __init__(self,parent):
-        gtk.Frame.__init__(self, "Login to profile")
+        gtk.Frame.__init__(self, _("Login to profile"))
         self.par=parent
         
         self.fixed = gtk.Fixed()
-        self.l_user = gtk.Label(u"User")
-        self.e_user = DefaultEntry(default_message="username")
-        self.l_password = gtk.Label(u"Password")
+        self.l_user = gtk.Label(_("User"))
+        self.e_user = DefaultEntry(default_message=_("username"))
+        self.l_password = gtk.Label(_("Password"))
         self.e_password = gtk.Entry()
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
         

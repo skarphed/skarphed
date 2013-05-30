@@ -27,10 +27,12 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from lng import _
+
 class ViewPasswordButton(gtk.Button):
     def __init__(self, entry=None):
         gtk.Button.__init__(self)
-        self.set_label("View Passwords")
+        self.set_label(_("View Passwords"))
         self.entries = []
         if entry is not None:
             self.entries.append(entry)

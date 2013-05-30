@@ -30,6 +30,8 @@ import IconStock
 
 from data.Generic import GenericObjectStoreException
 
+from lng import _
+
 class GenericPage(gtk.ScrolledWindow):
     """
     This Class defines a Page in the Scoville Tab-Display
@@ -90,7 +92,7 @@ class ObjectPage(ObjectPageAbstract):
         ObjectPageAbstract.__init__(self, par, obj)
         self.labeltop = gtk.Label()
 
-        self.labelbottom = gtk.Label("""no further details""")
+        self.labelbottom = gtk.Label(_("No further details"))
         self.add(self.labeltop)
         self.add(self.labelbottom)
 
@@ -109,7 +111,7 @@ class FrameLabel(gtk.HBox):
         self.par = parent
         gtk.HBox.__init__(self)
         self.set_spacing(10)
-        assert type(text) == str, "text must be string"
+        assert type(text) == str, _("Text must be string")
         
         self.icon = gtk.Image()
         if icon is not None:

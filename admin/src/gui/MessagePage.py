@@ -26,9 +26,11 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from lng import _
+
 class MessagePage(gtk.Frame):
     def __init__(self, par, message, callback=None):
-        gtk.Frame.__init__(self, "Message")
+        gtk.Frame.__init__(self, _("Message"))
         self.par = par
         self.hbox = gtk.HBox()
         self.vbox = gtk.VBox()
