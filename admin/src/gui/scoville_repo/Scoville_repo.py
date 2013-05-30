@@ -33,22 +33,24 @@ from data.Generic import GenericObjectStoreException
 from gui.YesNoPage import YesNoPage
 from gui.DefaultEntry import DefaultEntry
 
+from lng import _
+
 class Scoville_repoPage (ObjectPageAbstract):
     def __init__(self,par,repo):
         ObjectPageAbstract.__init__(self,par,repo)
         
         self.table = gtk.Table(2,4,False)
         
-        self.moduleFrame=PageFrame(self, "Modules", IconStock.MODULE)
+        self.moduleFrame=PageFrame(self, _("Modules"), IconStock.MODULE)
         self.moduleList = ModuleList(self,repo)
         self.moduleFrame.add(self.moduleList)
         self.pack_start(self.moduleFrame,False)
         
-        self.mUploadFrame=PageFrame(self, "Upload Module", IconStock.MODULE)
+        self.mUploadFrame=PageFrame(self, _("Upload Module"), IconStock.MODULE)
         self.mUploadbox = gtk.HBox()
         self.mUploadbox.set_border_width(10)
-        self.mUpload_label = gtk.Label("Please choose the Module and click OK")
-        self.mUpload_filechoose = gtk.FileChooserButton("Select Module", None)
+        self.mUpload_label = gtk.Label(_("Please choose the Module and click OK"))
+        self.mUpload_filechoose = gtk.FileChooserButton(_("Select Module"), None)
         self.mUpload_filechoose.connect("file-set", self.moduleFileChosen)
         self.mUpload_filechoose.set_size_request(200,30)
         self.mUpload_enter = gtk.Button(stock=gtk.STOCK_OK)
@@ -61,7 +63,7 @@ class Scoville_repoPage (ObjectPageAbstract):
         self.mUploadFrame.add(self.mUploadbox)
         self.pack_start(self.mUploadFrame,False)
         
-        self.templateFrame=PageFrame(self, "Templates", IconStock.TEMPLATE)
+        self.templateFrame=PageFrame(self, _("Templates"), IconStock.TEMPLATE)
         self.templateVBox = gtk.VBox()
         self.templateButtonBox = gtk.HBox()
         self.templateDeleteButton = gtk.Button(stock=gtk.STOCK_DELETE)
@@ -75,11 +77,11 @@ class Scoville_repoPage (ObjectPageAbstract):
         self.templateFrame.add(self.templateVBox)
         self.pack_start(self.templateFrame,False)
         
-        self.tUploadFrame=PageFrame(self, "Upload Template", IconStock.TEMPLATE)
+        self.tUploadFrame=PageFrame(self, _("Upload Template"), IconStock.TEMPLATE)
         self.tUploadbox = gtk.HBox()
         self.tUploadbox.set_border_width(10)
-        self.tUpload_label = gtk.Label("Please choose the Template and click OK")
-        self.tUpload_filechoose = gtk.FileChooserButton("Select Template", None)
+        self.tUpload_label = gtk.Label(_("Please choose the Template and click OK"))
+        self.tUpload_filechoose = gtk.FileChooserButton(_("Select Template"), None)
         self.tUpload_filechoose.connect("file-set", self.templateFileChosen)
         self.tUpload_filechoose.set_size_request(200,30)
         self.tUpload_enter = gtk.Button(stock=gtk.STOCK_OK)
@@ -92,13 +94,13 @@ class Scoville_repoPage (ObjectPageAbstract):
         self.tUploadFrame.add(self.tUploadbox)
         self.pack_start(self.tUploadFrame,False)
 
-        self.adminFrame= PageFrame(self, "Change Password", IconStock.CREDENTIAL)
+        self.adminFrame= PageFrame(self, _("Change Password"), IconStock.CREDENTIAL)
         self.adminHBox = gtk.HBox()
         self.adminHBoxDummy = gtk.Label("")
         self.adminTable= gtk.Table(2,4,False)
-        self.adminLabel = gtk.Label("Change admin-password here:")
-        self.adminPasswordLabel = gtk.Label("New password")
-        self.adminRepeatLabel = gtk.Label("New password (repeat)")
+        self.adminLabel = gtk.Label(_("Change admin-password here:"))
+        self.adminPasswordLabel = gtk.Label(_("New password"))
+        self.adminRepeatLabel = gtk.Label(_("New password (repeat)"))
         self.adminPasswordEntry = gtk.Entry()
         self.adminPasswordEntry.set_visibility(False)
         self.adminPasswordEntry.set_invisible_char("●")
@@ -123,19 +125,19 @@ class Scoville_repoPage (ObjectPageAbstract):
         self.pack_start(self.adminFrame,False)
         
         
-        self.developerFrame = PageFrame(self, "Developers", IconStock.USER)
+        self.developerFrame = PageFrame(self, _("Developers"), IconStock.USER)
         self.developerHBox= gtk.HBox()
         self.developerList= DeveloperList(self,repo)
         self.developerHBox.pack_start(self.developerList,True)
         self.developerTable = gtk.Table(2,5,False)
         self.developerButtonHBox = gtk.HBox()
         self.developerButtonHBoxDummy = gtk.Label()
-        self.developerLabel = gtk.Label("Please enter the information for a new Developer here:")
-        self.developerNameLabel = gtk.Label("Nickname:")
-        self.developerFullnameLabel = gtk.Label("Full Name:")
-        self.developerPublicKeyLabel = gtk.Label("Public Key:")
-        self.developerNameEntry = DefaultEntry(default_message="nickname")
-        self.developerFullnameEntry = DefaultEntry(default_message="Firstname Lastname")
+        self.developerLabel = gtk.Label(_("Please enter the information for a new Developer here:"))
+        self.developerNameLabel = gtk.Label(_("Nickname:"))
+        self.developerFullnameLabel = gtk.Label(_("Full Name:"))
+        self.developerPublicKeyLabel = gtk.Label(_("Public Key:"))
+        self.developerNameEntry = DefaultEntry(default_message=_("nickname"))
+        self.developerFullnameEntry = DefaultEntry(default_message=_("Firstname Lastname"))
         self.developerPublicKeyEntry = gtk.TextView()
         self.developerAddButton = gtk.Button(stock=gtk.STOCK_ADD)
         self.developerAddButton.connect("clicked", self.cb_Add)
@@ -187,7 +189,7 @@ class Scoville_repoPage (ObjectPageAbstract):
         rowiter = selection.get_selected()[1]
         nr = self.templateList.store.get_value(rowiter,4)
         self.templateToDelete = nr
-        YesNoPage(self.getApplication().getMainWindow(), "Do you really want to delete this Template from the Repository?", execute)
+        YesNoPage(self.getApplication().getMainWindow(), _("Do you really want to delete this Template from the Repository?"), execute)
 
 
 
@@ -232,7 +234,7 @@ class ModuleList(gtk.ScrolledWindow):
         self.treeview.set_model(self.store)
         self.repoId = repo.getLocalId()
         
-        self.col = gtk.TreeViewColumn("Module")
+        self.col = gtk.TreeViewColumn(_("Module"))
         self.ren_icon = gtk.CellRendererPixbuf()
         self.ren_text = gtk.CellRendererText()
         self.col.pack_start(self.ren_icon,False)
@@ -276,7 +278,7 @@ class DeveloperList(gtk.ScrolledWindow):
         self.treeview.set_model(self.store)
         self.repoId = repo.getLocalId()
         
-        self.col = gtk.TreeViewColumn("Developer")
+        self.col = gtk.TreeViewColumn(_("Developer"))
         self.ren_icon = gtk.CellRendererPixbuf()
         self.ren_text = gtk.CellRendererText()
         self.col.pack_start(self.ren_icon,False)
@@ -320,9 +322,9 @@ class TemplateList(gtk.ScrolledWindow):
         self.treeview.set_model(self.store)
         self.repoId = repo.getLocalId()
         
-        self.col_name = gtk.TreeViewColumn("Template")
-        self.col_description = gtk.TreeViewColumn("Description")
-        self.col_author = gtk.TreeViewColumn("Author")
+        self.col_name = gtk.TreeViewColumn(_("Template"))
+        self.col_description = gtk.TreeViewColumn(_("Description"))
+        self.col_author = gtk.TreeViewColumn(_("Author"))
         self.ren_icon = gtk.CellRendererPixbuf()
         self.ren_name = gtk.CellRendererText()
         self.ren_description = gtk.CellRendererText()
