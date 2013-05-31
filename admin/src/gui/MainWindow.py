@@ -36,6 +36,7 @@ from Tree import Tree
 from Tabs import Tabs
 from CssEditor import CssEditor
 from DefaultEntry import DefaultEntry
+from ThreadControl import ThreadControl
 
 from glue.lng import _
 
@@ -69,6 +70,9 @@ class MainWindow(gtk.Window):
         self.progress = gtk.ProgressBar()
         self.progress.set_text(_("No Processes"))
         self.progress.set_pulse_step(0.01)
+        self.threadControl = ThreadControl()
+        self.progress_eventbox = gtk.EventBox()
+        self.progress_eventbox.connect("button-press-event", self.cb_toggleThreadcontrol)
                 
         #testkrempel
         self.testmenu = gtk.MenuItem(_("Server"))
@@ -94,16 +98,19 @@ class MainWindow(gtk.Window):
         self.pane.add(self.tabs)
         
         self.status.pack_end(gtk.LinkButton(MainWindow.WEBSITE,_("See website for further information and support")),False)
-        self.status.pack_end(self.progress,False)
+        self.progress_eventbox.add(self.progress)
+        self.status.pack_end(self.progress_eventbox,False)
         
         self.table.attach(self.menu,0,1,1,2,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.table.attach(self.tool,0,1,2,3,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.table.attach(self.pane,0,1,3,4,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.EXPAND,0,0)
         self.table.attach(self.status,0,1,4,5,gtk.FILL|gtk.EXPAND,gtk.FILL|gtk.SHRINK,0,0)
         self.add(self.table)
+
         
         self.treeFilter.connect("changed", self.cb_changedFilter)
         self.connect("delete_event",self.cb_Close)
+        self.connect("configure-event",self.cb_closeThreadcontrol)
         self.show_all()
 
         LoginPage(self)
@@ -133,6 +140,20 @@ class MainWindow(gtk.Window):
 
     def cb_changedFilter(self, widget=None, data=None):
         self.tree.render()
+
+    def cb_toggleThreadcontrol(self, widget=None, data=None):
+        if self.threadControl.isOpen():
+            self.threadControl.close()
+        else:
+            alloc = widget.get_allocation()
+            gwin = self.get_window()
+            (x, y) = gwin.get_position()
+            x+=alloc.x
+            y+=alloc.y
+            self.threadControl.popup(x,y)
+
+    def cb_closeThreadcontrol(self, widget=None, event=None, data=None):
+        self.threadControl.close()
 
     def getFilterText(self):
         return self.treeFilter.get_text()
@@ -208,6 +229,7 @@ class MainWindow(gtk.Window):
     
     def pulseProgress(self,tracker):
         count = tracker.getThreadcount()
+        self.threadControl.render(tracker.getThreads())
         if count == 0:
             self.progress.set_text(_("No Processes"))
             self.progress.set_fraction(0)
