@@ -81,7 +81,7 @@ class Module(AbstractModule):
         
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO ${footermenu} (MOD_INSTANCE_ID, FMN_SIT_ID, FMN_MNU_ID) \
-                   VALUES (?,?,?,?) MATCHING (MOD_INSTANCE_ID) ;"
+                   VALUES (?,?,?) MATCHING (MOD_INSTANCE_ID) ;"
         db.query(self, stmnt, (widget_id, page_id, menu_id), commit=True)
 
 
