@@ -28,7 +28,7 @@ import threading
 import time
 import json
 import gobject
-from Tracker import Tracker
+from glue.threads import Tracker
 import logging
 
 COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
@@ -66,7 +66,7 @@ class ScovilleRPC(threading.Thread):
         
         self.request = urllib2.Request(url,post,self.HEADERS)
 
-        Tracker().addProcess()
+        Tracker().addThread(self)
         
     def run(self):        
         json_dec = json.JSONDecoder()
@@ -78,7 +78,7 @@ class ScovilleRPC(threading.Thread):
         except urllib2.URLError:
             result = {'error':'HTTP-ERROR'}
     
-        Tracker().removeProcess()
+        Tracker().removeThread(self)
 
         if result.has_key('error'):
             if self.errorcallback is None:

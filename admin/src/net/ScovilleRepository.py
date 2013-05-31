@@ -28,7 +28,7 @@ import urllib2, cookielib
 import threading
 import json
 import gobject
-from Tracker import Tracker
+from glue.threads import Tracker
 from MultiPartForm import MultiPartForm
 import logging
 
@@ -131,7 +131,7 @@ class ScovilleRepository(threading.Thread):
         self.request.add_header('Body-length',len(post))
         self.request.add_data(post)
         
-        Tracker().addProcess()
+        Tracker().addThread(self)
 
     def run(self):
         json_dec = json.JSONDecoder()
@@ -141,7 +141,7 @@ class ScovilleRepository(threading.Thread):
         logging.debug(plaintext)
         result = json_dec.decode(plaintext)
     
-        Tracker().removeProcess()
+        Tracker().removeThread(self)
         if result.has_key('error'):
             raise ScovilleRepositoryException(result['error'])
         

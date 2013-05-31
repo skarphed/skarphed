@@ -27,7 +27,7 @@ import gui
 import data.Generic
 import data.Profile
 import net.HTTPRpc
-import net.Tracker
+import glue.threads
 import net.SSH
 import os
 import logging
@@ -43,7 +43,7 @@ class Application(object):
         data.Generic.setApplicationReference(self)
         self.mainwin = gui.MainWindow(self)
         self.quitrequest = False
-        self.tracker = net.Tracker.Tracker(self)
+        self.tracker = glue.threads.Tracker(self)
         self.tracker.start()
         self.state = self.STATE_LOGGEDOUT
         self.activeProfile=None

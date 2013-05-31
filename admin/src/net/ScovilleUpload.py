@@ -26,7 +26,7 @@ import os
 import urllib2, cookielib
 import threading
 import gobject
-from Tracker import Tracker
+from glue.threads import Tracker
 
 COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
 cookiejar = cookielib.LWPCookieJar()
@@ -70,7 +70,7 @@ class ScovilleUpload(threading.Thread):
         self.request.add_header('Body-length',len(post))
         self.request.add_data(post)
         
-        Tracker().addProcess()
+        Tracker().addThread(self)
         
     def run(self):            
         try:
@@ -79,7 +79,7 @@ class ScovilleUpload(threading.Thread):
         except urllib2.URLError,e:
             result = self.RESULT_ERROR
     
-        Tracker().removeProcess()
+        Tracker().removeThread(self)
         if self.callback is not None:
             gobject.idle_add(self.callback,result)
         

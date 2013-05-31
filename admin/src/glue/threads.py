@@ -25,6 +25,8 @@
 from threading import Thread
 from ctypes import c_long, py_object, pythonapi
 from inspect import isclass
+import gobject
+import time
 
 class KillableThread(Thread):
     def __init__(self):
@@ -50,3 +52,33 @@ class KillableThread(Thread):
 
 
 
+
+class Tracker(Thread):
+    activeThreads = []
+    app = None
+    def __init__(self,app=None):
+        if app is not None:
+            Tracker.app = app
+        Thread.__init__(self)
+        
+    def run(self):
+        while True:
+            gobject.idle_add(Tracker.app.mainwin.pulseProgress,self)
+            time.sleep(0.02)
+            if Tracker.app.quitrequest:
+                break
+
+    def getThreads(self):
+        return Tracker.activeThreads
+
+    def addThread(self, thread):
+        if thread not in Tracker.activeThreads:
+            Tracker.activeThreads.append(thread)
+
+    def removeThread(self, thread):
+        if thread in Tracker.activeThreads:
+            Tracker.activeThreads.remove(thread)
+
+    def getThreadcount(self):
+        return len(Tracker.activeThreads)
+            

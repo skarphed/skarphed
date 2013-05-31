@@ -26,7 +26,7 @@
 import paramiko
 import threading
 import gobject
-from Tracker import Tracker
+from glue.threads import Tracker
 
 class SSHConnection(paramiko.SSHClient):
     def __init__(self,server):
@@ -43,7 +43,7 @@ class SSHConnector(threading.Thread):
         self.connection = SSHConnection(server)
         
     def run(self):
-        Tracker().addProcess()
+        Tracker().addThread(self)
         server = self.connection.getServer()
         try:
             self.connection.connect(server.getIp(), 22, server.getSSHName(), server.getSSHPass())
@@ -54,5 +54,5 @@ class SSHConnector(threading.Thread):
             server.setSSHState(server.SSH_UNLOCKED)
             server.ssh_connection = self.connection
             server.ssh_ready = True
-        Tracker().removeProcess()
+        Tracker().removeThread(self)
         gobject.idle_add(server.updated)

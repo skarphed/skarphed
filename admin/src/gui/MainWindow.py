@@ -206,7 +206,8 @@ class MainWindow(gtk.Window):
     def getPar(self):
         raise GetParentException()
     
-    def pulseProgress(self,count):
+    def pulseProgress(self,tracker):
+        count = tracker.getThreadcount()
         if count == 0:
             self.progress.set_text(_("No Processes"))
             self.progress.set_fraction(0)
