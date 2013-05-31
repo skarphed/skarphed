@@ -31,7 +31,7 @@ from InputBox import InputBox
 from YesNoPage import YesNoPage
 import IconStock 
 
-from lng import _
+from glue.lng import _
 
 class ActionRenderContext(object):
     """

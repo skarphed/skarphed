@@ -32,7 +32,7 @@ from gui.MessagePage import MessagePage
 
 from gui.DefaultEntry import DefaultEntry
 
-from lng import _
+from glue.lng import _
 
 class InstancePage(gtk.Frame):
     def __init__(self,parent, server=None, instance = None):

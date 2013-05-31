@@ -33,7 +33,7 @@ from GenericObject import PageFrame
 from gui.OperationTool import OperationTool
 import gui.IconStock
 
-from lng import _
+from glue.lng import _
 
 class ModulesPage(ObjectPageAbstract):
     def __init__(self,parent,modules):

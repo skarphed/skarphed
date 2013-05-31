@@ -32,7 +32,7 @@ from GenericObject import FrameLabel
 from data.Generic import GenericObjectStoreException
 import gui.IconStock
 
-from lng import _
+from glue.lng import _
 
 class OperationDaemonControl(PageFrame):
     def __init__(self, par, opdaemon):

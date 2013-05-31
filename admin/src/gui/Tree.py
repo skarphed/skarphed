@@ -29,7 +29,7 @@ import gtk
 from Store import Store, FilterStore
 from TreeContextMenu import TreeContextMenu
 
-from lng import _
+from glue.lng import _
 
 class Tree(gtk.TreeView):
     def __init__(self, parent):

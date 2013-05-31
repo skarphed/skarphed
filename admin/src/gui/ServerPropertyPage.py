@@ -34,7 +34,7 @@ from data.Generic import GenericObjectStoreException
 
 from gui.DefaultEntry import DefaultEntry
 
-from lng import _
+from glue.lng import _
 
 class ServerPropertyPage(gtk.Frame):
     addWindowOpen=False

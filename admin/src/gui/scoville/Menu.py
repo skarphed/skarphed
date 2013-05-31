@@ -33,7 +33,7 @@ from data.Generic import GenericObjectStoreException
 from gui.ObjectCombo import ObjectCombo
 from gui.DefaultEntry import DefaultEntry
 
-from lng import _
+from glue.lng import _
 
 class MenuPage(ObjectPageAbstract):
     def __init__(self, par, menu):

@@ -33,7 +33,7 @@ from OperationDaemonControl import OperationDaemonControl
 from gui.DefaultEntry import DefaultEntry
 import gui.IconStock
 
-from lng import _
+from glue.lng import _
 
 class ScovillePage(ObjectPageAbstract):
     RENDER_PURE = 0

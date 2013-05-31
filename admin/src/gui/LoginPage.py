@@ -30,7 +30,7 @@ import hashlib
 
 from gui.DefaultEntry import DefaultEntry
 
-from lng import _
+from glue.lng import _
 
 class LoginPage(gtk.Frame):
     def __init__(self, parent):

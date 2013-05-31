@@ -31,7 +31,7 @@ from GenericObject import PageFrame
 
 import gui.IconStock
 
-from lng import _
+from glue.lng import _
 
 class TemplatePageException(Exception): pass
 

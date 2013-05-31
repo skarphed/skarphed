@@ -32,7 +32,7 @@ from GenericObject import PageFrame
 from GenericObject import FrameLabel
 import gui.IconStock
 
-from lng import _
+from glue.lng import _
 
 class RolePage(ObjectPageAbstract):
     def __init__(self,parent,role):

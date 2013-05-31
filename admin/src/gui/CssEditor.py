@@ -31,7 +31,7 @@ from gui.Tabs import FrameLabel
 
 from IconStock import CSS
 
-from lng import _
+from glue.lng import _
 
 class CssEditor(gtk.Window):
     def __init__(self, par, obj):

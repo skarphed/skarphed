@@ -27,7 +27,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from lng import _
+from glue.lng import _
 
 class ViewPasswordButton(gtk.Button):
     def __init__(self, entry=None):

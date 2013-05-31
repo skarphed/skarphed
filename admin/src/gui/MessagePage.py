@@ -26,7 +26,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-from lng import _
+from glue.lng import _
 
 class MessagePage(gtk.Frame):
     def __init__(self, par, message, callback=None):

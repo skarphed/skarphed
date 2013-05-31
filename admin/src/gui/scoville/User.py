@@ -33,7 +33,7 @@ from GenericObject import FrameLabel
 
 import gui.IconStock
 
-from lng import _
+from glue.lng import _
 
 class UserPage(ObjectPageAbstract):
     def __init__(self,par,user):

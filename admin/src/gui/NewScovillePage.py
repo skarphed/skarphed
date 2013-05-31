@@ -32,7 +32,7 @@ from DefaultEntry import DefaultEntry
 from data.Server import Server
 from data.Generic import GenericObjectStoreException
 
-from lng import _
+from glue.lng import _
 
 class NewScovillePage(gtk.Frame):
     def __init__(self,par,server=None):

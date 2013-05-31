@@ -31,7 +31,7 @@ from IconStock import SCOVILLE
 from ViewPasswordButton import ViewPasswordButton
 from data.Generic import GenericObjectStoreException
 
-from lng import _
+from glue.lng import _
 
 class KeyWindow(gtk.Window):
     addWindowOpen=False

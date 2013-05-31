@@ -29,7 +29,7 @@ import gtk
 from data.Generic import GenericObjectStoreException
 from gui.DefaultEntry import DefaultEntry
 
-from lng import _
+from glue.lng import _
 
 class RegisterSchemaPage(gtk.Frame):
     def __init__(self, par, database):

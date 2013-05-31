@@ -35,7 +35,7 @@ from gui.IconStock import WIDGET, SITE, VIEW, SPACE
 from gui.ObjectCombo import ObjectCombo
 from gui.DefaultEntry import DefaultEntry
 
-from lng import _
+from glue.lng import _
 
 class ViewPage(ObjectPageAbstract):
     def __init__(self, par, view):

@@ -30,7 +30,7 @@ import IconStock
 
 from data.Generic import GenericObjectStoreException
 
-from lng import _
+from glue.lng import _
 
 class GenericPage(gtk.ScrolledWindow):
     """

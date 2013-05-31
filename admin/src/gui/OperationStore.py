@@ -28,7 +28,7 @@ import gtk
 
 import IconStock
 
-from lng import _
+from glue.lng import _
 
 class StoreException(Exception):pass
 

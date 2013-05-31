@@ -33,7 +33,7 @@ from data.Generic import GenericObjectStoreException
 from gui.YesNoPage import YesNoPage
 from gui.DefaultEntry import DefaultEntry
 
-from lng import _
+from glue.lng import _
 
 class Scoville_repoPage (ObjectPageAbstract):
     def __init__(self,par,repo):

@@ -37,7 +37,7 @@ from Tabs import Tabs
 from CssEditor import CssEditor
 from DefaultEntry import DefaultEntry
 
-from lng import _
+from glue.lng import _
 
 class GetParentException(Exception):pass
 
