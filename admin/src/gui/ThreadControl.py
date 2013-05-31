@@ -27,6 +27,7 @@ pygtk.require("2.0")
 import gtk
 
 from glue.lng import _
+from glue.threads import UserKillThreadException
 
 class ThreadControl(gtk.Window):
     def __init__(self):
@@ -92,21 +93,21 @@ class ThreadLine(gtk.HBox):
         self.killswitch = gtk.Button(_("Kill"))
         self.pack_start(self.label,True)
         self.pack_start(self.killswitch,False)
-        self.killswitch.set_visible(False)
         self.set_border_width(2)
 
         self.threadId = None
         self.show_all()
+        self.killswitch.set_visible(False)
 
     def render(self, thread):
         self.threadId = thread.ident
         if hasattr(thread,"kill"):
-            self.killswitch.connect("clicked", cb_kill, thread)
+            self.killswitch.connect("clicked", self.cb_kill, thread)
             self.killswitch.set_visible(True)
         if hasattr(thread,"getName"):
             self.label.set_text(thread.getName())
         else:
             self.label.set_text("Unspecified Process")
 
-    def kill(self, widget=None, data=None):
-        data.kill()
+    def cb_kill(self, widget=None, data=None):
+        data.kill(UserKillThreadException)

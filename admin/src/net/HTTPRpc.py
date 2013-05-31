@@ -24,11 +24,10 @@
 
 import os
 import urllib2, cookielib
-import threading
 import time
 import json
 import gobject
-from glue.threads import Tracker
+from glue.threads import Tracker, KillableThread
 import logging
 
 COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
@@ -40,7 +39,7 @@ if os.path.exists(COOKIEPATH):
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
 urllib2.install_opener(opener)
 
-class ScovilleRPC(threading.Thread):
+class ScovilleRPC(KillableThread):
     HEADERS = { 'Accept-Language':'en-us,en;q=0.5',        
                 'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7', 
                 'Content-Type':'application/json; charset=UTF-8',
@@ -51,7 +50,7 @@ class ScovilleRPC(threading.Thread):
                 'User-agent' : 'ScovilleAdmin'}
     
     def __init__(self,server,callback, method, params=[], errorcallback = None):
-        threading.Thread.__init__(self)
+        KillableThread.__init__(self)
         self.server = server
         self.callback = callback
         self.errorcallback = errorcallback

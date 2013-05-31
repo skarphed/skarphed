@@ -24,9 +24,8 @@
 
 
 import paramiko
-import threading
 import gobject
-from glue.threads import Tracker
+from glue.threads import Tracker, KillableThread
 
 class SSHConnection(paramiko.SSHClient):
     def __init__(self,server):
@@ -37,9 +36,9 @@ class SSHConnection(paramiko.SSHClient):
     def getServer(self):
         return self.server
     
-class SSHConnector(threading.Thread):
+class SSHConnector(KillableThread):
     def __init__(self,server):
-        threading.Thread.__init__(self)
+        KillableThread.__init__(self)
         self.connection = SSHConnection(server)
         
     def run(self):

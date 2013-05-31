@@ -28,6 +28,8 @@ from inspect import isclass
 import gobject
 import time
 
+class UserKillThreadException(Exception):pass
+
 class KillableThread(Thread):
     def __init__(self):
         Thread.__init__(self)
@@ -48,6 +50,7 @@ class KillableThread(Thread):
             raise SystemError("PyThreadState_SetAsyncExc failed")
 
     def kill(self, exctype):
+        Tracker().removeThread(self)
         KillableThread._kill_thread( self.ident, exctype )
 
 

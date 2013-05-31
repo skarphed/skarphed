@@ -25,10 +25,9 @@
 import os
 
 import urllib2, cookielib
-import threading
 import json
 import gobject
-from glue.threads import Tracker
+from glue.threads import Tracker, KillableThread
 from MultiPartForm import MultiPartForm
 import logging
 
@@ -73,7 +72,7 @@ class ScovilleRepositoryException(Exception):
             self.message = "Unknown RepositoryError: %d"%errorcode
 
 
-class ScovilleRepository(threading.Thread):
+class ScovilleRepository(KillableThread):
     TYPE_TEMPLATE = 0
     RESULT_OK    = 0
     RESULT_ERROR = 1
@@ -108,7 +107,7 @@ class ScovilleRepository(threading.Thread):
                 'User-agent' : 'ScovilleAdmin'}
     
     def __init__(self,repo, command, callback=None):
-        threading.Thread.__init__(self)
+        KillableThread.__init__(self)
         self.repo = repo
         self.callback=callback
         global cookiejar

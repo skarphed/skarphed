@@ -24,9 +24,8 @@
 
 import os
 import urllib2, cookielib
-import threading
 import gobject
-from glue.threads import Tracker
+from glue.threads import Tracker, KillableThread
 
 COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
 cookiejar = cookielib.LWPCookieJar()
@@ -37,7 +36,7 @@ if os.path.exists(COOKIEPATH):
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
 urllib2.install_opener(opener)
 
-class ScovilleUpload(threading.Thread):
+class ScovilleUpload(KillableThread):
     TYPE_TEMPLATE = 0
     RESULT_OK    = 0
     RESULT_ERROR = 1
@@ -51,7 +50,7 @@ class ScovilleUpload(threading.Thread):
                 'User-agent' : 'ScovilleAdmin'}
     
     def __init__(self,server, uploadtype, form, callback=None):
-        threading.Thread.__init__(self)
+        KillableThread.__init__(self)
         self.server = server
         
         self.callback=callback
