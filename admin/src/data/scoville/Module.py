@@ -42,7 +42,8 @@ class Module(GenericScovilleObject):
         self.par = parent
         self.data = data
         self.updated()
-        self.loadWidgets()
+        if self.data.has_key('installed') and self.data['installed']:
+            self.loadWidgets()
 
         if not os.path.exists(os.path.expanduser("~/.scovilleadmin/modulegui")):
             os.mkdir(os.path.expanduser("~/.scovilleadmin/modulegui"))
