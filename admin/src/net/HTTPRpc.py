@@ -28,6 +28,7 @@ import time
 import json
 import gobject
 from glue.threads import Tracker, KillableThread
+from common.errors import getAppropriateException, UnknownCoreException
 import logging
 
 COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
@@ -81,7 +82,13 @@ class ScovilleRPC(KillableThread):
 
         if result.has_key('error'):
             if self.errorcallback is None:
-                logging.debug(result['error'])
+                logging.debug(result['error']['traceback'])
+                exctyp = getAppropriateException(result['error']['class'])
+                if exctyp is None:
+                   exctyp = UnknownCoreException
+                exc = exctyp(result['error']['message'])
+                exc.set_tracebackstring(result['error']['traceback'])
+                gobject.idle_add(self.server.getApplication().raiseRPCException, exc) 
             else:
                 gobject.idle_add(self.errorcallback,result)
         else:

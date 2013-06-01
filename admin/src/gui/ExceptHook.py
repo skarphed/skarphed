@@ -23,6 +23,7 @@
 import inspect, linecache, pydoc, sys, traceback
 from cStringIO import StringIO
 from gettext import gettext as _
+import common.errors
 
 import pygtk
 pygtk.require ('2.0')
@@ -180,6 +181,8 @@ def _info (exctyp, value, tb):
             trace += analyse_simple (exctyp, value, tb).getvalue()
         except:
             trace = _("Exception while analyzing the exception.")
+    if type(value) == common.errors.UnknownCoreException:
+        trace = value.get_tracebackstring()
     buf = textview.get_buffer()
     buf.set_text (trace)
     ## Would be nice to scroll to the bottom automatically, but @#&%*@
@@ -236,8 +239,12 @@ class ExpectedErrorHandler(gtk.MessageDialog):
                 ScovilleRepositoryException : 1
             }
 
+        for exc in common.errors.getCommonExceptions():
+            self.knownExceptions[exc] = 1
+
         self.add_button (gtk.STOCK_OK, gtk.RESPONSE_CLOSE)
         self.connect('response', self.response_cb)
+        self.connect('delete-event', self.response_cb)
         self.show_all()
         self.set_visible(False)
 
@@ -246,13 +253,14 @@ class ExpectedErrorHandler(gtk.MessageDialog):
             return
         if self.knownExceptions.has_key(exctyp):
             
-
-            self.set_title (_(self.knownExceptions[exctyp][0]))
-            self.set_markup (self.knownExceptions[exctyp][0])
+            self.set_title (_(value.__class__.__name__))
+            self.set_markup (value.__class__.__name__)
             if exctyp is ScovilleRepositoryException:
-                self.format_secondary_text(value.message)
+                self.format_secondary_text(str(value))
+            elif issubclass(exctyp, common.errors.ScovilleException):
+                self.format_secondary_text (str(value))
             else:
-                self.format_secondary_text (self.knownExceptions[exctyp][1])
+                pass
             
             print tb
             self.set_visible(True)

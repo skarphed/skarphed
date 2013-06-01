@@ -31,6 +31,7 @@ import glue.threads
 import net.SSH
 import os
 import logging
+from common.errors import getAppropriateException
 
 from glue.autosave import AutoSaveThread
 
@@ -97,6 +98,9 @@ class Application(object):
         call = net.HTTPRpc.ScovilleRPC(server,callback, method, params)
         call.start()
     
+    def raiseRPCException(self, exception):
+        raise exception
+
     def getSSHConnection(self,server):
         net.SSH.SSHConnector(server).start()
     

@@ -57,7 +57,10 @@ class Rpc(object):
         except Exception, e:
             error = StringIO()
             print_exc(None,error)
-            answer['error'] = error.getvalue()
+            answer['error'] = {}
+            answer['error']['traceback'] = error.getvalue()
+            answer['error']['class'] = e.__class__.__name__
+            answer['error']['message'] = str(e)
             self._core.response_body.append(je.encode(answer))
             return
         else:
