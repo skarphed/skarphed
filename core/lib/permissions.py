@@ -39,7 +39,8 @@ class PermissionException(Exception):
         9:"""Permissions can only be checked of users or userIds""",
         10:"""Create Role: Cannot Create role without roleData""",
         11:"""Create Role: Cannot Create a role without a name""",
-        12:"""Create Role: User is not permitted to create roles"""
+        12:"""Create Role: User is not permitted to create roles""",
+        13:"""Create Role: This role already exists: """
     }
 
     @classmethod
@@ -318,6 +319,12 @@ class Role(object):
 
         db = cls._core.get_db()
 
+        stmnt = "SELECT ROL_ID FROM ROLES WHERE ROL_NAME = ? ;"
+        cur = db.query(cls._core,stmnt,(data["name"],))
+        res = cur.fetchonemap()
+        if res is not None:
+            raise PermissionException(PermissionException.get_msg(13, data["name"]))
+        
         role_id = db.get_seq_next("ROL_GEN")
         role = Role(cls._core)
         role.set_id(role_id)

@@ -146,7 +146,8 @@ class PermissionException(ScovilleException):
         9:"""Permissions can only be checked of users or userIds""",
         10:"""Create Role: Cannot Create role without roleData""",
         11:"""Create Role: Cannot Create a role without a name""",
-        12:"""Create Role: User is not permitted to create roles"""
+        12:"""Create Role: User is not permitted to create roles""",
+        13:"""Create Role: This role already exists: """
     }
 
 class SessionException(ScovilleException):
