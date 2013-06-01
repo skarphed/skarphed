@@ -48,7 +48,8 @@ class Modules(GenericScovilleObject):
         for module in self.children:
             if module.getModuleName() not in result_modulenames:
                 self.removeChild(module)
-        self.updated()       
+        self.updated()
+        self.getApplication().getObjectStore().updated()
     
     def refresh(self):
         self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getModules",[False])

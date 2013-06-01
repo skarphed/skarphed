@@ -106,8 +106,7 @@ class Store(gtk.TreeStore):
                 except GenericObjectStoreException:
                     self.itersToRemove.append(iter)
                 else:
-                    if obj.__class__.__name__ == "Server":
-                        model.set_value(iter,0,IconStock.getServerIcon(obj))
+                    model.set_value(iter,0,IconStock.getAppropriateIcon(obj))
                     displayName = str(obj.getLocalId())
                     try:
                         displayName = obj.getName()

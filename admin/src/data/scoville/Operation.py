@@ -78,7 +78,7 @@ class OperationManager(GenericScovilleObject):
         for operation in self.children:
             if operation.getId() not in processedOperations:
                 typ = operation.data['type']
-                if typ == 'ModuleInstallOperation' or typ == 'ModuleUninstallOperation':
+                if typ in ('ModuleInstallOperation','ModuleUninstallOperation','ModuleUpdateOperation'):
                     operation.getOperationManager().getScoville().getModules().refresh()
                 self.children.remove(operation)
                 operation.destroy()
