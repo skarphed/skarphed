@@ -139,7 +139,7 @@ class Profile(object):
             profilefile.write(aes.encrypt(clear+padding))
             profilefile.close()
     
-    def updateProfile(self):
+    def updateProfile(self, save=False):
         self.data['server'] = []
         for server in data.Server.getServers():
             instances = []
@@ -174,7 +174,8 @@ class Profile(object):
                                     'ssh_username':server.ssh_username,
                                     'ssh_password':server.ssh_password,
                                     'instances':instances})
-            
+        if save:
+            self.save()
                 
           
             

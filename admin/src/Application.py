@@ -32,6 +32,8 @@ import net.SSH
 import os
 import logging
 
+from glue.autosave import AutoSaveThread
+
 class ApplicationException(Exception): pass
 
 class Application(object):
@@ -53,6 +55,8 @@ class Application(object):
             os.mkdir(os.path.expanduser('~/.scovilleadmin/'))
 
         logging.basicConfig(filename=os.path.expanduser('~/.scovilleadmin/generic.log'),level=logging.DEBUG)
+        AutoSaveThread(self).start()
+
         
         from data import scoville
     
