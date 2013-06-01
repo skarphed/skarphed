@@ -56,17 +56,24 @@ class Module(AbstractModule):
         sub_menu_items = []
 
         render = StringIO()
+        render.write("<div>")
+        heights = []
         for menu_item in menu_items:
-            render.write('<div style="float:left;">')
+            lines = 1
+            render.write('<div style="float:left; margin-right:30px;">')
             link = menu_item.get_action_list().render_link()
             name = menu_item.get_name()
             render.write('<p><a class="mainitem" href="%s">%s</a></p>'%(link, name))
             for sub_menu_item in menu_item.get_menu_items():
+                lines += 1
                 link = sub_menu_item.get_action_list().render_link()
                 name = sub_menu_item.get_name()
                 render.write('<p><a class="subitem" href="%s">%s</a></p>'%(link, name))
+            heights.append(lines)
             render.write('</div>')
-
+        for i in range(max(heights)):
+            render.write("<p>&nbsp;</p>")
+        render.write("</div>")
         return render.getvalue()
 
     def render_html(self,widget_id,args={}):
