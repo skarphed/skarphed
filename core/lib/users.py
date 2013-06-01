@@ -46,7 +46,8 @@ class UserException(Exception):
         11:"""There is no user with the ID """,
         12:"""Cant create an user with an empty username""",
         13:"""Cant create an user with an empty password""",
-        14:"""One does not simply delete the root user"""
+        14:"""One does not simply delete the root user""",
+        15:"""User already exists: """
     }
 
     @classmethod
@@ -367,6 +368,12 @@ class User(object):
         """
         if username == "":
             raise UserException(UserException.get_msg(12))
+        try:
+            cls.get_user_by_name(username)
+        except UserException:
+            pass
+        else:
+            raise UserException(UserException.get_msg(15, username))
         cls._check_password(password)
         user = User(cls._core)
         user.set_name(username)
