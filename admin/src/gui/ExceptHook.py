@@ -242,7 +242,7 @@ class ExpectedErrorHandler(gtk.MessageDialog):
         for exc in common.errors.getCommonExceptions():
             self.knownExceptions[exc] = 1
 
-        self.add_button (gtk.STOCK_OK, gtk.RESPONSE_CLOSE)
+        self.add_button (gtk.STOCK_OK, gtk.RESPONSE_OK)
         self.connect('response', self.response_cb)
         self.connect('delete-event', self.response_cb)
         self.show_all()
@@ -260,7 +260,7 @@ class ExpectedErrorHandler(gtk.MessageDialog):
             elif issubclass(exctyp, common.errors.ScovilleException):
                 self.format_secondary_text (str(value))
             else:
-                pass
+                pass # TODO: This case should never happen, handle otherwise
             
             print tb
             self.set_visible(True)
@@ -272,6 +272,7 @@ class ExpectedErrorHandler(gtk.MessageDialog):
         if resp == gtk.RESPONSE_OK:
             self.set_visible(False)
             self.open = False
+            self.set_visible(False)
         
 expectedErrorHandler = ExpectedErrorHandler()
 
