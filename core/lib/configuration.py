@@ -24,15 +24,7 @@
 
 from json import JSONDecoder
 
-class ConfigurationException(Exception):
-    ERRORS = {
-        1:"""This Configurationentry does not exist!""",
-        2:"""Can only override entries in database"""
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "CONF_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import ConfigurationException
 
 
 class Configuration(object):

@@ -27,22 +27,7 @@ from hashlib import sha256 as sha256hash
 from StringIO import StringIO
 import base64 #TODO: The whole thing should work without base64. find out why it doesnt here
 
-class BinaryException(Exception):
-    """
-    Exceptions for Database-Module
-    """
-    ERRORS = {
-        0:"""Get By Id: The Binary with this ID does not exist: """,
-        1:"""Get By MD5: No Binary found with the hash: """,
-        2:"""Store: Not allowed to store this binary""",
-        3:"""Get By Filename: No Binary found with the filename: """
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        if type(info) != str:
-            info=str(info)
-        return "BIN_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import BinaryException
 
 class BinaryManager(object):
     def __init__(self,core):

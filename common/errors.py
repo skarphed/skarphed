@@ -46,26 +46,6 @@ it will be packed into this object to be passed on to the
 final "critical"-excepthook
 """
 
-
-class CoreException(ScovilleException):
-    PREFIX = "CORE"
-    ERRORS = {
-        1:"""Only the Configuration-class is authorized to access this variable"""
-    }
-
-
-class CSSException(ScovilleException):
-    PREFIX = "CSS"
-    ERRORS = {
-        0:"""Get CSSPropertySet: This Widget does not exist""",
-        1:"""Edit Value: The general propertyset does not have inherited values""",
-        2:"""Invalid Propertyset: GENERAL type set must not have any Ids""",
-        3:"""Invalid Propertyset: MODULE type set must not have any Ids but must have ModuleId""",
-        4:"""Invalid Propertyset: WIDGET type set must not have any Ids but must have WidgetId""",
-        5:"""Invalid Propertyset: SESSION type set must not have any Ids but must have Session""",
-        6:"""Invalid Propertyset: Invalid type:"""
-    }
-    
 class ActionException(ScovilleException):
     """
     Exceptions for Database-Module
@@ -74,6 +54,7 @@ class ActionException(ScovilleException):
     ERRORS = {
         0:"""Action Exception"""        
     }
+
 
 class BinaryException(ScovilleException):
     """
@@ -90,9 +71,30 @@ class BinaryException(ScovilleException):
 class ConfigurationException(ScovilleException):
     PREFIX = "CONF"
     ERRORS = {
-        1:"""This Configurationentry does not exist!"""
+        1:"""This Configurationentry does not exist!""",
+        2:"""Can only override entries in database"""
     }
 
+class CoreException(ScovilleException):
+    PREFIX = "CORE"
+    ERRORS = {
+        1:"""Only the Configuration-class is authorized to access this variable""",
+        2:"""There is no such render_mode as """
+    }
+
+
+class CSSException(ScovilleException):
+    PREFIX = "CSS"
+    ERRORS = {
+        0:"""Get CSSPropertySet: This Widget does not exist""",
+        1:"""Edit Value: The general propertyset does not have inherited values""",
+        2:"""Invalid Propertyset: GENERAL type set must not have any Ids""",
+        3:"""Invalid Propertyset: MODULE type set must not have any Ids but must have ModuleId""",
+        4:"""Invalid Propertyset: WIDGET type set must not have any Ids but must have WidgetId""",
+        5:"""Invalid Propertyset: SESSION type set must not have any Ids but must have Session""",
+        6:"""Invalid Propertyset: Invalid type:"""
+    }
+    
 class DatabaseException(ScovilleException):
     """
     Exceptions for Database-Module
@@ -116,7 +118,8 @@ class ModuleCoreException(ScovilleException):
         6:"""This module does not exist""",
         7:"""This widget does not exist""",
         8:"""Template Signature is not valid! Packet may be compromised""",
-        9:"""Error HTTP-Requesting Repository"""
+        9:"""Error HTTP-Requesting Repository""",
+        10:"""Cant create a widget with an empty name"""
     }
 
 class OperationException(ScovilleException):
@@ -185,7 +188,12 @@ class UserException(ScovilleException):
         7:"""Revoking Permission: This Sessionuser is not allowed to grant or revoke Permissions!""",
         8:"""A User cannot revoke a permission that he does not possess himself""",
         9:"""There is no user with the name """,
-        10:"""Get Users: This user is not allowed to view users"""
+        10:"""Get Users: This user is not allowed to view users""",
+        11:"""There is no user with the ID """,
+        12:"""Cant create an user with an empty username""",
+        13:"""Cant create an user with an empty password""",
+        14:"""One does not simply delete the root user""",
+        15:"""User already exists: """
     }
 
 class ViewException(ScovilleException):

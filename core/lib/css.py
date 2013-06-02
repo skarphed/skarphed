@@ -26,20 +26,7 @@ import os
 
 from tinycss.css21 import CSS21Parser
 
-class CSSException(Exception):
-    ERRORS = {
-        0:"""Get CSSPropertySet: This Widget does not exist""",
-        1:"""Edit Value: The general propertyset does not have inherited values""",
-        2:"""Invalid Propertyset: GENERAL type set must not have any Ids""",
-        3:"""Invalid Propertyset: MODULE type set must not have any Ids but must have ModuleId""",
-        4:"""Invalid Propertyset: WIDGET type set must not have any Ids but must have WidgetId""",
-        5:"""Invalid Propertyset: SESSION type set must not have any Ids but must have Session""",
-        6:"""Invalid Propertyset: Invalid type:"""
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "CSS_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import CSSException
 
 class CSSManager(object):
     """

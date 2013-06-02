@@ -27,19 +27,7 @@ import fdb
 import time
 import os
 
-class DatabaseException(Exception):
-    """
-    Exceptions for Database-Module
-    """
-    ERRORS = {
-        1:"""At least one Parameter for the Connection is missing""",
-        2:"""Could not Query: No Connection""",
-        3:"""Could not resolve Tables:"""
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "DB_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import DatabaseException
     
 
 class Database(object):

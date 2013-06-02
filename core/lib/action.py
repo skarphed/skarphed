@@ -22,17 +22,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-class ActionException(Exception):
-    """
-    Exceptions for Database-Module
-    """
-    ERRORS = {
-        0:"""Action Exception"""        
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "ACT_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import ActionException
 
 class ActionManager(object):
     """

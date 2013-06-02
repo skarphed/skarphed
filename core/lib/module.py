@@ -38,24 +38,7 @@ from view import ViewException
 
 from helper import sluggify
 
-class ModuleCoreException(Exception):
-    ERRORS = {
-        0:"""This instance does not have a WidgetId. Therefore, Widget-bound methods cannot be used""",
-        1:"""This Widgets needs a module, to be saved into database""",
-        2:"""Module could not be downloaded""",
-        3:"""Module signature is not valid! Packet may be compromised""",
-        4:"""Can't delete Repo with null-id! """,
-        5:"""Module already exists!""",
-        6:"""This module does not exist""",
-        7:"""This widget does not exist""",
-        8:"""Template Signature is not valid! Packet may be compromised""",
-        9:"""Error HTTP-Requesting Repository""",
-        10:"""Cant create a widget with an empty name"""
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "MOD_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import ModuleCoreException
 
 class AbstractModule(object):
     def __init__(self,core):

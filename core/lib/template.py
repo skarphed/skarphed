@@ -28,18 +28,7 @@ import shutil
 from StringIO import StringIO
 from json import JSONDecoder
 
-class TemplateException(Exception):
-    """
-    Exceptions for Database-Module
-    """
-    ERRORS = {
-        0:"""At least one Parameter for the Connection is missing"""
-        
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "TPL_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import TemplateException
 
 
 class TemplateManager(object):

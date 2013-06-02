@@ -22,31 +22,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-class PermissionException(Exception):
-    """
-    Exceptions for Permission-Module
-    """
-    ERRORS = {
-        0:"""Create Role: Can't save a role without Id""",
-        1:"""Create Role: Can't save a role without a Name""",
-        2:"""Create Role: This user is not allowed to create Roles""",
-        3:"""Add Permission: This user is not allowed to modify Roles""",
-        4:"""Add Permission: User Cannot edit a permission that he does not possess himself!""",
-        5:"""Delete Role : This user is not allowed to delete Roles""",
-        6:"""Grant Role: This user is not allowed to grant or revoke Roles""",
-        7:"""Grant Role: You can only allow Roles you possess yourself OR roles, that can be made up of the permissions you own.""",
-        8:"""This role does not seem to exist (Shouldnt happen)""",
-        9:"""Permissions can only be checked of users or userIds""",
-        10:"""Create Role: Cannot Create role without roleData""",
-        11:"""Create Role: Cannot Create a role without a name""",
-        12:"""Create Role: User is not permitted to create roles""",
-        13:"""Create Role: This role already exists: """
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "PERM_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
-
+from common.errors import PermissionException
 
 class Role(object):
     """

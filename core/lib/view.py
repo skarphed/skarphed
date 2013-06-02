@@ -28,22 +28,7 @@ from cgi import FieldStorage
 import StringIO
 import re
 
-class ViewException(Exception):
-    ERRORS = {
-        0:"""Get By Name: No such view""",
-        1:"""Invalid input type to specify Space""",
-        2:"""Invalid input type to specify Widget""",
-        3:"""There is no default view""",
-        4:"""Cannot set Parameters for Widget that is not in this view!""",
-        5:"""A view must have a space-widget-mapping ('v')""",
-        6:"""A view must have a page to render on ('s')""",
-        7:"""This is not a valid view-JSON"""
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "VIE_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
-
+from common.errors import ViewException
 class PageException(Exception):
     ERRORS = {
         0:"""Create: This Page has no spaces. As useless as you.""",

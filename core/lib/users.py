@@ -27,32 +27,7 @@ from random import randrange
 
 ROOT_USER_ID = 1
 
-class UserException(Exception):
-    """
-    Exceptions for User-Module
-    """
-    ERRORS = {
-        0:"""The password has not been assigned properly. This shouldnt happen""",
-        1:"""Could not set Password: Old password is wrong""",
-        2:"""Authentication failed: Wrong Password""",
-        3:"""This user is not authorized to delete users""",
-        4:"""Granting Permission: This user is not allowed to grant permissions!""",
-        5:"""Granting Permission: There is no such permission as """,
-        6:"""A User cannot assign a permission that he does not possess himself""",
-        7:"""Revoking Permission: This Sessionuser is not allowed to grant or revoke Permissions!""",
-        8:"""A User cannot revoke a permission that he does not possess himself""",
-        9:"""There is no user with the name """,
-        10:"""Get Users: This user is not allowed to view users""",
-        11:"""There is no user with the ID """,
-        12:"""Cant create an user with an empty username""",
-        13:"""Cant create an user with an empty password""",
-        14:"""One does not simply delete the root user""",
-        15:"""User already exists: """
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "USR_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import UserException
 
 class User(object):
     """

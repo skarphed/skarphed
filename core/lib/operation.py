@@ -28,17 +28,7 @@ from time import sleep
 from StringIO import StringIO
 from traceback import print_exc
 
-class OperationException(Exception):
-    """
-    Exceptions for Operation-Module
-    """
-    ERRORS = {
-        0:"""Could not remove Lock!""",
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "OP_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import OperationException
 
 class Operation(object):
     """

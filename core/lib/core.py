@@ -42,16 +42,7 @@ from pki import PkiManager
 
 from maintenance import MAINTENANCE_HTML
 
-class CoreException(Exception):
-    ERRORS = {
-        1:"""Only the Configuration-class is authorized to access this variable""",
-        2:"""There is no such render_mode as """
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "DB_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
-
+from common.errors import CoreException
 
 class Core(object):
     """

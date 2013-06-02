@@ -28,17 +28,7 @@ from random import randrange
 from Cookie import SimpleCookie
 from helper import datetime2fdbTimestamp
 
-class SessionException(Exception):
-    ERRORS = {
-        0:"""SessionError: Session Expired""",
-        1:"""SessionError: Can only attach user to session""",
-        2:"""SessionError: This Session does not exist""",
-        3:"""SessionError: Cannot Store a userless Session"""
-    }
-
-    @classmethod
-    def get_msg(cls,nr, info=""):
-        return "SE_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+from common.errors import SessionException
 
 class SessionManager(object):
     """
