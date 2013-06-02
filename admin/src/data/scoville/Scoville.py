@@ -337,7 +337,8 @@ class Scoville(Instance):
             self.views = Views(self)
             self.addChild(self.views)
         if True: #'scoville.template.modify' in self.serverRights
-            self.loadTemplate()
+            self.template = Template(self)
+            self.addChild(self.template)
         if True: #'scoville.operation.modify' in self.serverRights
             self.operationManager = OperationManager(self)
         # if True: # 'scoville.compositing' in self.serverRights
@@ -374,40 +375,12 @@ class Scoville(Instance):
         else:
             return "Unknown ScovilleServer"
     
-    def loadTemplateCallback(self,res):
-        if self.template is None:
-            self.template = Template(self,res)
-            self.children.append(self.template)
-        else:
-            self.template.refresh(res)
-    
-    
-    def loadTemplate(self):
-        self.getApplication().doRPCCall(self,self.loadTemplateCallback, "getCurrentTemplate")
-    
     def setRepositoryCallback(self,res):
         self.modules.refresh()
         
     def setRepository(self,host,port):
         self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [host,port])
         self.repo_url = host+":"+str(port)
-    
-    def uploadTemplateCallback(self,res):
-        severe_error_happened = False
-        for error in res:
-            if error['severity'] > 0:
-                severe_error_happened = True
-                break
-        #TODO: SOMEHOW DISPLAY ERRORLOG
-        if not severe_error_happened:
-            self.loadTemplate()
-            self.getMaintenanceMode()
-    
-    def uploadTemplate(self, filepath):
-        template_file = open(filepath,'r')
-        templatedata = base64.b64encode(template_file.read())
-        self.getApplication().doRPCCall(self,self.uploadTemplateCallback, "installTemplate", [templatedata])
-        template_file.close()
         
     def loadProfileInfo(self,profileInfo):
         pass
@@ -463,6 +436,8 @@ class Scoville(Instance):
         filename = filepath.split("/")[1:]
         self.getApplication().doRPCCall(self,self.uploadBinaryCallback, "uploadBinary", [data, filename])
 
+    def getTemplate(self):
+        return self.template
     
     def getModules(self):
         return self.modules

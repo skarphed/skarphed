@@ -22,6 +22,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+import base64
+
 from data.Generic import GenericScovilleObject
 
 class Template(GenericScovilleObject):
@@ -31,7 +33,7 @@ class Template(GenericScovilleObject):
         self.data = data
         self.data['available'] = []
         self.getRepoTemplates()
-        self.updated()
+        self.load()
     
     def getName(self):
         return "Templates"
@@ -42,7 +44,30 @@ class Template(GenericScovilleObject):
         self.getScoville().getViews().refresh()
         self.getRepoTemplates()
         self.updated()
+
+    def loadCallback(self,res):
+        self.refresh(res)
     
+    def load(self):
+        self.getApplication().doRPCCall(self.getScoville(),self.loadCallback, "getCurrentTemplate")
+    
+    def uploadCallback(self,res):
+        severe_error_happened = False
+        for error in res:
+            if error['severity'] > 0:
+                severe_error_happened = True
+                break
+        #TODO: SOMEHOW DISPLAY ERRORLOG
+        if not severe_error_happened:
+            self.load()
+            self.getScoville().getMaintenanceMode()
+    
+    def upload(self, filepath):
+        template_file = open(filepath,'r')
+        templatedata = base64.b64encode(template_file.read())
+        self.getApplication().doRPCCall(self.getScoville(),self.uploadCallback, "installTemplate", [templatedata])
+        template_file.close()
+
     def repoTemplatesCallback(self, json):
         self.data['available'] = json
         self.updated()
@@ -55,7 +80,7 @@ class Template(GenericScovilleObject):
 
     def installFromRepoCallback(self, res=None):
         self.getRepoTemplates()
-        self.getScoville().loadTemplate()
+        self.load()
         self.getScoville().getMaintenanceMode()
 
     def installFromRepo(self, nr):

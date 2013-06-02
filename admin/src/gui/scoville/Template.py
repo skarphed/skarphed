@@ -148,7 +148,7 @@ class TemplatePage(ObjectPageAbstract):
             return
 
         if self.fileToUpload is not None and self.fileToUpload != "":
-            template.getScoville().uploadTemplate(self.fileToUpload)
+            template.upload(self.fileToUpload)
         else:
             raise Exception(_("No File specified"))
 
