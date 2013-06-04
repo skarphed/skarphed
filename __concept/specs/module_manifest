@@ -12,6 +12,7 @@ An exemplary manifest.json could look like this:
   "version_major":0,
   "version_minor":0,
   "permissions":["write","delete","edit","deletecomments"],
+  "js_mandatory": "mandatory" // "supported" // "no"
   "tables":[
     {"name":"news",
      "columns":[
@@ -63,6 +64,16 @@ version_minor - The minor version of the module. This number can be chosen freel
                 But it should only ascend over time. 
 
 permissions - A list of permissions that gets installed with this module.
+
+js_mandatory - Defines how this module depends on javascript functionality (rendermode ajax)
+               'no' means, that javascript is not needed and supported at all. if this 
+                    module renders as ajax, it simply returns the pure html output.
+               'supportet' means, that this module delivers some extra functionality if
+                           rendered with javascript but does not necessarily need it
+                           to work properly
+               'mandatory' means, that this module wont work only with html and requires
+                           javascript functionality to work properly. only the render_ajax method
+                           of this script works
 
 tables - A set of Tables that are to be generated in the database when this module
          is installed. Each table consists of a name and a set of columns.

@@ -4,6 +4,7 @@
   "version_major":0,
   "version_minor":0,
   "permissions":["edit"],
+  "js_mandatory":"no",
   "tables":[
     {"name":"footermenu",
      "columns":[
