@@ -38,6 +38,7 @@ from database import DatabaseConnection
 
 from session import Session
 
+from common.enums import JSMandatory
 
 class RepositoryErrorCode:
     """
@@ -133,7 +134,7 @@ class Repository(object):
                     'version_major' : m['MOD_VERSIONMAJOR'],
                     'version_minor' : m['MOD_VERSIONMINOR'],
                     'revision' : m['MOD_VERSIONREV'],
-                    'js_mandatory': m['MOD_JSMANDATORY']
+                    'js_mandatory': m['MOD_JSMANDATORY'],
                     'signature' : m['MOD_SIGNATURE']} for m in result]
         return modules
 
