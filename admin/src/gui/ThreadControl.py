@@ -47,7 +47,7 @@ class ThreadControl(gtk.Window):
         self.threads = {}
         self.scroll = gtk.ScrolledWindow()
         self.scroll.set_policy(gtk.POLICY_NEVER,gtk.POLICY_ALWAYS)
-        self.scroll.add(self.threadvbox)
+        self.scroll.add_with_viewport(self.threadvbox)
         self.hbox.pack_start(self.dummy,True)
         self.hbox.pack_start(self.closebutton,False)
         self.vbox.pack_start(self.hbox,False)
