@@ -57,6 +57,7 @@ class RepositoryErrorCode:
     DEVELOPER_NO_VALID_KEY = 11
     DEVELOPER_ALREADY_EXISTS = 12
     TEMPLATE_NOT_FOUND = 13
+    UPLOAD_JS_MANDATORY = 14
 
 class RepositoryException(Exception):
     """
@@ -115,7 +116,7 @@ class Repository(object):
         Returns a list of all modules.
         """
         result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, \
-                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
+                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_JSMANDATORY \
                 FROM MODULES JOIN (SELECT MOD_NAME VERNAME \
                 ,MAX(MOD_VERSIONMAJOR*10000000 \
                 +MOD_VERSIONMINOR*100000 \
@@ -132,6 +133,7 @@ class Repository(object):
                     'version_major' : m['MOD_VERSIONMAJOR'],
                     'version_minor' : m['MOD_VERSIONMINOR'],
                     'revision' : m['MOD_VERSIONREV'],
+                    'js_mandatory': m['MOD_JSMANDATORY']
                     'signature' : m['MOD_SIGNATURE']} for m in result]
         return modules
 
@@ -141,7 +143,7 @@ class Repository(object):
         Returns a list of all versions of the specified module.
         """
         result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, \
-                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
+                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_JSMANDATORY \
                 FROM MODULES \
                 WHERE MOD_NAME = ?;', module['name'])
         result = result.fetchallmap()
@@ -150,6 +152,7 @@ class Repository(object):
                     'version_major' : m['MOD_VERSIONMAJOR'],
                     'version_minor' : m['MOD_VERSIONMINOR'],
                     'revision' : m['MOD_VERSIONREV'],
+                    'js_mandatory' : m['MOD_JSMANDATORY'],
                     'signature' : m['MOD_SIGNATURE']} for m in result]
         return modules
 
@@ -250,7 +253,7 @@ class Repository(object):
         Returns the specified module with its binary data.
         """
         result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_ID, MOD_VERSIONMAJOR, \
-                MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_DATA, MOD_SIGNATURE \
+                MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_DATA, MOD_JSMANDATORY, MOD_SIGNATURE \
                 FROM MODULES \
                 WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? \
                 AND MOD_VERSIONREV = ? AND MOD_SIGNATURE = ?;',
@@ -264,6 +267,7 @@ class Repository(object):
                         'version_major' : mod['MOD_VERSIONMAJOR'],
                         'version_minor' : mod['MOD_VERSIONMINOR'],
                         'revision' : mod['MOD_VERSIONREV'],
+                        'js_mandatory': mod['MOD_JSMANDATORY'],
                         'signature' : mod['MOD_SIGNATURE']}
             return (result_mod, mod['MOD_DATA'])
         else:
@@ -275,7 +279,7 @@ class Repository(object):
         Returns the latest version of the specified module.
         """
         result = environ['db'].query('SELECT MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_NAME, \
-                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
+                MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_JSMANDATORY \
                 FROM MODULES JOIN (SELECT MOD_NAME VERNAME, \
                 MAX(MOD_VERSIONMAJOR*10000000+MOD_VERSIONMINOR*100000+MOD_VERSIONREV) VER \
                 FROM MODULES \
@@ -291,6 +295,7 @@ class Repository(object):
                         'version_major' : mod['MOD_VERSIONMAJOR'],
                         'version_minor' : mod['MOD_VERSIONMINOR'],
                         'revision' : mod['MOD_VERSIONREV'],
+                        'js_mandatory': mod['MOD_JSMANDATORY'],
                         'signature' : mod['MOD_SIGNATURE']}
             return result_mod
         else:
@@ -454,6 +459,13 @@ class Repository(object):
         if not manifest['name'].startswith(dev_name + '_'):
             raise create_repository_exception(RepositoryErrorCode.UPLOAD_DEV_PREFIX)
 
+        # Checks if module supports js and indicates it. if not, assume, the module is a pure html module
+        js_mandatory = 0
+        if manifest.has_key('js_mandatory') and manifest['js_mandatory'] in (JSMandatory.NO,JSMandatory.SUPPORTED,JSMandatory.MANDATORY):
+            js_mandatory = manifest['js_mandatory']
+        else:
+            manifest['js_mandatory'] = 0
+
         # checks whether all dependencies are available
         dependencies = []
         if 'dependencies' in manifest:
@@ -518,9 +530,9 @@ class Repository(object):
         # stores the new module in the database
         environ['db'].query('INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, \
                 MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_SIGNATURE, \
-                MOD_DATA) VALUES (?,?,?,?,?,?,?,?);',
+                MOD_JSMANDATORY, MOD_DATA) VALUES (?,?,?,?,?,?,?,?,?);',
                 (mod_id, manifest['name'], manifest['hrname'], manifest['version_major'],
-                manifest['version_minor'], revision, repo_signature, base64.b64encode(newdata)), commit=True)
+                manifest['version_minor'], revision, repo_signature, js_mandatory, base64.b64encode(newdata)), commit=True)
 
         # stores the dependencies of this module in the database
         for dep in dependencies:

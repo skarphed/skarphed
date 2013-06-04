@@ -39,6 +39,7 @@ from view import ViewException
 from helper import sluggify
 
 from common.errors import ModuleCoreException
+from common.enums import JSMandatory
 
 class AbstractModule(object):
     def __init__(self,core):
@@ -50,6 +51,7 @@ class AbstractModule(object):
         self._version_major = None
         self._version_minor = None
         self._revision = None
+        self._js_mandatory = None
         self._permissions = [] 
         self._tables = []
 
@@ -72,6 +74,7 @@ class AbstractModule(object):
         self._version_major = manifest["version_major"]
         self._version_minor = manifest["version_minor"]
         self._revision = manifest["revision"]
+        self._js_mandatory = manifest["js_mandatory"]
         self._permissions = manifest["permissions"]
         self._tables = manifest["tables"]
 
@@ -98,6 +101,15 @@ class AbstractModule(object):
         returns the human readable name for this module
         """
         return self._hrname
+
+    def set_js_mandatory(self, js_mandatory):
+        if js_mandatory not in (JSMandatory.NO, JSMandatory.SUPPORTED, JSMandatory.MANDATORY):
+            return False
+        else:
+            self._js_mandatory = js_mandatory
+
+    def get_js_mandatory(self):
+        return self._js_mandatory
 
     def get_version(self,part=None):
         """
@@ -593,10 +605,11 @@ class ModuleManager(object):
         """
         db = self._core.get_db()
         nr = db.get_seq_next("MOD_GEN")
-        stmnt = "INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV) \
-                      VALUES (?,?,?,?,?,?) ;"
+        stmnt = "INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_JSMANDATORY) \
+                      VALUES (?,?,?,?,?,?,?) ;"
         db.query(self._core,stmnt,(nr,manifest["name"],manifest["hrname"],
-                                   manifest["version_major"],manifest["version_minor"],manifest["revision"]),commit=True)
+                                   manifest["version_major"],manifest["version_minor"],
+                                   manifest["revision"],manifest["js_mandatory"]),commit=True)
         return nr
 
     def _unregister_module(self,module):

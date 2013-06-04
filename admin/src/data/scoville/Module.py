@@ -72,6 +72,12 @@ class Module(GenericScovilleObject):
             return self.data['name']
         else:
             return None
+
+    def getJSMandatory(self):
+        if self.data.has_key('js_mandatory'):
+            return self.data['js_mandatory']
+        else:
+            return None
     
     def isUpdateable(self):
         """

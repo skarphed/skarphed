@@ -34,6 +34,7 @@ from gui.OperationTool import OperationTool
 import gui.IconStock
 
 from glue.lng import _
+from common.enums import JSMandatory
 
 class ModulesPage(ObjectPageAbstract):
     def __init__(self,parent,modules):
@@ -70,16 +71,21 @@ class ModulesPage(ObjectPageAbstract):
         self.mod_IListScroll.set_size_request(200,250)
         self.mod_IListScroll.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
         self.mod_IList = gtk.TreeView()
-        self.mod_IListStore = gtk.ListStore(gtk.gdk.Pixbuf, str, int)
+        self.mod_IListStore = gtk.ListStore(gtk.gdk.Pixbuf, str, gtk.gdk.Pixbuf, int)
         self.mod_IList.set_model(self.mod_IListStore)
         self.mod_IList_col_module = gtk.TreeViewColumn(_('Modulename'))
+        self.mod_IList_col_js = gtk.TreeViewColumn(_('JS'))
         self.mod_IList_ren_icon = gtk.CellRendererPixbuf()
         self.mod_IList_ren_name = gtk.CellRendererText()
+        self.mod_IList_ren_js = gtk.CellRendererPixbuf()
         self.mod_IList.append_column(self.mod_IList_col_module)
+        self.mod_IList.append_column(self.mod_IList_col_js)
         self.mod_IList_col_module.pack_start(self.mod_IList_ren_icon,False)
         self.mod_IList_col_module.pack_start(self.mod_IList_ren_name,True)
+        self.mod_IList_col_js.pack_start(self.mod_IList_ren_js,False)
         self.mod_IList_col_module.add_attribute(self.mod_IList_ren_icon,'pixbuf',0)
         self.mod_IList_col_module.add_attribute(self.mod_IList_ren_name,'text',1)
+        self.mod_IList_col_js.add_attribute(self.mod_IList_ren_js,'pixbuf',2)
         self.mod_IList_col_module.set_sort_column_id(1)
         self.mod_IListScroll.add(self.mod_IList)
         
@@ -87,16 +93,21 @@ class ModulesPage(ObjectPageAbstract):
         self.mod_AListScroll.set_size_request(200,250)
         self.mod_AListScroll.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)       
         self.mod_AList = gtk.TreeView()
-        self.mod_AListStore = gtk.ListStore(gtk.gdk.Pixbuf, str, int)
+        self.mod_AListStore = gtk.ListStore(gtk.gdk.Pixbuf, str, gtk.gdk.Pixbuf, int)
         self.mod_AList.set_model(self.mod_AListStore)
         self.mod_AList_col_module = gtk.TreeViewColumn(_('Modulename'))
+        self.mod_AList_col_js = gtk.TreeViewColumn(_('JS'))
         self.mod_AList_ren_icon = gtk.CellRendererPixbuf()
         self.mod_AList_ren_name = gtk.CellRendererText()
+        self.mod_AList_ren_js = gtk.CellRendererPixbuf()
         self.mod_AList.append_column(self.mod_AList_col_module)
+        self.mod_AList.append_column(self.mod_AList_col_js)
         self.mod_AList_col_module.pack_start(self.mod_AList_ren_icon,False)
         self.mod_AList_col_module.pack_start(self.mod_AList_ren_name,True)
+        self.mod_AList_col_js.pack_start(self.mod_AList_ren_js,False)
         self.mod_AList_col_module.add_attribute(self.mod_AList_ren_icon,'pixbuf',0)
         self.mod_AList_col_module.add_attribute(self.mod_AList_ren_name,'text',1)
+        self.mod_AList_col_js.add_attribute(self.mod_AList_ren_js,'pixbuf',2)
         self.mod_AList_col_module.set_sort_column_id(1)
         self.mod_AListScroll.add(self.mod_AList)
         
@@ -134,13 +145,13 @@ class ModulesPage(ObjectPageAbstract):
     def iListGetDataCallback(self, treeview, context, selection, info, timestamp):
         treeselection = treeview.get_selection()
         model, rowiter = treeselection.get_selected()
-        text = model.get_value(rowiter, 2)
+        text = model.get_value(rowiter, 3)
         selection.set('text/plain', 8, str(text))
     
     def aListGetDataCallback(self, treeview, context, selection, info, timestamp):
         treeselection = treeview.get_selection()
         model, rowiter = treeselection.get_selected()
-        text = model.get_value(rowiter, 2)
+        text = model.get_value(rowiter, 3)
         selection.set('text/plain', 8, str(text))
     
     def iListReceiveCallback(self, treeview, context, x, y, selection, info , timestamp):
@@ -163,7 +174,7 @@ class ModulesPage(ObjectPageAbstract):
     
     def getModuleIterById(self, moduleList, moduleId):
         def search(model, path, rowiter, moduleId):
-            val = model.get_value(rowiter,2)
+            val = model.get_value(rowiter,3)
             if val == moduleId:
                 model.tempiter = rowiter
         
@@ -177,10 +188,16 @@ class ModulesPage(ObjectPageAbstract):
     
     def render(self):
         def search(model, path, rowiter, processed):
-            val = model.get_value(rowiter,2)
+            val = model.get_value(rowiter,3)
             if val not in processed:
                 model.itersToRemove.append(rowiter)
         
+        js_iconmap = {
+            JSMandatory.NO : gui.IconStock.JS_NO,
+            JSMandatory.SUPPORTED : gui.IconStock.JS_SUPPORTED,
+            JSMandatory.MANDATORY : gui.IconStock.JS_MANDATORY
+        }
+
         modules = self.getMyObject()
         if not modules:
             self.destroy()
@@ -200,14 +217,20 @@ class ModulesPage(ObjectPageAbstract):
             if module.data.has_key('installed') and module.data['installed'] == True:
                 rowiter = self.getModuleIterById(self.mod_IListStore,module.getLocalId())
                 if rowiter is None:
-                    self.mod_IListStore.append((gui.IconStock.getAppropriateIcon(module), module.getName(), module.getLocalId() ))
+                    self.mod_IListStore.append((gui.IconStock.getAppropriateIcon(module), module.getName(), js_iconmap[module.getJSMandatory()], module.getLocalId() ))
                 else:
                     self.mod_IListStore.set_value(rowiter,0,gui.IconStock.getAppropriateIcon(module))
+                    self.mod_IListStore.set_value(rowiter,1,module.getName())
+                    self.mod_IListStore.set_value(rowiter,2,js_iconmap[module.getJSMandatory()])
                 self.processedIListIds.append(module.getLocalId())
             else:
                 rowiter = self.getModuleIterById(self.mod_AListStore,module.getLocalId())
                 if rowiter is None:
-                    self.mod_AListStore.append((gui.IconStock.MODULE, module.data['hrname'], module.getLocalId() ))
+                    self.mod_AListStore.append((gui.IconStock.MODULE, module.getName(), js_iconmap[module.getJSMandatory()], module.getLocalId() ))
+                else:
+                    self.mod_AListStore.set_value(rowiter,0,gui.IconStock.getAppropriateIcon(module))
+                    self.mod_IListStore.set_value(rowiter,1,module.getName())
+                    self.mod_IListStore.set_value(rowiter,2,js_iconmap[module.getJSMandatory()])
                 self.processedAListIds.append(module.getLocalId())
         
         self.mod_IListStore.itersToRemove = []
