@@ -112,7 +112,6 @@ class FrameLabel(gtk.HBox):
         gtk.HBox.__init__(self)
         self.set_spacing(10)
 
-        print type(text), text
         assert type(text) in (str, unicode), "Text must be string"
         
         self.icon = gtk.Image()
