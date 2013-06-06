@@ -4,7 +4,7 @@
   "version_major":0,
   "version_minor":0,
   "permissions":["create","delete","edit","deletecomments"],
-  "js_mandatory":"no",
+  "js_mandatory":0,
   "tables":[
     {"name":"news",
      "columns":[
