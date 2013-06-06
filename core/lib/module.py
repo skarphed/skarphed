@@ -473,7 +473,7 @@ class ModuleManager(object):
             os.mkdir(libpath+"/"+module_meta["name"])
             open(libpath+"/"+module_meta["name"]+"/__init__.py","w").close()
             os.mkdir(modulepath)
-        
+
         repo = self.get_repository()
         datapath = repo.download_module(module_meta)
         tar = tarfile.open(datapath, "r:gz")
@@ -486,10 +486,11 @@ class ModuleManager(object):
         # REGISTER THE MODULE IN DB
         try:
             nr = self._register_module(manifest)
-        except DatabaseException: #revert stuff on error
+        except DatabaseException, e: #revert stuff on error
+            self._core.log(e)
             shutil.rmtree(modulepath)
             os.remove(datapath)
-            return
+            raise e
 
         module = self.get_module(nr)
 
@@ -499,21 +500,21 @@ class ModuleManager(object):
         # CREATE PERMISSIONS FOR MOUDLE
         try:
             permissionmanager.create_permissions_for_module(module)
-        except PermissionException: #revert on error
+        except PermissionException, e: #revert on error
             self._unregister_module(module)
             shutil.rmtree(modulepath)
             os.remove(datapath)
-            return
+            raise e
 
         # CREATE DATBASE TABLES FOR MODULE
         try:
             db.create_tables_for_module(module)
-        except DatabaseException:
+        except DatabaseException, e:
             self._unregister_module(module)
             shutil.rmtree(modulepath)
             permissionmanager.remove_permissions_for_module(module)
             os.remove(datapath)
-            return            
+            raise e
 
         
         os.remove(datapath)
@@ -623,7 +624,8 @@ class ModuleManager(object):
             "hrname":module.get_hrname(),
             "version_major":module.get_version("major"),
             "version_minor":module.get_version("minor"),
-            "revision":module.get_version("revision")
+            "revision":module.get_version("revision"),
+            "js_mandatory":module.get_js_mandatory()
         }
         return d
 
