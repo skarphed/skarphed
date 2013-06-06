@@ -130,7 +130,9 @@ class Database(object):
         try:
             cur.execute(prepared,args)
         except fdb.fbcore.DatabaseError,e:
-            raise e
+            if commit:
+                os.rmdir(mutex)
+            raise DatabaseException(str(e))
         if commit:
             self.commit()
             os.rmdir(mutex)
