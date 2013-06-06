@@ -4,6 +4,9 @@ deb_root="./deb/scoville-repo/"
 
 function generate_deb {
 	cp -r ../src/* ${deb_root}var/www/scvrepo/
+        rm ${deb_root}var/www/scvrepo/common
+        mkdir ${deb_root}var/www/scvrepo/common
+        cp -r ../src/common/* ${deb_root}var/www/scvrepo/common/
 	cp ../gen_keypair.py ../repo_database.sql ${deb_root}tmp/
 	cp ../config.json ${deb_root}etc/scvrepo/
 	cp ../scvrepo_apache2 ${deb_root}etc/apache2/sites-enabled/scvrepo
