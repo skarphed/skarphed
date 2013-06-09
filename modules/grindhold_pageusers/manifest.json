@@ -1,0 +1,19 @@
+{
+    "name":"grindhold_pageusers",
+    "hrname":"PageUsers",
+    "version_major":0,
+    "version_minor":0,
+    "permissions":["create","delete","edit"],
+    "js_mandatory":0,
+    "tables":[
+      {"name":"users",
+       "columns":[
+         {"name": "PUS_ID",     "type":"INT"},
+         {"name": "PUS_NICK",   "type":"VARCHAR(32)"},
+         {"name": "PUS_EMAIL",  "type":"VARCHAR(64)"},
+         {"name": "PUS_PASSWORD", "type":"VARCHAR(512)"},
+         {"name": "PUS_SALT",   "type":"VARCHAR(512)"}
+       ]
+      }
+    ]
+}
