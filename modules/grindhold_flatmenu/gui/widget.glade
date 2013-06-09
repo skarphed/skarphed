@@ -20,18 +20,6 @@
                 <property name="n_rows">2</property>
                 <property name="n_columns">2</property>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="structure_pagelabel">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Page:</property>
-                  </object>
-                </child>
-                <child>
                   <object class="GtkLabel" id="structure_menulabel">
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Menu:</property>
@@ -40,6 +28,15 @@
                     <property name="top_attach">1</property>
                     <property name="bottom_attach">2</property>
                   </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
             </child>

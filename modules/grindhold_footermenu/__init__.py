@@ -82,9 +82,11 @@ class Module(AbstractModule):
     def render_javascript(self,widget_id,args={}):
         return ""
 
-    def set_content(self, widget_id, page_id, menu_id):
-        page_id = int(page_id)
+    def set_content(self, widget_id, menu_id):
         menu_id = int(menu_id)
+        
+        action_manager = self._core.get_action_manager()
+        page_id = action_manager.get_menu_by_id(menu_id).get_page_id()
         
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO ${footermenu} (MOD_INSTANCE_ID, FMN_SIT_ID, FMN_MNU_ID) \
@@ -98,10 +100,8 @@ class Module(AbstractModule):
         cur = db.query(self, stmnt, (widget_id,))
         row = cur.fetchonemap()
         if row is not None:
-            return {'pageId':row["FMN_SIT_ID"],
-                    'menuId':row["FMN_MNU_ID"]}
+            return {'menuId':row["FMN_MNU_ID"]}
         else:
-            return {"pageId":None,
-                    "menuId":None}
+            return {"menuId":None}
 
 

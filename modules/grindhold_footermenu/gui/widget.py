@@ -40,7 +40,6 @@ class WidgetPage(gtk.VBox):
         gtk.VBox.__init__(self)
         self.widgetId = widget.getLocalId()
 
-        self._pageId = None
         self._menuId = None
 
         path = os.path.realpath(__file__)
@@ -55,18 +54,12 @@ class WidgetPage(gtk.VBox):
 
         self.structure_table = self.builder.get_object("structure_table")
         self.content = self.builder.get_object("widget")
-        self.page_selector = ObjectCombo(self, 
-                                    "Site",
-                                    selectFirst=True,
-                                    virtualRootObject=widget.getModule().getModules().getScoville())
         self.menu_selector = ObjectCombo(self, 
                                     "Menu",
                                     selectFirst=True,
-                                    virtualRootObject=self.page_selector.getSelected())
-        self.structure_table.attach(self.page_selector,1,2,0,1, gtk.FILL|gtk.SHRINK, gtk.FILL|gtk.SHRINK,0,0)
+                                    virtualRootObject=widget.getModule().getModules().getScoville().getSites())
         self.structure_table.attach(self.menu_selector,1,2,1,2, gtk.FILL|gtk.SHRINK, gtk.FILL|gtk.SHRINK,0,0)
 
-        self.page_selector.connect("changed", self.pageChangedCallback)
         self.menu_selector.connect("changed", self.menuChangedCallback)
 
         self.add(self.content)
@@ -78,37 +71,17 @@ class WidgetPage(gtk.VBox):
         except GenericObjectStoreException:
             self.destroy()
 
-        page = None
-        if self._pageId is not None:
-            page = widget.getModule().getModules().getScoville().getSites().getSiteById(self._pageId)
-            if page != self.page_selector.getSelected():
-                self.page_selector.setSelected(page)
-                self.menu_selector.destroy()
-                self.menu_selector = ObjectCombo(self, 
-                                     "Menu",
-                                     selectFirst=True,
-                                     virtualRootObject=page)
-                self.menu_selector.connect("changed", self.menuChangedCallback)
-                self.structure_table.attach(self.menu_selector,1,2,1,2)
-
         if self._menuId is not None:
-            if page is not None:
-                menu = page.getMenuById(self._menuId)
-                self.menu_selector.setSelected(menu)
+            pages = widget.getModule().getModules().getScoville().getSites()    
+            menu = pages.getMenuById(self._menuId)
+            self.menu_selector.setSelected(menu)
 
     def menuChangedCallback(self, widget=None, data=None):
         menu = widget.getSelected()
         if menu is not None:
             self._menuId = menu.getId()
 
-    def pageChangedCallback(self, widget=None, data=None):
-        page = widget.getSelected()
-        if page is not None:
-            self._pageId = page.getId()
-            self.render()
-
     def loadContentCallback(self, data):
-        self._pageId = data['pageId']
         self._menuId = data['menuId']
         self.render()
 
@@ -126,8 +99,6 @@ class WidgetPage(gtk.VBox):
         self.loadContent()
 
     def saveCallback(self, widget=None, data=None):
-        page = self.page_selector.getSelected()
-        pageId = page.getId()
         menu = self.menu_selector.getSelected()
         menuId = menu.getId()
         
@@ -138,7 +109,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getScoville()
-        self.getApplication().doRPCCall(scv, self.setContentCallback, "executeModuleMethod", [module.getId(), "set_content", [widget.getId(), pageId, menuId]])        
+        self.getApplication().doRPCCall(scv, self.setContentCallback, "executeModuleMethod", [module.getId(), "set_content", [widget.getId(), menuId]])        
 
     def getPar(self):
         return self.par
