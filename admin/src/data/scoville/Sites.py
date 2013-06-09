@@ -47,6 +47,13 @@ class Sites(GenericScovilleObject):
             if site.getId() == id:
                 return site
         return None
+
+    def getMenuById(self,nr):
+        for site in self.children:
+            menu = site.getMenuById(nr)
+            if menu is not None:
+                return menu
+        return None
     
     def refresh(self):
         self.getApplication().doRPCCall(self.getScoville(),self.refreshCallback, "getSites")

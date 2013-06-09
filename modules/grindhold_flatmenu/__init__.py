@@ -71,10 +71,12 @@ class Module(AbstractModule):
     def render_javascript(self,widget_id,args={}):
         return ""
 
-    def set_content(self, widget_id, page_id, menu_id, orientation):
-        page_id = int(page_id)
+    def set_content(self, widget_id, menu_id, orientation):
         menu_id = int(menu_id)
         orientation = int(bool(orientation))
+
+        action_manager = self._core.get_action_manager()
+        page_id = action_manager.get_menu_by_id(menu_id).get_page_id()
         
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO ${flatmenu} (MOD_INSTANCE_ID, FMN_SIT_ID, FMN_MNU_ID, FMN_ORIENTATION) \
@@ -88,12 +90,10 @@ class Module(AbstractModule):
         cur = db.query(self, stmnt, (widget_id,))
         row = cur.fetchonemap()
         if row is not None:
-            return {'pageId':row["FMN_SIT_ID"],
-                    'menuId':row["FMN_MNU_ID"],
+            return {'menuId':row["FMN_MNU_ID"],
                     'orientation':row["FMN_ORIENTATION"]}
         else:
-            return {"pageId":None,
-                    "menuId":None,
+            return {"menuId":None,
                     "orientation":Module.HORIZONTALLY}
 
 
