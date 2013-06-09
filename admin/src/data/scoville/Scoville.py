@@ -30,7 +30,6 @@ from Users import Users
 from Modules import Modules
 from Roles import Roles
 from Sites import Sites
-from Repository import Repository
 from Template import Template
 from Operation import OperationManager, OperationDaemon
 from View import Views
