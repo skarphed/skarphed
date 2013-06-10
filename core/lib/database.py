@@ -265,6 +265,26 @@ class Database(object):
         for table in tables:
             if table["name"] not in [tbl["MDT_NAME"] for tbl in rows]:
                 self._create_table_for_module(module,table)
+            else:
+                self._update_columns_for_table(module, table)
+
+    def _update_columns_for_table(self, module, table):
+        """
+        Deletes columns that exist but are not defined in module's manifest
+        Adds columns that doe not exist but are defined in modules's  manifest
+        """
+        stmnt = "SELECT RDB$FIELDNAME FROM RDB$RELATION_FIELDS WHERE RDB$RELATION_NAME = ? ;"
+        stmnt_drop = "ALTER TABLE ? DROP ? ;"
+        stmnt_add = "ALTER TABLE ? ADD ? ? ;"
+        db_tablename = self._replace_module_tables(module,"${"+table["name"]+"}")
+        cur = self.query(self._core, stmnt, (db_tablename,))
+        rows = cur.fetchallmap()
+        for row in rows:
+            if row["RDB$FIELDNAME"] not in [col["name"] for col in table["columns"]]:
+                self.query(self._core, stmnt_drop, (db_tablename, row["RDB$FIELDNAME"]),commit=True)
+        for col in table["columns"]:
+            if col["name"] not in [r["RDB$FIELDNAME"] for r in rows]:
+                self.query(self._core, stmnt_add, (db_tablename, col["name"], col["type"]),commit=True)
 
     def create_tables_for_module(self, module):
         """
