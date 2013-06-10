@@ -17,9 +17,11 @@ e) install distribute (32bit for py2.7) http://www.lfd.uci.edu/~gohlke/pythonlib
 f) install http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
 
 TODO: Fix bug with gettext (cannot find locale)
-TODO: Create Standalone version with own preconfigured python interpreter
-TODO: Create Installer
+TODO: Include WIMP-GTK-Theme in Bundle with the help of:
+    http://stackoverflow.com/questions/7884959/bundling-gtk-resources-with-py2exe
 
 ????????
 
 Enjoy Scoville on Windows
+
+
