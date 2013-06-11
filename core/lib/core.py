@@ -248,7 +248,6 @@ class Core(object):
 
         ext = view.render(environment)
 
-        self.log(type(ext))
         self.response_body.append(ext.encode('utf-8'))
 
         return {"body":self.response_body, "header":self.response_header}
