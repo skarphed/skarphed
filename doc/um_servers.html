@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>scoville - Documentation</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+        <link href="static/logo_32.png" rel="icon" type="image/png">
+        <link href="static/mainsite.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="body_overlay" >
+            <header>
+                <div id="headercontent">
+                    <a class="bclink" href="index.html">
+                    <img src="static/logo_32.png" alt="scoville" style="float:left; margin-right: 10px;">
+                        Documentation 
+                    </a>
+                    <a class="bclink" href="user_man.html">
+                        → Users Manual
+                    </a>
+                    <a class="bclink" href="um_servers.html">
+                        → Servers
+                    </a>
+                </div>
+            </header>
+
+            <div id="space_content">
+                <span class="headerlink_nohover"><h2> Servers </h2></span>
+                <p>A server in the scoville universe is something that has an IP. Simple as that. A server can be a Desktop PC, a Rackserver, a Virtual Machine, or even your Coffeemaker given the fact that it supports TCP/IP. Scoville's components are hosted on servers. <em>scoville-admin</em> talks to it's servers via SSH, so each server that is to be used in your scoville infrastructure must deliver SSH at <b>TCP-port 22</b></p>
+                <h2>Adding a server</h2>
+                <p>In <em>scoville-admin</em> you add a server by clicking the Button <em>Add</em> in the toolbar and then filling up the register server dialog. Following fields must be filled out:
+                <ul>
+                    <li>IP:
+                        <p>Enter the IP of your Server in this field. Please do not use DNS-Names here. The server really should represent the physical machine here. Scoville handles DNS-Names in the <em>scoville-core</em></p>
+                    </li>
+                    <li>Name:
+                        <p>Give your server a name here, so that you do not have to remember the purpose of each machine by memerizing it's IP. For example if you want to use the server as databaseserver, call it <em>DB1</em>.</p>
+                    </li>
+                    <li>Username:
+                        <p>This field expects you to enter the SSH username, respectively the UNIX-user you want <em>scoville-admin</em> to log in as. Currently, scoville can only act as the servers root user. For now just enter <em>root</em> here</p>
+                    </li>
+                    <li>Password:
+                        <p>Enter the SSH-password of the UNIX-user, you entered into the field <em>Username</em>. As mentioned in <em>Username</em> scoville-admin can currently only act as <em>root</em>.</p>
+                    </li>
+                </ul>
+                <h2>Security stuff</h2>
+                <p>Some people may be confused by the fact, that <em>scoville-admin</em> needs a rootuser on the systems, because allowing root to login from remote is bad practice. First of all, this is a temporary state. There will support for other users be implemented. Scoville needs superuser powers on the server to install programs such as webservers and python-libraries. However even with a required rootuser-remote-account, it is possible to create a secure scoville environment. We assume, that the PC that runs <em>scoville-admin</em> is located in the same network as the servers that you want to control with it, as it is the case in many corporate networks. You can configure your server in a manner, that it only accepts SSH-requests from a certain IP-range in that network, for example with iptables.</p>
+            </div>
+
+
+            <footer id="space_footer">
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+            </footer>
+        </div>
+
+    </body>
+</html>

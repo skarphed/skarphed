@@ -23,7 +23,7 @@ body {
     padding:0px;
     margin:0px;
     border:none;
-    background-image:url('static/bg.png');
+    background-image:url(bg.png);
 }
 
 header{
