@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -52,7 +52,7 @@ class MainWindow(gtk.Window):
         
         self._dialogObjectStack = []
 
-        self.set_title(_("Scoville Admin PRO"))
+        self.set_title(_("Skarphed Admin PRO"))
         self.set_icon_from_file("../data/icon/mp_logo.png")
         self.maximize()
         
@@ -163,10 +163,10 @@ class MainWindow(gtk.Window):
     
     def cb_AboutClicked(self,widget=None,data=None):
         about = gtk.AboutDialog()
-        about.set_program_name(_("Scoville Admin PRO"))
+        about.set_program_name(_("Skarphed Admin PRO"))
         about.set_version(_("0.1"))
         about.set_copyright(_("© Masterprogs"))
-        about.set_comments(_("Scoville Admin PRO is a professional tool to manage your Scoville installations"))
+        about.set_comments(_("Skarphed Admin PRO is a professional tool to manage your Skarphed installations"))
         about.set_website(MainWindow.WEBSITE)
         about.set_logo(gtk.gdk.pixbuf_new_from_file(sys.path[0]+"/../data/login.png"))
         about.set_border_width(0)

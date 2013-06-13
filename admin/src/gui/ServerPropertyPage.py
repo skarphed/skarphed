@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -27,7 +27,7 @@ pygtk.require("2.0")
 import gtk
 
 
-from IconStock import SCOVILLE
+from IconStock import SKARPHED
 from ViewPasswordButton import ViewPasswordButton
 from InstancePage import InstancePage
 from data.Generic import GenericObjectStoreException
@@ -46,11 +46,11 @@ class ServerPropertyPage(gtk.Frame):
         self.par = parent
         self.serverId = None
         if server is None:
-            self.set_label(_("Scoville Admin Pro :: New Server"))
+            self.set_label(_("Skarphed Admin Pro :: New Server"))
             self.mode = ServerPropertyPage.MODE_NEW
         else:
             self.serverId = server.getLocalId()
-            self.set_label(_("Scoville Admin Pro :: Server Properties of ")+server.getIp())
+            self.set_label(_("Skarphed Admin Pro :: Server Properties of ")+server.getIp())
             self.mode = ServerPropertyPage.MODE_EDIT
             
         self.vbox = gtk.VBox()
@@ -155,7 +155,7 @@ class ServerPropertyPage(gtk.Frame):
         self.instStore.clear()
         if server is not None:
             for instance in server.getInstances():
-                icon = SCOVILLE #TODO: Implement Icon
+                icon = SKARPHED #TODO: Implement Icon
                 self.instStore.append((icon,instance.getName(),instance.getLocalId()))
         self.cb_cursorChanged()
 

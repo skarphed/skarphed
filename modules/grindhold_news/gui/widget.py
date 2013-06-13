@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -30,7 +30,7 @@ import os
 
 from data.Generic import GenericObjectStoreException
 
-from gui.scoville.ViewGenerationControl import ViewGenerationControl
+from gui.skarphed.ViewGenerationControl import ViewGenerationControl
 from gui.InputBox import InputBox
 
 class WidgetPage(gtk.VBox):
@@ -140,7 +140,7 @@ class WidgetPage(gtk.VBox):
             self.destroy()
         module = widget.getModule()
 
-        scv = module.getModules().getScoville()
+        scv = module.getModules().getSkarphed()
         self.getApplication().doRPCCall(scv, self.loadNewsCallback, "executeModuleMethod", [module.getId(), "get_news", [widget.getId()]])
 
 
@@ -159,7 +159,7 @@ class WidgetPage(gtk.VBox):
             self.destroy()
         module = widget.getModule()
 
-        scv = module.getModules().getScoville()
+        scv = module.getModules().getSkarphed()
         self.getApplication().doRPCCall(scv, self.loadNewsEntryCallback, "executeModuleMethod", [module.getId(), "get_news_entry", [widget.getId(), entry_id]])
 
     def chooseNewsCallback(self, tree=None, path=None, data=None):
@@ -184,7 +184,7 @@ class WidgetPage(gtk.VBox):
             self.destroy()
         module = widget.getModule()
 
-        scv = module.getModules().getScoville()
+        scv = module.getModules().getSkarphed()
         self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "save_news_entry", [widget.getId(), self._saving_entry]])
 
     def createNewEntryCallback(self, data):
@@ -200,7 +200,7 @@ class WidgetPage(gtk.VBox):
             self.destroy()
         module = widget.getModule()
 
-        scv = module.getModules().getScoville()
+        scv = module.getModules().getSkarphed()
         self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "create_news_entry", [widget.getId(), title]])
 
     def getPar(self):

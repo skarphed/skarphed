@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>scoville - Documentation</title>
+        <title>skarphed - Documentation</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
         <link href="static/logo_32.png" rel="icon" type="image/png">
         <link href="static/mainsite.css" rel="stylesheet" type="text/css">
@@ -11,7 +11,7 @@
             <header>
                 <div id="headercontent">
                     <a class="bclink" href="index.html">
-                    <img src="static/logo_32.png" alt="scoville" style="float:left; margin-right: 10px;">
+                    <img src="static/logo_32.png" alt="skarphed" style="float:left; margin-right: 10px;">
                         Documentation 
                     </a>
                     <a class="bclink" href="user_man.html">
@@ -27,21 +27,21 @@
                 <span class="headerlink_nohover"><h2> Databases </h2></span>
                 <h3> Step 1: Installing the server </h3>
                 <p>
-                    Scoville uses the <a href="http://www.firebirdsql.org">Firebird RDBMS</a> as it's database management system. Therefore you have to set up at least one Firebird-server in your setup.
+                    Skarphed uses the <a href="http://www.firebirdsql.org">Firebird RDBMS</a> as it's database management system. Therefore you have to set up at least one Firebird-server in your setup.
 
                     It is up to you which operating system you run your Firebird-server on, it just has to offer a SSH-Server at <b>TCP-port 22</b>, the database connection at <b>TCP-port 3050</b> (which is firebirds default port) and must be a running a Firebird version 2.5 or greater.
 
                     On Debian (tested on squeeze) for example you install a Firebird-server simply by executing these commands:<br>
                     <code>
-                        user@scoville-db:~$ sudo apt-get install firebird2.5-super<br>
-                        user@scoville-db:~$ sudo dpkg-reconfigure firebird2.5-super<br>
-                        user@scoville-db:~$ sudo /etc/init.d/firebird2.5-super restart
+                        user@skarphed-db:~$ sudo apt-get install firebird2.5-super<br>
+                        user@skarphed-db:~$ sudo dpkg-reconfigure firebird2.5-super<br>
+                        user@skarphed-db:~$ sudo /etc/init.d/firebird2.5-super restart
                     </code><br>
                     The second command will ask if the Firebird-server should be started by default. Answer this question with yes. Further it will ask you for a SYSDBA-password. SYSDBA is the equivalent of a root-user in UNIX-environments. <b>Choose a strong password</b> and keep it until the next step.
                 </p>
-                <h3> Step 2: Register the database in <em>scoville-admin</em></h3>
+                <h3> Step 2: Register the database in <em>skarphed-admin</em></h3>
                 <p>
-                    If you haven't already done it, please register the machine you just installed Firebird on as a <a href="um_servers.html">server</a> in <em>scoville-admin</em>. Now you do a right mouseclick on this server and click <em>Register Database</em>. You will now see a Dialog in the working area that asks you for a Firebird-database-user and a password.
+                    If you haven't already done it, please register the machine you just installed Firebird on as a <a href="um_servers.html">server</a> in <em>skarphed-admin</em>. Now you do a right mouseclick on this server and click <em>Register Database</em>. You will now see a Dialog in the working area that asks you for a Firebird-database-user and a password.
                     Please enter "SYSDBA" and the password you chose for the User in the last step. Finish by clicking <em>OK</em>.
                 </p>
 

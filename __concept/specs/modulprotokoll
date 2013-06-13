@@ -7,7 +7,7 @@ Ein Modul wird folgendermaßen dargestellt:
 
 {
   'type'          :'module',
-  'name'          :'de.grindhold.scoville.modulname',
+  'name'          :'de.grindhold.skarphed.modulname',
   'hrname'        :'Modulname'                      //für menschen lesbarer name
   'version_major' : 1,
   'version_minor' : 2,
@@ -77,14 +77,14 @@ Ein Modul wird folgendermaßen dargestellt:
 Im Zuge des Bestrebens die Module moeglichst sicher zu gestalten wird folgendes
 Konzept vorgeschlagen:
 
-Der Programmierer braucht fuer Seine Scoville-Karriere ein gueltiges RSA-
+Der Programmierer braucht fuer Seine Skarphed-Karriere ein gueltiges RSA-
 Schluesselpaar.
 
-Er kann sich bei einem Scoville-Repository mit einem nickname registrieren und
+Er kann sich bei einem Skarphed-Repository mit einem nickname registrieren und
 hinterlegt dabei seinen Public key. 
 
 Der Programmierer identifiziert sich beim Server, indem er ihm das als String
-'scoville' verschluesselt uebertraegt und der Server diesen String mit dem 
+'skarphed' verschluesselt uebertraegt und der Server diesen String mit dem 
 Publickey aufschluesseln kann.
 
   Coder -> {'c': 100, 'n' : 'grindhold', 'p' : 'WEAFADSCASYXFAFWAAF'}
@@ -92,7 +92,7 @@ Publickey aufschluesseln kann.
   
 Der Uploadvorgang sieht dementsprechend so aus:
 
-  Coder -> {'c': 101, 'n' : 'grindhold, 'a' : 'scovilleverschluesselt',
+  Coder -> {'c': 101, 'n' : 'grindhold, 'a' : 'skarphedverschluesselt',
             'nationality' : 'de', 'modulname': 'modulX', 'hrname': 'modulX',
             'version_major' : 1, 'version_minor': 2, 'revision': 3,
             'data' : 'BASE64_ENCODED_GZIPPED_MODULE_FILE'}

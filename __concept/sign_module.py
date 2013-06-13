@@ -7,7 +7,7 @@ def main():
     
     if sys.argv[1] == 'generate':
         try:
-            open('scoville_prv.pem')
+            open('skarphed_prv.pem')
         except IOError:
             pass
         else:
@@ -18,10 +18,10 @@ def main():
         import os
         key = RSA.generate(1024, os.urandom)
         pubkey = key.publickey()
-        file_private = open('scoville_prv.pem','w')
+        file_private = open('skarphed_prv.pem','w')
         file_private.write(key.exportKey())
         file_private.close()
-        file_public  = open('scoville_pub.pem','w')
+        file_public  = open('skarphed_pub.pem','w')
         file_public.write(pubkey.exportKey())
         file_public.close()
         print "Keys successfully generated"
@@ -35,13 +35,13 @@ def main():
         try:
             moduleData = open(filename,'r').read()
         except IOError:
-            print "Could not open Scoville Module "+filename
+            print "Could not open Skarphed Module "+filename
             sys.exit(1)
         
         try:
-            keyraw = open('scoville_prv.pem','r').read()
+            keyraw = open('skarphed_prv.pem','r').read()
         except IOError:
-            print "Need a private Key 'scoville_prv.pem' to sign packet."+\
+            print "Need a private Key 'skarphed_prv.pem' to sign packet."+\
                   "Generate Key using sign_module.py generate"
             sys.exit(1)
         import Crypto.Hash.SHA256 as SHA256
@@ -69,13 +69,13 @@ def main():
         try:
             moduleData = open(filename,'r').read()
         except IOError:
-            print "Could not open Scoville Module "+filename
+            print "Could not open Skarphed Module "+filename
             sys.exit(1)
         
         try:
-            keyraw = open('scoville_pub.pem','r').read()
+            keyraw = open('skarphed_pub.pem','r').read()
         except IOError:
-            print "Need a private Key 'scoville_prv.pem' to sign packet."+\
+            print "Need a private Key 'skarphed_prv.pem' to sign packet."+\
                   "Generate Key using sign_module.py generate"
             sys.exit(1)
         import json

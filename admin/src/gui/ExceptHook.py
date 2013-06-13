@@ -17,7 +17,7 @@
 # see also http://faq.pygtk.org/index.py?req=show&file=faq20.010.htp
 # (The license is still whatever you want.)
 #
-# Changed in the Development of Scoville:
+# Changed in the Development of Skarphed:
 # - Made the _info-Dialog a gtk.MESSAGE_ERROR instead of gtk.MESSAGE_WARNING
 
 import inspect, linecache, pydoc, sys, traceback
@@ -223,12 +223,12 @@ def _dialog_response_cb(dialog, resp, trace):
 # ExpectedErrorHandler-Class is not 
 # the code of Filip Van Raemdonck
 # and Martin Renold but part of the 
-# Scoville Project by Daniel 'grindhold' Brendle
+# Skarphed Project by Daniel 'grindhold' Brendle
 # and Andre 'freakout' Kupka
 #
 ####################################################
 
-from net.ScovilleRepository import ScovilleRepositoryException
+from net.SkarphedRepository import SkarphedRepositoryException
 
 class ExpectedErrorHandler(gtk.MessageDialog):
     def __init__(self):
@@ -236,7 +236,7 @@ class ExpectedErrorHandler(gtk.MessageDialog):
         self.open = False
 
         self.knownExceptions = {
-                ScovilleRepositoryException : 1
+                SkarphedRepositoryException : 1
             }
 
         for exc in common.errors.getCommonExceptions():
@@ -255,9 +255,9 @@ class ExpectedErrorHandler(gtk.MessageDialog):
             
             self.set_title (_(value.__class__.__name__))
             self.set_markup (value.__class__.__name__)
-            if exctyp is ScovilleRepositoryException:
+            if exctyp is SkarphedRepositoryException:
                 self.format_secondary_text(str(value))
-            elif issubclass(exctyp, common.errors.ScovilleException):
+            elif issubclass(exctyp, common.errors.SkarphedException):
                 self.format_secondary_text (str(value))
             else:
                 pass # TODO: This case should never happen, handle otherwise

@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -46,7 +46,7 @@ from common.errors import CoreException
 
 class Core(object):
     """
-    The Core class is the interface to the world of Scoville
+    The Core class is the interface to the world of Skarphed
     """
     def __init__(self, core_config):
         """
@@ -73,7 +73,7 @@ class Core(object):
     def get_core_config(self,obj):
         """
         Passes the core config on to the Configuration class.
-        This is the only time in a scoville lifetime, that this happens.
+        This is the only time in a skarphed lifetime, that this happens.
         """
         if obj.__class__.__name__ != "Configuration":
             raise CoreException(CoreException.get_msg(1))
@@ -150,7 +150,7 @@ class Core(object):
         return self._pki_manager
 
     def get_name(self):
-        return "de.masterprogs.scoville.core"
+        return "de.masterprogs.skarphed.core"
 
     def log(self, message):
         if hasattr(self,"environment"):

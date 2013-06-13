@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -55,7 +55,7 @@ REPO                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/ic
 RETRY                   = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/retry.png",16,16)
 ROLE                    = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/role.png",16,16)
 SCHEMA                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/schema.png",16,16)
-SCOVILLE                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/mp_logo.png",16,16)
+SKARPHED                = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/mp_logo.png",16,16)
 SERVER_INVALID          = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/server_invalid.png",16,16) #DEPRECATED
 SERVER_LOCKED           = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/server_locked.png",16,16) #DEPRECATED
 SERVER                  = gtk.gdk.pixbuf_new_from_file_at_size(PATH+"/../data/icon/server.png",16,16)
@@ -86,7 +86,7 @@ icon_object_map = {
                    "Sites"            : SITE,
                    "Site"             : SITE,
                    "Repository"       : REPO,
-                   "Scoville_repo"    : REPO,
+                   "Skarphed_repo"    : REPO,
                    "Template"         : TEMPLATE,
                    "Widget"           : WIDGET,
                    "Action"           : ACTION,
@@ -111,7 +111,7 @@ def getModuleIcon(module):
         return MODULE
 
 def getUserIcon(user):
-    if user.getName() == user.getUsers().getScoville().getUsername():
+    if user.getName() == user.getUsers().getSkarphed().getUsername():
         return USER_CURRENT
     if user.getName() == 'root':
         return USER_ROOT
@@ -127,4 +127,4 @@ def getAppropriateIcon(obj):
     if icon_object_map.has_key(obj.__class__.__name__):
         return icon_object_map[obj.__class__.__name__]
     else:
-        return SCOVILLE
+        return SKARPHED

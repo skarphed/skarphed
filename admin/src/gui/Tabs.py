@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -34,7 +34,7 @@ from glue.lng import _
 
 class GenericPage(gtk.ScrolledWindow):
     """
-    This Class defines a Page in the Scoville Tab-Display
+    This Class defines a Page in the Skarphed Tab-Display
     """
     def __init__(self,par):
         gtk.ScrolledWindow.__init__(self)
@@ -83,7 +83,7 @@ class ObjectPageAbstract(GenericPage):
 
 class ObjectPage(ObjectPageAbstract):
     """
-    This Class defines a Page in the Scoville Tab-Display
+    This Class defines a Page in the Skarphed Tab-Display
     That simply displays an Object and its name
 
     Normally used as placeholder

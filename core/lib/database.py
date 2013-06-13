@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -123,7 +123,7 @@ class Database(object):
             os.mkdir(mutex)
         if self._connection is None:
             raise DatabaseException(DatabaseException.get_msg(2))
-        if module.get_name() != "de.masterprogs.scoville.core":
+        if module.get_name() != "de.masterprogs.skarphed.core":
             statement = self._replace_module_tables(module,statement)
         cur = self._connection.cursor()    
         prepared, cur = self._queryCache(cur, statement)
@@ -141,7 +141,7 @@ class Database(object):
     def _replace_module_tables(self, module, query):
         """
         replaces module-based tablenames like
-         'de.grinhold.scoville.news.news'
+         'de.grinhold.skarphed.news.news'
         with an actual SQL-table like
          'TAB_000004'
         """

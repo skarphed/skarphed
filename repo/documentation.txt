@@ -1,7 +1,7 @@
-Folders for scoville repository:
+Folders for skarphed repository:
 
-/etc/scvrepo/ -- configfiles for scovillerepo. place config.json here
-/usr/share/scvrepo/ -- datafiles for scovillerepo. place template.html and static/repo.png here
+/etc/scvrepo/ -- configfiles for skarphedrepo. place config.json here
+/usr/share/scvrepo/ -- datafiles for skarphedrepo. place template.html and static/repo.png here
 
 Database Generation:
     Run the repo_database.sql on an empty Firebird Database

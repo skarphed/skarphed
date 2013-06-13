@@ -476,28 +476,28 @@ GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE
 INSERT INTO USERS (USR_ID, USR_NAME, USR_PASSWORD, USR_SALT)
  VALUES (1, 'root', '%(PASSWORD)s', '%(SALT)s');
 
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (1, 'scoville.manageserverdata');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (2, 'scoville.users.create');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (3, 'scoville.users.alter_password');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (4, 'scoville.users.delete');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (5, 'scoville.users.modify');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (6, 'scoville.users.grant_revoke');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (7, 'scoville.roles.create');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (8, 'scoville.roles.delete');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (9, 'scoville.roles.modify');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (10, 'scoville.modules.install');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (11, 'scoville.modules.uninstall');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (12, 'scoville.modules.enter_repo');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (13, 'scoville.modules.erase_repo');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (14, 'scoville.sites.create');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (15, 'scoville.sites.delete');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (16, 'scoville.sites.modify');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (17, 'scoville.widget.create');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (18, 'scoville.widget.delete');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (19, 'scoville.widget.modify');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (20, 'scoville.users.view');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (21, 'scoville.roles.view');
-INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (22, 'scoville.css.edit');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (1, 'skarphed.manageserverdata');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (2, 'skarphed.users.create');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (3, 'skarphed.users.alter_password');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (4, 'skarphed.users.delete');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (5, 'skarphed.users.modify');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (6, 'skarphed.users.grant_revoke');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (7, 'skarphed.roles.create');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (8, 'skarphed.roles.delete');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (9, 'skarphed.roles.modify');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (10, 'skarphed.modules.install');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (11, 'skarphed.modules.uninstall');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (12, 'skarphed.modules.enter_repo');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (13, 'skarphed.modules.erase_repo');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (14, 'skarphed.sites.create');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (15, 'skarphed.sites.delete');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (16, 'skarphed.sites.modify');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (17, 'skarphed.widget.create');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (18, 'skarphed.widget.delete');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (19, 'skarphed.widget.modify');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (20, 'skarphed.users.view');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (21, 'skarphed.roles.view');
+INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (22, 'skarphed.css.edit');
 
 INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (1,'admin');
 
@@ -528,7 +528,7 @@ INSERT INTO USERROLES (URO_ROL_ID, URO_USR_ID) VALUES (1,1);
 
 INSERT INTO REPOSITORIES VALUES (1,'%(REPO)s','%(REPO)s',80,NULL,'');
 
-INSERT INTO SITES VALUES (1, 'Mainsite', NULL, '<div id=\"h1\"><div id=\"s1\"></div></div><div id=\"h2\"><div id=\"s2\"><div id=\"v1\"></div><div id=\"s3\"></div></div><div id=\"v2\"><div id=\"s4\"></div></div><div id=\"v3\"><div id=\"s5\"></div></div></div><div id=\"h3\"><div id=\"template_bottom\"><span>This Site is using Scoville </span> <span style=\"color:#f00;\">&lt;</span><span style=\"color:#0f0;\">}-</span><span> a CMS by masterprogs &copy; 2011</span></div></div>', 'Mainsite for Content', 5, 'mainsite.html', 1);
+INSERT INTO SITES VALUES (1, 'Mainsite', NULL, '<div id=\"h1\"><div id=\"s1\"></div></div><div id=\"h2\"><div id=\"s2\"><div id=\"v1\"></div><div id=\"s3\"></div></div><div id=\"v2\"><div id=\"s4\"></div></div><div id=\"v3\"><div id=\"s5\"></div></div></div><div id=\"h3\"><div id=\"template_bottom\"><span>This Site is using Skarphed </span> <span style=\"color:#f00;\">&lt;</span><span style=\"color:#0f0;\">}-</span><span> a CMS by masterprogs &copy; 2011</span></div></div>', 'Mainsite for Content', 5, 'mainsite.html', 1);
 
 INSERT INTO CONFIGOWNERS (CNO_ID, CNO_MOD_ID, CNO_WGT_ID) VALUES (1,NULL,NULL);
 INSERT INTO CONFIGOWNERS (CNO_ID, CNO_MOD_ID, CNO_WGT_ID) VALUES (2,NULL,NULL);

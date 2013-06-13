@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -52,14 +52,14 @@ class Application(object):
         self.activeProfile=None
         self.instanceTypes = []
         
-        if not os.path.exists(os.path.expanduser('~/.scovilleadmin/')):
-            os.mkdir(os.path.expanduser('~/.scovilleadmin/'))
+        if not os.path.exists(os.path.expanduser('~/.skarphedadmin/')):
+            os.mkdir(os.path.expanduser('~/.skarphedadmin/'))
 
-        logging.basicConfig(filename=os.path.expanduser('~/.scovilleadmin/generic.log'),level=logging.DEBUG)
+        logging.basicConfig(filename=os.path.expanduser('~/.skarphedadmin/generic.log'),level=logging.DEBUG)
         AutoSaveThread(self).start()
 
         
-        from data import scoville
+        from data import skarphed
     
     def run(self):
         try:
@@ -95,7 +95,7 @@ class Application(object):
         self.quitrequest = val
     
     def doRPCCall(self, server, callback, method, params=[]):
-        call = net.HTTPRpc.ScovilleRPC(server,callback, method, params)
+        call = net.HTTPRpc.SkarphedRPC(server,callback, method, params)
         call.start()
     
     def raiseRPCException(self, exception):
