@@ -43,7 +43,7 @@ from glue.lng import _
 class GetParentException(Exception):pass
 
 class MainWindow(gtk.Window):
-    WEBSITE = "http://www.temporary.invalid"
+    WEBSITE = "http://www.skarphed.org"
     def __init__(self,app):
         gtk.Window.__init__(self)
         

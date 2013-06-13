@@ -4,7 +4,7 @@
 #define MyAppName "Skarphed"
 #define MyAppVersion "0.1"
 #define MyAppPublisher "Skarphed Devteam"
-#define MyAppURL "http://temporary.invalid"
+#define MyAppURL "http://www.skarphed.org"
 #define MyAppExeName "Application.exe"
 
 [Setup]
