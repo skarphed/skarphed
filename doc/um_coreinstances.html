@@ -25,7 +25,49 @@
 
             <div id="space_content">
                 <span class="headerlink_nohover"><h2> Instances of <em>scoville-core</em> </h2></span>
-                <p>Core</p>
+                <p>The <em>scoville-core</em> is the component of scoville that runs on the webserver. Each instance of <em>scoville-core</em> represents one website or webapplication. You can run multiple <em>scoville-core</em>s on one <a href="um_servers.html">server</a>. 
+                </p>
+                <h3>Installing a new <em>scoville-core</em></h3>
+                <p>
+                To install a <em>scoville-core</em>-instance on a server, the following prerequisites must be met:
+                <ul>
+                    <li>There must be a <a href="um_databases.html">database</a> in your infrastructure</li>
+                    <li>There must be a <a href="um_repositories.html">repository</a> in your infrastructure</li>
+                </ul>
+                Optionally it would make sense to have a DNS-name prepared for the new <em>scoville-core</em>. For example myscovillepage.com. 
+                <br>
+                When you verified that you meet all prerequisites, please choose the server you want to install the new core on and right mouseclick on it. Choose <em>Create Instance...</em> in the contextmenu. A Dialog will be opened that wants you to enter the following data:
+                <ul>
+                    <li>Server
+                    <p>The server the new instance will be installed on. This should be automatically set so the server your right-clicked on.</p>
+                    </li>
+                    <li>New Instance Name
+                    <p>Enter an appropriate name for your instance here. For example, if you create a website for the FooBar-Company, name it foobar, foobarsite or FooBarsSite or something similar.</p>
+                    </li>
+                    <li>Repository
+                    <p>The <em>scoville-repo</em> that this <em>scoville-core</em> will use to get modules and templates. The dropdownbox knows every <em>scoville-repo</em> that is registered to your profile.</p>
+                    </li>
+                    <li>Database
+                    <p>Please choose either <em>Create new Database</em> and select the Databaseserver that the schema for the new <em>scoville-core</em> should be created on or <em>Use existing Schema</em> to use a schema that already exists. The dropdownboxes know every <em>schema</em> or <em>database</em> registered to your profile.</p>
+                    </li>
+                    <li>Target-OS
+                    <p>The Target is a combination of an operating system and a webserver that the new instance will run on. Currently there is only a combination of Debian6 and Apache2. Others will follow. Feel free to implement your own and submit them to the project!</p>
+                    </li>
+                    <li>Listen-IP
+                    <p>The IP this <em>scoville-core</em> will listen on</p>
+                    </li>
+                    <li>Listen-Port
+                    <p>The TCP-Port this <em>scoville-core</em> will listen on</p>
+                    </li>
+                    <li>ServerName
+                    <p>The DNS that this server will answer. This is necessary if you want to consolidate many <em>scoville-core</em>s on one server. For example if you have two domains, example1.org and example2.org, the webserver can distinguish via this directive which <em>scoville-core</em> the HTTP-request should be redirected to.</p>
+                    </li>
+                    <li>ServerAlias
+                    <p>The alias is an alternative DNS-name for this <em>scoville-core</em>. For example if you want the <em>scoville-core</em> to listen on example1.org and on www.example1.org simultaneously. Or if you want this <em>scoville-core</em> to listen on example1.org and every subdomain of example1.org (use *.example1.org here).</p>
+                    </li>
+                </ul>
+                When you finished entering all relevant data, click <em>OK</em> and wait until the progress bar reached 100%. This may probably take a longer time, especially when you havent had installed a <em>scoville-core</em> on this server before or your server has a slow internet connection. The internet connection is required to install dependencies of <em>scoville-core</em> on the server.
+                </p>
             </div>
 
 
