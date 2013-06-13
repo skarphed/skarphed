@@ -7,12 +7,11 @@ Ein Modul wird folgendermaßen dargestellt:
 
 {
   'type'          :'module',
-  'name'          :'de.grindhold.skarphed.modulname',
+  'name'          :'developernick_modulename',
   'hrname'        :'Modulname'                      //für menschen lesbarer name
   'version_major' : 1,
   'version_minor' : 2,
   'revision'      : 3,
-  'md5'           : 'a545abfafbcc465464c45fe1c135a4de' //md5-hash der moduldaten
   'signed'        : 1,                       //gibt an ob das modul signiert ist
   'publicKey'     : 'stringstrring' //publickey im falle eines signierten pakets
 }
@@ -144,8 +143,20 @@ Die Command-Codes nochmal im Überblick
   3: Abhaengigkeiten nach unten aufloesen
   4: Abhaengigkeitne nach oben aufloesen
   5: Herunterladen eines Moduls
+  6: Bekomme Publickey
+  7: Bekomme letzte version des modules
+  8: Bekomme alle templates
+  9: Herunterladen eines Templates
 
-100: Programmierer registriert sich bei einem Repo
-101: Programmierer laedt ein Modul hoch
+100: Login
+101: Logout
+102: Passwort aendern
+103: Entwickler registrieren
+104: Entwickler loeschen
+105: Modul hochladen
+106: Modul loeschen
+107: Bekomme alle entwickler
+108: Template hochladen
+109: Template loeschen
 
 
