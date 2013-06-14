@@ -26,7 +26,7 @@ d) Export $PYTHONPATH and make it permanent -> python´s lib locations
 
 e) To run Skarphed
    - cd ../admin/src/
-   - python Application.py
+   - python skarphed.py
 
    Gratulations you're done. Skarphed is now running on your Macintosh!
 
