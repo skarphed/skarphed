@@ -4,24 +4,24 @@ Steps taken to get it run (tested on Mac OS 10.8 Mountain Lion)
 INFO: do the steps b to e in Terminal.app
 
 a) Install these programms
-   - XQuarz (
-   - pip
-   - port
-   - brew (install this under a second user it could convict with port)
+   - XQuarz   (https://xquartz.macosforge.org)
+   - pip      (https://pypi.python.org/pypi/pip)
+   - macports (https://www.macports.org)
+   - brew     (http://mxcl.github.io/homebrew)
+     NOTE: install brew under a second user it could convict with macports
 
 b) Install python libs
    - sudo pip install pycrypto
    - sudo pip install paramiko
    - sudo pip install fdb
-   - sudo pip install tinycss
 
-c) Install GTK (login to the user where you've installed brew)
-   NOTE: I had to do this twice the first time just GTK+ came without pygtk
+c) Install GTK (login or SSH to the user where you've installed brew)
+   NOTE: I had to do this twice the first time I just got GTK+ without pygtk
    - brew install pygtk
    - brew install pygtk
 
 d) Export $PYTHONPATH and make it permanent -> python´s lib locations
-   - echo "export PYTHONPATH=/usr/local/lib/python2.7/site-packages:/usr/local/lib/python2.7/site-packages:$PYTHONPATH" >> ~.profile
+   - echo "export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH" >> ~.profile
    - echo "export PYTHONPATH=/Library/Python/2.7/site-packages/:$PYTHONPATH" >> ~.profile
 
 e) To run Skarphed
