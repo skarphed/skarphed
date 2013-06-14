@@ -4,26 +4,26 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
 from ServerPropertyPage import ServerPropertyPage
-from NewScovillePage import NewScovillePage
+from NewSkarphedPage import NewSkarphedPage
 from gui.database.NewDatabasePage import NewDatabasePage
 from gui.database.NewSchemaPage import NewSchemaPage
 from gui.database.RegisterSchemaPage import RegisterSchemaPage
@@ -84,7 +84,7 @@ class ServerARC(ActionRenderContext):
         self.addAction(_('Remove...'), IconStock.DELETE, self.removeServer)
         self.addAction(_('Connect...'), IconStock.WIDGET, self.connectServer)
         self.addAction(_('Properties...'), IconStock.SERVER, self.Properties)
-        self.addAction(_('Create Instance...'), IconStock.SCOVILLE, self.createInstance)
+        self.addAction(_('Create Instance...'), IconStock.SKARPHED, self.createInstance)
         self.addAction(_('Register Database...'), IconStock.DATABASE, self.registerDatabase)
 
     def removeServer(self,data=None):
@@ -99,14 +99,14 @@ class ServerARC(ActionRenderContext):
         ServerPropertyPage(self.getPar().getPar(),server=self.obj)
     
     def createInstance(self,data=None):
-        NewScovillePage(self.getPar().getPar(),server=self.obj)
+        NewSkarphedPage(self.getPar().getPar(),server=self.obj)
     
     def registerDatabase(self, data=None):
         NewDatabasePage(self.getPar().getPar(), self.obj)
 
-class ScovilleARC(ActionRenderContext):
-    def __init__(self, par, scoville):
-        ActionRenderContext.__init__(self, par,scoville)
+class SkarphedARC(ActionRenderContext):
+    def __init__(self, par, skarphed):
+        ActionRenderContext.__init__(self, par,skarphed)
 
         self.addAction(_('Destroy...'), IconStock.DELETE, self.destroyInstance)
         self.addAction(_('Remove...'), IconStock.DELETE, self.removeInstance)
@@ -273,7 +273,7 @@ ARCMAP = {
                    "Menu"             : MenuARC,
                    "Database"         : DatabaseARC,
                    "Schema"           : SchemaARC,
-                   "Scoville"         : ScovilleARC
+                   "Skarphed"         : SkarphedARC
                    }
 
 def getAppropriateARC(parent, obj):

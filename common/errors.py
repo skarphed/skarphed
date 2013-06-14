@@ -4,25 +4,25 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-class ScovilleException(Exception):
+class SkarphedException(Exception):
     ERRORS = {}
     PREFIX = "GENERIC"
     def __init__(self, message):
@@ -39,14 +39,14 @@ class ScovilleException(Exception):
     def get_tracebackstring(self):
         return self.tracebackstring
     
-class UnknownCoreException(ScovilleException):pass
+class UnknownCoreException(SkarphedException):pass
 """
 If a exception comes from the core to the admingui via RPC.
 it will be packed into this object to be passed on to the 
 final "critical"-excepthook
 """
 
-class ActionException(ScovilleException):
+class ActionException(SkarphedException):
     """
     Exceptions for Database-Module
     """
@@ -56,7 +56,7 @@ class ActionException(ScovilleException):
     }
 
 
-class BinaryException(ScovilleException):
+class BinaryException(SkarphedException):
     """
     Exceptions for Database-Module
     """
@@ -68,14 +68,14 @@ class BinaryException(ScovilleException):
         3:"""Get By Filename: No Binary found with the filename: """
     }
 
-class ConfigurationException(ScovilleException):
+class ConfigurationException(SkarphedException):
     PREFIX = "CONF"
     ERRORS = {
         1:"""This Configurationentry does not exist!""",
         2:"""Can only override entries in database"""
     }
 
-class CoreException(ScovilleException):
+class CoreException(SkarphedException):
     PREFIX = "CORE"
     ERRORS = {
         1:"""Only the Configuration-class is authorized to access this variable""",
@@ -83,7 +83,7 @@ class CoreException(ScovilleException):
     }
 
 
-class CSSException(ScovilleException):
+class CSSException(SkarphedException):
     PREFIX = "CSS"
     ERRORS = {
         0:"""Get CSSPropertySet: This Widget does not exist""",
@@ -95,7 +95,7 @@ class CSSException(ScovilleException):
         6:"""Invalid Propertyset: Invalid type:"""
     }
     
-class DatabaseException(ScovilleException):
+class DatabaseException(SkarphedException):
     """
     Exceptions for Database-Module
     """
@@ -106,7 +106,7 @@ class DatabaseException(ScovilleException):
         3:"""Could not resolve Tables:"""
     }
 
-class ModuleCoreException(ScovilleException):
+class ModuleCoreException(SkarphedException):
     PREFIX = "CMOD"
     ERRORS = {
         0:"""This instance does not have a WidgetId. Therefore, Widget-bound methods cannot be used""",
@@ -122,7 +122,7 @@ class ModuleCoreException(ScovilleException):
         10:"""Cant create a widget with an empty name"""
     }
 
-class OperationException(ScovilleException):
+class OperationException(SkarphedException):
     """
     Exceptions for Operation-Module
     """
@@ -131,7 +131,7 @@ class OperationException(ScovilleException):
         0:"""Could not remove Lock!""",
     }
 
-class PermissionException(ScovilleException):
+class PermissionException(SkarphedException):
     """
     Exceptions for Permission-Module
     """
@@ -153,7 +153,7 @@ class PermissionException(ScovilleException):
         13:"""Create Role: This role already exists: """
     }
 
-class SessionException(ScovilleException):
+class SessionException(SkarphedException):
     PREFIX ="SE"
     ERRORS = {
         0:"""SessionError: Session Expired""",
@@ -162,7 +162,7 @@ class SessionException(ScovilleException):
         3:"""SessionError: Cannot Store a userless Session"""
     }
 
-class TemplateException(ScovilleException):
+class TemplateException(SkarphedException):
     """
     Exceptions for Database-Module
     """
@@ -172,7 +172,7 @@ class TemplateException(ScovilleException):
         
     }
 
-class UserException(ScovilleException):
+class UserException(SkarphedException):
     """
     Exceptions for User-Module
     """
@@ -196,7 +196,7 @@ class UserException(ScovilleException):
         15:"""User already exists: """
     }
 
-class ViewException(ScovilleException):
+class ViewException(SkarphedException):
     PREFIX = "VIE"
     ERRORS = {
         0:"""Get By Name: No such view""",
@@ -210,7 +210,7 @@ class ViewException(ScovilleException):
     }
 
 ERRORNAMES = {
-    'ScovilleException':ScovilleException,
+    'SkarphedException':SkarphedException,
     'CoreException':CoreException,
     'CSSException':CSSException,
     'ActionException':ActionException,

@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -27,11 +27,11 @@ import socket
 import re
 
 
-from Generic import GenericScovilleObject
+from Generic import GenericSkarphedObject
 from Generic import ObjectStore
 from Instance import InstanceType
 
-class Server(GenericScovilleObject):
+class Server(GenericSkarphedObject):
     URL_PROT_STRIP = re.compile(r".+://")
     URL_TAIL_STRIP = re.compile(r"(:(\d{1}|\d{2}|\d{3}|\d{4}|\d{5}))?/.+")
     URL_2NDL_STRIP = re.compile(r"[^.]+\.[^.]+$")
@@ -51,12 +51,12 @@ class Server(GenericScovilleObject):
 
     def __init__(self):
         if not Server.instanceTypesLoaded:
-            import scoville
-            import scoville_repo
+            import skarphed
+            import skarphed_repo
             import database
             Server.instanceTypesLoaded = True
             
-        GenericScovilleObject.__init__(self)
+        GenericSkarphedObject.__init__(self)
         self.state = self.STATE_OFFLINE
         self.ssh_loggedin = self.SSH_LOCKED
         self.ssh_ready = False
@@ -135,13 +135,13 @@ class Server(GenericScovilleObject):
     def getServer(self):
         return self
 
-    def installNewInstance(self,data,target,instanceType="scoville"):
-        if instanceType == "scoville":
-            from scoville.Scoville import Scoville
-            return Scoville.installNewScoville(data,self,target)
-        elif instanceType == "scoville_repo":
+    def installNewInstance(self,data,target,instanceType="skarphed"):
+        if instanceType == "skarphed":
+            from skarphed.Skarphed import Skarphed
+            return Skarphed.installNewSkarphed(data,self,target)
+        elif instanceType == "skarphed_repo":
             print "Not Implemented yet: %s"%(instanceType,)
-        elif instanceType == "scoville_database":
+        elif instanceType == "skarphed_database":
             print "Not Implemented yet: %s"%(instanceType,)
     
     def setDatabase(self, user="", password=""):

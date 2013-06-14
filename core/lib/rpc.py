@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -118,7 +118,7 @@ class Rpc(object):
         if user_id == session_user.get_id():
             session_user.alter_password(new_password,old_password)
         else:
-            if session_user.check_permission("scoville.users.alter_password"):
+            if session_user.check_permission("skarphed.users.alter_password"):
                 user_manager = self._core.get_user_manager()
                 user = user_manager.get_user_by_id(user_id)
                 user.alter_password(new_password,"",True)
@@ -132,7 +132,7 @@ class Rpc(object):
     def getUsers(self,params):
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.users.view'):
+        if session_user.check_permission('skarphed.users.view'):
             user_manager = self._core.get_user_manager()
             users = user_manager.get_users_for_admin_interface()
             return users
@@ -141,7 +141,7 @@ class Rpc(object):
     def getRoles(self,params):
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.roles.view'):
+        if session_user.check_permission('skarphed.roles.view'):
             ret = []
             permission_manager = self._core.get_permission_manager()
             for role in permission_manager.get_roles():
@@ -155,7 +155,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.users.create'):
+        if session_user.check_permission('skarphed.users.create'):
             user_manager = self._core.get_user_manager()
             user_manager.create_user(username,password)
         return True
@@ -166,7 +166,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.users.grant_revoke'):
+        if session_user.check_permission('skarphed.users.grant_revoke'):
             user_manager = self._core.get_user_manager()
             user = user_manager.get_user_by_id(user_id)
             user.grant_permission(permission_name)
@@ -178,7 +178,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.users.grant_revoke'):
+        if session_user.check_permission('skarphed.users.grant_revoke'):
             user_manager = self._core.get_user_manager()
             user = user_manager.get_user_by_id(user_id)
             user.revoke_permission(permission_name)
@@ -219,7 +219,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.roles.create'):
+        if session_user.check_permission('skarphed.roles.create'):
             permission_manager = self._core.get_permission_manager()
             role = permission_manager.create_role(data)
         return role.get_id()
@@ -229,7 +229,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.roles.delete'):
+        if session_user.check_permission('skarphed.roles.delete'):
             permission_manager = self._core.get_permission_manager()
             role = permission_manager.get_role(role_id)
             role.delete()
@@ -246,7 +246,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.users.grant_revoke'):
+        if session_user.check_permission('skarphed.users.grant_revoke'):
             permission_manager = self._core.get_permission_manager()
             user_manager = self._core.get_user_manager()
             role = permission_manager.get_role(role_id)
@@ -258,7 +258,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.users.grant_revoke'):
+        if session_user.check_permission('skarphed.users.grant_revoke'):
             permission_manager = self._core.get_permission_manager()
             user_manager = self._core.get_user_manager()
             role = permission_manager.get_role(role_id)
@@ -282,7 +282,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.css.edit'):
+        if session_user.check_permission('skarphed.css.edit'):
             css_manager = self._core.get_css_manager()
             if module_id == None and widget_id == None and session == None:
                 css_propertyset = css_manager.get_csspropertyset()
@@ -296,7 +296,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.css.edit'):
+        if session_user.check_permission('skarphed.css.edit'):
             css_manager = self._core.get_css_manager()
             css_propertyset = css_manager.create_csspropertyset_from_serial(data)
             css_propertyset.store()
@@ -389,7 +389,7 @@ class Rpc(object):
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if session_user.check_permission('scoville.users.delete'):
+        if session_user.check_permission('skarphed.users.delete'):
             user_manager = self._core.get_user_manager()
             user = user_manager.get_user_by_id(user_id)
             user.delete()
@@ -754,7 +754,7 @@ class Rpc(object):
     def startOperationDaemon(self,params):
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if not session_user.check_permission("scoville.manageserverdata"):
+        if not session_user.check_permission("skarphed.manageserverdata"):
             return False
 
         configuration = self._core.get_configuration()
@@ -764,7 +764,7 @@ class Rpc(object):
     def stopOperationDaemon(self,params):
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if not session_user.check_permission("scoville.manageserverdata"):
+        if not session_user.check_permission("skarphed.manageserverdata"):
             return False
 
         configuration = self._core.get_configuration()
@@ -774,7 +774,7 @@ class Rpc(object):
     def restartOperationDaemon(self,params):
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
-        if not session_user.check_permission("scoville.manageserverdata"):
+        if not session_user.check_permission("skarphed.manageserverdata"):
             return False
 
         configuration = self._core.get_configuration()
@@ -846,7 +846,7 @@ class Rpc(object):
         state = bool(params[0])
 
         session_user = self._core.get_session_manager().get_current_session_user()
-        if not session_user.check_permission('scoville.manageserverdata'):
+        if not session_user.check_permission('skarphed.manageserverdata'):
             return False
 
         if state:
@@ -863,7 +863,7 @@ class Rpc(object):
         mode = str(params[0])
 
         session_user = self._core.get_session_manager().get_current_session_user()
-        if not session_user.check_permission('scoville.manageserverdata'):
+        if not session_user.check_permission('skarphed.manageserverdata'):
             return False
 
         return self._core.set_rendermode(mode)

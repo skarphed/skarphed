@@ -2,12 +2,12 @@
 
 
 
-if [[ -r /etc/scoville/INSTALLED ]]
+if [[ -r /etc/skarphed/INSTALLED ]]
 then
-	echo Found Scoville-Installation. Processing with Instance...
-	source /etc/scoville/scoville.conf
+	echo Found Skarphed-Installation. Processing with Instance...
+	source /etc/skarphed/skarphed.conf
 else
-	echo No Scoville-Installation found. Installing components...
+	echo No Skarphed-Installation found. Installing components...
 	
 	#external component installation
 
@@ -15,25 +15,25 @@ else
 
 	pip install fdb pycrypto tinycss
 
-	mkdir /etc/scoville
-	cp ./scoville.conf /etc/scoville/
-	source /etc/scoville/scoville.conf
+	mkdir /etc/skarphed
+	cp ./skarphed.conf /etc/skarphed/
+	source /etc/skarphed/skarphed.conf
 	
 	mkdir $SCV_LIBPATH
 	cp -r ./lib/* $SCV_LIBPATH/
 	chown -R www-data:www-data $SCV_LIBPATH
 
-	touch /etc/scoville/GEN_INSTANCE
-	echo -1 > /etc/scoville/GEN_INSTANCE
+	touch /etc/skarphed/GEN_INSTANCE
+	echo -1 > /etc/skarphed/GEN_INSTANCE
 
 	rm -r /var/www
 	rm /etc/apache2/sites-enabled/000-default
 
-	touch /etc/scoville/INSTALLED
+	touch /etc/skarphed/INSTALLED
 
 fi
 
-instanceid=`cat /etc/scoville/GEN_INSTANCE`
+instanceid=`cat /etc/skarphed/GEN_INSTANCE`
 instanceid=`expr $instanceid + 1`
 
 mkdir $SCV_WEBPATH$instanceid
@@ -41,7 +41,7 @@ cp -r ./web/* $SCV_WEBPATH$instanceid/
 touch $SCV_WEBPATH$instanceid/instanceconf.py
 sed s#//number//#$instanceid#g ./instanceconf.py $SCV_WEBPATH$instanceid/instanceconf.py > $SCV_WEBPATH$instanceid/instanceconf.py
 
-cp ./scoville.py $SCV_WEBPATH$instanceid/
+cp ./skarphed.py $SCV_WEBPATH$instanceid/
 
 cp ./config.json $SCV_WEBPATH$instanceid/
 
@@ -56,7 +56,7 @@ mkdir /var/log/apache2/www_scv_$instanceid
 touch /var/log/apache2/www_scv_$instanceid/error.log
 touch /var/log/apache2/www_scv_$instanceid/access.log
 
-echo $instanceid > /etc/scoville/GEN_INSTANCE
+echo $instanceid > /etc/skarphed/GEN_INSTANCE
 
 /etc/init.d/apache2 restart
 sudo -u www-data python $SCV_WEBPATH$instanceid/operation_daemon.py start $instanceid

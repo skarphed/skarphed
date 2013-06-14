@@ -24,13 +24,13 @@ shutil.copytree("..\installer","dist\\installer")
 shutil.copytree("..\locale","dist\\locale")
 
 setup(
-	name='scoville-admin',
-	description='Scoville Administration Interface',
+	name='skarphed-admin',
+	description='Skarphed Administration Interface',
 	version='0.1alpha',
 	windows= [
 	    {
 	    	'script':'Application.py',
-	    	'icon_resources':[(1,'scoville.ico')]
+	    	'icon_resources':[(1,'skarphed.ico')]
 	    }
 	],
 	options = {

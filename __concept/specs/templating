@@ -35,7 +35,7 @@ Dateien im Archiv:
                         Sie wird dazu verwendet, die Spaces einer Seite im 
                         Admininterface graphisch zu veranschaulichen.
                         Sie wird nur solange im Standard enthalten sein, bis
-                        Scoville das seitenlayout selbst umreissen (static)
+                        Skarphed das seitenlayout selbst umreissen (static)
 general.css         --> Diese Datei enthaelt alle css-formatierungen, die in die
                         Serverweite CSS-Config eingetragen werden sollen.
  
@@ -64,17 +64,17 @@ Archivs und bilder, seiten-css und minimaps in einem Ordner namens static .
      b) Der Webdesigner fuehrt das Programm mit einem Befehlszeilenparameter zum
         packen aus.
   
-  --> Es entsteht ein fertiges .tar.gz-file, dass von scoville gelsen werden
+  --> Es entsteht ein fertiges .tar.gz-file, dass von skarphed gelsen werden
       kann.
 
 ---------------------------------------------------------------
- II. HTML-Dateien in Scoville-Templates
+ II. HTML-Dateien in Skarphed-Templates
 ---------------------------------------------------------------
   
   HTML-Seiten sind keine vollstaendigen HTML-Dokumente, sondern eher der Inhalt
   des Tags <body>
   
-  Typischerweise besteht eine Scoville-Seite aus einer hierarchischen Struktur
+  Typischerweise besteht eine Skarphed-Seite aus einer hierarchischen Struktur
   von <div>-Tags, diese ist aber frei designbar.
 
   1. Container fuer Widgets - Spaces
@@ -92,7 +92,7 @@ Archivs und bilder, seiten-css und minimaps in einem Ordner namens static .
   
   2. Container fuer Spaces - Boxen
   
-  Fuer die weitere entwicklung von Scoville muss die moeglichkeit offengehalten
+  Fuer die weitere entwicklung von Skarphed muss die moeglichkeit offengehalten
   werden, im laufenden betrieb weitere Spaces zu einer seite hinzufuegen zu 
   koennen.
   
@@ -116,7 +116,7 @@ Archivs und bilder, seiten-css und minimaps in einem Ordner namens static .
   Fuer alle HTML-Elemente, die nicht in die Kategorien 1 und 2 fallen koennen
   zum zwecke der CSS-Formatierung (beschrieben in II) ebenfalls IDs vergeben
   werden. Diese IDs beginnen mit dem praefix template_ um nicht mit IDs irgend-
-  welcher von Scoville-Modulen erstellten HTML-Elementen zu kollidieren.
+  welcher von Skarphed-Modulen erstellten HTML-Elementen zu kollidieren.
   
 ---------------------------------------------------------------
  II. Formatieren der Seiten mittels CSS
@@ -139,7 +139,7 @@ Archivs und bilder, seiten-css und minimaps in einem Ordner namens static .
 ---------------------------------------------------------------
 
   Die general.css enthaelt Formatierungen fuer alle gaengigen HTML-Elemente.
-  Die Datei wird beim Import in einen Scovilleserver geparst und ihre eintraege 
+  Die Datei wird beim Import in einen Skarphedserver geparst und ihre eintraege 
   als Serverweiter Standard verwendet.
   
   Beispiel:
@@ -148,7 +148,7 @@ Archivs und bilder, seiten-css und minimaps in einem Ordner namens static .
       border: 1px solid silver;
     }
     
-    -> Jede Tabelle auf einem Scovilleserver mit diesem Template wird einen
+    -> Jede Tabelle auf einem Skarphedserver mit diesem Template wird einen
        hellgrauen Rahmen haben, sofern diese Einstellung nicht durch andere CSS-
        settings ueberschrieben wird.
     
@@ -159,7 +159,7 @@ Archivs und bilder, seiten-css und minimaps in einem Ordner namens static .
   Die Manifest.json ist in folgendem stil gehalten:
   
   {
-    "name": "Scoville Default Template",
+    "name": "Skarphed Default Template",
     "description" : "Ein knallbuntes Template zu Debuggingzwecken",
     "author" : "Daniel 'zigapeda' Elstner",
     

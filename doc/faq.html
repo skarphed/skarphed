@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>scoville - Documentation</title>
+        <title>skarphed - Documentation</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
         <link href="static/logo_32.png" rel="icon" type="image/png">
         <link href="static/mainsite.css" rel="stylesheet" type="text/css">
@@ -11,7 +11,7 @@
             <header>
                 <div id="headercontent">
                     <a class="bclink" href="index.html">
-                    <img src="static/logo_32.png" alt="scoville" style="float:left; margin-right: 10px;">
+                    <img src="static/logo_32.png" alt="skarphed" style="float:left; margin-right: 10px;">
                         Documentation 
                     </a>
                     <a class="bclink" href="faq.html">
@@ -22,17 +22,17 @@
 
             <div id="space_content">
                 <a class="headerlink_nohover"><h2> FAQ </h2></a>
-                <h3>What is scoville?</h3>
-                <p>Scoville is a software suite that is meant to set up, manage, maintain
-                    or tear down websites for you. Therefore scoville consists of three distinct programs, which are <em>scoville-admin</em> (the administration GUI), <em>scoville-core</em> (a CMS that runs on the webservers) and <em>scoville-repo</em> (a module repository that supplies modular extensions for <em>scoville-core</em>s)
+                <h3>What is skarphed?</h3>
+                <p>Skarphed is a software suite that is meant to set up, manage, maintain
+                    or tear down websites for you. Therefore skarphed consists of three distinct programs, which are <em>skarphed-admin</em> (the administration GUI), <em>skarphed-core</em> (a CMS that runs on the webservers) and <em>skarphed-repo</em> (a module repository that supplies modular extensions for <em>skarphed-core</em>s)
                 </p>
-                <h3>Why do you write scoville?</h3>
+                <h3>Why do you write skarphed?</h3>
                 <p>Because i have been told to use CMS for website development, but I was not able to find any that suits me.</p>
-                <h3>Which problems does scoville solve that haven't been solved yet by similar systems?</h3>
+                <h3>Which problems does skarphed solve that haven't been solved yet by similar systems?</h3>
                 <p>
                     <ul>
                         <li>Code Signing:
-                            <p>When you add modular functionality to most CMS-systems, you are usually bound to use code that you find at the page of the developer and trust all parts of the delivery chain, that it has not been contaminated with malicious code in the meantime. Scoville however uses public-key cryptosystems to sign all the code that is being supplied from third party members to components of scoville and comes with it's own code distribution infrastructure, the scoville-repo. Signing happens <b>everytime</b> when scoville-components exchange code.</p>
+                            <p>When you add modular functionality to most CMS-systems, you are usually bound to use code that you find at the page of the developer and trust all parts of the delivery chain, that it has not been contaminated with malicious code in the meantime. Skarphed however uses public-key cryptosystems to sign all the code that is being supplied from third party members to components of skarphed and comes with it's own code distribution infrastructure, the skarphed-repo. Signing happens <b>everytime</b> when skarphed-components exchange code.</p>
                         </li>
                         <li>Native GUI:
                             <p>The usual mainstream CMS uses WebGUIs to allow the website adminstrator to edit the content. As a matter of fact, I don't like WebGUIs due to their lack of responsiveness and want to provide an alternative that uses a native GUI.</p>
@@ -41,14 +41,14 @@
                             <p>If you have a bunch of websites to maintain, it is hard to
                             use strong admin-passwords for every page and keep them in your
                             head. As a result, many users tend to either write their passwords down in a .txt-file or simply choose easily rememberable
-                            and therefore easily guessable passwords. Scoville solves that
-                            problems by letting the scoville-admin act as a password manager. The user simply has to remember his own profile password.</p>
+                            and therefore easily guessable passwords. Skarphed solves that
+                            problems by letting the skarphed-admin act as a password manager. The user simply has to remember his own profile password.</p>
                         </li>
                         <li>Maximized code-reusability:
-                            <p>Write a Module (e.g. a Forum) once, deploy it on every other scoville-core you need it, too. Simply via drag and drop. This is how i think it is meant to be. This is why i coded it this way.</p>
+                            <p>Write a Module (e.g. a Forum) once, deploy it on every other skarphed-core you need it, too. Simply via drag and drop. This is how i think it is meant to be. This is why i coded it this way.</p>
                         </li>
                         <li>Setup routine:
-                            <p>With most of the CMS it's always the same routine. Set up a server, install a webserver, copy files, install a database, create a database schema, import the template database schema of the CMS, and so on... Scoville does that for you on one click. The only thing you have to do is to set up a server and tell your <em>scoville-admin</em> it's SSH-credentials.
+                            <p>With most of the CMS it's always the same routine. Set up a server, install a webserver, copy files, install a database, create a database schema, import the template database schema of the CMS, and so on... Skarphed does that for you on one click. The only thing you have to do is to set up a server and tell your <em>skarphed-admin</em> it's SSH-credentials.
                         </li>
                     </ul>
                     This list is not comprehensive. Other innovative stuff may follow. There is so much to do better.   
@@ -57,18 +57,18 @@
                 <p>Generally everyone who read the "solved problems"-list above and thinks "hey cool, that makes sense" and wants to create and manage some websites.
                 Everyone who has to manage many websites anyway.</p>
 
-                <h3>What technology is scoville based on?</h3>
-                <p>Scoville uses Python 2 for nearly everything. The GUI of <em>scoville-admin</em> is written in pygtk and so are the GUIs of scoville's modules. the <em>scoville-core</em> runs on WSGI, the python default webserver gateway interface.</p>
+                <h3>What technology is skarphed based on?</h3>
+                <p>Skarphed uses Python 2 for nearly everything. The GUI of <em>skarphed-admin</em> is written in pygtk and so are the GUIs of skarphed's modules. the <em>skarphed-core</em> runs on WSGI, the python default webserver gateway interface.</p>
 
-                <h3>On what systems do the scoville components run?</h3>
-                <p>The <em>scoville-admin</em> will work on GNU/Linux, Microsoft Windows and Apple MacOS. Currently it only works fully under GNU/Linux but there are proof of concepts
+                <h3>On what systems do the skarphed components run?</h3>
+                <p>The <em>skarphed-admin</em> will work on GNU/Linux, Microsoft Windows and Apple MacOS. Currently it only works fully under GNU/Linux but there are proof of concepts
                 that ports to Windows and MacOS are possible. And we will make them reality.
                 We don't know yet which versions of Windows and MacOS will be supported.
-                Basically, <em>scoville-admin</em> works everywhere, where Python 2, a Gtk-Runtime and a c-compiler is available.<br>
-                The <em>scoville-core</em> runs on GNU/Linux with every Webserver that supports WSGI. So does the <em>scoville-repo</em>.
+                Basically, <em>skarphed-admin</em> works everywhere, where Python 2, a Gtk-Runtime and a c-compiler is available.<br>
+                The <em>skarphed-core</em> runs on GNU/Linux with every Webserver that supports WSGI. So does the <em>skarphed-repo</em>.
 
-                <h3>Which DBMS does scoville use?</h3>
-                <p>Scoville uses Firebird.</p>
+                <h3>Which DBMS does skarphed use?</h3>
+                <p>Skarphed uses Firebird.</p>
 
             </div>
 

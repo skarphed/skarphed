@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>scoville - Documentation</title>
+        <title>skarphed - Documentation</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
         <link href="static/logo_32.png" rel="icon" type="image/png">
         <link href="static/mainsite.css" rel="stylesheet" type="text/css">
@@ -11,7 +11,7 @@
             <header>
                 <div id="headercontent">
                     <a class="bclink" href="index.html">
-                    <img src="static/logo_32.png" alt="scoville" style="float:left; margin-right: 10px;">
+                    <img src="static/logo_32.png" alt="skarphed" style="float:left; margin-right: 10px;">
                         Documentation 
                     </a>
                     <a class="bclink" href="user_man.html">
@@ -25,31 +25,31 @@
 
             <div id="space_content">
                 <span class="headerlink_nohover"><h2> Repositories </h2></span>
-                <p>A <em>scoville-repo</em> has two tasks: providing modules and providing templates. The <em>scoville-core</em>s talk to the repository to obtain their resources. In your scoville infrastructure you will need to register at least one repository. You have two possibilities to do that. Either register an existing repository or create your own.</p>
+                <p>A <em>skarphed-repo</em> has two tasks: providing modules and providing templates. The <em>skarphed-core</em>s talk to the repository to obtain their resources. In your skarphed infrastructure you will need to register at least one repository. You have two possibilities to do that. Either register an existing repository or create your own.</p>
                 <h3>Register an existing repository</h3>
-                <p>This is a little unconvenient until now, because this feature has not been needed during development (will be fixed). First obtain the IP of the server the <em>scoville-repo</em> runs on. Then add this IP as a <a href="um_servers.html">server</a>. Right mouseclick on the newly entered server. Click <em>Properties...</em>. Click on <em>Add</em> in the Instances-Frame. Select the <em>InstanceType</em> <em>ScovilleRepository</em>. Enter the URL of the repiository into <em>URL</em> you can also enter IPs here like <em>http://10.10.10.10</em>. If you are an administrator of this <em>scoville-repo</em> you may enter your password into the field <em>Password</em>.
+                <p>This is a little unconvenient until now, because this feature has not been needed during development (will be fixed). First obtain the IP of the server the <em>skarphed-repo</em> runs on. Then add this IP as a <a href="um_servers.html">server</a>. Right mouseclick on the newly entered server. Click <em>Properties...</em>. Click on <em>Add</em> in the Instances-Frame. Select the <em>InstanceType</em> <em>SkarphedRepository</em>. Enter the URL of the repiository into <em>URL</em> you can also enter IPs here like <em>http://10.10.10.10</em>. If you are an administrator of this <em>skarphed-repo</em> you may enter your password into the field <em>Password</em>.
                 Now you have a repository.</p>
                 <h3>Set up an own repository</h3>
-                <p>Setting up an own is a bit tricky until now. First, generate a debian-package of <em>scoville-repo</em> from the sources by executing the following commands:<br>
+                <p>Setting up an own is a bit tricky until now. First, generate a debian-package of <em>skarphed-repo</em> from the sources by executing the following commands:<br>
                 <code>
-                    user@scoville-admin:~$ cd /path/to/scoville/repo/install<br>
+                    user@skarphed-admin:~$ cd /path/to/skarphed/repo/install<br>
                     user@scpville-admin:~$ ./generate_packages.sh
                 </code><br>
-                Now scp the generated .deb-file to the machine you want to create your <em>scoville-repo</em> on.<br>
+                Now scp the generated .deb-file to the machine you want to create your <em>skarphed-repo</em> on.<br>
                 <code>
-                    user@scoville-admin:~$ scp  scoville-repo.deb user@machine:/tmp/
+                    user@skarphed-admin:~$ scp  skarphed-repo.deb user@machine:/tmp/
                 </code><br>
                 After that SSH into the machine and install the package<br>
                 <code>
-                    user@scoville-admin:~$ ssh user@machine<br>
-                    user@scoville-repo:~$ cd /tmp<br>
-                    user@scoville-repo:~$ sudo su<br>
-                    root@scoville-repo:~# dpkg -i scoville-repo.deb<br>
-                    root@scoville-repo:~# apt-get -f -y install
+                    user@skarphed-admin:~$ ssh user@machine<br>
+                    user@skarphed-repo:~$ cd /tmp<br>
+                    user@skarphed-repo:~$ sudo su<br>
+                    root@skarphed-repo:~# dpkg -i skarphed-repo.deb<br>
+                    root@skarphed-repo:~# apt-get -f -y install
                 </code><br>
                 Follow instructions on screen.
-                You can now call the URL that points to your <em>scoville-repo</em>-Machine and should be able to see the machines public key.
-                Cońtinue with the section above to register your new repository with <em>scoville-admin</em>.
+                You can now call the URL that points to your <em>skarphed-repo</em>-Machine and should be able to see the machines public key.
+                Cońtinue with the section above to register your new repository with <em>skarphed-admin</em>.
                 
             </div>
 

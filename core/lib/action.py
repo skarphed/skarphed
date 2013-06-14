@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -51,14 +51,14 @@ class ActionManager(object):
 class Action(object):
     """
     An Action represents anything that can happen when
-    using Hyperlinks inside scoville. 
+    using Hyperlinks inside skarphed. 
     An Action can refer to three different things:
     1. A combination of a Space and a Widget:
             The Widget will be load into the Space of the current site.
     2. A Site
             The Site will be load instead of the site currently shown
     3. An URL
-            The User will leave the scoville-Site and navigate to the URL
+            The User will leave the skarphed-Site and navigate to the URL
     
     An Action has an execution Order. If an ActionList contains more 
     than one Action, the actions will be executed according to priority
@@ -374,7 +374,7 @@ class Action(object):
     def set_view_id(self, view_id, ignore_db = False):
         """
         Make this a View-Link that links to another
-        Scoville-View
+        Skarphed-View
         Resets Widget/Page- and URL-Linkattributes
         """
         if self._core.get_view_manager().get_from_id(view_id) is not None:

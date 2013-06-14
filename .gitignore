@@ -6,7 +6,7 @@ modules/grindhold_news/grindhold_news.tar.gz
 modules/grindhold_footermenu/grindhold_footermenu.tar.gz
 *.swp
 *.deb
-repo/install/deb/scoville-repo/etc
-repo/install/deb/scoville-repo/tmp
-repo/install/deb/scoville-repo/var
-repo/install/deb/scoville-repo/usr
+repo/install/deb/skarphed-repo/etc
+repo/install/deb/skarphed-repo/tmp
+repo/install/deb/skarphed-repo/var
+repo/install/deb/skarphed-repo/usr

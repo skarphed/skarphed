@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -52,7 +52,7 @@ class NewSchemaPage(gtk.Frame):
 
 
     def __init__(self,par,database):
-        gtk.Frame.__init__(self, _("Scoville Admin PRO :: New Schema"))
+        gtk.Frame.__init__(self, _("Skarphed Admin PRO :: New Schema"))
         self.par = par
 
         self.databaseId = database.getLocalId()
@@ -62,7 +62,7 @@ class NewSchemaPage(gtk.Frame):
         self.table = gtk.Table(4,2,False)
         
         self.instruction = gtk.Label(_("Enter the name of the new schema.\n\
-         The first user (root) of the new scoville db will have the password 'root'.\n\
+         The first user (root) of the new skarphed db will have the password 'root'.\n\
          Please change this password after your first login."))
 
         self.name_label = gtk.Label(_("Name:"))

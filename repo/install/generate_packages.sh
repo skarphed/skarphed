@@ -1,6 +1,6 @@
 #!/bin/bash
 
-deb_root="./deb/scoville-repo/"
+deb_root="./deb/skarphed-repo/"
 
 function generate_deb {
 	cp -r ../src/* ${deb_root}var/www/scvrepo/
@@ -13,7 +13,7 @@ function generate_deb {
 	cp -r ../static ${deb_root}usr/share/scvrepo/
 	cp ../templates/template.html ${deb_root}usr/share/scvrepo/
 	dpkg-deb -z6 -Zgzip --build ${deb_root}
-	mv "./deb/scoville-repo.deb" .
+	mv "./deb/skarphed-repo.deb" .
 }
 
 function generate_all {

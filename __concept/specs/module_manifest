@@ -1,7 +1,7 @@
 Module Metadata a.k.a manifest.json
 ===================================
 
-In scoville, the metadata of modules is stored in a JSON-file called
+In skarphed, the metadata of modules is stored in a JSON-file called
 manifest.json which is located in the archive-root of the module.
 
 An exemplary manifest.json could look like this:
@@ -78,7 +78,7 @@ js_mandatory - Defines how this module depends on javascript functionality (rend
 tables - A set of Tables that are to be generated in the database when this module
          is installed. Each table consists of a name and a set of columns.
          The colums each contain at least a "name" and a "type" the name can
-         be chosen freely but it is recommended to stick to the scoville columnstyle
+         be chosen freely but it is recommended to stick to the skarphed columnstyle
          The type must be a valid firebird2.5 compliant columntype e.g. INT or VARCHAR(300)
 
 dependencies - The modules that this module depends on. A dependency must at least contain

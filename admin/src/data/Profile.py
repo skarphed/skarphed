@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -48,12 +48,12 @@ class Profile(object):
         self.data = {}
         
     def create(self):
-        if not os.path.exists(os.path.expanduser('~/.scovilleadmin')):
-            os.mkdir(os.path.expanduser('~/.scovilleadmin'))
-        if os.path.exists(os.path.expanduser('~/.scovilleadmin/'+self.username)):
+        if not os.path.exists(os.path.expanduser('~/.skarphedadmin')):
+            os.mkdir(os.path.expanduser('~/.skarphedadmin'))
+        if os.path.exists(os.path.expanduser('~/.skarphedadmin/'+self.username)):
             raise ProfileException("Profile exists")
         assert len(self.password)%16 == 0 , "Password not divisible by 16"
-        profilefile = open(os.path.expanduser('~/.scovilleadmin/'+self.username),'w')
+        profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'w')
         
         self.data=self.DATA_STRUCT
         
@@ -94,9 +94,9 @@ class Profile(object):
             self.save()
         
     def load(self):
-        if not os.path.exists(os.path.expanduser('~/.scovilleadmin/'+self.username)):
+        if not os.path.exists(os.path.expanduser('~/.skarphedadmin/'+self.username)):
             raise ProfileException("Profile does not exist")
-        profilefile = open(os.path.expanduser('~/.scovilleadmin/'+self.username),'r')
+        profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'r')
         cipher = profilefile.read()
         aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
         clear = aes.decrypt(cipher)
@@ -119,7 +119,7 @@ class Profile(object):
                     if instance['typename'] == "database":
                         for schema in instance['schemas']:
                             createdInstance.registerSchema(schema['name'], schema['user'], schema['pass'])
-                    elif instance['typename'] == "scoville":
+                    elif instance['typename'] == "skarphed":
                         createdInstance.setPublicKey(instance['publickey'])
                  
         else:
@@ -129,9 +129,9 @@ class Profile(object):
     def save(self):
         if self.state == self.STATE_LOADED:
             self.updateProfile()
-            if not os.path.exists(os.path.expanduser('~/.scovilleadmin')):
-                os.mkdir(os.path.expanduser('~/.scovilleadmin'))
-            profilefile = open(os.path.expanduser('~/.scovilleadmin/'+self.username),'w')
+            if not os.path.exists(os.path.expanduser('~/.skarphedadmin')):
+                os.mkdir(os.path.expanduser('~/.skarphedadmin'))
+            profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'w')
             aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
             js = json.encoder.JSONEncoder()
             clear = "SCOV"+js.encode(self.data)
@@ -156,7 +156,7 @@ class Profile(object):
                             'schemas':schemas,
                             'username':instance.getUsername(),
                             'password':instance.getPassword()})
-                elif instance.instanceTypeName == "scoville":
+                elif instance.instanceTypeName == "skarphed":
                     instances.append({'typename':instance.instanceTypeName,
                             'typedisp':instance.displayName,
                             'url':instance.getUrl(),

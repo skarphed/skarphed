@@ -3,7 +3,7 @@
 import sys
 import os
 
-cfgfile = open("/etc/scoville/scoville.conf","r")
+cfgfile = open("/etc/skarphed/skarphed.conf","r")
 cfgdata = cfgfile.read().split("\n")
 cfgfile.close()
 cfg = {}
@@ -54,7 +54,7 @@ if len(sys.argv) == 2 or len(sys.argv) == 3:
 
 if not success:
     print """
-          Scoville OperationDaemon
+          Skarphed OperationDaemon
           ========================
 
           Options: start, stop, restart

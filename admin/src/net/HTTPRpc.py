@@ -4,21 +4,21 @@
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
-# This file is part of Scoville.
+# This file is part of Skarphed.
 #
-# Scoville is free software: you can redistribute it and/or 
+# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
 #
-# Scoville is distributed in the hope that it will be 
+# Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
 # PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public 
-# License along with Scoville. 
+# License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
@@ -31,7 +31,7 @@ from glue.threads import Tracker, KillableThread
 from common.errors import getAppropriateException, UnknownCoreException
 import logging
 
-COOKIEPATH = os.path.expanduser('~/.scovilleadmin/cookies.txt')
+COOKIEPATH = os.path.expanduser('~/.skarphedadmin/cookies.txt')
 cookiejar = cookielib.LWPCookieJar()
 
 if os.path.exists(COOKIEPATH):
@@ -40,7 +40,7 @@ if os.path.exists(COOKIEPATH):
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
 urllib2.install_opener(opener)
 
-class ScovilleRPC(KillableThread):
+class SkarphedRPC(KillableThread):
     HEADERS = { 'Accept-Language':'en-us,en;q=0.5',        
                 'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7', 
                 'Content-Type':'application/json; charset=UTF-8',
@@ -48,7 +48,7 @@ class ScovilleRPC(KillableThread):
                 'Pragma':'no-cache, no-cache',
                 'Cache-Control':'no-cache, no-cache',
                 'Connection':'Keep-Alive',
-                'User-agent' : 'ScovilleAdmin'}
+                'User-agent' : 'SkarphedAdmin'}
     
     def __init__(self,server,callback, method, params=[], errorcallback = None):
         KillableThread.__init__(self)
@@ -62,7 +62,7 @@ class ScovilleRPC(KillableThread):
         json_enc = json.JSONEncoder()
         
         url = str(server.getUrl()+'/rpc/?nocache='+ str(int (time.time()*1000)))
-        post = '{"service":"scoville_admin.scvRpc","method":"'+method+'","id":1,"params":'+json_enc.encode(params)+'}'
+        post = '{"service":"skarphed_admin.scvRpc","method":"'+method+'","id":1,"params":'+json_enc.encode(params)+'}'
         
         self.request = urllib2.Request(url,post,self.HEADERS)
 
