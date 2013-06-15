@@ -121,23 +121,24 @@ class Profile(object):
                             createdInstance.registerSchema(schema['name'], schema['user'], schema['pass'])
                     elif instance['typename'] == "skarphed":
                         createdInstance.setPublicKey(instance['publickey'])
+                    #elif instance['typename'] == "skarphed_repo":
+                    #    createdInstance.establishConnections()
                  
         else:
             profilefile.close()
             raise ProfileException("Could not Decode")
     
     def save(self):
-        if self.state == self.STATE_LOADED:
-            self.updateProfile()
-            if not os.path.exists(os.path.expanduser('~/.skarphedadmin')):
-                os.mkdir(os.path.expanduser('~/.skarphedadmin'))
-            profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'w')
-            aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
-            js = json.encoder.JSONEncoder()
-            clear = "SCOV"+js.encode(self.data)
-            padding = "X"*(16-(len(clear)%16))
-            profilefile.write(aes.encrypt(clear+padding))
-            profilefile.close()
+        self.updateProfile()
+        if not os.path.exists(os.path.expanduser('~/.skarphedadmin')):
+            os.mkdir(os.path.expanduser('~/.skarphedadmin'))
+        profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'w')
+        aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
+        js = json.encoder.JSONEncoder()
+        clear = "SCOV"+js.encode(self.data)
+        padding = "X"*(16-(len(clear)%16))
+        profilefile.write(aes.encrypt(clear+padding))
+        profilefile.close()
     
     def updateProfile(self, save=False):
         self.data['server'] = []
