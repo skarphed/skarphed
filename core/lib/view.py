@@ -551,7 +551,7 @@ class View(object):
                     args[key] = post_args[key].value
 
             widget_html = widget.render_pure_html(args)
-            body = re.sub(r"<%%\s?%s\s?%%>"%space_name,widget_html,body)
+            body = re.sub(r"<%%\s?space:%s\s?%%>"%space_name,widget_html,body)
         body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
 
         css_manager = self._core.get_css_manager()
@@ -773,11 +773,20 @@ class Page(object):
 
         db.query(cls._core, stmnt , (new_sit_id, html_body_io, html_head_io, description, name, minimap_id, css_id), commit=True)
 
-        stmnt= "INSERT INTO SPACES (SPA_ID, SPA_SIT_ID, SPA_NAME ) VALUES (?,?,?) ; "
+        stmnt_space= "INSERT INTO SPACES (SPA_ID, SPA_SIT_ID, SPA_NAME ) VALUES (?,?,?) ; "
+        stmnt_box = "INSERT INTO BOXES (BOX_ID, BOX_SIT_ID, BOX_NAME, BOX_ORIENTATION) VALUES (?,?,?,?) ;"
 
         for placeholder in placeholders:
-            new_space_id = db.get_seq_next("SPA_GEN")
-            db.query(cls._core, stmnt, (new_space_id, new_sit_id, placeholder ), commit=True )
+            splitted = placeholder.split(":")
+            typ = splitted[0]
+            name = splitted[1]
+            if typ == "space":
+                new_space_id = db.get_seq_next("SPA_GEN")
+                db.query(cls._core, stmnt_space, (new_space_id, new_sit_id, name), commit=True )
+            elif typ == "vbox" or typ == "hbox":
+                new_box_id = db.get_seq_next("BOX_GEN")
+                orientation = int(typ == "vbox")
+                db.query(cls._core, stmnt_box, (new_box_id, new_sit_id, name, orientation), commit=True)
 
 
     def __init__(self,core):

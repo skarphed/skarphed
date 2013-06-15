@@ -77,39 +77,39 @@ Archivs und bilder, seiten-css und minimaps in einem Ordner namens static .
   Typischerweise besteht eine Skarphed-Seite aus einer hierarchischen Struktur
   von <div>-Tags, diese ist aber frei designbar.
 
-  1. Container fuer Widgets - Spaces
+  1. Containers for Widgets - Spaces
   
-  Wenn ein <div> im spaeteren gebrauch einen Container fuer ein Widget dar-
-  stellen soll, bekommt er eine id bestehend aus dem zeichen "s" und einer num-
-  mer zugewiesen. Diese nummer wird als Spacenum-
-  mer bezeichnet.
-  Jedes Containerdiv muss eine eindeutige Spacenummer zugewiesen bekommen
-  Die Spaces muessen bei 1 anfangen und durchgehend inkrementell numeriert wer-
-  den. ( 1,2,3,4,5 -> 5 spaces werden erkannt || 1,2,3,6,7 -> 3 spaces werden
-  erkannt)
+  Spaces have names (simple strings) to identify them to the skarphed user.
+  A space is being designed by placing a custom tag into a containerelement e.g
+  a <div>. Spaces have the type "space". An example space with the name "content"
+  would look like this
+
+  <div id="content">
+    <% space:content %>
+  </div>
+
+  Please note that the id of the div or even the existence of the container-
+  element is irrelevant to scoville. It was not in some prior versions.
   
-    Beispiel fuer einen Space: <div id="s1"></div>
+  2. Extensible containers for Widgets - Boxes
   
-  2. Container fuer Spaces - Boxen
-  
-  Fuer die weitere entwicklung von Skarphed muss die moeglichkeit offengehalten
-  werden, im laufenden betrieb weitere Spaces zu einer seite hinzufuegen zu 
-  koennen.
-  
-  Da sich logischerweise nicht jedes <div> dazu eignet, einen Container fuer 
-  spaces darzustellen muessen auch diese Container eindeutig ausgezeichnet wer-
-  den.
-  
-  Es wird unterschieden zwischen vertikalen und horizontalen containern. 
-  In vertikalen Containern ordnen sich die enthaltenen spaces vertikal an,
-  in horziontalen Containern ordnen sich die enthaltenen spaces horizontal an.
-  Horizontale Container erhalten eine id , die mit dem zeichen "h" beginnt,
-  Vertikale Container erhalten eine id, die mit dem zeichen "v" beginnt.
-  Auf das jeweilige Zeichen folgt eine nummer, die sogenannte Box-Nummer, die
-  ebenfalls eindeutig sein muss.
-  
-    Beispiel fuer eine Vertikale Box:    <div id="v1"></div>
-    Beispiel fuer eine Horizontale Box:  <div id="h1"></div>
+  Another type of container is the box. boxes can stack multiple widgets.
+  Boxes also have names. Boxes may be horizontally oriented (type "hbox")
+  or vertically oriented (type "vbox"). They are being written similarly
+  to Spaces:
+
+  <div id="header">
+    <% hbox:header %>
+  </div>
+
+  And a vertical version:
+
+  <div id="sidebar">
+    <% vbox:sidebar %>
+  </div>
+
+  Please note that the id of the div or even the existence of the container-
+  element is irrelevant to scoville. It was not in some prior versions.
   
   3. Elemente fuer visuelle Gestaltung
   

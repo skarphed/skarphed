@@ -48,6 +48,12 @@ header{
 
 }
 
+#vbox_sidebar {
+    width:200px;
+    float:right;
+    padding:10px;
+    background-color:#222;
+}
 
 .headerlink {
     font-size:100%;

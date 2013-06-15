@@ -3,24 +3,27 @@
                 <div id="headercontent">
                     <img src="/static/logo_32.png" alt="skarphed" style="float:left;">
                     <div id="space_headmenu">
-                        <% headmenu %>
+                        <% space:headmenu %>
                     </div>
                     <div id="space_searchbar">
-                        <% searchbar %>
+                        <% space:searchbar %>
                     </div>
                     <div id="space_loginbutton">
-						<% login %>
+						<% space:login %>
                     </div>
                 </div>
             </header>
 
             <div id="space_content">
-				<% content %>
+                <div id="vbox_sidebar">
+                    <% vbox:sidebar %>
+                </div>
+				<% space:content %>
             </div>
 
 
             <footer id="space_footer">
-                <% footer %>
+                <% space:footer %>
             </footer>
         </div>
 
