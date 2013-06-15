@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>skarphed - Documentation</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+        <link href="static/logo_32.png" rel="icon" type="image/png">
+        <link href="static/mainsite.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="body_overlay" >
+            <header>
+                <div id="headercontent">
+                    <a class="bclink" href="index.html">
+                    <img src="static/logo_32.png" alt="skarphed" style="float:left; margin-right: 10px;">
+                        Documentation 
+                    </a>
+                    <a class="bclink" href="user_man.html">
+                        → Users Manual
+                    </a>
+                    <a class="bclink" href="um_overview.html">
+                        → Pages and Menus
+                    </a>
+                </div>
+            </header>
+
+            <div id="space_content">
+                <span class="headerlink_nohover"><h2> Pages and Menus </h2></span>
+                <p>
+                    Pages contain placeholders for widgets. They define the visual layout of a page in your website. Usually websites have only one page, the layout of your page, whereas more sophisticated webapplications eventually need more pages. In the object-tree you see <em>Sites</em> (how pages are currently still called inside <em>skarphed-admin</em> due to legacy code) as a sub-object of your <em>skarphed-core</em>. It will be filled with content as soon as you installed a template. Pages have no object-page due to the fact that there is nothing to configure.
+                </p>
+                <h3> Spaces </h3>
+                <p>
+                    Each page containts placeholders where you can place widgets in (e.g. guestbook, blog, or a simple html-page). 
+                    A classical pagelayout would be something like: a space for the menu, a content space, a footer space and a sidebar. You cannot see these spaces directly as sub-object of the page in the object-tree, but you can use them when you design views and menus.
+                </p>
+                <h3> Menus </h3>
+                <p>
+                    Menus represent the logical structure of actions a user can take to navigate in your website. Menus hold menuitems. Menuitems are the links that will appear on the page e.g. 'Blog', 'Home' or similar stuff. Each menuitem holds a list of actions. Actions can be three things:
+                    <ul>
+                        <li>Call URL
+                        <p>An action of this type will simply call an URL like http://www.skarphed.org. You use it to create external links.</p></li>
+                        <li>Place widget into space
+                        <p>This type of action will load a widget that you specified into a space of the page this menu belongs to.</p></li>
+                        <li>Open View
+                        <p>This type of action will load another view that is known to this <em>skarphed-core</em></p></li>
+                    </ul>
+                    Obviously, using multiple actions in one menuitem only make sense if they all are "Place widget into space"-actions.<br>
+                    Menuitems can be nested virtually arbitrarily deep. Nested menuitems make sense if you e.g. want to design a tree-style menu.<br>
+                    Please make sure that you understand, that this only represents the logical structure of a menu. How the actual menu looks rendered on a page is determined by a menu-widget that takes this structure of data and renders it on the page.
+                </p>
+                <h3> Creating a Menu</h3>
+                <p>
+                    Right mouseclick on the <em>page</em> you want to add your menu to and select <em>Create Menu...</em>. You now should be able to expand the <em>page</em> and see your new menu.
+                </p>
+                <h3> Editing Menus </h3>
+                <p>
+                    You can open the <em>menu</em>'s object-page by (you guessed it) doubleclicking in it in the object-tree. You can change the name of the <em>menu</em> at the entryfield at the top. At the left side you see the <em>Menu tree</em>. It bears only one element, which is the menu itself. You can add menuitems to it by selecting the element you want to add the new items to (in our case the menu itself) and pressing the <em>Add</em>-Button in the <em>Menu tree</em>'s toolbar. To rename your menuitems please select the menuitem and then click on it's name in the list. It will change to a entryfield that you can edit the menuitems name in. If you are done editing simply press enter and the name will be changed.<br>
+                    At the right side you see the actionlist-editor. Everytime you select a menuitem in the <em>Menu tree</em> all actions of this menuitem will be displayed here. If you want to add a new action, you can use the <em>Add</em>-Button on the bottom of the actionlist-editor. It will spawn in an collapsed state. You can decollapse and edit it by clicking the expander-arrow.
+                    Edit the action and save it via it's <em>Save</em>-button.
+                </p>
+            </div>
+
+
+            <footer id="space_footer">
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+            </footer>
+        </div>
+
+    </body>
+</html>
