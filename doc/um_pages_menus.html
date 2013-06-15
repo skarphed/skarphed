@@ -26,12 +26,12 @@
             <div id="space_content">
                 <span class="headerlink_nohover"><h2> Pages and Menus </h2></span>
                 <p>
-                    Pages contain placeholders for widgets. They define the visual layout of a page in your website. Usually websites have only one page, the layout of your page, whereas more sophisticated webapplications eventually need more pages. In the object-tree you see <em>Sites</em> (how pages are currently still called inside <em>skarphed-admin</em> due to legacy code) as a sub-object of your <em>skarphed-core</em>. It will be filled with content as soon as you installed a template. Pages have no object-page due to the fact that there is nothing to configure.
+                    Pages contain placeholders for <a href="um_modules.html">widgets</a>. They define the visual layout of a page in your website. Usually websites have only one page, the layout of your page, whereas more sophisticated webapplications eventually need more pages. In the object-tree you see <em>Sites</em> (how pages are currently still called inside <em>skarphed-admin</em> due to legacy code) as a sub-object of your <em>skarphed-core</em>. It will be filled with content as soon as you installed a <a href="um_templates.html">template</a>. Pages have no object-page due to the fact that there is nothing to configure.
                 </p>
                 <h3> Spaces </h3>
                 <p>
                     Each page containts placeholders where you can place widgets in (e.g. guestbook, blog, or a simple html-page). 
-                    A classical pagelayout would be something like: a space for the menu, a content space, a footer space and a sidebar. You cannot see these spaces directly as sub-object of the page in the object-tree, but you can use them when you design views and menus.
+                    A classical pagelayout would be something like: a space for the menu, a content space, a footer space and a sidebar. You cannot see these spaces directly as sub-object of the page in the object-tree, but you can use them when you design <a href="um_views.html">views</a> and menus.
                 </p>
                 <h3> Menus </h3>
                 <p>
@@ -39,10 +39,10 @@
                     <ul>
                         <li>Call URL
                         <p>An action of this type will simply call an URL like http://www.skarphed.org. You use it to create external links.</p></li>
-                        <li>Place widget into space
+                        <li>Place <a href="um_modules.html">widget</a> into space
                         <p>This type of action will load a widget that you specified into a space of the page this menu belongs to.</p></li>
                         <li>Open View
-                        <p>This type of action will load another view that is known to this <em>skarphed-core</em></p></li>
+                        <p>This type of action will load another <a href="um_views.html">view</a> that is known to this <em>skarphed-core</em></p></li>
                     </ul>
                     Obviously, using multiple actions in one menuitem only make sense if they all are "Place widget into space"-actions.<br>
                     Menuitems can be nested virtually arbitrarily deep. Nested menuitems make sense if you e.g. want to design a tree-style menu.<br>
