@@ -37,6 +37,8 @@ from gui.DefaultEntry import DefaultEntry
 
 from glue.lng import _
 
+from common.errors import ViewException
+
 class ViewPage(ObjectPageAbstract):
     def __init__(self, par, view):
         ObjectPageAbstract.__init__(self, par, view)
@@ -117,10 +119,15 @@ class ViewPage(ObjectPageAbstract):
         except GenericObjectStoreException:
             return
         mapping = {}
+        used_widgetIds = []
         for spacewidget in self.compose_spacewidgets.values():
-            widgetId = spacewidget.getWidgetId()
-            if widgetId is not None:
+            wgt = spacewidget.getWidget()
+            if wgt is not None:
+                widgetId = wgt.getId()
+                if widgetId in used_widgetIds:
+                    raise ViewException(ViewException.get_msg(8,wgt.getName()))
                 mapping[spacewidget.getSpaceId()]= widgetId
+                used_widgetIds.append(widgetId)
         view.setSpaceWidgetMapping(mapping)
             
     def changedPageCallback(self, widget=None, data=None):
@@ -183,6 +190,13 @@ class SpaceWidget(gtk.Frame):
             return None
         else:
             return widget.getId()
+
+    def getWidget(self):
+        widget = self.widget_combo.getSelected()
+        if widget is None:
+            return None
+        else:
+            return widget
 
     def getSpaceId(self):
         return self.spaceId

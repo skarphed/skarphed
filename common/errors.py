@@ -206,7 +206,8 @@ class ViewException(SkarphedException):
         4:"""Cannot set Parameters for Widget that is not in this view!""",
         5:"""A view must have a space-widget-mapping ('v')""",
         6:"""A view must have a page to render on ('s')""",
-        7:"""This is not a valid view-JSON"""
+        7:"""This is not a valid view-JSON""",
+        8:"""Each widget can only show up once in a view. This widget exists more than one time: """
     }
 
 ERRORNAMES = {
