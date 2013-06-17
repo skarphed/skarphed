@@ -38,6 +38,7 @@ from gui.DefaultEntry import DefaultEntry
 from glue.lng import _
 
 from common.errors import ViewException
+from common.enums import BoxOrientation
 
 class ViewPage(ObjectPageAbstract):
     def __init__(self, par, view):
@@ -69,6 +70,7 @@ class ViewPage(ObjectPageAbstract):
         self.compose_vbox = gtk.VBox(spacing=10)
         self.compose_vbox.set_border_width(10)
         self.compose_spacewidgets = {}
+        self.compose_boxwidgets = {}
         self.compose_vbox.pack_end(self.compose_dummy,True)
         self.compose_scroll.add(self.compose_vbox)
         self.compose.add(self.compose_scroll)
@@ -102,16 +104,31 @@ class ViewPage(ObjectPageAbstract):
             self.page_combobox.setSelected(site)
             spaces = site.getSpaces()
             processed_spaces = []
+            
+            boxes = site.getBoxes()
+            processed_boxes =  []
+
             for spaceId, spaceName in spaces.items():
                 if self.compose_spacewidgets.has_key(spaceId):
                     self.compose_spacewidgets[spaceId].render()
                 else:
-                    self.compose_spacewidgets[spaceId] = SpaceWidget(self,spaceId,view)
+                    self.compose_spacewidgets[spaceId] = SpaceWidget(self,view,spaceId=spaceId)
                     self.compose_vbox.pack_start(self.compose_spacewidgets[spaceId],False)
                 processed_spaces.append(spaceId)
             for spaceId in self.compose_spacewidgets.keys():
                 if spaceId not in processed_spaces:
                     self.compose_spacewidgets[spaceId].destroy()
+
+            for boxId, boxInfo in boxes.items():
+                if self.compose_boxwidgets.has_key(boxId):
+                    self.compose_boxwidgets[boxId].render()
+                else:
+                    self.compose_boxwidgets[boxId] = BoxWidget(self, boxId, view)
+                    self.compose_vbox.pack_start(self.compose_boxwidgets[boxId],False)
+                processed_boxes.append(boxId)
+            for boxId in self.compose_boxwidgets.keys():
+                if boxId not in processed_boxes:
+                    self.compose_boxwidgets[boxId].destroy()
 
     def saveCallback(self, widget=None, data=None):
         try:
@@ -129,17 +146,201 @@ class ViewPage(ObjectPageAbstract):
                 mapping[spacewidget.getSpaceId()]= widgetId
                 used_widgetIds.append(widgetId)
         view.setSpaceWidgetMapping(mapping)
+        
+        boxmapping = {}
+        for boxwidget in self.compose_boxwidgets.values():
+            widgets = boxwidget.getWidgets()
+            for wgt in widgets:
+                widgetId = wgt.getId()
+                if widgetId in used_widgetIds:
+                    raise ViewException(ViewException.get_msg(8,wgt.getName()))
+                if not boxmapping.has_key(boxwidget.getBoxId()):
+                    boxmapping[boxwidget.getBoxId()] = []
+                boxmapping[boxwidget.getBoxId()].append(widgetId)
+                used_widgetIds.append(widgetId)
+        view.setBoxMapping(boxmapping)
             
     def changedPageCallback(self, widget=None, data=None):
         pass
 
+class BoxWidget(gtk.VBox):
+    def __init__(self, parent, boxId, view):
+        gtk.VBox.__init__(self)
+
+        self.par = parent
+        self.boxId = int(boxId)
+        self.viewId = view.getLocalId()
+
+        self.label = gtk.Label()
+        self.addButton = gtk.Button(stock=gtk.STOCK_ADD)
+        self.scrolledWindow = gtk.ScrolledWindow()
+        self.scrolledWindow.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
+        self.spaceList = gtk.VBox()
+        self.boxSpaces = []
+
+        self.addButton.connect("clicked", self.cb_Add)
+
+        self.pack_start(self.label, False)
+        self.pack_start(self.addButton, False)
+        self.scrolledWindow.add_with_viewport(self.spaceList)
+        self.pack_start(self.scrolledWindow,False)
+
+        self.show_all()
+
+    def render(self):
+        try:
+            view = self.getApplication().getLocalObjectById(self.viewId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+
+        box_name, box_orientation = view.getPage().getBox(self.boxId)
+        if box_orientation == BoxOrientation.HORIZONTAL:
+            self.label.set_text(_("Horizontal Box:")+" "+box_name)
+        else:
+            self.label.set_text(_("Vertical Box:")+" "+box_name)
+
+        for boxSpaceWidget in self.boxSpaces:
+            boxSpaceWidget.destroy()
+
+        order = 0
+        boxcontent = view.getBoxContent(self.boxId)
+        for widgetId in boxcontent:
+            self.boxSpaces.append(BoxSpace(self, view, self.boxId, order))
+            self.spaceList.pack_start(self.boxSpaces[order],False)
+            self.boxSpaces[order].show()
+            self.boxSpaces[order].render()
+            order += 1
+
+    def cb_Add(self, widget=None, data=None):
+        try:
+            view = self.getApplication().getLocalObjectById(self.viewId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+        order = len(self.boxSpaces)
+        boxcontent = view.getBoxContent(self.boxId)
+        boxcontent.append(None)
+        self.boxSpaces.append(BoxSpace(self, view, self.boxId, order))
+        self.spaceList.pack_start(self.boxSpaces[order],False)
+        self.boxSpaces[order].show()
+        self.boxSpaces[order].render()
+
+
+    def getWidgets(self):
+        widgets = []
+        for boxspace in self.boxSpaces:
+            widget = boxspace.getWidget()
+            if widget is not None:
+                widgets.append(widget)
+        return widgets
+
+    def getBoxId(self):
+        return self.boxId
+
+
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
+
+class BoxSpace(gtk.HBox):
+    def __init__(self, parent, view, boxId, orderNumber):
+        gtk.HBox.__init__(self)
+
+        self.par = parent
+        self.viewId = view.getLocalId()
+        self.boxId = boxId
+        self.orderNumber = orderNumber
+
+        self.spaceWidget = SpaceWidget(self, view, boxId=boxId, orderNumber=orderNumber)
+        self.buttonhbox = gtk.HBox()
+        self.raiseOrderButton = gtk.Button(stock=gtk.STOCK_GO_UP)
+        self.removeButton = gtk.Button(stock=gtk.STOCK_REMOVE)
+        self.lowerOrderButton = gtk.Button(stock=gtk.STOCK_GO_DOWN)
+
+        self.raiseOrderButton.connect("clicked", self.cb_raiseOrder)
+        self.removeButton.connect("clicked", self.cb_remove)
+        self.lowerOrderButton.connect("clicked", self.cb_lowerOrder)
+
+        self.pack_start(self.spaceWidget,True)
+        self.buttonhbox.pack_start(self.raiseOrderButton,True)
+        self.buttonhbox.pack_start(self.removeButton,True)
+        self.buttonhbox.pack_start(self.lowerOrderButton,True)
+        self.pack_start(self.buttonhbox,False)
+        self.show_all()
+
+
+    def render(self):
+        self.spaceWidget.render()
+
+    def cb_remove(self, widget=None, data=None):
+        try:
+            view = self.getApplication().getLocalObjectById(self.viewId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+
+        boxcontent = view.getBoxContent(self.boxId)
+        del(boxcontent[self.orderNumber])
+
+        self.spaceWidget.destroy()
+        self.destroy()
+
+    def cb_raiseOrder(self, widget=None, data=None):
+        try:
+            view = self.getApplication().getLocalObjectById(self.viewId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+
+        boxcontent = view.getBoxContent(self.boxId)
+        if self.orderNumber == 0:
+            return
+        widgetId = boxcontent[self.orderNumber]
+        boxcontent.remove(widgetId)
+        boxcontent.insert(self.orderNumber-1,widget_id)
+
+        self.getPar().render()
+
+    def cb_lowerOrder(self, widget=None, data=None):
+        try:
+            view = self.getApplication().getLocalObjectById(self.viewId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+
+        boxcontent = view.getBoxContent(self.boxId)
+        if self.orderNumber == len(boxcontent)-1:
+            return
+        widgetId = boxcontent[self.orderNumber]
+        boxcontent.remove(widgetId)
+        boxcontent.insert(self.orderNumber+1,widget_id)
+
+        self.getPar().render()
+
+    def getWidget(self):
+        return self.spaceWidget.getWidget()
+
+    def getWidgetId(self):
+        return self.spaceWidget.getWidgetId()
+
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
+
 class SpaceWidget(gtk.Frame):
-    def __init__(self, parent, spaceid, view):
+    def __init__(self, parent,  view, spaceId=None, boxId=None, orderNumber=None):
         gtk.Frame.__init__(self)
 
         self.par = parent
         self.viewId = view.getLocalId()
-        self.spaceId = spaceid
+        self.spaceId = spaceId
+        self.boxId = boxId
+        self.orderNumber = orderNumber
         self.widgetId = None
 
         self.vbox = gtk.VBox()
@@ -169,16 +370,28 @@ class SpaceWidget(gtk.Frame):
             self.destroy()
             return
         site = view.getPage()
-        spaceName = site.getNameOfSpace(self.spaceId)
-        self.framelabel.setText(_("Space: ")+spaceName)
-        spaceWidgetMapping = view.getSpaceWidgetMapping()
-        try:
-            widgetId = spaceWidgetMapping[str(self.spaceId)]
-        except KeyError:
-            widget = None
-            widgetId = None
-        else:
-            widget = view.getViews().getSkarphed().getModules().getWidgetById(widgetId)
+        if self.spaceId is not None: # In case, this space is a real space
+            spaceName = site.getNameOfSpace(self.spaceId)
+            self.framelabel.setText(_("Space: ")+spaceName)
+            spaceWidgetMapping = view.getSpaceWidgetMapping()
+            try:
+                widgetId = spaceWidgetMapping[str(self.spaceId)]
+            except KeyError:
+                widget = None
+                widgetId = None
+            else:
+                widget = view.getViews().getSkarphed().getModules().getWidgetById(widgetId)
+        else: #In case this space is only part of a box
+            self.framelabel.setText(_("BoxSpace"))
+            boxmapping = view.getBoxContent(self.boxId)
+            try:
+                widgetId = boxmapping[self.orderNumber]
+            except KeyError:
+                widget = None
+                widgetId = None
+            else:
+                widget = view.getViews().getSkarphed().getModules().getWidgetById(widgetId)
+
         self.widgetId = widgetId
         self.widget_combo.setSelected(widget)
         self.param_widget.setWidget(widget)

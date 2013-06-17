@@ -33,6 +33,8 @@ class View(GenericSkarphedObject):
         self.loaded_fully = False
         if not self.data.has_key('space_widget_mapping'):
             self.data['space_widget_mapping'] = {}
+        if not self.data.has_key('box_mapping'):
+            self.data['box_mapping'] = {}
         if not self.data.has_key('widget_param_mapping'):
             self.data['widget_param_mapping'] = {}
         if not self.data.has_key('page_id'):
@@ -89,6 +91,12 @@ class View(GenericSkarphedObject):
         else:
             self.loadFull()
 
+    def getBoxContent(self, boxId):
+        if self.data.has_key('box_mapping'):
+            return self.data['box_mapping'][str(boxId)]
+        else:
+            self.loadFull()
+
     def changeWidgetCallback(self, json):
         self.loadFull()
 
@@ -98,12 +106,9 @@ class View(GenericSkarphedObject):
     def setSpaceWidgetMapping(self, mapping):
         self.getApplication().doRPCCall(self.getViews().getSkarphed(),self.changeWidgetCallback, "setSpaceWidgetMapping", [self.getId(), mapping])
 
-    #def setWidgetIntoSpace(self, space_id, widget):
-    #    self.getApplication().doRPCCall(self.getViews().getSkarphed(),self.changeWidgetCallback, "assignWidgetToSpace", [self.getId(), space_id, widget.getId()])
+    def setBoxMapping(self, mapping):
+        self.getApplication().doRPCCall(self.getViews().getSkarphed(),self.changeWidgetCallback, "setBoxMapping", [self.getId(), mapping])
 
-    #def removeWidgetFromSpace(self, space_id):
-    #    self.getApplication().doRPCCall(self.getViews().getSkarphed(),self.changeWidgetCallback, "removeWidgetFromSpace", [self.getId(), space_id])
-    
     def getPar(self):
         return self.par
     

@@ -411,11 +411,13 @@ class Rpc(object):
         ret = []
         for page in pages:
             spaces = page.get_space_names()
+            boxes = page.get_box_info()
             ret.append({
                     'id':page.get_id(),
                     'name':page.get_name(),
                     'description':page.get_description(),
-                    'spaces':spaces
+                    'spaces':spaces,
+                    'boxes':boxes
                 })
         return ret
 
@@ -425,11 +427,13 @@ class Rpc(object):
         page_manager = self._core.get_page_manager()
         page = page_manager.get_page(page_id)
         spaces = page.get_space_names()
+        boxes = page.get_box_info()
         ret = {
             'id':page.get_id(),
             'name':page.get_name(),
             'description':page.get_description(),
-            'spaces':spaces
+            'spaces':spaces,
+            'boxes':boxes
         }
         return ret
 
@@ -808,6 +812,7 @@ class Rpc(object):
             'site' : view.get_page(),
             'default' : view.get_default(),
             'space_widget_mapping' : view.get_space_widget_mapping(),
+            'box_mapping': view.get_box_mapping(),
             'widget_param_mapping' : view.get_widget_param_mapping()
         }
         return ret
@@ -819,6 +824,16 @@ class Rpc(object):
         view_manager = self._core.get_view_manager()
         view = view_manager.get_from_id(view_id)
         view.set_space_widget_mapping(mapping)
+        view.store()
+        return True
+
+    def setBoxMapping(self, params):
+        view_id = int(params[0])
+        mapping = dict(params[1])
+
+        view_manager = self._core.get_view_manager()
+        view = view_manager.get_from_id(view_id)
+        view.set_box_mapping(mapping)
         view.store()
         return True
 

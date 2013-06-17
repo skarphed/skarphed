@@ -31,3 +31,6 @@ class JSMandatory(object):
     SUPPORTED=1
     MANDATORY=2
 
+class BoxOrientation(object):
+    HORIZONTAL = 0
+    VERTICAL = 1

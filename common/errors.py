@@ -131,6 +131,13 @@ class OperationException(SkarphedException):
         0:"""Could not remove Lock!""",
     }
 
+class PageException(Exception):
+    PREFIX = "PAG"
+    ERRORS = {
+        0:"""Create: This Page has no spaces. As useless as you.""",
+        1:"""Space: There is no space with that name."""
+    }
+
 class PermissionException(SkarphedException):
     """
     Exceptions for Permission-Module
@@ -207,7 +214,8 @@ class ViewException(SkarphedException):
         5:"""A view must have a space-widget-mapping ('v')""",
         6:"""A view must have a page to render on ('s')""",
         7:"""This is not a valid view-JSON""",
-        8:"""Each widget can only show up once in a view. This widget exists more than one time: """
+        8:"""Each widget can only show up once in a view. This widget exists more than one time: """,
+        9:"""This Box does not exist"""
     }
 
 ERRORNAMES = {

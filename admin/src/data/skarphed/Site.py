@@ -75,6 +75,12 @@ class Site(GenericSkarphedObject):
 
     def getSpaces(self):
         return self.data['spaces']
+
+    def getBoxes(self):
+        return self.data['boxes']
+
+    def getBox(self, box_id):
+        return self.data['boxes'][str(box_id)]
     
     # def removeWidgetFromSpaceCallback(self, json):
     #     self.update()
