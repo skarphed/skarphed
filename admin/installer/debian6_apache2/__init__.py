@@ -29,7 +29,7 @@ import shutil
 import tarfile
 
 from glue.paths import INSTALLER
-from data.skarphed.Skarphed import AbstractInstaller
+from data.skarphed.Skarphed import AbstractInstaller, AbstractDestroyer
 
 from glue.lng import _
 
@@ -47,7 +47,9 @@ class Installer(AbstractInstaller):
     def execute_installation(self):
         os.mkdir(self.BUILDPATH)
 
-        apache_template = open("../installer/debian6_apache2/apache2.conf","r").read()
+        p = os.path.dirname(os.path.realpath(__file__))
+
+        apache_template = open(p+"/apache2.conf","r").read()
         apache_domain = ""
         if self.data['apache.domain'] != "":
             apache_domain = "ServerName "+self.data['apache.domain']
@@ -89,8 +91,8 @@ class Installer(AbstractInstaller):
         config_json.write(jenc.encode(scv_config))
         config_json.close()
 
-        shutil.copyfile("../installer/debian6_apache2/skarphed.conf",self.BUILDPATH+"skarphed.conf")
-        shutil.copyfile("../installer/debian6_apache2/install.sh", self.BUILDPATH+"install.sh")
+        shutil.copyfile(p+"/skarphed.conf",self.BUILDPATH+"skarphed.conf")
+        shutil.copyfile(p+"/install.sh", self.BUILDPATH+"install.sh")
 
         self.status = 30
         gobject.idle_add(self.updated)
@@ -138,5 +140,26 @@ class Installer(AbstractInstaller):
         gobject.idle_add(self.updated)
         gobject.idle_add(self.addInstanceToServer)
 
-class Destroyer(object):
-    pass
+class Destroyer(AbstractDestroyer):
+    def execute_destruction(self):
+        p = os.path.dirname(os.path.realpath(__file__))
+
+        server = self.instance.getServer()
+        self.status = 10
+        gobject.idle_add(self.updated)
+
+        con = server.getSSH()
+        ftp = con.open_sftp()
+        ftp.put(p+"/teardown.sh","/tmp/teardown.sh")
+        ftp.close()
+        self.status = 30
+        gobject.idle_add(self.updated)
+
+        con = server.getSSH()
+        con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/ ; chmod 755 teardown.sh ; ./teardown.sh %d "%int(self.instanceid))
+        logging.debug(con_stdout.read())
+        self.status = 100
+        gobject.idle_add(self.updated)
+
+        gobject.idle_add(self.updated)
+        gobject.idle_add(self.removeInstanceFromServer)

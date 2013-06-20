@@ -26,6 +26,7 @@
 from data.Generic import ObjectStore, GenericSkarphedObject
 from data.Instance import Instance, InstanceType
 
+from data.Server import Server
 from Users import Users
 from Modules import Modules
 from Roles import Roles
@@ -87,6 +88,40 @@ class AbstractInstaller(GenericSkarphedObject):
     def install(self):
         self.installThread.start()
 
+class AbstractDestroyer(GenericSkarphedObject):
+    class DestroyThread(Thread):
+        def __init__(self, installer):
+            Thread.__init__(self)
+            self.installer = installer
+
+        def run(self):
+            self.installer.execute_destruction()
+
+    def __init__(self, instanceid, instance):
+        GenericSkarphedObject.__init__(self)
+        self.instanceid = instanceid
+        self.instance = instance
+        self.status = 0
+        self.destroyThread = self.DestroyThread(self)
+
+    def execute_destruction(self):
+        pass
+
+    def removeInstanceFromServer(self):
+        server = self.instance.getServer()
+        server.removeInstance(self.instance)
+        self.destroy()
+
+    def getName(self):
+        return "Skarphed Destroyer"
+
+    def getStatus(self):
+        return self.status
+
+    def takedown(self):
+        self.destroyThread.start()
+
+
 class Skarphed(Instance):
     STATE_OFFLINE = 0
     STATE_ONLINE = 1
@@ -98,11 +133,8 @@ class Skarphed(Instance):
     LOADED_PROFILE = 1
     LOADED_SERVERDATA = 2
     
-    @classmethod
-    def installNewSkarphed(cls, data, server, target):
-        installer = SkarphedInstaller(data,server,target)
-        installer.install()
-        return installer
+
+
 
     def __init__(self, server, url="", username="", password=""):
         Instance.__init__(self,server)
@@ -132,7 +164,18 @@ class Skarphed(Instance):
         self.rendermode = None
 
         self.cssPropertySet = None
-        
+
+    def invokeDestructionCallback(self, data):
+        instanceId = data
+        if instanceId == None:
+            print "No sufficient rights only root can destroy"
+        target = self.getServer().getTarget()
+        destroyer = target.getDestroyer()(instanceId, self)
+        destroyer.takedown()
+
+    def invokeDestruction(self):
+        self.getApplication().doRPCCall(self,self.invokeDestructionCallback, "getInstanceId")
+
     def setUrl(self,url):
         self.url= url
         self.updated()

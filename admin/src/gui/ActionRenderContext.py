@@ -114,7 +114,9 @@ class SkarphedARC(ActionRenderContext):
         self.addAction(_('Update Modules'), IconStock.MODULE_UPDATEABLE, self.updateModules)
 
     def destroyInstance(self,data=None):
-        pass
+        def execute():
+            self.obj.invokeDestruction()
+        YesNoPage(self.getApplication().mainwin, _("Do you really want to destroy this Instance?"), execute)
 
     def removeInstance(self,data=None):
         def execute():
