@@ -82,6 +82,16 @@ class Rpc(object):
     def getServerInfo(self,params):
         return self._core.get_configuration().get_entry("core.name")
 
+    def getInstanceId(self, params):
+        session_manager = self._core.get_session_manager()
+        session_user = session_manager.get_current_session_user()
+
+        if session_user.check_permission('skarphed.manageserverdata'):
+            config = self._core.get_configuration()
+            return config.get_entry('core.instance_id')
+        else:
+            return None
+
     def authenticateUser(self,params):
         username = params[0]
         password = params[1]
