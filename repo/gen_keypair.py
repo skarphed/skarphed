@@ -6,7 +6,7 @@ import json
 import Crypto.PublicKey.RSA as RSA
 
 if __name__ == '__main__':
-    f = open('/etc/scvrepo/config.json')
+    f = open('/etc/skdrepo/config.json')
     config = json.loads(f.read())
     f.close()
 

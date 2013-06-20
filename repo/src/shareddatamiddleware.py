@@ -40,7 +40,7 @@ class SharedDataMiddleware(object):
         Otherwise the wrapped application will be called.
         """
         if environ['PATH_INFO'].startswith('/%s/' % self._location):
-            prefix = "/usr/share/scvrepo/"
+            prefix = "/usr/share/skdrepo/"
             path = prefix + environ['PATH_INFO'][1:]
             try:
                 f = open(path, 'r')
