@@ -38,8 +38,7 @@ instanceid=`expr $instanceid + 1`
 
 mkdir $SCV_WEBPATH$instanceid
 cp -r ./web/* $SCV_WEBPATH$instanceid/
-touch $SCV_WEBPATH$instanceid/instanceconf.py
-sed s#//number//#$instanceid#g ./instanceconf.py $SCV_WEBPATH$instanceid/instanceconf.py > $SCV_WEBPATH$instanceid/instanceconf.py
+echo "SCV_INSTANCE_SCOPE_ID = \"$instanceid\"" > $SCV_WEBPATH$instanceid/instanceconf.py
 
 cp ./skarphed.py $SCV_WEBPATH$instanceid/
 

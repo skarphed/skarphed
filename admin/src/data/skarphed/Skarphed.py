@@ -112,7 +112,6 @@ class SkarphedInstaller(GenericSkarphedObject):
         config_json.write(jenc.encode(scv_config))
         config_json.close()
 
-        shutil.copyfile("../installer/debian6_apache2/instanceconf.py",self.BUILDPATH+"instanceconf.py")
         shutil.copyfile("../installer/debian6_apache2/skarphed.conf",self.BUILDPATH+"skarphed.conf")
         shutil.copyfile("../installer/debian6_apache2/install.sh", self.BUILDPATH+"install.sh")
 
@@ -126,7 +125,6 @@ class SkarphedInstaller(GenericSkarphedObject):
         tar = tarfile.open(self.BUILDPATH+"scv_install.tar.gz","w:gz")
         tar.add(self.BUILDPATH+"apache2.conf")
         tar.add(self.BUILDPATH+"config.json")
-        tar.add(self.BUILDPATH+"instanceconf.py")
         tar.add(self.BUILDPATH+"skarphed.conf")
         tar.add(self.BUILDPATH+"install.sh")
         tar.add(self.BUILDPATH+"web")
