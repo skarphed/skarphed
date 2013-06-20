@@ -1,13 +1,13 @@
 <VirtualHost *:80>
 	ServerAdmin webmaster@localhost
 
-	DocumentRoot /var/www/scvrepo
-	<Directory /var/www/scvrepo>
+	DocumentRoot /var/www/skdrepo
+	<Directory /var/www/skdrepo>
 		Order deny,allow
 		allow from all
 	</Directory>
 
-	WSGIScriptAlias / /var/www/scvrepo/main.py
+	WSGIScriptAlias / /var/www/skdrepo/main.py
 
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 

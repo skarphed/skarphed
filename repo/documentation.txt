@@ -1,10 +1,10 @@
 Folders for skarphed repository:
 
-/etc/scvrepo/ -- configfiles for skarphedrepo. place config.json here
-/usr/share/scvrepo/ -- datafiles for skarphedrepo. place template.html and static/repo.png here
+/etc/skdrepo/ -- configfiles for skarphedrepo. place config.json here
+/usr/share/sldrepo/ -- datafiles for skarphedrepo. place template.html and static/repo.png here
 
 Database Generation:
     Run the repo_database.sql on an empty Firebird Database
-    the default user for this firebird database is SCVREPO
+    the default user for this firebird database is SKDREPO
     if you desire to use another username please change the settings
     in config.json and in repo_database.sql

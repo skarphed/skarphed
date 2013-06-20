@@ -51,4 +51,4 @@ class Config(object):
 
 
 # loads the default repository configuration
-Config().load_from_file('/etc/scvrepo/config.json')
+Config().load_from_file('/etc/skdrepo/config.json')
