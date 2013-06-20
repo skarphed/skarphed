@@ -31,6 +31,37 @@ from Generic import GenericSkarphedObject
 from Generic import ObjectStore
 from Instance import InstanceType
 
+class InstallationTarget(object):
+    def __init__(self):
+        self._name = ""
+        self._destroyer = None
+        self._installer = None
+        self._extraParams = {}
+
+    def getName(self):
+        return self._name
+
+    def setName(self, name):
+        self._name = str(name)
+
+    def getInstaller(self):
+        return self._installer
+
+    def setInstaller(self, installer):
+        self._installer = installer
+
+    def getDestroyer(self):
+        return self._destroyer
+
+    def setDestroyer(self, destroyer):
+        self._destroyer = destroyer
+
+    def getExtraParams(self):
+        return self._extraParams
+
+    def setExtraParams(self, extraParams):
+        self._extraParams = dict(extraParams)
+
 class Server(GenericSkarphedObject):
     URL_PROT_STRIP = re.compile(r".+://")
     URL_TAIL_STRIP = re.compile(r"(:(\d{1}|\d{2}|\d{3}|\d{4}|\d{5}))?/.+")
@@ -47,7 +78,22 @@ class Server(GenericSkarphedObject):
      
     instanceTypesLoaded=False
      
-    INSTALLATION_TARGETS = ("Debian6/Apache2",)
+    INSTALLATION_TARGETS = []
+
+    @classmethod
+    def addInstallationTarget(cls, target):
+        cls.INSTALLATION_TARGETS.append(target)
+
+    @classmethod
+    def hasInstallationTarget(cls, targetname):
+        return cls.getInstallationTargetByName(targetname) != None
+
+    @classmethod
+    def getInstallationTargetByName(cls, targetname):
+        for target in cls.INSTALLATION_TARGETS:
+            if targetname == target.getName():
+                return target
+        return None        
 
     def __init__(self):
         if not Server.instanceTypesLoaded:
@@ -67,6 +113,24 @@ class Server(GenericSkarphedObject):
         self.name = ""
         self.ssh_username = ""
         self.ssh_password = ""
+
+        self.target = None
+        self.target_usable = False
+
+    def setTarget(self, targetname):
+        target = Server.getInstallationTargetByName(targetname)
+        if target is None:
+            self.target = targetname
+            self.target_usable = False
+        else:
+            self.target = target
+            self.target_usable = True
+
+    def getTarget(self):
+        return self.target
+
+    def isTargetUsable(self):
+        return self.target_usable
 
     def setName(self,name):
         self.name = name
@@ -135,10 +199,14 @@ class Server(GenericSkarphedObject):
     def getServer(self):
         return self
 
-    def installNewInstance(self,data,target,instanceType="skarphed"):
+    def installNewInstance(self,data,instanceType="skarphed"):
         if instanceType == "skarphed":
-            from skarphed.Skarphed import Skarphed
-            return Skarphed.installNewSkarphed(data,self,target)
+            if self.target_usable:
+                installer =  self.target.getInstaller()(data,self)
+                installer.install()
+                return installer
+            else:
+                print "No installer available for %s"%self.target
         elif instanceType == "skarphed_repo":
             print "Not Implemented yet: %s"%(instanceType,)
         elif instanceType == "skarphed_database":

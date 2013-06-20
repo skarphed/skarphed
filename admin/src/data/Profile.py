@@ -112,6 +112,7 @@ class Profile(object):
                 srv.setName(server['name'])
                 srv.setSSHName(server['ssh_username'])
                 srv.setSSHPass(server['ssh_password'])
+                srv.setTarget(server['target'])
                 srv.establishConnections()
                 for instance in server['instances']:
                     instanceType = InstanceType(instance['typename'],instance['typedisp'])
@@ -174,7 +175,8 @@ class Profile(object):
                                     'name':server.getRawName(),
                                     'ssh_username':server.ssh_username,
                                     'ssh_password':server.ssh_password,
-                                    'instances':instances})
+                                    'instances':instances,
+                                    'target':server.getTarget().getName()})
         if save:
             self.save()
                 

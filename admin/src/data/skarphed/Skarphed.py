@@ -48,126 +48,35 @@ from net.SkarphedUpload import SkarphedUpload
 
 import logging
 
-class SkarphedInstaller(GenericSkarphedObject):
+class AbstractInstaller(GenericSkarphedObject):
     class InstallThread(Thread):
         def __init__(self, installer):
             Thread.__init__(self)
             self.installer = installer
 
         def run(self):
-            if self.installer.target=="Debian6/Apache2":
-                self.installer.installDebian6()
+            self.installer.execute_installation()
 
-    def __init__(self,data,server,target):
+
+    def __init__(self,data,server):
         GenericSkarphedObject.__init__(self)
         self.server=server
-        self.target=target
         self.data  = data
+        self.domain = ""
         self.installationId = int(random.random()*1000)
         self.BUILDPATH = "/tmp/scvinst"+str(self.installationId)+"/"
         self.installThread = self.InstallThread(self)
         self.status = 0
 
-    def installDebian6(self):
-        os.mkdir(self.BUILDPATH)
-
-        apache_template = open("../installer/debian6_apache2/apache2.conf","r").read()
-        apache_domain = ""
-        if self.data['apache.domain'] != "":
-            apache_domain = "ServerName "+self.data['apache.domain']
-        apache_subdomain = ""
-        if self.data['apache.subdomain'] != "":
-            apache_subdomain = "ServerAlias "+self.data['apache.subdomain']
-        apacheconf = apache_template%(self.data['apache.ip'],
-                                      self.data['apache.port'],
-                                      apache_domain,
-                                      apache_subdomain)
-        apacheconfresult = open(self.BUILDPATH+"apache2.conf","w")
-        apacheconfresult.write(apacheconf)
-        apacheconfresult.close()
-
-        self.status = 10
-        gobject.idle_add(self.updated)
-
-
-        scv_config = {}
-        for key,val in self.data.items():
-            if key.startswith("core.") or key.startswith("db."):
-                if key == "db.name":
-                    scv_config[key] = val+".fdb"
-                    continue
-                scv_config[key] = val
-
-        scv_config_defaults = {
-            "core.session_duration":2,
-            "core.session_extend":1,
-            "core.cookielaw":1,
-            "core.debug":True
-        }
-
-        scv_config.update(scv_config_defaults)
-
-        jenc = json.JSONEncoder()
-        config_json = open(self.BUILDPATH+"config.json","w")
-        config_json.write(jenc.encode(scv_config))
-        config_json.close()
-
-        shutil.copyfile("../installer/debian6_apache2/skarphed.conf",self.BUILDPATH+"skarphed.conf")
-        shutil.copyfile("../installer/debian6_apache2/install.sh", self.BUILDPATH+"install.sh")
-
-        self.status = 30
-        gobject.idle_add(self.updated)
-
-        shutil.copytree("../../core/web",self.BUILDPATH+"web")
-        shutil.copytree("../../core/lib",self.BUILDPATH+"lib")
-        #shutil.copytree("../../python-jsonrpc",self.BUILDPATH+"python-jsonrpc")
-
-        tar = tarfile.open(self.BUILDPATH+"scv_install.tar.gz","w:gz")
-        tar.add(self.BUILDPATH+"apache2.conf")
-        tar.add(self.BUILDPATH+"config.json")
-        tar.add(self.BUILDPATH+"skarphed.conf")
-        tar.add(self.BUILDPATH+"install.sh")
-        tar.add(self.BUILDPATH+"web")
-        tar.add(self.BUILDPATH+"lib")
-        #tar.add(self.BUILDPATH+"python-jsonrpc")
-        tar.close()
-
-        self.status = 45
-        gobject.idle_add(self.updated)
-
-        con = self.server.getSSH()
-        con_stdin, con_stdout, con_stderr = con.exec_command("mkdir /tmp/scvinst"+str(self.installationId))
-
-        self.status = 50
-        gobject.idle_add(self.updated)
-
-
-        con = self.server.getSSH()
-        ftp = con.open_sftp()
-        ftp.put(self.BUILDPATH+"scv_install.tar.gz","/tmp/scvinst"+str(self.installationId)+"/scv_install.tar.gz")
-        ftp.close()
-
-        self.status = 65
-        gobject.idle_add(self.updated)
-
-
-        con = self.server.getSSH()
-        con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/scvinst"+str(self.installationId)+"; tar xvfz scv_install.tar.gz -C / ; chmod 755 install.sh ; ./install.sh ")
-
-        logging.debug(con_stdout.read())
-        
-        shutil.rmtree(self.BUILDPATH)
-        self.status = 100
-        gobject.idle_add(self.updated)
-        gobject.idle_add(self.addInstanceToServer)
+    def execute_installation(self):
+        pass #To be implemented in realization
 
     def addInstanceToServer(self):
-        if self.data['apache.domain'] != "":
-            self.server.createInstance(InstanceType("skarphed","Skarphed"), "http://"+self.data['apache.domain'], "root", "root")
+        if self.domain != "":
+            self.server.createInstance(InstanceType("skarphed","Skarphed"), "http://"+self.domain, "root", "root")
         else:
             self.server.createInstance(InstanceType("skarphed","Skarphed"), "http://"+self.server.getIp(), "root", "root")
         self.destroy()
-
 
     def getName(self):
         return "Skarphed Installer"

@@ -25,6 +25,31 @@
 
 from data.Generic import GenericSkarphedObject
 from data.Instance import InstanceType
+from data.Server import InstallationTarget, Server
+from glue.paths import INSTALLER
+from os import listdir
+from sys import path
+
 o = GenericSkarphedObject()
 o.getApplication().registerInstanceType(InstanceType("skarphed","Skarphed"))
 o.destroy()
+
+path.append(INSTALLER)
+installers = listdir(INSTALLER)
+for installer in installers:
+    if installer.startswith("_"):
+        continue
+    try:
+        exec "from %s import TARGETNAME, EXTRA_PARAMS, Installer, Destroyer"%installer
+    except ImportError:
+        print "Failed to load installer: %s"%installer
+    else:
+        target = InstallationTarget()
+        target.setName(TARGETNAME)
+        target.setInstaller(Installer)
+        target.setDestroyer(Destroyer)
+        target.setExtraParams(EXTRA_PARAMS)
+        Server.addInstallationTarget(target)
+
+
+

@@ -31,6 +31,7 @@ from IconStock import SKARPHED
 from ViewPasswordButton import ViewPasswordButton
 from InstancePage import InstancePage
 from data.Generic import GenericObjectStoreException
+from data.Server import Server
 
 from gui.DefaultEntry import DefaultEntry
 
@@ -59,7 +60,7 @@ class ServerPropertyPage(gtk.Frame):
         self.vbox.pack_start(self.instructionlabel,False)
         
         self.ipFrame = gtk.Frame(_("Common"))
-        self.ipFrameT = gtk.Table(2,2,False)
+        self.ipFrameT = gtk.Table(2,3,False)
         self.ipFrame_IPLabel = gtk.Label(_("IP:"))
         self.ipFrame_IPEntry = DefaultEntry(default_message="172.16.13.37")
         self.ipFrameT.attach(self.ipFrame_IPLabel, 0,1,0,1)
@@ -68,7 +69,18 @@ class ServerPropertyPage(gtk.Frame):
         self.ipFrame_NameEntry = DefaultEntry(default_message="Server1")
         self.ipFrameT.attach(self.ipFrame_NameLabel, 0,1,1,2)
         self.ipFrameT.attach(self.ipFrame_NameEntry, 1,2,1,2)
+        self.ipFrame_Target_Label = gtk.Label("Target system:")
+        self.ipFrame_Target_model = gtk.ListStore(str)
+        for target in Server.INSTALLATION_TARGETS:
+            self.ipFrame_Target_model.append((target.getName(),))
+        self.ipFrame_Target_renderer = gtk.CellRendererText()
+        self.ipFrame_Target = gtk.ComboBox(self.ipFrame_Target_model)
+        self.ipFrame_Target.pack_start(self.ipFrame_Target_renderer,True)
+        self.ipFrame_Target.add_attribute(self.ipFrame_Target_renderer,'text',0)
+        self.ipFrameT.attach(self.ipFrame_Target_Label,0,1,2,3)
+        self.ipFrameT.attach(self.ipFrame_Target,1,2,2,3)
         self.ipFrame.add(self.ipFrameT)
+
         self.vbox.pack_start(self.ipFrame,False)
                 
         self.sshFrame = gtk.Frame(_("SSH"))
@@ -142,6 +154,11 @@ class ServerPropertyPage(gtk.Frame):
         self.render()
     
     def render(self):
+        def search(model, path, rowiter, target):
+            text = model.get_value(rowiter,0)
+            if text == target.getName():
+                self.ipFrame_Target.set_active_iter(rowiter)
+
         server = None
         try:
             server = self.getApplication().getLocalObjectById(self.serverId)
@@ -151,6 +168,9 @@ class ServerPropertyPage(gtk.Frame):
                 return
         
         self.instFrame.set_visible(self.mode == ServerPropertyPage.MODE_EDIT)
+
+        if server is not None and server.isTargetUsable():
+            self.ipFrame_Target_model.foreach(search, server.getTarget())
 
         self.instStore.clear()
         if server is not None:
@@ -229,6 +249,7 @@ class ServerPropertyPage(gtk.Frame):
         server.setName(self.ipFrame_NameEntry.get_text())
         server.setSSHName(self.sshFrame_NameEntry.get_text())
         server.setSSHPass(self.sshFrame_PassEntry.get_text())
+        server.setTarget(self.ipFrame_Target.get_active_text())
         server.load = server.LOADED_PROFILE
         server.establishConnections()
         
