@@ -334,8 +334,7 @@ class ButtonBreadCrumbs(gtk.HBox):
                 obj.addCallback(self.render)
                 button = ButtonBreadCrumb(self,obj)
                 self.crumbs.insert(0,button)
-            except Exception,e:
-                print e
+            except GenericObjectStoreException,e:
                 break
         separators = []
         for index,crumb in enumerate(self.crumbs,1):
