@@ -47,7 +47,8 @@ cp ./config.json $SCV_WEBPATH$instanceid/
 
 mkdir /tmp/scv_$instanceid
 sed s#//SCVWEBROOT//#$SCV_WEBPATH$instanceid#g ./apache2.conf > /tmp/scv_$instanceid/replace
-sed s#//SCVINSTANCEID//#$instanceid#g  /tmp/scv_$instanceid/replace > /etc/apache2/sites-enabled/www_scv_$instanceid
+sed s#//SCVINSTANCEID//#$instanceid#g  /tmp/scv_$instanceid/replace > /etc/apache2/sites-available/www_scv_$instanceid
+ln -s /etc/apache2/sites-available/www_scv_$instanceid /etc/apache2/sites-enabled/www_scv_$instanceid
 rm -r /tmp/scv_$instanceid
 
 chown -R www-data:www-data $SCV_WEBPATH$instanceid
