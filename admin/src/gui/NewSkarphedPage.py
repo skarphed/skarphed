@@ -44,6 +44,10 @@ class NewSkarphedPage(gtk.Frame):
         gtk.Frame.__init__(self, _("Skarphed Admin :: Create Instance"))
         self.targetsRendered = False
 
+        self.extradata_widgets = {}
+        self.extradata_table = None
+        self.no_installer_label = None
+
         self.alignment = gtk.Alignment(0.5,0.5,0.1,0.2)
         self.vbox = gtk.VBox()
         self.set_border_width(10)
@@ -53,14 +57,13 @@ class NewSkarphedPage(gtk.Frame):
         self.frm_repo = gtk.Frame(_("Repository"))
         self.frm_db = gtk.Frame(_("Database"))
         self.frm_target = gtk.Frame(_("Target-OS"))
-        self.frm_apache = gtk.Frame(_("Apache2"))
+        self.frm_extradata = gtk.Frame()
 
         self.frm_srv_tbl = gtk.Table(2,2,False)
         self.frm_repo_tbl = gtk.Table(2,1,False)
         self.frm_db_tbl = gtk.Table(2,2,False)
         self.frm_target_tbl = gtk.Table(3,1,False)
         self.frm_root_tbl = gtk.Table(2,2,False)
-        self.frm_apache_tbl = gtk.Table(2,4,False)
 
         self.srv_combobox = ObjectCombo(self,"Server", server)
 
@@ -97,34 +100,11 @@ class NewSkarphedPage(gtk.Frame):
         self.frm_db.add(self.frm_db_tbl)        
 
         self.target_label = gtk.Label(_("Target-OS:"))
-        self.target_combobox_model = gtk.ListStore(str)
-        self.target_combobox_renderer = gtk.CellRendererText()
-        self.target_combobox = gtk.ComboBox(self.target_combobox_model)
-        self.target_combobox.pack_start(self.target_combobox_renderer,True)
-        self.target_combobox.add_attribute(self.target_combobox_renderer,'text',0)
+        self.target_display = gtk.Label("")
 
         self.frm_target_tbl.attach(self.target_label,0,1,0,1)
-        self.frm_target_tbl.attach(self.target_combobox,1,2,0,1)
+        self.frm_target_tbl.attach(self.target_display,1,2,0,1)
         self.frm_target.add(self.frm_target_tbl)
-
-        self.apache_ip_label = gtk.Label(_("Listen-IP:"))
-        self.apache_ip_entry = DefaultEntry(default_message=_("255.255.255.255 or *"))
-        self.apache_port_label = gtk.Label(_("Listen-Port:"))
-        self.apache_port_entry = DefaultEntry(default_message="80")
-        self.apache_domain_label = gtk.Label(_("ServerName:"))
-        self.apache_domain_entry = DefaultEntry(default_message=_("[subdomain.]domain.tld or leave empty"))
-        self.apache_subdomain_label = gtk.Label(_("ServerAlias:"))
-        self.apache_subdomain_entry = DefaultEntry(default_message=_("[subdomain.]domain.tld or leave empty"))
-
-        self.frm_apache_tbl.attach(self.apache_ip_label,0,1,0,1)
-        self.frm_apache_tbl.attach(self.apache_ip_entry,1,2,0,1)
-        self.frm_apache_tbl.attach(self.apache_port_label,0,1,1,2)
-        self.frm_apache_tbl.attach(self.apache_port_entry,1,2,1,2)
-        self.frm_apache_tbl.attach(self.apache_domain_label,0,1,2,3)
-        self.frm_apache_tbl.attach(self.apache_domain_entry,1,2,2,3)
-        self.frm_apache_tbl.attach(self.apache_subdomain_label,0,1,3,4)
-        self.frm_apache_tbl.attach(self.apache_subdomain_entry,1,2,3,4)
-        self.frm_apache.add(self.frm_apache_tbl)
 
         self.ok = gtk.Button(stock=gtk.STOCK_OK)
         self.cancel = gtk.Button(stock=gtk.STOCK_CLOSE)
@@ -141,7 +121,7 @@ class NewSkarphedPage(gtk.Frame):
         self.vbox.pack_start(self.frm_repo)
         self.vbox.pack_start(self.frm_db)
         self.vbox.pack_start(self.frm_target)
-        self.vbox.pack_start(self.frm_apache)
+        self.vbox.pack_start(self.frm_extradata)
         self.vbox.pack_start(self.vboxdummy)
         self.vbox.pack_start(self.buttonhbox)
         self.alignment.add(self.vbox)
@@ -150,6 +130,7 @@ class NewSkarphedPage(gtk.Frame):
         self.ok.connect("clicked", self.cb_Ok)
         self.cancel.connect("clicked", self.cb_Cancel)
         self.connect("delete-event",self.cb_Cancel)
+        self.srv_combobox.connect("changed", self.render)
 
         #self.set_icon_from_file("../data/icon/mp_logo.png")
 
@@ -159,6 +140,7 @@ class NewSkarphedPage(gtk.Frame):
 
     def cb_Ok(self,widget=None,data=None):
         server = self.srv_combobox.getSelected()
+
         if self.db_radio_new.get_active():
             db = self.db_db_combo.getSelected()
             repo = self.repo_combobox.getSelected()
@@ -178,15 +160,13 @@ class NewSkarphedPage(gtk.Frame):
           "db.ip":schemaInfo['ip'],
           "db.name":schemaInfo['name'],
           "db.user":schemaInfo['user'],
-          "db.password":schemaInfo['pass'],
-          "apache.ip":self.apache_ip_entry.get_text(),
-          "apache.port":self.apache_port_entry.get_text(),
-          "apache.domain":self.apache_domain_entry.get_text(),
-          "apache.subdomain":self.apache_subdomain_entry.get_text(),
+          "db.password":schemaInfo['pass']
         }
 
-        target = self.target_combobox.get_active_text()
-        installer = server.installNewInstance(instanceData, target)
+        for key, widget in self.extradata_widgets.items():
+            instanceData[key] = widget.get_text()
+
+        installer = server.installNewInstance(instanceData)
         self.installerId = installer.getLocalId()
 
 
@@ -212,12 +192,48 @@ class NewSkarphedPage(gtk.Frame):
         self.db_schema_combo.render()
         self.db_db_combo.render()
 
-        if not self.targetsRendered:
+        """if not self.targetsRendered:
             targets = Server.INSTALLATION_TARGETS
             for target in targets:
                 self.target_combobox_model.append((target,))
             self.target_combobox.set_active_iter(self.target_combobox_model.get_iter_first())
-            self.targetsRendered=True
+            self.targetsRendered=True"""
+
+        if self.extradata_table is not None:
+            self.extradata_table.destroy()
+            self.extradata_table = None
+        if self.no_installer_label is not None:
+            self.no_installer_label.destroy()
+            self.no_installer_label = None
+
+        server = self.srv_combobox.getSelected()
+
+        if server is not None:
+            target = server.getTarget()
+            if server.isTargetUsable():
+                self.target_display.set_text(target.getName())
+                self.frm_extradata.set_label_widget(gtk.Label(target.getName()))
+                extradata = target.getExtraParams()
+                extradata_table = gtk.Table(2,len(extradata),False)
+                i = 0
+                for key, value in extradata.items():
+                    label = gtk.Label(value[0])
+                    entry = DefaultEntry(default_message=value[1])
+                    self.extradata_widgets[key] = entry
+                    extradata_table.attach(label,0,1,i,i+1)
+                    extradata_table.attach(entry,1,2,i,i+1)
+                    i += 1
+                self.extradata_table = extradata_table
+                self.frm_extradata.add(extradata_table)
+                extradata_table.show_all()
+                self.ok.set_sensitive(True)
+            else:
+                self.no_installer_label = gtk.Label(_("No appropriate installer available"))
+                self.frm_extradata.add(self.no_installer_label)
+                self.no_installer_label.show()
+                self.target_display.set_text(target)
+                self.ok.set_sensitive(False)
+
 
         if self.installerId is not None:
             try:
@@ -236,11 +252,8 @@ class NewSkarphedPage(gtk.Frame):
             self.db_schema_combo.set_sensitive(sensitive)
             self.db_radio_new.set_sensitive(sensitive)
             self.db_radio_use.set_sensitive(sensitive)
-            self.target_combobox.set_sensitive(sensitive)
-            self.apache_ip_entry.set_sensitive(sensitive)
-            self.apache_port_entry.set_sensitive(sensitive)
-            self.apache_domain_entry.set_sensitive(sensitive)
-            self.apache_subdomain_entry.set_sensitive(sensitive)
+            for widget in self.extradata_widgets.values():
+                widget.set_sensitive(sensitive)   
             self.ok.set_sensitive(sensitive)
             self.cancel.set_sensitive(sensitive)
 

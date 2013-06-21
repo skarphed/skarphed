@@ -41,6 +41,7 @@ class Store(gtk.TreeStore):
                         "ActionList",
                         "MenuItem",
                         "SkarphedInstaller",
+                        "SkarphedDestroyer",
                         "OperationDaemon")
     def __init__(self,*args,**kwargs):
         '''Constructor --'''

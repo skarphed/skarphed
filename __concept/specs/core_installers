@@ -1,0 +1,12 @@
+Core Installers are folders that contain files which implement the installation and 
+deinstallation of skarphed-core on distinct target-systems. A targetsystem consists 
+of an operating system and a webserver.
+
+The __init__.py of an coreinstaller must implement the following members:
+
+- TARGETNAME < The name of the InstallationTarget  e.g. "Debian 6 / Apache2"
+- EXTRA_PARAMS < extra parameters that are used by the targetsystem (e.g. webserver configvariables)
+- Installer < Is an installer that must extend the data.skarphed.Skarphed.AbstractInstaller and
+              implement its execute_installation-method.
+- Destroyer < Is a class that extends data.skarphed.Skarphed.AbstractDestroyer and implements its
+              execute_destruction-method

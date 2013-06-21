@@ -43,7 +43,7 @@ def default_template(environ, response_headers):
     Loads the default repositories template and returns it.
     """
     try:
-        f = open('/usr/share/scvrepo/template.html')
+        f = open('/usr/share/skdrepo/template.html')
         template = f.read()
         f.close()
         repository = Repository()

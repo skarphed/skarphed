@@ -1,3 +1,6 @@
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+
 ###########################################################
 # Copyright 2011 Daniel 'grindhold' Brendle and Team
 #
@@ -19,36 +22,22 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-import json
+from sys import platform, path
+from os.path import join
 
-class Config(object):
-    """
-    Provides a global accessibly configuration.
-    """
-    # shared state for borg pattern
-    __shared_state = {} 
+P = path[0]
 
-    def __init__(self):
-        """
-        Initializes a configuration object with the shared state.
-        """
-        self.__dict__ = self.__shared_state
+# Handle different filepaths for most common OS (others may follow)
 
-    def __getitem__(self, key):
-        """
-        Returns the value of the configuration entry with the given key.
-        """
-        return self.config[key]
-
-    def load_from_file(self, path):
-        """
-        Loads the configuration from a json file.
-        """
-        f = open(path, 'r')
-        data = f.read()
-        f.close()
-        self.config = json.loads(data)
-
-
-# loads the default repository configuration
-Config().load_from_file('/etc/skdrepo/config.json')
+if platform == 'linux2':
+    DATA = join(P,"..","data")
+    ICON = join(DATA,"icon")
+    INSTALLER = join(P,"..","installer")
+elif platform == 'win32':
+    DATA = join(P,"..","data")
+    ICON = join(DATA,"icon")
+    INSTALLER = join(P,"..","installer")
+elif platform == 'darwin':
+    DATA = join(P,"..","data")
+    ICON = join(DATA,"icon")
+    INSTALLER = join(P,"..","installer")

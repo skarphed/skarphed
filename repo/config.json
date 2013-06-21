@@ -1,7 +1,7 @@
 {
   "db.ip":"127.0.0.1",
-  "db.name":"scvrepo.fdb",
-  "db.user":"scvrepo",
+  "db.name":"skdrepo.fdb",
+  "db.user":"skdrepo",
   "db.password":"placeholder",
   "session.expires":7200
 }
