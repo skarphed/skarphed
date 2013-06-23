@@ -255,7 +255,7 @@ class BoxSpace(gtk.HBox):
         self.orderNumber = orderNumber
 
         self.spaceWidget = SpaceWidget(self, view, boxId=boxId, orderNumber=orderNumber)
-        self.buttonhbox = gtk.HBox()
+        self.buttonhbox = gtk.VBox()
         self.raiseOrderButton = gtk.Button(stock=gtk.STOCK_GO_UP)
         self.removeButton = gtk.Button(stock=gtk.STOCK_REMOVE)
         self.lowerOrderButton = gtk.Button(stock=gtk.STOCK_GO_DOWN)
