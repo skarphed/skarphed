@@ -205,6 +205,7 @@ class BoxWidget(gtk.VBox):
 
         order = 0
         boxcontent = view.getBoxContent(self.boxId)
+         
         for widgetId in boxcontent:
             self.boxSpaces.append(BoxSpace(self, view, self.boxId, order))
             self.spaceList.pack_start(self.boxSpaces[order],False)
@@ -285,8 +286,7 @@ class BoxSpace(gtk.HBox):
         boxcontent = view.getBoxContent(self.boxId)
         del(boxcontent[self.orderNumber])
 
-        self.spaceWidget.destroy()
-        self.destroy()
+        self.getPar().render()
 
     def cb_raiseOrder(self, widget=None, data=None):
         try:
@@ -300,7 +300,7 @@ class BoxSpace(gtk.HBox):
             return
         widgetId = boxcontent[self.orderNumber]
         boxcontent.remove(widgetId)
-        boxcontent.insert(self.orderNumber-1,widget_id)
+        boxcontent.insert(self.orderNumber-1,widgetId)
 
         self.getPar().render()
 
@@ -316,7 +316,7 @@ class BoxSpace(gtk.HBox):
             return
         widgetId = boxcontent[self.orderNumber]
         boxcontent.remove(widgetId)
-        boxcontent.insert(self.orderNumber+1,widget_id)
+        boxcontent.insert(self.orderNumber+1,widgetId)
 
         self.getPar().render()
 
