@@ -33,17 +33,14 @@ from data.Generic import GenericObjectStoreException
 
 from glue.lng import _
 
-class KeyWindow(gtk.Window):
+class KeyWindow(gtk.Frame):
     addWindowOpen=False
     def __init__(self,parent, profile=None):
-        if KeyWindow.addWindowOpen:
-            self.destroy()
-            return
-        gtk.Window.__init__(self)
+        gtk.Frame.__init__(self)
         self.par = parent
         self.serverId = None
         self.profile = profile
-        self.set_title(_("Skarphed Admin Pro :: Public Key Infrastructure"))
+ #       self.set_title(_("Skarphed Admin Pro :: Public Key Infrastructure"))
         
         self.label = gtk.Label(_('Skarphed uses public keys to sign modules. If you are a developer\
  and want to submit modules to Skarphed repositories, you can create and\
@@ -79,8 +76,7 @@ class KeyWindow(gtk.Window):
         self.add(self.vbox)
         
         self.connect("delete-event", self.cb_close)
-        self.show_all()
-        KeyWindow.addWindowOpen = True
+        self.getApplication().getMainWindow().openDialogPane(self)
         self.render()
     
     def render(self):
@@ -96,8 +92,7 @@ class KeyWindow(gtk.Window):
         self.render()
     
     def cb_close(self,widget=None,data=None):
-        KeyWindow.addWindowOpen = False
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
         
     def getPar(self):
         return self.par
