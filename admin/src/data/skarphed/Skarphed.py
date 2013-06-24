@@ -2,12 +2,12 @@
 #-*- coding: utf-8 -*-
 
 ###########################################################
-# Copyright 2011 Daniel 'grindhold' Brendle and Team
+# © 2011 Daniel 'grindhold' Brendle and Team
 #
 # This file is part of Skarphed.
 #
 # Skarphed is free software: you can redistribute it and/or 
-# modify it under the terms of the GNU General Public License 
+# modify it under the terms of the GNU Affero General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
@@ -15,9 +15,9 @@
 # Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-# PURPOSE. See the GNU General Public License for more details.
+# PURPOSE. See the GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public 
+# You should have received a copy of the GNU Affero General Public 
 # License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
@@ -26,6 +26,7 @@
 from data.Generic import ObjectStore, GenericSkarphedObject
 from data.Instance import Instance, InstanceType
 
+from data.Server import Server
 from Users import Users
 from Modules import Modules
 from Roles import Roles
@@ -87,6 +88,40 @@ class AbstractInstaller(GenericSkarphedObject):
     def install(self):
         self.installThread.start()
 
+class AbstractDestroyer(GenericSkarphedObject):
+    class DestroyThread(Thread):
+        def __init__(self, installer):
+            Thread.__init__(self)
+            self.installer = installer
+
+        def run(self):
+            self.installer.execute_destruction()
+
+    def __init__(self, instanceid, instance):
+        GenericSkarphedObject.__init__(self)
+        self.instanceid = instanceid
+        self.instance = instance
+        self.status = 0
+        self.destroyThread = self.DestroyThread(self)
+
+    def execute_destruction(self):
+        pass
+
+    def removeInstanceFromServer(self):
+        server = self.instance.getServer()
+        server.removeInstance(self.instance)
+        self.destroy()
+
+    def getName(self):
+        return "Skarphed Destroyer"
+
+    def getStatus(self):
+        return self.status
+
+    def takedown(self):
+        self.destroyThread.start()
+
+
 class Skarphed(Instance):
     STATE_OFFLINE = 0
     STATE_ONLINE = 1
@@ -98,11 +133,8 @@ class Skarphed(Instance):
     LOADED_PROFILE = 1
     LOADED_SERVERDATA = 2
     
-    @classmethod
-    def installNewSkarphed(cls, data, server, target):
-        installer = SkarphedInstaller(data,server,target)
-        installer.install()
-        return installer
+
+
 
     def __init__(self, server, url="", username="", password=""):
         Instance.__init__(self,server)
@@ -132,7 +164,18 @@ class Skarphed(Instance):
         self.rendermode = None
 
         self.cssPropertySet = None
-        
+
+    def invokeDestructionCallback(self, data):
+        instanceId = data
+        if instanceId == None:
+            print "No sufficient rights only root can destroy"
+        target = self.getServer().getTarget()
+        destroyer = target.getDestroyer()(instanceId, self)
+        destroyer.takedown()
+
+    def invokeDestruction(self):
+        self.getApplication().doRPCCall(self,self.invokeDestructionCallback, "getInstanceId")
+
     def setUrl(self,url):
         self.url= url
         self.updated()

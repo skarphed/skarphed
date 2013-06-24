@@ -2,12 +2,12 @@
 #-*- coding: utf-8 -*-
 
 ###########################################################
-# Copyright 2011 Daniel 'grindhold' Brendle and Team
+# © 2011 Daniel 'grindhold' Brendle and Team
 #
 # This file is part of Skarphed.
 #
 # Skarphed is free software: you can redistribute it and/or 
-# modify it under the terms of the GNU General Public License 
+# modify it under the terms of the GNU Affero General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
@@ -15,9 +15,9 @@
 # Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-# PURPOSE. See the GNU General Public License for more details.
+# PURPOSE. See the GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public 
+# You should have received a copy of the GNU Affero General Public 
 # License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
@@ -177,6 +177,7 @@ class Tabs(gtk.Notebook):
         self.set_scrollable(True)
         self.connect("switch-page", self.pageSwitched)
         self.lastPageNum = None
+        self.context = TabContextMenu(self)
         
     def openPage(self,obj,force=True):
         """
@@ -199,6 +200,15 @@ class Tabs(gtk.Notebook):
             self.remove_page(self.page_num(self.pagestore[objId]))
             del(self.pagestore[objId])
 
+    def closeAll(self):
+        for objId in self.pagestore.keys():
+            self.closePage(objId)
+
+    def closeOther(self, objId):
+        for stored_objId in self.pagestore.keys():
+            if objId != stored_objId:
+                self.closePage(stored_objId)
+
     def pageSwitched(self, note, page, page_num):
         if page_num != self.lastPageNum:
             page = self.get_nth_page(page_num)
@@ -208,6 +218,8 @@ class Tabs(gtk.Notebook):
                 obj = scvPage.getMyObject()
                 self.getPar().getTree().setActiveObject(obj)
 
+    def getContext(self):
+        return self.context
             
     def getPar(self):
         return self.par
@@ -220,12 +232,18 @@ class TabLabel(gtk.HBox):
         gtk.HBox.__init__(self)
         self.par = parent
         self.objId = obj.getLocalId()
+        self.icon_evbox = gtk.EventBox()
         self.icon = gtk.Image()
+        self.label_evbox = gtk.EventBox()
         self.label = gtk.Label()
         self.close = gtk.Button("X")
         self.close.connect("clicked", self.cb_Close)
-        self.pack_start(self.icon,False)
-        self.pack_start(self.label,True)
+        self.icon_evbox.connect("button-press-event", self.cb_Labelclick)
+        self.label_evbox.connect("button-press-event", self.cb_Labelclick)
+        self.icon_evbox.add(self.icon)
+        self.pack_start(self.icon_evbox,False)
+        self.label_evbox.add(self.label)
+        self.pack_start(self.label_evbox,True)
         self.pack_end(self.close,False)
         self.show_all()
         self.render()
@@ -243,6 +261,13 @@ class TabLabel(gtk.HBox):
     def cb_Close(self,widget=None,data=None):
         self.getPar().closePage(self.objId)
     
+    def cb_Labelclick(self, widget, event):
+        if event.button == 2:
+            self.cb_Close()
+        elif event.button == 3:
+            context = self.getPar().getContext()
+            context.popup(self.objId, event.button, event.get_time())
+
     def getPar(self):
         return self.par
 
@@ -334,8 +359,7 @@ class ButtonBreadCrumbs(gtk.HBox):
                 obj.addCallback(self.render)
                 button = ButtonBreadCrumb(self,obj)
                 self.crumbs.insert(0,button)
-            except Exception,e:
-                print e
+            except GenericObjectStoreException,e:
                 break
         separators = []
         for index,crumb in enumerate(self.crumbs,1):
@@ -379,4 +403,56 @@ class BreadCrumbs(gtk.Label):
 
     def getApplication(self):
         return self.par.getApplication()
+
+class TabContextMenu(gtk.Menu):
+    def __init__(self,parent):
+        gtk.Menu.__init__(self)
+
+        self.par = parent
+
+        self.objId = None
+
+        ca_image = gtk.Image()
+        ca_image.set_from_stock(gtk.STOCK_CLOSE,gtk.ICON_SIZE_MENU) 
+        ca_item = gtk.ImageMenuItem()
+        ca_item.set_image(ca_image)
+        gtk.MenuItem.__init__(ca_item, _("Close all tabs"))
+        ca_item.connect("activate", self.closeAll)
+        self.append(ca_item)
+
+        ct_image = gtk.Image()
+        ct_image.set_from_stock(gtk.STOCK_CLOSE,gtk.ICON_SIZE_MENU) 
+        ct_item = gtk.ImageMenuItem()
+        ct_item.set_image(ct_image)
+        gtk.MenuItem.__init__(ct_item, _("Close this tab"))
+        ct_item.connect("activate", self.closeThis)
+        self.append(ct_item)
+
+        co_image = gtk.Image()
+        co_image.set_from_stock(gtk.STOCK_CLOSE,gtk.ICON_SIZE_MENU) 
+        co_item = gtk.ImageMenuItem()
+        co_item.set_image(co_image)
+        gtk.MenuItem.__init__(co_item, _("Close other tabs"))
+        co_item.connect("activate", self.closeOther)
+        self.append(co_item)
+
+        self.show_all()
+
+    def popup(self,objId,button,time):
+        self.objId = objId
+        gtk.Menu.popup(self,None,None,None,button,time,None)
+
+    def closeAll(self, widget=None, data=None):
+        self.getPar().closeAll()
+
+    def closeThis(self, widget=None, data=None):
+        self.getPar().closePage(self.objId)
+
+    def closeOther(self, widget=None, data=None):
+        self.getPar().closeOther(self.objId)
     
+    def getPar(self):
+        return self.par
+
+    def getApplication(self):
+        return self.par.getApplication()
