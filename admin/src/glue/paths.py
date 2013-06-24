@@ -23,21 +23,48 @@
 ###########################################################
 
 from sys import platform, path
-from os.path import join
+from os.path import join, exists
 
 P = path[0]
 
 # Handle different filepaths for most common OS (others may follow)
 
-if platform == 'linux2':
-    DATA = join(P,"..","data")
-    ICON = join(DATA,"icon")
-    INSTALLER = join(P,"..","installer")
-elif platform == 'win32':
-    DATA = join(P,"..","data")
-    ICON = join(DATA,"icon")
-    INSTALLER = join(P,"..","installer")
-elif platform == 'darwin':
-    DATA = join(P,"..","data")
-    ICON = join(DATA,"icon")
-    INSTALLER = join(P,"..","installer")
+if exists(join(P,"DEVMODE")):
+    ###
+    ### Program runs in devmode. Use paths as they are in gitrepo
+    ###
+    if platform == 'linux2':
+        DATA = join(P,"..","data")
+        ICON = join(DATA,"icon")
+        INSTALLER = join(P,"..","installer")
+        LOCALE = join(P,"..","locale")
+    elif platform == 'win32':
+        DATA = join(P,"..","data")
+        ICON = join(DATA,"icon")
+        INSTALLER = join(P,"..","installer")
+        LOCALE = join(P,"..","locale")
+    elif platform == 'darwin':
+        DATA = join(P,"..","data")
+        ICON = join(DATA,"icon")
+        INSTALLER = join(P,"..","installer")
+        LOCALE = join(P,"..","locale")
+
+else:
+    ###
+    ### Program runs in retailmode. Use packaged-paths
+    ###
+    if platform == 'linux2':
+        DATA = join("/","usr","share","skarphed")
+        ICON = join(DATA,"icon")
+        INSTALLER = join(DATA,"installer")
+        LOCALE = join("/","usr","share","locale")
+    elif platform == 'win32': #TODO: Get paths for Windows
+        DATA = join(P,"..","data")
+        ICON = join(DATA,"icon")
+        INSTALLER = join(P,"..","installer")
+        LOCALE = join(P,"..","locale")
+    elif platform == 'darwin': #TODO: Get paths for MacOS
+        DATA = join(P,"..","data")
+        ICON = join(DATA,"icon")
+        INSTALLER = join(P,"..","installer")
+        LOCALE = join(P,"..","locale")

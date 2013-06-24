@@ -125,7 +125,8 @@ class Application(object):
     def createServerFromInstanceUrl(self, instanceurl):
         return data.createServerFromInstanceUrl(instanceurl)
 
-application = Application()
-application.run()
+if __name__=="__main__":
+    application = Application()
+    application.run()
 
         

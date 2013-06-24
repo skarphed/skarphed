@@ -21,6 +21,21 @@ function generate_deb {
 	cp ../skdrepo_apache2 ${deb_root}etc/apache2/sites-enabled/skdrepo
 	cp -r ../static ${deb_root}usr/share/skdrepo/
 	cp ../templates/template.html ${deb_root}usr/share/skdrepo/
+
+
+	SIZE=`du -c -s ${deb_root}etc ${deb_root}tmp ${deb_root}usr ${deb_root}var | tail -n1 |  cut -f1`
+	cat << EOF > ${deb_root}DEBIAN/control
+Package: skarphed-repo
+Priority: optional
+Section: web
+Installed-Size: $SIZE
+Maintainer: Andre Kupka <kupka@in.tum.de>
+Architecture: all
+Version: 0.1
+Depends: firebird2.5-super (>= 2.5), apache2 (>= 2.2), libapache2-mod-wsgi (>= 3.3), python (>= 2.6), python-pip (>= 0.7), python-dev (>= 2.6)
+Description: A Skarphed Repository
+EOF
+
 	dpkg-deb -z6 -Zgzip --build ${deb_root}
 	mv "./deb/skarphed-repo.deb" .
 }

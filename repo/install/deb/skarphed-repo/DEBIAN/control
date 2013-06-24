@@ -1,9 +1,0 @@
-Package: skarphed-repo
-Priority: optional
-Section: web
-Installed-Size: 204
-Maintainer: Andre Kupka <kupka@in.tum.de>
-Architecture: all
-Version: 0.1
-Depends: firebird2.5-super (>= 2.5), apache2 (>= 2.2), libapache2-mod-wsgi (>= 3.3), python (>= 2.6), python-pip (>= 0.7), python-dev (>= 2.6)
-Description: A Skarphed Repository
