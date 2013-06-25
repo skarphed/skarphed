@@ -72,7 +72,7 @@ class ViewPage(ObjectPageAbstract):
         self.compose_spacewidgets = {}
         self.compose_boxwidgets = {}
         self.compose_vbox.pack_end(self.compose_dummy,True)
-        self.compose_scroll.add(self.compose_vbox)
+        self.compose_scroll.add_with_viewport(self.compose_vbox)
         self.compose.add(self.compose_scroll)
         self.pack_start(self.compose, True)
 
@@ -183,6 +183,7 @@ class BoxWidget(gtk.VBox):
         self.pack_start(self.label, False)
         self.pack_start(self.addButton, False)
         self.scrolledWindow.add_with_viewport(self.spaceList)
+        self.scrolledWindow.set_size_request(500,300)
         self.pack_start(self.scrolledWindow,False)
 
         self.show_all()
