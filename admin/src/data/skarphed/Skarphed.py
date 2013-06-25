@@ -26,7 +26,6 @@
 from data.Generic import ObjectStore, GenericSkarphedObject
 from data.Instance import Instance, InstanceType
 
-from data.Server import Server
 from Users import Users
 from Modules import Modules
 from Roles import Roles
@@ -36,18 +35,8 @@ from Operation import OperationManager, OperationDaemon
 from View import Views
 
 from threading import Thread
-import json 
 import base64
-import os
-import os.path
-import shutil
-import tarfile
 import random
-import gobject
-from net.MultiPartForm import MultiPartForm
-from net.SkarphedUpload import SkarphedUpload
-
-import logging
 
 class AbstractInstaller(GenericSkarphedObject):
     class InstallThread(Thread):
@@ -90,12 +79,12 @@ class AbstractInstaller(GenericSkarphedObject):
 
 class AbstractDestroyer(GenericSkarphedObject):
     class DestroyThread(Thread):
-        def __init__(self, installer):
+        def __init__(self, destroyer):
             Thread.__init__(self)
-            self.installer = installer
+            self.destroyer = destroyer
 
         def run(self):
-            self.installer.execute_destruction()
+            self.destroyer.execute_destruction()
 
     def __init__(self, instanceid, instance):
         GenericSkarphedObject.__init__(self)
@@ -169,8 +158,9 @@ class Skarphed(Instance):
         instanceId = data
         if instanceId == None:
             print "No sufficient rights only root can destroy"
+            return
         target = self.getServer().getTarget()
-        destroyer = target.getDestroyer()(instanceId, self)
+        destroyer = target.getDestroyer()(int(instanceId), self)
         destroyer.takedown()
 
     def invokeDestruction(self):

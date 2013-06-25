@@ -156,7 +156,7 @@ class Destroyer(AbstractDestroyer):
         gobject.idle_add(self.updated)
 
         con = server.getSSH()
-        con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/ ; chmod 755 teardown.sh ; ./teardown.sh %d "%int(self.instanceid))
+        con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/ ; chmod 755 teardown.sh ; ./teardown.sh %d "%self.instanceid)
         logging.debug(con_stdout.read())
         self.status = 100
         gobject.idle_add(self.updated)

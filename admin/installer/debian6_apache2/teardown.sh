@@ -1,13 +1,13 @@
 #!/bin/bash
 
 echo "Gathering Information..."
-instanceid = $1
+instanceid=$1
 source /etc/skarphed/skarphed.conf
 echo "Starting to tear down instance with ID: $instanceid..."
 echo "    Stopping operation_daemon"
-python $SCVWEBPATH$instanceid/operation_daemon.py stop
-echo "    Removing document root"
-rm -r $SCVWEBPATH$instanceid
+python $SCV_WEBPATH$instanceid/operation_daemon.py stop
+echo "    Removing document root $SCV_WEBPATH$instanceid"
+rm -r $SCV_WEBPATH$instanceid
 echo "    Removing instance-specific apacheconfig and logdata"
 rm /etc/apache2/sites-enabled/www_scv_$instanceid 
 rm /etc/apache2/sites-available/www_scv_$instanceid
