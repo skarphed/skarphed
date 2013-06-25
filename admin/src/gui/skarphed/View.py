@@ -205,14 +205,14 @@ class BoxWidget(gtk.VBox):
             boxSpaceWidget.destroy()
 
         order = 0
+        self.boxSpaces = []
         boxcontent = view.getBoxContent(self.boxId)
-         
         for widgetId in boxcontent:
             self.boxSpaces.append(BoxSpace(self, view, self.boxId, order))
             self.spaceList.pack_start(self.boxSpaces[order],False)
-            self.boxSpaces[order].show()
             self.boxSpaces[order].render()
             order += 1
+        self.spaceList.show_all()
 
     def cb_Add(self, widget=None, data=None):
         try:
@@ -300,6 +300,9 @@ class BoxSpace(gtk.HBox):
         if self.orderNumber == 0:
             return
         widgetId = boxcontent[self.orderNumber]
+        if widgetId is None: # in case widgetId has not yet been uploaded to the server
+            widgetId = self.spaceWidget.getWidgetId()
+            boxcontent[self.orderNumber] = widgetId
         boxcontent.remove(widgetId)
         boxcontent.insert(self.orderNumber-1,widgetId)
 
@@ -316,6 +319,9 @@ class BoxSpace(gtk.HBox):
         if self.orderNumber == len(boxcontent)-1:
             return
         widgetId = boxcontent[self.orderNumber]
+        if widgetId is None: # in case widgetId has not yet been uploaded to the server
+            widgetId = self.spaceWidget.getWidgetId()
+            boxcontent[self.orderNumber] = widgetId
         boxcontent.remove(widgetId)
         boxcontent.insert(self.orderNumber+1,widgetId)
 
