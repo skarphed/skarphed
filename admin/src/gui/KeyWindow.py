@@ -2,12 +2,12 @@
 #-*- coding: utf-8 -*-
 
 ###########################################################
-# Copyright 2011 Daniel 'grindhold' Brendle and Team
+# © 2011 Daniel 'grindhold' Brendle and Team
 #
 # This file is part of Skarphed.
 #
 # Skarphed is free software: you can redistribute it and/or 
-# modify it under the terms of the GNU General Public License 
+# modify it under the terms of the GNU Affero General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
 # version.
@@ -15,9 +15,9 @@
 # Skarphed is distributed in the hope that it will be 
 # useful, but WITHOUT ANY WARRANTY; without even the implied 
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-# PURPOSE. See the GNU General Public License for more details.
+# PURPOSE. See the GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public 
+# You should have received a copy of the GNU Affero General Public 
 # License along with Skarphed. 
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
@@ -33,17 +33,14 @@ from data.Generic import GenericObjectStoreException
 
 from glue.lng import _
 
-class KeyWindow(gtk.Window):
+class KeyWindow(gtk.Frame):
     addWindowOpen=False
     def __init__(self,parent, profile=None):
-        if KeyWindow.addWindowOpen:
-            self.destroy()
-            return
-        gtk.Window.__init__(self)
+        gtk.Frame.__init__(self)
         self.par = parent
         self.serverId = None
         self.profile = profile
-        self.set_title(_("Skarphed Admin Pro :: Public Key Infrastructure"))
+ #       self.set_title(_("Skarphed Admin Pro :: Public Key Infrastructure"))
         
         self.label = gtk.Label(_('Skarphed uses public keys to sign modules. If you are a developer\
  and want to submit modules to Skarphed repositories, you can create and\
@@ -79,8 +76,7 @@ class KeyWindow(gtk.Window):
         self.add(self.vbox)
         
         self.connect("delete-event", self.cb_close)
-        self.show_all()
-        KeyWindow.addWindowOpen = True
+        self.getApplication().getMainWindow().openDialogPane(self)
         self.render()
     
     def render(self):
@@ -96,8 +92,7 @@ class KeyWindow(gtk.Window):
         self.render()
     
     def cb_close(self,widget=None,data=None):
-        KeyWindow.addWindowOpen = False
-        self.destroy()
+        self.getApplication().getMainWindow().closeDialogPane()
         
     def getPar(self):
         return self.par

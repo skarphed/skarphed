@@ -1,0 +1,3 @@
+#!/usr/bin/python -O
+from skarphedadmin.skarphed import Application
+Application().run()
