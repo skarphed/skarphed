@@ -52,7 +52,7 @@ class NewSchemaPage(gtk.Frame):
 
 
     def __init__(self,par,database):
-        gtk.Frame.__init__(self, _("Skarphed Admin PRO :: New Schema"))
+        gtk.Frame.__init__(self, _("Skarphed Admin :: New Schema"))
         self.par = par
 
         self.databaseId = database.getLocalId()

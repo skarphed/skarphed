@@ -39,7 +39,7 @@ class CssEditor(gtk.Window):
         self.par = par
         self.objId = obj.getLocalId()
         
-        self.set_title(_("Skarphed Admin PRO :: CssEditor :: ")+obj.getName())
+        self.set_title(_("Skarphed Admin :: CssEditor :: ")+obj.getName())
         self.set_icon(CSS)
         self.set_size_request(600,500)
         

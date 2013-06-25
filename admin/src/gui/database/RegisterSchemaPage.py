@@ -34,7 +34,7 @@ from glue.lng import _
 class RegisterSchemaPage(gtk.Frame):
     def __init__(self, par, database):
         self.par = par
-        gtk.Frame.__init__(self, _("Skarphed Admin PRO :: Register Schema"))
+        gtk.Frame.__init__(self, _("Skarphed Admin :: Register Schema"))
 
         self.databaseId = database.getLocalId()
 

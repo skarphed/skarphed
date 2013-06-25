@@ -34,7 +34,7 @@ from glue.lng import _
 class NewDatabasePage(gtk.Frame):
     def __init__(self,par,server):
         self.par = par
-        gtk.Frame.__init__(self, _("Skarphed Admin PRO :: Register Database"))
+        gtk.Frame.__init__(self, _("Skarphed Admin :: Register Database"))
 
         self.serverId = server.getLocalId()
 

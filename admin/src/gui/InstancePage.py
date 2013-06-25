@@ -46,7 +46,7 @@ class InstancePage(gtk.Frame):
             self.instanceId = instance.getLocalId()
         self.instanceTypes = self.getApplication().getInstanceTypes()
         
-        self.set_label(_("Skarphed Admin PRO :: Configure Instance"))
+        self.set_label(_("Skarphed Admin :: Configure Instance"))
         self.vbox = gtk.VBox()
         self.label = gtk.Label(_("Please configure the Instance"))
         self.vspace = gtk.Label("")

@@ -52,7 +52,7 @@ class MainWindow(gtk.Window):
         
         self._dialogObjectStack = []
 
-        self.set_title(_("Skarphed Admin PRO"))
+        self.set_title(_("Skarphed Admin"))
         self.set_icon_from_file("../data/icon/mp_logo.png")
         self.maximize()
         
