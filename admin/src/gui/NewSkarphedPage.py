@@ -132,8 +132,6 @@ class NewSkarphedPage(gtk.Frame):
         self.connect("delete-event",self.cb_Cancel)
         self.srv_combobox.connect("changed", self.render)
 
-        #self.set_icon_from_file("../data/icon/mp_logo.png")
-
         self.getApplication().getMainWindow().openDialogPane(self)
         self.getApplication().getObjectStore().addCallback(self.render)
         self.render()

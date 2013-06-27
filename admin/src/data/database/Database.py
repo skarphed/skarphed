@@ -29,8 +29,11 @@ from hashlib import sha512
 from random import randrange
 
 from threading import Thread
+import os
 
 import gobject
+
+from glue.paths import INSTALLER
 
 class Database(GenericSkarphedObject):
     class GenerateSchemaThread(Thread):
@@ -64,7 +67,7 @@ class Database(GenericSkarphedObject):
 
         con = self.getServer().getSSH()
 
-        sql = open("../installer/_database/scvdb.sql","r").read()
+        sql = open(os.path.join(INSTALLER,"_database","scvdb.sql"),"r").read()
         sql = sql%{'USER':username,
                    'PASSWORD':schemaroot_pw, 
                    'SALT':schemaroot_salt, 

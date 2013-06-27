@@ -27,17 +27,19 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 import hashlib
+import os
 
 from gui.DefaultEntry import DefaultEntry
 
 from glue.lng import _
+from glue.paths import DATA
 
 class LoginPage(gtk.Frame):
     def __init__(self, parent):
         gtk.Frame.__init__(self, _("Skarphed Admin Pro :: Login"))
         self.par = parent
 
-        self.image = gtk.image_new_from_file("../data/loginbanner.png")
+        self.image = gtk.image_new_from_file(os.path.join(DATA,"loginbanner.png"))
         self.alignment = gtk.Alignment(0.5,0.2,0.1,0.1)
         self.vbox = gtk.VBox()
         self.hbox = gtk.HBox(True)
