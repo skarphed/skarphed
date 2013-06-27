@@ -1,0 +1,13 @@
+Package: skarphed-admin
+Priority: optional
+Section: web
+Installed-Size: $SIZE
+Maintainer: Daniel Brendle <grindhold@gmx.net>
+Architecture: all
+Version: 0.1
+Depends: python (>= 2.6), python-paramiko (>= 1.7), python-crypto (>= 2.1)
+Description: A webmanagement system.
+ This program allows users to rapidly build websites and manage them at once.
+ It differs from common CMS-solutions, regarding that you are not only able
+ to manage one website at a time in your browser, but as many as you want in a
+ native GTK-GUI. For further information see the FAQ at http://skarphed.org . 

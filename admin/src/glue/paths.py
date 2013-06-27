@@ -56,7 +56,7 @@ else:
     if platform == 'linux2':
         DATA = join("/","usr","share","skarphed")
         ICON = join(DATA,"icon")
-        INSTALLER = join(DATA,"installer")
+        INSTALLER = join("/","var","lib","skarphed","installer")
         LOCALE = join("/","usr","share","locale")
     elif platform == 'win32': #TODO: Get paths for Windows
         DATA = join(P,"..","data")
