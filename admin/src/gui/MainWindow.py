@@ -55,7 +55,11 @@ class MainWindow(gtk.Window):
         self._dialogObjectStack = []
 
         self.set_title(_("Skarphed Admin"))
-        self.set_icon_from_file(os.path.join(ICON,"mp_logo.png"))
+        try:
+            theme = gtk.icon_theme_get_default()
+            self.set_icon(theme.load_icon('skarphed', 256, 0))
+        except:
+            self.set_icon_from_file(os.path.join(ICON,"mp_logo.png"))
         self.maximize()
         
         self.table = gtk.Table(4,1,False)

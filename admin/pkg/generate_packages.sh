@@ -17,19 +17,19 @@ function generate_deb {
 	mkdir -p ${deb_root}usr/share/locale
 	mkdir -p ${deb_root}usr/share/man/man1
 	mkdir -p ${deb_root}usr/share/doc/skarphed-admin
-	mkdir -p ${deb_root}usr/share/icon/hicolor/16x16/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/22x22/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/24x24/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/32x32/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/36x36/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/48x48/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/64x64/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/72x72/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/96x96/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/128x128/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/192x192/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/256x256/apps
-	mkdir -p ${deb_root}usr/share/icon/hicolor/scalable/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/16x16/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/22x22/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/24x24/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/32x32/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/36x36/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/48x48/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/64x64/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/72x72/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/96x96/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/128x128/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/192x192/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/256x256/apps
+	mkdir -p ${deb_root}usr/share/icons/hicolor/scalable/apps
 	mkdir -p ${deb_root}var/lib/skarphed
 
 	# copy your files, hack your symlinks :)
@@ -56,19 +56,19 @@ function generate_deb {
 
 	# ICONS AND DESKTOPFILE 
 
-	cp desktop_icons/16x16.png ${deb_root}usr/share/icon/hicolor/16x16/apps/skarphed.png
-	cp desktop_icons/22x22.png ${deb_root}usr/share/icon/hicolor/22x22/apps/skarphed.png
-	cp desktop_icons/24x24.png ${deb_root}usr/share/icon/hicolor/24x24/apps/skarphed.png
-	cp desktop_icons/32x32.png ${deb_root}usr/share/icon/hicolor/32x32/apps/skarphed.png
-	cp desktop_icons/36x36.png ${deb_root}usr/share/icon/hicolor/36x36/apps/skarphed.png
-	cp desktop_icons/48x48.png ${deb_root}usr/share/icon/hicolor/48x48/apps/skarphed.png
-	cp desktop_icons/64x64.png ${deb_root}usr/share/icon/hicolor/64x64/apps/skarphed.png
-	cp desktop_icons/72x72.png ${deb_root}usr/share/icon/hicolor/72x72/apps/skarphed.png
-	cp desktop_icons/96x96.png ${deb_root}usr/share/icon/hicolor/96x96/apps/skarphed.png
-	cp desktop_icons/128x128.png ${deb_root}usr/share/icon/hicolor/128x128/apps/skarphed.png
-	cp desktop_icons/192x192.png ${deb_root}usr/share/icon/hicolor/192x192/apps/skarphed.png
-	cp desktop_icons/256x256.png ${deb_root}usr/share/icon/hicolor/256x256/apps/skarphed.png
-	cp desktop_icons/scalable.svg ${deb_root}usr/share/icon/hicolor/scalable/apps/skarphed.svg
+	cp desktop_icons/16x16.png ${deb_root}usr/share/icons/hicolor/16x16/apps/skarphed.png
+	cp desktop_icons/22x22.png ${deb_root}usr/share/icons/hicolor/22x22/apps/skarphed.png
+	cp desktop_icons/24x24.png ${deb_root}usr/share/icons/hicolor/24x24/apps/skarphed.png
+	cp desktop_icons/32x32.png ${deb_root}usr/share/icons/hicolor/32x32/apps/skarphed.png
+	cp desktop_icons/36x36.png ${deb_root}usr/share/icons/hicolor/36x36/apps/skarphed.png
+	cp desktop_icons/48x48.png ${deb_root}usr/share/icons/hicolor/48x48/apps/skarphed.png
+	cp desktop_icons/64x64.png ${deb_root}usr/share/icons/hicolor/64x64/apps/skarphed.png
+	cp desktop_icons/72x72.png ${deb_root}usr/share/icons/hicolor/72x72/apps/skarphed.png
+	cp desktop_icons/96x96.png ${deb_root}usr/share/icons/hicolor/96x96/apps/skarphed.png
+	cp desktop_icons/128x128.png ${deb_root}usr/share/icons/hicolor/128x128/apps/skarphed.png
+	cp desktop_icons/192x192.png ${deb_root}usr/share/icons/hicolor/192x192/apps/skarphed.png
+	cp desktop_icons/256x256.png ${deb_root}usr/share/icons/hicolor/256x256/apps/skarphed.png
+	cp desktop_icons/scalable.svg ${deb_root}usr/share/icons/hicolor/scalable/apps/skarphed.svg
 	cp ../skarphed-admin.desktop ${deb_root}usr/share/applications/
 
 	# HOOKSCRIPTS
