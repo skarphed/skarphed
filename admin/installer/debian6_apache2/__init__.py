@@ -32,6 +32,7 @@ from glue.paths import INSTALLER
 from data.skarphed.Skarphed import AbstractInstaller, AbstractDestroyer
 
 from glue.lng import _
+from glue.paths import COREFILES
 
 import logging
 
@@ -49,7 +50,7 @@ class Installer(AbstractInstaller):
 
         p = os.path.dirname(os.path.realpath(__file__))
 
-        apache_template = open(p+"/apache2.conf","r").read()
+        apache_template = open(os.path.join(p,"apache2.conf"),"r").read()
         apache_domain = ""
         if self.data['apache.domain'] != "":
             apache_domain = "ServerName "+self.data['apache.domain']
@@ -61,7 +62,7 @@ class Installer(AbstractInstaller):
                                       self.data['apache.port'],
                                       apache_domain,
                                       apache_subdomain)
-        apacheconfresult = open(self.BUILDPATH+"apache2.conf","w")
+        apacheconfresult = open(os.path.join(self.BUILDPATH,"apache2.conf"),"w")
         apacheconfresult.write(apacheconf)
         apacheconfresult.close()
 
@@ -87,28 +88,26 @@ class Installer(AbstractInstaller):
         scv_config.update(scv_config_defaults)
 
         jenc = json.JSONEncoder()
-        config_json = open(self.BUILDPATH+"config.json","w")
+        config_json = open(os.path.join(self.BUILDPATH,"config.json"),"w")
         config_json.write(jenc.encode(scv_config))
         config_json.close()
 
-        shutil.copyfile(p+"/skarphed.conf",self.BUILDPATH+"skarphed.conf")
-        shutil.copyfile(p+"/install.sh", self.BUILDPATH+"install.sh")
+        shutil.copyfile(os.path.join(p,"skarphed.conf"), os.path.join(self.BUILDPATH,"skarphed.conf"))
+        shutil.copyfile(os.path.join(p,"install.sh"), os.path.join(self.BUILDPATH,"install.sh"))
 
         self.status = 30
         gobject.idle_add(self.updated)
 
-        shutil.copytree("../../core/web",self.BUILDPATH+"web")
-        shutil.copytree("../../core/lib",self.BUILDPATH+"lib")
-        #shutil.copytree("../../python-jsonrpc",self.BUILDPATH+"python-jsonrpc")
+        shutil.copytree(os.path.join(COREFILES,"web"), os.path.join(self.BUILDPATH, "web"))
+        shutil.copytree(os.path.join(COREFILES,"lib"), os.path.join(self.BUILDPATH,"lib"))
 
-        tar = tarfile.open(self.BUILDPATH+"scv_install.tar.gz","w:gz")
-        tar.add(self.BUILDPATH+"apache2.conf")
-        tar.add(self.BUILDPATH+"config.json")
-        tar.add(self.BUILDPATH+"skarphed.conf")
-        tar.add(self.BUILDPATH+"install.sh")
-        tar.add(self.BUILDPATH+"web")
-        tar.add(self.BUILDPATH+"lib")
-        #tar.add(self.BUILDPATH+"python-jsonrpc")
+        tar = tarfile.open(os.path.join(self.BUILDPATH,"scv_install.tar.gz"),"w:gz")
+        tar.add(os.path.join(self.BUILDPATH,"apache2.conf"))
+        tar.add(os.path.join(self.BUILDPATH,"config.json"))
+        tar.add(os.path.join(self.BUILDPATH,"skarphed.conf"))
+        tar.add(os.path.join(self.BUILDPATH,"install.sh"))
+        tar.add(os.path.join(self.BUILDPATH,"web"))
+        tar.add(os.path.join(self.BUILDPATH,"lib"))
         tar.close()
 
         self.status = 45
@@ -123,7 +122,7 @@ class Installer(AbstractInstaller):
 
         con = self.server.getSSH()
         ftp = con.open_sftp()
-        ftp.put(self.BUILDPATH+"scv_install.tar.gz","/tmp/scvinst"+str(self.installationId)+"/scv_install.tar.gz")
+        ftp.put(os.path.join(self.BUILDPATH,"scv_install.tar.gz"),"/tmp/scvinst"+str(self.installationId)+"/scv_install.tar.gz")
         ftp.close()
 
         self.status = 65
@@ -150,7 +149,7 @@ class Destroyer(AbstractDestroyer):
 
         con = server.getSSH()
         ftp = con.open_sftp()
-        ftp.put(p+"/teardown.sh","/tmp/teardown.sh")
+        ftp.put(os.path.join(p,"teardown.sh"),"/tmp/teardown.sh")
         ftp.close()
         self.status = 30
         gobject.idle_add(self.updated)

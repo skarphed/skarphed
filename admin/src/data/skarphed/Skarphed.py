@@ -37,6 +37,7 @@ from View import Views
 from threading import Thread
 import base64
 import random
+import os
 
 class AbstractInstaller(GenericSkarphedObject):
     class InstallThread(Thread):
@@ -54,7 +55,7 @@ class AbstractInstaller(GenericSkarphedObject):
         self.data  = data
         self.domain = ""
         self.installationId = int(random.random()*1000)
-        self.BUILDPATH = "/tmp/scvinst"+str(self.installationId)+"/"
+        self.BUILDPATH = os.path.join("/","tmp","scvinst"+str(self.installationId))
         self.installThread = self.InstallThread(self)
         self.status = 0
 

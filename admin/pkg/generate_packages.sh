@@ -14,6 +14,7 @@ function generate_deb {
 	mkdir -p ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin
 	mkdir -p ${deb_root}usr/share/applications
 	mkdir -p ${deb_root}usr/share/skarphed
+	mkdir -p ${deb_root}usr/share/skarphed/corefiles
 	mkdir -p ${deb_root}usr/share/locale
 	mkdir -p ${deb_root}usr/share/man/man1
 	mkdir -p ${deb_root}usr/share/doc/skarphed-admin
@@ -45,6 +46,10 @@ function generate_deb {
 	touch ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/__init__.py
 
 	cp -r ../data/* ${deb_root}usr/share/skarphed/
+	cp -r ../../core/lib ${deb_root}usr/share/skarphed/corefiles/
+	rm ${deb_root}usr/share/skarphed/corefiles/lib/common
+	cp -r ../../common ${deb_root}usr/share/skarphed/corefiles/lib/
+	cp -r ../../core/web ${deb_root}usr/share/skarphed/corefiles/
 
 	cp -r ../installer ${deb_root}var/lib/skarphed/
 

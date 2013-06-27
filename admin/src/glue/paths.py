@@ -38,16 +38,19 @@ if exists(join(P,"DEVMODE")):
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
+        COREFILES = join(P,"..","..","core")
     elif platform == 'win32':
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
+        COREFILES = join(P,"..","..","core")
     elif platform == 'darwin':
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
+        COREFILES = join(P,"..","..","core")
 
 else:
     ###
@@ -58,13 +61,16 @@ else:
         ICON = join(DATA,"icon")
         INSTALLER = join("/","var","lib","skarphed","installer")
         LOCALE = join("/","usr","share","locale")
+        COREFILES = join("/","usr","share","skarphed","corefiles")
     elif platform == 'win32': #TODO: Get paths for Windows
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
+        COREFILES = join(P,"..","..","core")
     elif platform == 'darwin': #TODO: Get paths for MacOS
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
+        COREFILES = join(P,"..","..","core")
