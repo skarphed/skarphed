@@ -42,6 +42,7 @@ function generate_deb {
 	rm ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/DEVMODE
 	rm ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/common
 	cp -r ../../common ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/
+	touch ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/__init__.py
 
 	cp -r ../data/* ${deb_root}usr/share/skarphed/
 
@@ -70,6 +71,11 @@ function generate_deb {
 	cp desktop_icons/scalable.svg ${deb_root}usr/share/icon/hicolor/scalable/apps/skarphed.svg
 	cp ../skarphed-admin.desktop ${deb_root}usr/share/applications/
 
+	# HOOKSCRIPTS
+
+	cp deb/resources/postinst ${deb_root}DEBIAN/
+	cp deb/resources/prerm ${deb_root}DEBIAN/
+	sudo chown root:root ${deb_root}DEBIAN/postinst ${deb_root}DEBIAN/prerm
 
 	# COPYRIGHTFILE
 

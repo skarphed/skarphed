@@ -22,9 +22,9 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-import sys
 import gettext
 
-PATH = sys.path[0]
-t = gettext.translation('skarphed', PATH+"/../locale")
+from glue.paths import LOCALE
+
+t = gettext.translation('skarphed', LOCALE)
 _ = t.ugettext

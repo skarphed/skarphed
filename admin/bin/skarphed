@@ -1,3 +1,2 @@
-#!/usr/bin/python -O
-from skarphedadmin.skarphed import Application
-Application().run()
+#!/bin/bash
+python -O /usr/lib/python2.7/dist-packages/skarphedadmin/skarphed.py

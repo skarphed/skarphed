@@ -13,4 +13,4 @@ repo/pkg/deb/skarphed-repo/usr
 repo/pkg/deb/skarphed-repo/DEBIAN/control
 admin/pkg/deb/skarphed-admin/usr
 admin/pkg/deb/skarphed-admin/var
-admin/pkg/deb/skarphed-admin/DEBIAN/control
+admin/pkg/deb/skarphed-admin/DEBIAN

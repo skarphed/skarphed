@@ -27,6 +27,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 import sys
+import os
 
 from ServerPropertyPage import ServerPropertyPage
 from LoginPage import LoginPage
@@ -39,6 +40,7 @@ from DefaultEntry import DefaultEntry
 from ThreadControl import ThreadControl
 
 from glue.lng import _
+from glue.paths import ICON, DATA
 
 class GetParentException(Exception):pass
 
@@ -53,7 +55,7 @@ class MainWindow(gtk.Window):
         self._dialogObjectStack = []
 
         self.set_title(_("Skarphed Admin"))
-        self.set_icon_from_file("../data/icon/mp_logo.png")
+        self.set_icon_from_file(os.path.join(ICON,"mp_logo.png"))
         self.maximize()
         
         self.table = gtk.Table(4,1,False)
@@ -168,7 +170,7 @@ class MainWindow(gtk.Window):
         about.set_copyright(_("© Masterprogs"))
         about.set_comments(_("Skarphed Admin PRO is a professional tool to manage your Skarphed installations"))
         about.set_website(MainWindow.WEBSITE)
-        about.set_logo(gtk.gdk.pixbuf_new_from_file(sys.path[0]+"/../data/login.png"))
+        about.set_logo(gtk.gdk.pixbuf_new_from_file(os.path.join(DATA,"login.png")))
         about.set_border_width(0)
         about.run()
         about.destroy()

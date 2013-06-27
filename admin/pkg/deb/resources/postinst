@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ln -s /usr/lib/python2.7/dist-packages/skarphedadmin /usr/lib/python2.6/dist-packages/skarphedadmin
+ln -s /usr/lib/python2.7/dist-packages/skarphedadmin-0.1.0.egg-info /usr/lib/python2.6/dist-packages/skarphedadmin-0.1.0.egg-info
