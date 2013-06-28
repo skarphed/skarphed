@@ -32,6 +32,7 @@ function generate_deb {
 	mkdir -p ${deb_root}usr/share/icons/hicolor/256x256/apps
 	mkdir -p ${deb_root}usr/share/icons/hicolor/scalable/apps
 	mkdir -p ${deb_root}var/lib/skarphed
+	mkdir -p ${deb_root}var/lib/skarphed/modulegui
 
 	# copy your files, hack your symlinks :)
 
@@ -97,6 +98,7 @@ function generate_deb {
 	find ${deb_root}var -name "*.pyc" -exec rm -rf {} \;
 	sudo chown -R root:root ${deb_root}usr
 	sudo chown -R nobody:nogroup ${deb_root}var
+	sudo chmod 777 ${deb_root}var/lib/skarphed/modulegui
 
 	# determine size of package
 

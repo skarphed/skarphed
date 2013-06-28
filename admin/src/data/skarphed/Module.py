@@ -36,6 +36,8 @@ import Crypto.PublicKey.RSA as RSA
 import Crypto.Hash.SHA256 as SHA256
 import Crypto.Signature.PKCS1_v1_5 as PKCS1_v1_5
 
+from glue.paths import MODULEGUI
+
 class Module(GenericSkarphedObject):
     def __init__(self,parent, data = {}):
         GenericSkarphedObject.__init__(self)
@@ -45,9 +47,9 @@ class Module(GenericSkarphedObject):
         if self.data.has_key('installed') and self.data['installed']:
             self.loadWidgets()
 
-        if not os.path.exists(os.path.expanduser("~/.skarphedadmin/modulegui")):
-            os.mkdir(os.path.expanduser("~/.skarphedadmin/modulegui"))
-            open(os.path.expanduser("~/.skarphedadmin/modulegui")+"/__init__.py","w").close()
+        if not os.path.exists(MODULEGUI):
+            os.mkdir(MODULEGUI)
+            open(os.join(MODULEGUI,"__init__.py"),"w").close()
 
     def getName(self):
         if self.data.has_key('hrname'):
@@ -138,16 +140,15 @@ class Module(GenericSkarphedObject):
         self.getApplication().doRPCCall(self.getModules().getSkarphed(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getId()])
     
     def loadGuiCallback(self, result):
-        modulepath = os.path.expanduser("~/.skarphedadmin/modulegui/")
-        if not os.path.exists(modulepath):
-            os.mkdir(modulepath)
-        if not os.path.exists(modulepath+self.getModuleName()):
-            os.mkdir(modulepath+self.getModuleName())
+        if not os.path.exists(MODULEGUI):
+            os.mkdir(MODULEGUI)
+        if not os.path.exists(os.path.join(MODULEGUI, self.getModuleName())):
+            os.mkdir(os.path.join(MODULEGUI,self.getModuleName()))
 
-        open(modulepath+self.getModuleName()+"/__init__.py","w").close()
+        open(os.path.join(MODULEGUI,self.getModuleName(),"__init__.py"),"w").close()
 
-        if not os.path.exists(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()):
-            os.mkdir(modulepath+self.getModuleName()+"/"+self.getVersionFolderString())
+        if not os.path.exists(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString())):
+            os.mkdir(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString()))
 
         data = result['data']
         signature = base64.b64decode(result['signature'])
@@ -158,19 +159,19 @@ class Module(GenericSkarphedObject):
         hashed = SHA256.new(data)
         verifier = PKCS1_v1_5.new(publickey)
         if verifier.verify(hashed, signature):
-            f = open(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui.tar.gz","w")
+            f = open(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),"gui.tar.gz"),"w")
             f.write(base64.b64decode(data))
             f.close()
-            tar = tarfile.open(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui.tar.gz","r:gz")
-            tar.extractall(modulepath+self.getModuleName()+"/"+self.getVersionFolderString())
+            tar = tarfile.open(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),"gui.tar.gz"),"r:gz")
+            tar.extractall(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString()))
             tar.close()
-            os.unlink(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui.tar.gz")
-            for filename in glob.glob(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+libstring+"/"+self.getModuleName()+"/"+self.getVersionFolderString()+"/gui/*"):
-                shutil.move(filename, modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/")
-            shutil.rmtree(modulepath+self.getModuleName()+"/"+self.getVersionFolderString()+"/"+libstring.split("/")[1])
+            os.unlink(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),"gui.tar.gz"))
+            for filename in glob.glob(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),libstring,self.getModuleName().self.getVersionFolderString(),"gui","*")):
+                shutil.move(filename, os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),""))
+            shutil.rmtree(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),libstring.split("/")[1]))
             self.updated()
         else:
-            shutil.rmtree(modulepath+self.getModuleName()+"/"+self.getVersionFolderString())
+            shutil.rmtree(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString()))
             raise Exception("GuiData did not validate against Signature!")
             
 
@@ -178,8 +179,8 @@ class Module(GenericSkarphedObject):
         self.getApplication().doRPCCall(self.getModules().getSkarphed(),self.loadGuiCallback, "getGuiForModule", [self.getId()])
 
     def isGuiAvailable(self):
-        return os.path.exists(os.path.expanduser("~/.skarphedadmin/modulegui/"+self.getModuleName()+\
-                                                 "/"+self.getVersionFolderString()))
+        return os.path.exists(os.path.expanduser(os.path.join("~",".skarphedadmin","modulegui",self.getModuleName(),\
+                                                 self.getVersionFolderString())))
 
     def createWidgetCallback(self, json):
         self.loadWidgets()

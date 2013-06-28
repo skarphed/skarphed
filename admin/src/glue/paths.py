@@ -23,7 +23,7 @@
 ###########################################################
 
 from sys import platform, path
-from os.path import join, exists
+from os.path import join, exists, expanduser
 
 P = path[0]
 
@@ -39,18 +39,21 @@ if exists(join(P,"DEVMODE")):
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
         COREFILES = join(P,"..","..","core")
+        MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))
     elif platform == 'win32':
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
         COREFILES = join(P,"..","..","core")
+        MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))
     elif platform == 'darwin':
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
         COREFILES = join(P,"..","..","core")
+        MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))
 
 else:
     ###
@@ -62,15 +65,18 @@ else:
         INSTALLER = join("/","var","lib","skarphed","installer")
         LOCALE = join("/","usr","share","locale")
         COREFILES = join("/","usr","share","skarphed","corefiles")
+        MODULEGUI = join("/","var","lib","skarphed","modulegui")
     elif platform == 'win32': #TODO: Get paths for Windows
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
         COREFILES = join(P,"..","..","core")
+        MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))
     elif platform == 'darwin': #TODO: Get paths for MacOS
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
         INSTALLER = join(P,"..","installer")
         LOCALE = join(P,"..","locale")
         COREFILES = join(P,"..","..","core")
+        MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))

@@ -23,7 +23,6 @@
 ###########################################################
 
 import sys
-import os
 from GenericObject import ObjectPageAbstract
 
 import pygtk
@@ -31,6 +30,7 @@ pygtk.require("2.0")
 import gtk
 
 from glue.lng import _
+from glue.paths import MODULEGUI
 
 class ModulePage(ObjectPageAbstract):
     def __init__(self,par,module):
@@ -43,8 +43,8 @@ class ModulePage(ObjectPageAbstract):
 
         if not module.isGuiAvailable():
             module.loadGui()
-        if not os.path.expanduser("~/.skarphedadmin/modulegui") in sys.path:
-            sys.path.append(os.path.expanduser("~/.skarphedadmin/modulegui"))
+        if not MODULEGUI in sys.path:
+            sys.path.append(MODULEGUI)
 
         self.render()
 
