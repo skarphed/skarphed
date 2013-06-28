@@ -96,7 +96,7 @@ class Profile(object):
     def load(self):
         if not os.path.exists(os.path.expanduser('~/.skarphedadmin/'+self.username)):
             raise ProfileException("Profile does not exist")
-        profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'r')
+        profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'rb')
         cipher = profilefile.read()
         aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
         clear = aes.decrypt(cipher)
@@ -133,7 +133,7 @@ class Profile(object):
         self.updateProfile()
         if not os.path.exists(os.path.expanduser('~/.skarphedadmin')):
             os.mkdir(os.path.expanduser('~/.skarphedadmin'))
-        profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'w')
+        profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'wb')
         aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
         js = json.encoder.JSONEncoder()
         clear = "SCOV"+js.encode(self.data)
