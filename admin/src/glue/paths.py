@@ -67,12 +67,12 @@ else:
         COREFILES = join("/","usr","share","skarphed","corefiles")
         MODULEGUI = join("/","var","lib","skarphed","modulegui")
     elif platform == 'win32': #TODO: Get paths for Windows
-        DATA = join(P,"..","data")
+        DATA = join(P,"..","..","data")
         ICON = join(DATA,"icon")
-        INSTALLER = join(P,"..","installer")
-        LOCALE = join(P,"..","locale")
+        INSTALLER = join(P,"..","..","installer")
+        LOCALE = join(P,"..","..","locale")
         COREFILES = join(P,"..","..","core")
-        MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))
+        MODULEGUI = join(P,"..","..","modulegui")
     elif platform == 'darwin': #TODO: Get paths for MacOS
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")

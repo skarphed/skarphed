@@ -22,6 +22,7 @@ except:
 shutil.copytree("..\data","dist\\data")
 shutil.copytree("..\installer","dist\\installer")
 shutil.copytree("..\locale","dist\\locale")
+shutil.copytree("..\..\core","dist\\core")
 
 setup(
 	name='skarphed-admin',
@@ -29,7 +30,7 @@ setup(
 	version='0.1alpha',
 	windows= [
 	    {
-	    	'script':'Application.py',
+	    	'script':'skarphed.py',
 	    	'icon_resources':[(1,'skarphed.ico')]
 	    }
 	],

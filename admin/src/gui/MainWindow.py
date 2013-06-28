@@ -55,10 +55,10 @@ class MainWindow(gtk.Window):
         self._dialogObjectStack = []
 
         self.set_title(_("Skarphed Admin"))
-        try:
+        if sys.platform.startswith('linux'):
             theme = gtk.icon_theme_get_default()
             self.set_icon(theme.load_icon('skarphed', 256, 0))
-        except:
+        else:
             self.set_icon_from_file(os.path.join(ICON,"mp_logo.png"))
         self.maximize()
         

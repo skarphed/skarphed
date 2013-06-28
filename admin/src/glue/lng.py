@@ -22,9 +22,17 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+import sys
+import os
 import gettext
 
 from glue.paths import LOCALE
+
+if sys.platform.startswith('win'):
+    import locale
+    if os.getenv('LANG') is None:
+        lang, enc = locale.getdefaultlocale()
+        os.environ['LANG'] = lang
 
 t = gettext.translation('skarphed', LOCALE)
 _ = t.ugettext

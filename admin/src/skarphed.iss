@@ -5,7 +5,7 @@
 #define MyAppVersion "0.1"
 #define MyAppPublisher "Skarphed Devteam"
 #define MyAppURL "http://www.skarphed.org"
-#define MyAppExeName "Application.exe"
+#define MyAppExeName "skarphed.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -39,7 +39,10 @@ Source: "C:\Users\\skarphed\admin\src\dist\data\*"; DestDir: "{app}\data"; Fl
 Source: "C:\Users\\skarphed\admin\src\dist\data\icon\*"; DestDir: "{app}\data\icon"; Flags: ignoreversion
 Source: "C:\Users\\skarphed\admin\src\dist\installer\_database\*"; DestDir: "{app}\installer\_database"; Flags: ignoreversion
 Source: "C:\Users\\skarphed\admin\src\dist\installer\debian6_apache2\*"; DestDir: "{app}\installer\debian6_apache2"; Flags: ignoreversion
-Source: "C:\Users\\skarphed\admin\src\dist\locale\*"; DestDir: "{app}\locale"; Flags: ignoreversion
+Source: "C:\Users\\skarphed\admin\src\dist\core\web\*"; DestDir: "{app}\core\web"; Flags: ignoreversion
+Source: "C:\Users\\skarphed\admin\src\dist\core\lib\*"; DestDir: "{app}\core\lib"; Flags: ignoreversion
+Source: "C:\Users\\skarphed\admin\src\dist\locale\en_US\LC_MESSAGES\*"; DestDir: "{app}\locale\en_US\LC_MESSAGES"; Flags: ignoreversion
+Source: "C:\Users\\skarphed\admin\src\dist\locale\de_DE\LC_MESSAGES\*"; DestDir: "{app}\locale\de_DE\LC_MESSAGES"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
