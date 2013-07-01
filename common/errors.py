@@ -173,6 +173,14 @@ class ProfileException(SkarphedException):
         4:"""Wrong password!"""
     }
 
+class RepositoryException(SkarphedException):
+    PREFIX ="REPO"
+    ERRORS = {
+        100:"""Not a valid repository URL""",
+        101:"""Port must be a number between 1 and 65535""",
+        102:"""Hostname must not be empty"""
+    }
+
 class SessionException(SkarphedException):
     PREFIX ="SE"
     ERRORS = {
@@ -244,6 +252,7 @@ ERRORNAMES = {
     'PageException':PageException,
     'PermissionException':PermissionException,
     'ProfileException':ProfileException,
+    'RepositoryException':RepositoryException,
     'SessionException':SessionException,
     'TemplateException':TemplateException,
     'UserException':UserException,

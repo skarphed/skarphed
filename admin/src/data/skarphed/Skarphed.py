@@ -39,6 +39,8 @@ import base64
 import random
 import os
 
+from common.errors import RepositoryException
+
 class AbstractInstaller(GenericSkarphedObject):
     class InstallThread(Thread):
         def __init__(self, installer):
@@ -318,9 +320,29 @@ class Skarphed(Instance):
     def setRepositoryCallback(self,res):
         self.modules.refresh()
         
-    def setRepository(self,host,port):
-        self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [host,port])
-        self.repo_url = host+":"+str(port)
+    def setRepository(self,repostring):
+        hostname = ""
+        port = 80
+
+        splitted = repostring.split(":")
+        if len(splitted)==2:
+            try:
+                port = int(splitted[1])
+            except ValueError:
+                raise RepositoryException(RepositoryException.get_msg(101))
+            if port > 65535 or port < 1:
+                raise RepositoryException(RepositoryException.get_msg(101))
+            hostname=splitted[0]
+        elif len(splitted)==1:
+            hostname=splitted[0]
+        else:
+            raise RepositoryException(RepositoryException.get_msg(100))
+
+        if hostname == "":
+            raise RepositoryException(RepositoryException.get_msg(102))
+
+        self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [hostname,port])
+        self.repo_url = hostname+":"+str(port)
         
     def loadProfileInfo(self,profileInfo):
         pass

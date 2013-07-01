@@ -170,6 +170,7 @@ class SkarphedPage(ObjectPageAbstract):
             return
 
         repostring = self.repoEntry.get_text()
-        host,port = repostring.split(":")
-        port = int(port)        
-        skarphed.setRepository(host,port)
+        skarphed.setRepository(repostring)
+
+
+
