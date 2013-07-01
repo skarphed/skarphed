@@ -29,7 +29,7 @@ import os
 import data.Server
 from Instance import InstanceType
 
-class ProfileException(Exception):pass
+from common.errors import ProfileException
 
 class Profile(object):
     STATE_EMPTY = 0
@@ -51,7 +51,7 @@ class Profile(object):
         if not os.path.exists(os.path.expanduser('~/.skarphedadmin')):
             os.mkdir(os.path.expanduser('~/.skarphedadmin'))
         if os.path.exists(os.path.expanduser('~/.skarphedadmin/'+self.username)):
-            raise ProfileException("Profile exists")
+            raise ProfileException(ProfileException.get_msg(0))
         assert len(self.password)%16 == 0 , "Password not divisible by 16"
         profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'w')
         
@@ -68,13 +68,13 @@ class Profile(object):
         if self.data.has_key('publickey') and self.data['publickey'] != '':
             return self.data['publickey']
         else:
-            raise ProfileException('No publickey defined!')
+            raise ProfileException(ProfileException.get_msg(1))
     
     def getPrivateKey(self):
         if self.data.has_key('privatekey') and self.data['privatekey'] != '':
             return self.data['privatekey']
         else:
-            raise ProfileException('No privatekey defined!')
+            raise ProfileException(ProfileException.get_msg(2))
     
     def hasKeys(self):
         if self.data.has_key('privatekey') and self.data['privatekey'] != ''\
@@ -95,7 +95,7 @@ class Profile(object):
         
     def load(self):
         if not os.path.exists(os.path.expanduser('~/.skarphedadmin/'+self.username)):
-            raise ProfileException("Profile does not exist")
+            raise ProfileException(ProfileException.get_msg(3))
         profilefile = open(os.path.expanduser('~/.skarphedadmin/'+self.username),'rb')
         cipher = profilefile.read()
         aes = Crypto.Cipher.AES.new(self.password, Crypto.Cipher.AES.MODE_ECB)
@@ -127,7 +127,7 @@ class Profile(object):
                  
         else:
             profilefile.close()
-            raise ProfileException("Could not Decode")
+            raise ProfileException(ProfileException.get_msg(4))
     
     def save(self):
         self.updateProfile()

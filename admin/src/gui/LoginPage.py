@@ -109,13 +109,11 @@ class NewProfile(gtk.Frame):
         pw2 = self.e_password_r.get_text()
         username = self.e_user.get_text()
         if username and pw1 == pw2:
-            try:
-                hash = hashlib.md5()
-                hash.update(pw1)
-                self.getApplication().createProfile(username,hash.hexdigest())
-                self.getApplication().getMainWindow().closeDialogPane()
-            except Exception,e :
-                raise e
+            hash = hashlib.md5()
+            hash.update(pw1)
+            self.getApplication().createProfile(username,hash.hexdigest())
+            self.getApplication().getMainWindow().closeDialogPane()
+
             
 
 class UseProfile(gtk.Frame):

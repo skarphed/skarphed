@@ -160,6 +160,19 @@ class PermissionException(SkarphedException):
         13:"""Create Role: This role already exists: """
     }
 
+class ProfileException(SkarphedException):
+    """
+    Exceptions that may occur related to userprofiles in GUI
+    """
+    PREFIX ="PRO"
+    ERRORS = {
+        0:"""Profile already exists.""",
+        1:"""No publickey defined!""",
+        2:"""No privatekey defined!""",
+        3:"""Profile does not exist.""",
+        4:"""Wrong password!"""
+    }
+
 class SessionException(SkarphedException):
     PREFIX ="SE"
     ERRORS = {
@@ -228,7 +241,9 @@ ERRORNAMES = {
     'DatabaseException':DatabaseException,
     'ModuleCoreException':ModuleCoreException,
     'OperationException':OperationException,
+    'PageException':PageException,
     'PermissionException':PermissionException,
+    'ProfileException':ProfileException,
     'SessionException':SessionException,
     'TemplateException':TemplateException,
     'UserException':UserException,
