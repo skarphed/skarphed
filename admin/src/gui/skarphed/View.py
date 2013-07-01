@@ -26,6 +26,8 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+from copy import copy
+
 from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
@@ -186,6 +188,8 @@ class BoxWidget(gtk.VBox):
         self.scrolledWindow.set_size_request(500,300)
         self.pack_start(self.scrolledWindow,False)
 
+        self.temporaryBoxcontent = copy(view.getBoxContent(self.boxId))
+
         self.show_all()
 
     def render(self):
@@ -206,8 +210,7 @@ class BoxWidget(gtk.VBox):
 
         order = 0
         self.boxSpaces = []
-        boxcontent = view.getBoxContent(self.boxId)
-        for widgetId in boxcontent:
+        for widgetId in self.temporaryBoxcontent:
             self.boxSpaces.append(BoxSpace(self, view, self.boxId, order))
             self.spaceList.pack_start(self.boxSpaces[order],False)
             self.boxSpaces[order].render()
@@ -221,8 +224,7 @@ class BoxWidget(gtk.VBox):
             self.destroy()
             return
         order = len(self.boxSpaces)
-        boxcontent = view.getBoxContent(self.boxId)
-        boxcontent.append(None)
+        self.temporaryBoxcontent.append(None)
         self.boxSpaces.append(BoxSpace(self, view, self.boxId, order))
         self.spaceList.pack_start(self.boxSpaces[order],False)
         self.boxSpaces[order].show()
@@ -236,6 +238,13 @@ class BoxWidget(gtk.VBox):
             if widget is not None:
                 widgets.append(widget)
         return widgets
+
+    def getTemporaryBoxContent(self):
+        return self.temporaryBoxcontent
+
+    def tempStoreAllWidgetIds(self):
+        for boxspace in self.boxSpaces:
+            boxspace.tempStoreWidgetId()
 
     def getBoxId(self):
         return self.boxId
@@ -284,10 +293,20 @@ class BoxSpace(gtk.HBox):
             self.destroy()
             return
 
-        boxcontent = view.getBoxContent(self.boxId)
+        boxcontent = self.getPar().getTemporaryBoxContent()
         del(boxcontent[self.orderNumber])
 
         self.getPar().render()
+
+    def tempStoreWidgetId(self):
+        try:
+            view = self.getApplication().getLocalObjectById(self.viewId)
+        except GenericObjectStoreException:
+            self.destroy()
+            return
+        boxcontent = self.getPar().getTemporaryBoxContent()
+        widgetId = self.spaceWidget.getWidgetId()
+        boxcontent[self.orderNumber] = widgetId
 
     def cb_raiseOrder(self, widget=None, data=None):
         try:
@@ -296,13 +315,13 @@ class BoxSpace(gtk.HBox):
             self.destroy()
             return
 
-        boxcontent = view.getBoxContent(self.boxId)
+        boxcontent = self.getPar().getTemporaryBoxContent()
         if self.orderNumber == 0:
             return
         widgetId = boxcontent[self.orderNumber]
         if widgetId is None: # in case widgetId has not yet been uploaded to the server
-            widgetId = self.spaceWidget.getWidgetId()
-            boxcontent[self.orderNumber] = widgetId
+            self.getPar().tempStoreAllWidgetIds()
+            widgetId = boxcontent[self.orderNumber]
         boxcontent.remove(widgetId)
         boxcontent.insert(self.orderNumber-1,widgetId)
 
@@ -315,13 +334,13 @@ class BoxSpace(gtk.HBox):
             self.destroy()
             return
 
-        boxcontent = view.getBoxContent(self.boxId)
+        boxcontent = self.getPar().getTemporaryBoxContent()
         if self.orderNumber == len(boxcontent)-1:
             return
         widgetId = boxcontent[self.orderNumber]
         if widgetId is None: # in case widgetId has not yet been uploaded to the server
-            widgetId = self.spaceWidget.getWidgetId()
-            boxcontent[self.orderNumber] = widgetId
+            self.getPar().tempStoreAllWidgetIds()
+            widgetId = boxcontent[self.orderNumber]
         boxcontent.remove(widgetId)
         boxcontent.insert(self.orderNumber+1,widgetId)
 
@@ -390,7 +409,7 @@ class SpaceWidget(gtk.Frame):
                 widget = view.getViews().getSkarphed().getModules().getWidgetById(widgetId)
         else: #In case this space is only part of a box
             self.framelabel.setText(_("BoxSpace"))
-            boxmapping = view.getBoxContent(self.boxId)
+            boxmapping = self.getPar().getPar().getTemporaryBoxContent()
             try:
                 widgetId = boxmapping[self.orderNumber]
             except KeyError:
