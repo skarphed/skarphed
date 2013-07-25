@@ -273,37 +273,23 @@ class Database(object):
         Deletes columns that exist but are not defined in module's manifest
         Adds columns that doe not exist but are defined in modules's  manifest
         """
-        return #FIXME: Implement this method properly. Problem is the string-comparison in row 292.
-               #       for some weird reason it will not become true even if RDB$FIELD_NAME is type str
-               #       and its content is "MOD_INSTANCE_ID". Afterwards remove debug output
         stmnt = "SELECT RDB$FIELD_NAME FROM RDB$RELATION_FIELDS WHERE RDB$RELATION_NAME = ? ;"
         stmnt_drop = "ALTER TABLE %s DROP %s ;"
         stmnt_add = "ALTER TABLE %s ADD %s %s ;"
-        self._core.log("EXEC 1")
-        db_tablename = self._replace_module_tables(module,"${"+table["name"]+"}")
-        self._core.log("EXEC 2")
-        cur = self.query(self._core, stmnt, (db_tablename,))
-        self._core.log("EXEC 3")
-        rows = cur.fetchallmap()
-        self._core.log("EXEC 4")
-        for row in rows:
-            self._core.log("TYP")
-            self._core.log("FDB: "+str(type(row["RDB$FIELD_NAME"])))
-            self._core.log("FDB: "+row["RDB$FIELD_NAME"])
-            self._core.log("BOOL: "+str(row["RDB$FIELD_NAME"] == "MOD_INSTANCE_ID"))
-            if row["RDB$FIELD_NAME"] == "MOD_INSTANCE_ID":
-                self._core.log("EXEC 5")
-                continue
-            if row["RDB$FIELD_NAME"] not in [col["name"] for col in table["columns"]]:
-                self._core.log("EXEC 6 TN "+db_tablename+" "+ str([col["name"] for col in table["columns"]]) +" FN "+row["RDB$FIELD_NAME"])
-                self._core.log("EXEC 7 "+str(type(row["RDB$FIELD_NAME"])))
-                self.query(self._core, stmnt_drop%(db_tablename, row["RDB$FIELD_NAME"]),commit=True)
-        for col in table["columns"]:
-            self._core.log("EXEC 7")
-            if col["name"] not in [r["RDB$FIELD_NAME"] for r in rows]:
-                self._core.log("EXEC 8")
-                self.query(self._core, stmnt_add%(db_tablename, col["name"], col["type"]),commit=True)
 
+        db_tablename = self._replace_module_tables(module,"${"+table["name"]+"}")
+        cur = self.query(self._core, stmnt, (db_tablename,))
+        rows = cur.fetchallmap()
+        for row in rows:
+            field_name = row["RDB$FIELD_NAME"].strip()
+            if field_name == "MOD_INSTANCE_ID":
+                continue
+            if field_name not in [col["name"] for col in table["columns"]]:
+                self.query(self._core, stmnt_drop%(db_tablename, field_name),commit=True)
+        for col in table["columns"]:
+            if col["name"] not in [r["RDB$FIELD_NAME"].strip() for r in rows]:
+                self.query(self._core, stmnt_add%(db_tablename, col["name"], col["type"]),commit=True)
+        
     def create_tables_for_module(self, module):
         """
         create tables as part of module installation
