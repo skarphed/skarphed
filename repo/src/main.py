@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#-*- coding: utf-8 -*-
 
 ###########################################################
 # © 2011 Daniel 'grindhold' Brendle and Team
