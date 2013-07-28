@@ -29,7 +29,7 @@ from configuration import Configuration
 from database import Database
 from users import UserManager
 from permissions import PermissionManager
-from operation import OperationManager
+from operation import OperationManager, Operation
 from module import ModuleManager
 from session import SessionManager
 from css import CSSManager
@@ -251,3 +251,19 @@ class Core(object):
         self.response_body.append(ext.encode('utf-8'))
 
         return {"body":self.response_body, "header":self.response_header}
+
+    def check_integrity(self):
+        core_integrity_check_operation = CoreIntegrityCheckOperation(self)
+        core_integrity_check_operation.store()
+
+class CoreIntegrityCheckOperation(Operation):
+    """
+    This is a process that validates the integrity of this Core
+    and invokes repair-measures if necessary
+    """
+    def __init__(self, core):
+        Operation.__init__(self, core)
+
+    def do_workload(self):
+        module_manager = self._core.get_module_manager()
+        module_manager.check_integrity()

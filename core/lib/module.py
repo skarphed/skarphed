@@ -451,8 +451,33 @@ class ModuleManager(object):
         if row is not None:
             return self.get_module(row["WGT_MOD_ID"])
         else:
-            raise ModuleCoreException(ModuleCoreException.get_msg(7))            
+            raise ModuleCoreException(ModuleCoreException.get_msg(7))
 
+    def check_integrity(self):
+        """
+        Verifies, that all modules that are entered in the database
+        for this instance, are in fact installed on the server that
+        this instance runs on
+        """
+        db = self._core.get_db()
+        stmnt = "SELECT MOD_NAME, MOD_DISPLAYNAME,MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV FROM MODULES ;"
+        cur = db.query(self._core,stmnt)
+        rows = cur.fetchallmap()
+        for row in rows:
+            configuration = self._core.get_configuration()
+            libpath = configuration.get_entry("global.libpath")
+
+            modulepath = libpath+"/"+row["MOD_NAME"]+"/v"+\
+                                  str(row["MOD_VERSIONMAJOR"])+"_"+ \
+                                  str(row["MOD_VERSIONMINOR"])+"_"+ \
+                                  str(row["MOD_VERSIONREV"])
+            if not os.path.exists(modulepath):
+                module_meta = {"name":row["MOD_NAME"],
+                               "hrname":row["MOD_DISPLAYNAME"],
+                               "version_major":row["MOD_VERSIONMAJOR"],
+                               "version_minor":row["MOD_VERSIONMINOR"],
+                               "revision":row["MOD_VERSIONREV"]}
+                self.install_module(module_meta)
 
     def install_module(self,module_meta):
         """
