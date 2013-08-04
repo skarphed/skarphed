@@ -166,9 +166,11 @@ class Module(GenericSkarphedObject):
             tar.extractall(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString()))
             tar.close()
             os.unlink(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),"gui.tar.gz"))
-            for filename in glob.glob(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),libstring,self.getModuleName().self.getVersionFolderString(),"gui","*")):
+
+            libstring = libstring.replace("/","",1)
+            for filename in glob.glob(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),libstring,self.getModuleName(),self.getVersionFolderString(),"gui","*")):
                 shutil.move(filename, os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),""))
-            shutil.rmtree(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),libstring.split("/")[1]))
+            shutil.rmtree(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString(),libstring.split("/")[0]))
             self.updated()
         else:
             shutil.rmtree(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString()))
