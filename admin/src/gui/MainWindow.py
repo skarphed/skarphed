@@ -40,7 +40,7 @@ from DefaultEntry import DefaultEntry
 from ThreadControl import ThreadControl
 
 from glue.lng import _
-from glue.paths import ICON, DATA
+from glue.paths import ICON, DATA, P
 
 class GetParentException(Exception):pass
 
@@ -55,7 +55,7 @@ class MainWindow(gtk.Window):
         self._dialogObjectStack = []
 
         self.set_title(_("Skarphed Admin"))
-        if sys.platform.startswith('linux'):
+        if sys.platform.startswith('linux') and not os.path.exists(os.path.join(P,"DEVMODE")):
             theme = gtk.icon_theme_get_default()
             self.set_icon(theme.load_icon('skarphed', 256, 0))
         else:
