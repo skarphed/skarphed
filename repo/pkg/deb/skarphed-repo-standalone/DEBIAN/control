@@ -1,0 +1,9 @@
+Package: skarphed-repo-standalone
+Priority: optional
+Section: web
+Installed-Size: 332
+Maintainer: Andre Kupka <kupka@in.tum.de>
+Architecture: all
+Version: 0.1
+Depends: firebird2.5-super (>= 2.5), python (>= 2.6), python-pip (>= 0.7), python-dev (>= 2.6)
+Description: A Skarphed Standalone Repository

@@ -40,8 +40,46 @@ EOF
 	mv "./deb/skarphed-repo.deb" .
 }
 
+deb_sta_root="./deb/skarphed-repo-standalone/"
+
+function generate_deb_standalone {
+	mkdir -p ${deb_sta_root}tmp/
+	mkdir -p ${deb_sta_root}etc/skdrepo
+	mkdir -p ${deb_sta_root}usr/share/skdrepo/
+	mkdir -p ${deb_sta_root}usr/bin
+
+	rm -rf ${deb_sta_root}usr/share/skdrepo/common
+	cp -r ../src/* ${deb_sta_root}usr/share/skdrepo/
+	rm ${deb_sta_root}usr/share/skdrepo/skdrepo.py
+	cp ../src/skdrepo.py ${deb_sta_root}usr/bin/skdrepo
+	rm  ${deb_sta_root}usr/share/skdrepo/common
+	mkdir -p ${deb_sta_root}usr/share/skdrepo/common
+	cp -r ../src/common/* ${deb_sta_root}usr/share/skdrepo/common/
+	cp ../gen_keypair.py ../repo_database.sql ${deb_sta_root}tmp
+	cp ../config.json ${deb_sta_root}etc/skdrepo/
+	cp -r ../static ${deb_sta_root}usr/share/skdrepo/
+	cp ../templates/template.html ${deb_sta_root}usr/share/skdrepo/
+
+	SIZE=`du -c -s ${deb_sta_root}etc ${deb_sta_root}tmp ${deb_sta_root}usr ${deb_sta_root}var | tail -n1 |  cut -f1`
+	cat << EOF > ${deb_sta_root}DEBIAN/control
+Package: skarphed-repo-standalone
+Priority: optional
+Section: web
+Installed-Size: $SIZE
+Maintainer: Andre Kupka <kupka@in.tum.de>
+Architecture: all
+Version: 0.1
+Depends: firebird2.5-super (>= 2.5), python (>= 2.6), python-pip (>= 0.7), python-dev (>= 2.6)
+Description: A Skarphed Standalone Repository
+EOF
+
+	dpkg-deb -z6 -Zgzip --build ${deb_sta_root}
+	mv "./deb/skarphed-repo-standalone.deb" .
+}
+
 function generate_all {
 	generate_deb
+	generate_deb_standalone
 }
 
 generate_all

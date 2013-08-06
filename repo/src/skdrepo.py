@@ -23,6 +23,10 @@
 ###########################################################
 
 
+import sys
+sys.path.append('/usr/share/skdrepo/')
+sys.path.append('/var/www/skdrepo/')
+
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 from config import Config
@@ -46,7 +50,7 @@ class RepositoryHTTPRequestHandler(BaseHTTPRequestHandler):
 
         environ = self.create_wsgi_environ()
         response_body = wsgi.application(environ, start_response)
-        self.wfile.write(response_body)
+        self.wfile.write(response_body[0])
 
     def create_wsgi_environ(self):
         environ = {} 
