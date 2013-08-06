@@ -22,99 +22,55 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-from cgi import FieldStorage
-from urlparse import parse_qs
-from traceback import print_exc
-from StringIO import StringIO
-import json
 
-import os
-import sys
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-sys.path.append(os.path.dirname(__file__))
-
-from database import *
-from protocolhandler import ProtocolHandler
-from repository import *
-from session import SessionMiddleware
-from shareddatamiddleware import SharedDataMiddleware
-
-def default_template(environ, response_headers):
-    """
-    Loads the default repositories template and returns it.
-    """
-    try:
-        f = open('/usr/share/skdrepo/template.html')
-        template = f.read()
-        f.close()
-        repository = Repository()
-        template = template.replace('{{publickey}}', repository.get_public_key(environ))
-        response_body = [template]
-        response_headers.append(('Content-Type', 'text/html'))
-        response_headers.append(('Content-Length', str(len(template))))
-        status = '200 OK'
-    except IOError, ie:
-        response_body = ['404 Not Found'] # TODO: improve error message
-        response_headers.append(('Content-Type', 'text/plain'))
-        status = '404 Not Found'
-    except RepositoryException, e:
-        # TODO what to return if there is no public key
-        response_body = ['404 Not Found'] # TODO: improve error message
-        response_headers.append(('Content-Type', 'text/plain'))
-        status = '404 Not Found'
-    return (status, response_body)
+from config import Config
+import wsgi
 
 
-def repo_application(environ, start_response):
-    """
-    The repositories WSGI application. If the incoming request's type is POST then it
-    will be delegated to a protocol handler, otherwise the default template will be returned.
-    """
-    response_body = []
-    response_headers = []
+class RepositoryHTTPRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.handle_request(self.command)
 
-    try:
-        status = '200 OK'
-        if environ['REQUEST_METHOD'] == 'POST':
-            try:
-                size = int(environ.get('CONTENT_LENGTH', 0))
-            except ValueError, e:
-                size = 0
-            args = FieldStorage(fp=environ['wsgi.input'], environ=environ)
-            jsonstr = args.getvalue('j')
+    def do_POST(self):
+        self.handle_request(self.command)
+
+    def handle_request(self, method):
+        def start_response(status, headers, exc_info=None):
+            status = int(status.split(' ')[0])
+            self.send_response(status)
+            for (key, value) in headers:
+                self.send_header(key, value)
+            self.end_headers()
+
+        environ = self.create_wsgi_environ()
+        response_body = wsgi.application(environ, start_response)
+        self.wfile.write(response_body)
+
+    def create_wsgi_environ(self):
+        environ = {} 
+        query_string = self.path.split('?', 1)
+        if len(query_string) == 2:
+            query_string = query_string[1]
         else:
-            args = parse_qs(environ['QUERY_STRING'])
-            jsonstr = args['j'][0]
-        print ("JSON: " + str(jsonstr))
-        try:
-            repository = Repository()
-            handler = ProtocolHandler(repository, jsonstr)
-            response_body = [handler.execute(environ)]
-        except DatabaseException, e:
-            response_body = ['{"error":{"c":%d,"args":["errorstr":"%s"]}}' %
-                    (RepositoryErrorCode.DATABASE_ERROR, str(e))]
-        except RepositoryException, e:
-            response_body = ['{"error":%s}' % json.dumps(e.get_error_json())] 
-        except Exception, e:
-            errorstream  = StringIO()
-            print_exc(None, errorstream)
-            response_body = ['{error:%s}' % errorstream.getvalue()]
+            query_string = ''
+        environ['QUERY_STRING'] = query_string
+        environ['REQUEST_METHOD'] = self.command
+        environ['PATH_INFO'] = self.path
+        return environ
 
-        response_headers.append(('Content-Type', 'application/json'))
-    except KeyError, e:
-        (status, response_body) = default_template(environ, response_headers) 
+
+def main():
+    """
+    Executes a skprepo as standalone application. 
+    """
+    config = Config()
+    listen_address = (config['server.ip'], config['server.port'])
+
+    httpd = HTTPServer(listen_address, RepositoryHTTPRequestHandler)
+    httpd.serve_forever()
     
-    start_response(status, response_headers)
-    print ("RESPONSE: " + str(response_body))
-    return response_body
-
-
-"""
-Wraps the repository application in a
-0) SharedDataMiddleware, to provide some static content
-1) DatabaseMiddleware, to provide a database connection via environ['db']
-2) SessionMiddleware, to provide session handling
-"""
-application = SharedDataMiddleware(
-        DatabaseMiddleware(SessionMiddleware(repo_application)),
-        'static')
+    
+if __name__ == '__main__':
+    main()
