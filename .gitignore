@@ -11,6 +11,11 @@ repo/pkg/deb/skarphed-repo/tmp
 repo/pkg/deb/skarphed-repo/var
 repo/pkg/deb/skarphed-repo/usr
 repo/pkg/deb/skarphed-repo/DEBIAN/control
+repo/pkg/deb/skarphed-repo-standalone/etc
+repo/pkg/deb/skarphed-repo-standalone/tmp
+repo/pkg/deb/skarphed-repo-standalone/var
+repo/pkg/deb/skarphed-repo-standalone/usr
+repo/pkg/deb/skarphed-repo-standalone/DEBIAN/control
 admin/pkg/deb/skarphed-admin/usr
 admin/pkg/deb/skarphed-admin/var
 admin/pkg/deb/skarphed-admin/DEBIAN
