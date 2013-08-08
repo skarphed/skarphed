@@ -53,6 +53,11 @@ class RepositoryHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(response_body[0])
 
     def create_wsgi_environ(self):
+
+        print(self.path)
+        print(self.command)
+        print(self.headers)
+
         environ = {} 
         query_string = self.path.split('?', 1)
         if len(query_string) == 2:

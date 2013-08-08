@@ -60,7 +60,7 @@ function generate_deb_standalone {
 	cp -r ../static ${deb_sta_root}usr/share/skdrepo/
 	cp ../templates/template.html ${deb_sta_root}usr/share/skdrepo/
 
-	SIZE=`du -c -s ${deb_sta_root}etc ${deb_sta_root}tmp ${deb_sta_root}usr ${deb_sta_root}var | tail -n1 |  cut -f1`
+	SIZE=`du -c -s ${deb_sta_root}etc ${deb_sta_root}tmp ${deb_sta_root}usr | tail -n1 |  cut -f1`
 	cat << EOF > ${deb_sta_root}DEBIAN/control
 Package: skarphed-repo-standalone
 Priority: optional
