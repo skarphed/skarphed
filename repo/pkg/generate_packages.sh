@@ -47,6 +47,7 @@ function generate_deb_standalone {
 	mkdir -p ${deb_sta_root}etc/skdrepo
 	mkdir -p ${deb_sta_root}usr/share/skdrepo/
 	mkdir -p ${deb_sta_root}usr/bin
+	mkdir -p ${deb_sta_root}etc/init.d/
 
 	rm -rf ${deb_sta_root}usr/share/skdrepo/common
 	cp -r ../src/* ${deb_sta_root}usr/share/skdrepo/
@@ -54,6 +55,7 @@ function generate_deb_standalone {
 	cp ../src/skdrepo.py ${deb_sta_root}usr/bin/skdrepo
 	rm  ${deb_sta_root}usr/share/skdrepo/common
 	mkdir -p ${deb_sta_root}usr/share/skdrepo/common
+	cp -r ../skdrepo ${deb_sta_root}etc/init.d/
 	cp -r ../src/common/* ${deb_sta_root}usr/share/skdrepo/common/
 	cp ../gen_keypair.py ../repo_database.sql ${deb_sta_root}tmp
 	cp ../config.json ${deb_sta_root}etc/skdrepo/

@@ -1,0 +1,64 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          skdrepo
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Skarphed standalone repository
+# Description: With this file, a skarphed standalone repository can be handled
+#				as debian service
+### END INIT INFO
+
+# Author: Andre Kupka (freakout@skarphed.org)
+#
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/share/skdrepo
+DESC="Skarphed standalone repository"
+NAME=skdrepo
+DAEMON=/usr/bin/$NAME
+DAEMON_ARGS=""
+PIDFILE=/var/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+case "$1" in
+  start)
+	echo "Starting $DESC" "$NAME"
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --background -m -- \
+		$DAEMON_ARGS \
+	;;
+  stop)
+	echo "Stopping $DESC" "$NAME"
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE
+	rm -f $PIDFILE
+	;;
+  status)
+       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+       ;;
+#  restart|force-reload)
+#	echo "Restarting $DESC" "$NAME"
+#	do_stop
+#	case "$?" in
+#	  0|1)
+#		do_start
+#		case "$?" in
+#			0) log_end_msg 0 ;;
+#			1) log_end_msg 1 ;;
+#			*) log_end_msg 1 ;;
+#		esac
+#		;;
+#	  *)
+#		log_end_msg 1
+#		;;
+#	esac
+#	;;
+  *)
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	exit 3
+	;;
+esac
+
+:
