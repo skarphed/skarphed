@@ -1,3 +1,7 @@
 #!/bin/sh
 
-rm /var/lib/firebird/2.5/data/skdrepo.fdb
+if [ "$1" = "remove" ]; then
+	rm -f /usr/share/skdrepo/*.pyc
+	rm -f /usr/share/skdrepo/common/*.pyc
+	rm -f /usr/bin/skdrepo.pyc
+fi

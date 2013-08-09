@@ -14,10 +14,10 @@
 
 # Do NOT "set -e"
 
-PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/share/skdrepo
-DESC="skarphed standalone repository"
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="skarphed repository"
 NAME=skdrepo
-DAEMON=/usr/bin/$NAME
+DAEMON=/usr/bin/${NAME}
 DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
