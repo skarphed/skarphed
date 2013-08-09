@@ -317,6 +317,12 @@ class Skarphed(Instance):
         else:
             return "Unknown SkarphedServer"
     
+    def getRawName(self):
+        if self.load == self.LOADED_SERVERDATA:
+            return self.data['name']
+        else:
+            return "skarphed"
+
     def setRepositoryCallback(self,res):
         self.modules.refresh()
         
@@ -409,6 +415,9 @@ class Skarphed(Instance):
 
     def getViews(self):
         return self.views
+
+    def backup(self):
+        print "Backing Up"
     
     def getServer(self):
         pass

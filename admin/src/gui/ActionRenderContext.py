@@ -27,9 +27,17 @@ from NewSkarphedPage import NewSkarphedPage
 from gui.database.NewDatabasePage import NewDatabasePage
 from gui.database.NewSchemaPage import NewSchemaPage
 from gui.database.RegisterSchemaPage import RegisterSchemaPage
+from data.skarphed.Backup import Backup
 from InputBox import InputBox
 from YesNoPage import YesNoPage
 import IconStock 
+
+import pygtk
+pygtk.require("2.0")
+import gtk
+
+import os
+from time import time
 
 from glue.lng import _
 
@@ -112,6 +120,7 @@ class SkarphedARC(ActionRenderContext):
         self.addAction(_('Remove...'), IconStock.DELETE, self.removeInstance)
         self.addAction(_('CSS Editor...'), IconStock.CSS, self.cssEditor)
         self.addAction(_('Update Modules'), IconStock.MODULE_UPDATEABLE, self.updateModules)
+        self.addAction(_('Back up'), IconStock.MODULE, self.backUp)
 
     def destroyInstance(self,data=None):
         def execute():
@@ -122,13 +131,27 @@ class SkarphedARC(ActionRenderContext):
         def execute():
             self.obj.getServer().removeInstance(self.obj)
         YesNoPage(self.getApplication().mainwin, _("Do you really want to delete this Instance?"), execute)
-    
+
     def cssEditor(self,data=None):
         self.getApplication().mainwin.openCssEditor(self.obj)
 
     def updateModules(self, data=None):
         self.obj.updateModules()
 
+    def backUp(self, data=None):
+        fcd = gtk.FileChooserDialog(_('Save backup to...'), None,action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                        buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_SAVE,gtk.RESPONSE_OK) )
+        fcd.set_default_response(gtk.RESPONSE_OK)
+        fcd.set_current_folder(os.path.expanduser("~"))
+        fcd.set_current_name(self.obj.getRawName()+"_"+str(int(time()))+".sbak")
+        res = fcd.run()
+        if res == gtk.RESPONSE_OK:
+            filename = fcd.get_filename()
+            fcd.destroy()
+            backup = Backup(obj, filename)
+            backup.start()
+        else:
+            fcd.destroy()
 
 class UsersARC(ActionRenderContext):
     def __init__(self, par, users):
