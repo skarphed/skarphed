@@ -42,7 +42,8 @@ Maintainer: Andre Kupka <freakout@skarphed.org>
 Architecture: all
 Version: 0.1
 Depends: firebird2.5-super (>= 2.5), python (>= 2.6), python-pip (>= 0.7), python-dev (>= 2.6)
-Description: A Skarphed Repository
+Description: A skarphed repository
+ A repository that manages skarphed modules and templates.
 EOF
 
 	fakeroot dpkg-deb -z6 -Zgzip --build ${deb_root}

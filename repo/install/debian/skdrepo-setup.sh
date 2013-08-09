@@ -1,36 +1,48 @@
 #!/bin/bash
 
-DATABASE_PATH="/var/lib/firebird/2.5/data/"
+DB_PATH="/var/lib/firebird/2.5/data/"
+DB_FILE="${DB_PATH}skdrepo.fdb"
 
 yes_no_prompt() {
 	while true; do
-		read -p "$1" yn
+		read -p "$1 [Y/n] " yn
 		case $yn in
-			[Yy]* ) return 0 ;;
+			[Yy]*|"" ) return 0 ;;
 			[Nn]* ) return 1 ;;
 		esac
 	done
 }
 
-echo "Setting firebird database ..."
+echo "Setting up firebird database ..."
 
-yes_no_prompt "Do you want to configure the firebird SYSDBA user? [YyNn]"
+yes_no_prompt "Do you want to configure the firebird SYSDBA user?"
 if [ $? = 0 ]; then
 	dpkg-reconfigure firebird2.5-super
 fi
 
-echo ""
 read -s -p "Please enter you SYSDBA password: " password
 
-echo "add SKDREPO -pw $password" | gsec -user SYSDBA -pass $password 2> /dev/null
-cd $DATABASE_PATH
-cat "/usr/share/skdrepo/repo_database.sql" | isql-fb -user SYSDBA -pass $password 2> /dev/null
+if [ -f $DB_FILE ]; then
+	echo ""
+	yes_no_prompt "$DB_FILE already exists. Do you want to overwrite it?"
+	create_db=$?
+else
+	create_db=0
+fi
 
-echo "Configure Skarphed Repository ..."
+if [ $create_db = 0 ]; then
+	rm -f "$DB_FILE"
+	echo "add SKDREPO -pw $password" | gsec -user SYSDBA -pass $password 2> /dev/null
+	cd $DB_PATH
+	cat "/usr/share/skdrepo/repo_database.sql" | isql-fb -user SYSDBA -pass $password 2> /dev/null
+else
+	echo "Without a database the skarphed repository will not work!" >&2
+	exit 1
+fi
+
+echo "Configure skarphed repository ..."
 
 repoconf="/etc/skdrepo/config.json"
-mkdir -p /etc/skdrepo
-
 conf=$(sed "s/placeholder/${password}/" $repoconf)
 echo $conf > $repoconf
 
