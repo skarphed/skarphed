@@ -19,7 +19,7 @@ function generate_deb {
 	cp -r ../src/common/*.py ${deb_root}usr/share/skdrepo/common/
 
 	# setup
-	cp ../install/skdrepo-setup.sh ${deb_root}usr/bin/skdrepo-setup
+	cp ../install/debian/skdrepo-setup.sh ${deb_root}usr/bin/skdrepo-setup
 	cp ../gen_keypair.py ../repo_database.sql ${deb_root}usr/share/skdrepo/
 
 	# static
