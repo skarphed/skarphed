@@ -17,7 +17,7 @@ if __name__ == '__main__':
     try:
         connection = fdb.connect(
                 host = config['db.ip'],
-                database = '/var/lib/firebird/2.5/data/' + config['db.name'],
+                database = config['db.path'],
                 user = config['db.user'],
                 password = config['db.password'])
         cursor = connection.cursor()
