@@ -18,9 +18,11 @@ function generate_deb {
 	mkdir -p ${deb_root}usr/share/skdrepo/common
 	cp -r ../src/common/*.py ${deb_root}usr/share/skdrepo/common/
 
+	# database
+	cp ../repo_database.sql ${deb_root}usr/share/skdrepo/
+
 	# setup
-	cp ../install/debian/skdrepo-setup.sh ${deb_root}usr/bin/skdrepo-setup
-	cp ../gen_keypair.py ../repo_database.sql ${deb_root}usr/share/skdrepo/
+	cp ../install/debian/skdrepo-setup.py ${deb_root}usr/bin/skdrepo-setup
 
 	# static
 	cp ../templates/template.html ${deb_root}usr/share/skdrepo/

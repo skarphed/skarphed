@@ -21,6 +21,8 @@ if [ $? = 0 ]; then
 fi
 
 read -s -p "Please enter you SYSDBA password: " password
+echo ""
+read -s -p "Please enter a db password: " db_password
 
 if [ -f $DB_FILE ]; then
 	echo ""
@@ -29,12 +31,14 @@ if [ -f $DB_FILE ]; then
 else
 	create_db=0
 fi
+echo $password
+echo $db_password
 
 if [ $create_db = 0 ]; then
 	rm -f "$DB_FILE"
-	echo "add SKDREPO -pw $password" | gsec -user SYSDBA -pass $password 2> /dev/null
+	echo "add SKDREPO -pw $db_password" | gsec -user SYSDBA -pass $password #2> /dev/null
 	cd $DB_PATH
-	cat "/usr/share/skdrepo/repo_database.sql" | isql-fb -user SYSDBA -pass $password 2> /dev/null
+	cat "/usr/share/skdrepo/repo_database.sql" | isql-fb -user SYSDBA -pass $password #2> /dev/null
 else
 	echo "Without a database the skarphed repository will not work!" >&2
 	exit 1
@@ -43,7 +47,7 @@ fi
 echo "Configure skarphed repository ..."
 
 repoconf="/etc/skdrepo/config.json"
-conf=$(sed "s/placeholder/${password}/" $repoconf)
+conf=$(sed "s/admin/${db_password}/" $repoconf)
 echo $conf > $repoconf
 
 echo "Generating key pair ..."
