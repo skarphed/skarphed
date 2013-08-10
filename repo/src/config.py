@@ -50,7 +50,3 @@ class Config(object):
         data = f.read()
         f.close()
         self.config = json.loads(data)
-
-
-# loads the default repository configuration
-Config().load_from_file('/etc/skdrepo/config.json')

@@ -42,7 +42,7 @@ class DatabaseMiddleware(object):
         Creates a database connection in environ['db'] and calls the wrapped application.
         """
         config = Config()
-        environ['db'] = DatabaseConnection(config['db.ip'], config['db.name'],
+        environ['db'] = DatabaseConnection(config['db.ip'], config['db.path'],
                 config['db.user'], config['db.password'])
         return self._wrap_app(environ, start_response)
 
@@ -60,12 +60,12 @@ class DatabaseConnection(object):
     if query is called.
     """
 
-    def __init__(self, ip, dbname, user, password):
+    def __init__(self, ip, dbpath, user, password):
         """
         Initializes this database with the given values.
         """
         self._ip = ip
-        self._dbname = dbname
+        self._dbpath = dbpath
         self._user = user
         self._password = password
         self._connection = None
@@ -85,7 +85,7 @@ class DatabaseConnection(object):
             try:
                 self._connection = fdb.connect(
                             host = self._ip,
-                            database = '/var/lib/firebird/2.5/data/' + self._dbname,
+                            database = self._dbpath,
                             user = self._user,
                             password = self._password)
             except fdb.fbcore.DatabaseError, e:

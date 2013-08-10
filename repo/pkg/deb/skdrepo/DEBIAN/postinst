@@ -1,33 +1,14 @@
 #!/bin/sh
 
+set -e
+
 echo "Installing python dependencies via pip ..."
 pip install pycrypto
 pip install fdb
 
-echo "Setting firebird SYSDBA user ..."
+python -m compileall /usr/share/skdrepo
+python -m compileall /usr/bin/skdrepo
 
-dpkg-reconfigure firebird2.5-super
+update-rc.d skdrepo defaults
 
-echo "Setting up firebird database ..."
-echo "Please enter your SYSDBA password:"
-
-read password
-echo "add SKDREPO -pw $password" | gsec -user SYSDBA -pass $password 2> /dev/null
-cd "/var/lib/firebird/2.5/data/"
-cat "/tmp/repo_database.sql" | isql-fb -user SYSDBA -pass $password 2> /dev/null
-rm "/tmp/repo_database.sql"
-
-echo "Configure Skarphed Repository ..."
-
-repoconf="/etc/skdrepo/config.json"
-mkdir -p /etc/skdrepo
-
-conf=$(sed "s/placeholder/${password}/" $repoconf)
-echo $conf > $repoconf
-
-echo "Generating key pair ..."
-keygen="/tmp/gen_keypair.py"
-python $keygen
-rm $keygen
-
-echo "WARNING: Change your repository password via Admin GUI as soon as possible!"
+echo "Run skdrepo-setup in order to setup your skarphed repository!"

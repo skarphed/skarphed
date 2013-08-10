@@ -12,8 +12,6 @@ repo/pkg/deb/skdrepo-web/var
 repo/pkg/deb/skdrepo-web/usr
 repo/pkg/deb/skdrepo-web/DEBIAN/control
 repo/pkg/deb/skdrepo/etc
-repo/pkg/deb/skdrepo/tmp
-repo/pkg/deb/skdrepo/var
 repo/pkg/deb/skdrepo/usr
 repo/pkg/deb/skdrepo/DEBIAN/control
 admin/pkg/deb/skarphed-admin/usr
