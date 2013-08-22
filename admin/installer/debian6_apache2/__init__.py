@@ -58,10 +58,10 @@ class Installer(AbstractInstaller):
         apache_subdomain = ""
         if self.data['apache.subdomain'] != "":
             apache_subdomain = "ServerAlias "+self.data['apache.subdomain']
-        apacheconf = apache_template%(self.data['apache.ip'],
-                                      self.data['apache.port'],
-                                      apache_domain,
-                                      apache_subdomain)
+        apacheconf = apache_template%{'ip':self.data['apache.ip'],
+                                      'port':self.data['apache.port'],
+                                      'domain':apache_domain,
+                                      'subdomain':apache_subdomain}
         apacheconfresult = open(os.path.join(self.BUILDPATH,"apache2.conf"),"w")
         apacheconfresult.write(apacheconf)
         apacheconfresult.close()
