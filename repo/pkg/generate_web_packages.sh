@@ -16,7 +16,7 @@ function generate_deb_web {
 	rm  ${deb_web_root}var/www/skdrepo/common
 	mkdir -p ${deb_web_root}var/www/skdrepo/common
 	cp -r ../src/common/* ${deb_web_root}var/www/skdrepo/common/
-	cp ../gen_keypair.py ../repo_database.sql ${deb_web_root}tmp
+	cp ../gen_keypair.py ../repository.sql ${deb_web_root}tmp
 	cp ../config.json ${deb_web_root}etc/skdrepo/
 	cp ../skdrepo_apache2 ${deb_web_root}etc/apache2/sites-enabled/skdrepo
 	cp -r ../static ${deb_web_root}usr/share/skdrepo/
