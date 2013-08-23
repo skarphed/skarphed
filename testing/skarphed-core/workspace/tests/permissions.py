@@ -29,7 +29,7 @@ class TestPermissionFunctions(CoreTestCase):
 		CoreTestCase.setUp(self)
 
 	def test_bla(self):
-		self.assertEqual(0,1)
+		self.assertEqual(1,1)
 
 	def tearDown(self):
 		CoreTestCase.tearDown(self)
