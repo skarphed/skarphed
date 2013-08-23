@@ -1,0 +1,36 @@
+Testing
+=======
+
+The plan:
+
+- Install jenkins on a server
+- Copy skarphed testing- and helperscripts onto same server
+
+Run:
+
+- A helper script pulls the current code of skarphed from git.
+- Delete every possible leftover from former testruns
+- Generate .deb-packages of each component, test if packaging went correct
+- Install a skarphed-instance on itself using the installer codes of admin/installer
+- Install a skarphed-repo on itself using generated package
+- Execute tests on core
+- Execute tests on repo
+- Test gui Datalayer
+
+To Find out:
+
+- How to test Gtk-stuff automatized
+
+
+Software to be installed on testing-server:
+
+Firebird2.5
+Jenkins
+Sudo (jenkins-user must have sudo with nopasswd on everything)
+python-nose -- nosetests
+python-coverage -- python code coverage
+
+Jenkins-Plugins:
+
+Cobertura -- coverage report
+post build task -- execute teardownscript even if test fails
