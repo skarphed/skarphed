@@ -40,8 +40,6 @@ mkdir $SCV_WEBPATH$instanceid
 cp -r ./web/* $SCV_WEBPATH$instanceid/
 echo "SCV_INSTANCE_SCOPE_ID = \"$instanceid\"" > $SCV_WEBPATH$instanceid/instanceconf.py
 
-cp ./skarphed.py $SCV_WEBPATH$instanceid/
-
 cp ./config.json $SCV_WEBPATH$instanceid/
 
 mkdir /tmp/scv_$instanceid
