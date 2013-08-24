@@ -25,6 +25,8 @@ echo -e "Loading latest version from git ..."
 
 rm -r skarphed
 git clone https://github.com/grindhold/skarphed
+git submodule init
+git submodule update
 
 echo -e "[ done ]\n"
 echo -e "Assembling together installation files ..."
