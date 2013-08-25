@@ -1,0 +1,2 @@
+#!/bin/bash
+python -O /usr/lib/python2.7/dist-packages/skarphedadmin/skarphed.py

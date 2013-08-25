@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "remove" ]; then
+	rm -f /usr/share/skdrepo/*.pyc
+	rm -f /usr/share/skdrepo/common/*.pyc
+	rm -f /usr/bin/skdrepo.pyc
+fi
