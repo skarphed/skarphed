@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if [[ -r /usr/lib/python2.6/dist-packages/skarphedadmin-0.1.0.egg-info ]]
-then
-    rm /usr/lib/python2.6/dist-packages/skarphedadmin
-    rm /usr/lib/python2.6/dist-packages/skarphedadmin-0.1.0.egg-info
-fi
