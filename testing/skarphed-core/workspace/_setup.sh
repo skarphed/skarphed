@@ -54,7 +54,7 @@ sed s#%\(domain\)s## install/apache2.conf > install/apache2.conf
 sed s#%\(subdomain\)s## install/apache2.conf > install/apache2.conf
 
 cat <<EOF > install/config.json
-{"db.password": "gYzCxYC5", "db.name": "debconf.fdb", "core.name": "debconf", "db.user": "Idw8AZKU", "core.debug": true, "db.ip": "10.40.0.10", "core.session_duration": 2, "core.session_extend": 1, "core.cookielaw": 1}
+{"db.password": "test", "db.name": "testcore.fdb", "core.name": "testcore", "db.user": "test", "core.debug": true, "db.ip": "127.0.0.1", "core.session_duration": 2, "core.session_extend": 1, "core.cookielaw": 1}
 EOF
 
 echo -e "[ done ]\n"
@@ -70,12 +70,13 @@ name="testcore"
 repo="repo.skarphed.org"
 
 cp skarphed/admin/installer/_database/scvdb.sql ./
-sed s#%\(USER\)s#$dbuser#g scvdb.sql > scvdb.sql
-sed s#%\(PASSWORD\)s#$schemaroot_pw#g scvdb.sql > scvdb.sql
-sed s#%\(SALT\)s#$schemaroot_salt#g scvdb.sql > scvdb.sql
-sed s#%\(NAME\)s#/var/lib/firebird/2.5/data/$name#g scvdb.sql > scvdb.sql
-sed s#%\(REPO\)s#$repo#g scvdb.sql > scvdb.sql
-#sudo mv scvdb.sql /var/lib/firebird/2.5/data/
+cat scvdb.sql | sed s#%\(USER\)s#$dbuser#g > scvdb2.sql
+cat scvdb2.sql | sed s#%\(PASSWORD\)s#$schemaroot_pw#g > scvdb.sql
+cat scvdb.sql | sed s#%\(SALT\)s#$schemaroot_salt#g > scvdb2.sql
+cat scvdb2.sql | sed s#%\(NAME\)s#/var/lib/firebird/2.5/data/$name#g > scvdb.sql
+cat scvdb.sql | sed s#%\(REPO\)s#$repo#g > scvdb2.sql
+rm scvdb.sql
+mv scvdb2.sql scvdb.sql
 
 echo "add $dbuser -pw $dbpass" | gsec -user $dbauser -pass $dbapass
 cat scvdb.sql | isql-fb -user $dbuser -password $dbpass

@@ -30,6 +30,9 @@ cd ..
 echo -e "[ done ]\n"
 echo -e "Tearing down database ..."
 
+dbauser="SYSDBA"
+dbapass="test"
+dbuser="test"
 sudo rm /var/lib/firebird/2.5/data/testcore.fdb
 echo "delete $dbuser" | gsec -user $dbauser -pass $dbapass
 
