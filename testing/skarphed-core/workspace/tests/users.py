@@ -26,12 +26,13 @@ from skd_test import CoreTestCase
 from skd_test import LIBPATH
 import sys
 sys.path.append(LIBPATH)
+
 from common.errors import UserException
 
 class TestUserFunctions(CoreTestCase):
     def setUp(self):
         CoreTestCase.setUp(self)
-        user_manager = self._core.get_user()
+        user_manager = self._core.get_user_manager()
         self.testuser = user_manager.create_user("testuser","testpassword")
 
     def test_create_user(self):
