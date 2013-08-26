@@ -26,6 +26,20 @@ import sys
 import os
 import unittest
 
+cfgfile = open("/etc/skarphed/skarphed.conf","r").read().split("\n")
+cfg = {}
+for line in cfgfile:
+    if line.startswith("#") or line.find("=") == -1:
+        continue
+    key, value = line.split("=")
+    cfg[key]=value
+
+del(cfgfile)
+sys.path.append(cfg["SCV_LIBPATH"])
+
+import common as _common
+common = _common
+
 class CoreTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)

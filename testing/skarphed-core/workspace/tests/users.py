@@ -23,7 +23,7 @@
 ###########################################################
 
 from skd_test import CoreTestCase
-from common.errors import UserException
+from skd_test.common.errors import UserException
 
 class TestUserFunctions(CoreTestCase):
     def setUp(self):
