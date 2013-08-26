@@ -23,8 +23,12 @@
 
 echo -e "Loading latest version from git ..."
 
-rm -r skarphed
+rm -rf skarphed
 git clone https://github.com/grindhold/skarphed
+cd skarphed
+git submodule init
+git submodule update
+cd ..
 
 echo -e "[ done ]\n"
 echo -e "Assembling together installation files ..."
@@ -89,6 +93,11 @@ echo -e "Executing installer ..."
 cd install
 sudo bash install.sh
 cd ..
+
+echo -e "[ done ]\n"
+echo -e "Giving necessary write-permissions to jenkins"
+
+sudo chown -R jenkins:nogroup /var/www_scv_0
 
 echo -e "[ done ]\n"
 echo -e "Moving latest tests to test directory ..."
