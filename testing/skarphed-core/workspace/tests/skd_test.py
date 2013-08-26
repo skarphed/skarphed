@@ -35,10 +35,8 @@ for line in cfgfile:
     cfg[key]=value
 
 del(cfgfile)
-sys.path.append(cfg["SCV_LIBPATH"])
 
-import common as _common
-common = _common
+LIBPATH=cfg["SCV_LIBPATH"]
 
 class CoreTestCase(unittest.TestCase):
     def setUp(self):
