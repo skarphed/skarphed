@@ -35,13 +35,21 @@ class TestUserFunctions(CoreTestCase):
         user_manager = self._core.get_user_manager()
         self.testuser = user_manager.create_user("testuser","testpassword")
 
-    def test_create_user(self):
+    def test_create_delete_user(self):
         user_manager = self._core.get_user_manager()
         user = user_manager.create_user("testuser2","testpassword")
         self.assertEqual(user.get_name(),"testuser2")
 
         stored_user = user_manager.get_user_by_name("testuser2")
         self.assertEqual(user_manager.get_user_by_name("testuser2").get_id(),user.get_id())
+
+        user.delete()
+        try:
+            user_manager.get_user_by_name("testuser2")
+        except UserException:
+            pass
+        else:
+            self.assertFail()
 
     def test_get_user_by_name(self):
         user_manager = self._core.get_user_manager()
@@ -61,7 +69,7 @@ class TestUserFunctions(CoreTestCase):
         except UserException, e:
             pass
         else:
-            self.assertFalse(True)
+            self.assertFail()
 
     def test_alter_password(self):
         self.testuser.alter_password("newtestpassword","testpassword")
@@ -75,7 +83,22 @@ class TestUserFunctions(CoreTestCase):
         except UserException, e:
             pass
         else:
-            self.assertFalse(True)
+            self.assertFail()
+
+    def test_root_not_deletable(self):
+        user_manager = self._core.get_user_manager()
+        root = user_manager.get_user_by_name("root")
+        try:
+            root.delete()
+        except UserException:
+            pass
+        else:
+            self.assertFail()
+
+    def test_get_root_user(self):
+        user_manager = self._core.get_user_manager()
+        root = user_manager.get_root_user()
+        self.assertEqual("root",root.get_name())
 
     def tearDown(self):
         CoreTestCase.tearDown(self)
