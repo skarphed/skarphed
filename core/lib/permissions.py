@@ -129,7 +129,7 @@ class Role(object):
                     WHERE RRI_ROL_ID = ? AND RIG_NAME = ?;"
         cur = db.query(self._core,stmnt,(self._id,permission))
         res = cur.fetchone()
-        return len(res) > 0
+        return res is not None and len(res) > 0
 
     def get_grantable_permissions(self):
         """
@@ -281,6 +281,8 @@ class Role(object):
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES WHERE ROL_ID = ? ;"
         cur = db.query(cls._core,stmnt,(role_id,))
         res = cur.fetchonemap()
+        if res is None:
+            raise PermissionException(PermissionException.get_msg(14, role_id))
         role = Role(cls._core)
         role.set_id(res["ROL_ID"])
         role.set_name(res["ROL_NAME"])
