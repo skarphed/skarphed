@@ -123,13 +123,51 @@ class TestPermissionFunctions(CoreTestCase):
         """
         Sessionuser assigns permission to a role that he owns himself (should succeed)
         """
-        pass
+        user_manager = self._core.get_user_manager()
+        session_user = user_manager.create_user("session_user","password")
+        session_manager = self._core.get_session_manager()
+        session = session_manager.create_session(session_user)
+        session_manager.set_current_session(session)
+        permission_manager = self._core.get_permission_manager()
+        permission1 = permission_manager.create_permission("lel","some_module")
+        session_user.grant_permission(permission1,ignore_check=True)
+
+        role = permission_manager.create_role({"name":"role1"})
+        role.add_permission(permission1)
+        self.assertTrue(role.has_permission(permission1))
+        role.delete()
+
+        session_manager.set_current_session(None)
+        session.delete()
+        session_user.delete()
+        permission_manager.remove_permission(permission1)
 
     def test_permission_assign_role_illegal(self):
         """
         Sessionuser assigns permission to a role that he does not own (should fail)
         """
-        pass
+        user_manager = self._core.get_user_manager()
+        session_user = user_manager.create_user("session_user","password")
+        session_manager = self._core.get_session_manager()
+        session = session_manager.create_session(session_user)
+        session_manager.set_current_session(session)
+        permission_manager = self._core.get_permission_manager()
+        permission1 = permission_manager.create_permission("lel","some_module")
+        
+        role = permission_manager.create_role({"name":"role1"})
+        try:
+            role.add_permission(permission1)
+        except PermissionException:
+            pass
+        else:
+            self.assertFail()
+        self.assertFalse(role.has_permission(permission1))
+        role.delete()
+
+        session_manager.set_current_session(None)
+        session.delete()
+        session_user.delete()
+        permission_manager.remove_permission(permission1)
 
     def test_permission_revoke_user_legal(self):
         """
