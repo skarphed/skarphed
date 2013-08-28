@@ -80,10 +80,10 @@ class TestPermissionFunctions(CoreTestCase):
         session_manager.set_current_session(session)
         permission_manager = self._core.get_permission_manager()
         permission1 = permission_manager.create_permission("lel","some_module")
-        session_user.assign_permission(permission1,ignore_check=True)
+        session_user.grant_permission(permission1,ignore_check=True)
 
         user = user_manager.create_user("user","password")
-        user.assign_permission(permission1)
+        user.grant_permission(permission1)
         self.assertTrue(user.check_permission(permission1))
 
         session_manager.set_current_session(None)
@@ -105,7 +105,7 @@ class TestPermissionFunctions(CoreTestCase):
 
         user = user_manager.create_user("user", "password")
         try:
-            user.assign_permission(permission1)
+            user.grant_permission(permission1)
         except UserException:
             pass
         else:
