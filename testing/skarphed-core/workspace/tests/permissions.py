@@ -85,6 +85,7 @@ class TestPermissionFunctions(CoreTestCase):
         user = user_manager.create_user("user","password")
         user.grant_permission(permission1)
         self.assertTrue(user.check_permission(permission1))
+        user.delete()
 
         session_manager.set_current_session(None)
         session.delete()
@@ -111,6 +112,7 @@ class TestPermissionFunctions(CoreTestCase):
         else:
             self.assertFail()
         self.assertFalse(user.check_permission(permission1))
+        user.delete()
 
         session_manager.set_current_session(None)
         session.delete()
