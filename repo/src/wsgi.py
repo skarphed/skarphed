@@ -27,16 +27,19 @@ from traceback import print_exc
 from StringIO import StringIO
 import json
 
+import logging
 import os
 import sys
 
 sys.path.append(os.path.dirname(__file__))
 
 from database import *
+from logger import logger
 from protocolhandler import ProtocolHandler
 from repository import *
 from session import SessionMiddleware
 from shareddatamiddleware import SharedDataMiddleware
+
 
 def default_template(environ, response_headers):
     """
@@ -77,39 +80,43 @@ def repo_application(environ, start_response):
     response_body = []
     response_headers = []
 
-    try:
-        status = '200 OK'
-        if environ['REQUEST_METHOD'] == 'POST':
-            try:
-                size = int(environ.get('CONTENT_LENGTH', 0))
-            except ValueError, e:
-                size = 0
-            args = FieldStorage(fp=environ['wsgi.input'], environ=environ)
-            jsonstr = args.getvalue('j')
-        else:
-            args = parse_qs(environ['QUERY_STRING'])
-            jsonstr = args['j'][0]
-        print ("JSON: " + str(jsonstr))
+    status = '200 OK'
+    if environ['REQUEST_METHOD'] == 'POST':
+        try:
+            size = int(environ.get('CONTENT_LENGTH', 0))
+        except ValueError, e:
+            size = 0
+        args = FieldStorage(fp=environ['wsgi.input'], environ=environ)
+        jsonstr = args.getvalue('j')
+        logger.info('POST from %s: %s' % (environ['REMOTE_ADDR'], jsonstr))
+
         try:
             repository = Repository()
             handler = ProtocolHandler(repository, jsonstr)
             response_body = [handler.execute(environ)]
         except DatabaseException, e:
+            logger.warning('database exception: %s' % str(e))
             response_body = ['{"error":{"c":%d,"args":["errorstr":"%s"]}}' %
                     (RepositoryErrorCode.DATABASE_ERROR, str(e))]
         except RepositoryException, e:
+            logger.warning('repository exception: %s' % json.dumps(e.get_error_json()))
             response_body = ['{"error":%s}' % json.dumps(e.get_error_json())] 
         except Exception, e:
-            errorstream  = StringIO()
-            print_exc(None, errorstream)
-            response_body = ['{error:%s}' % errorstream.getvalue()]
+            logger.warning('unknown exception: %s' % str(e))
+            response_body = ['{"error":%s}' % str(e)]
 
         response_headers.append(('Content-Type', 'application/json'))
-    except KeyError, e:
-        (status, response_body) = default_template(environ, response_headers) 
+
+        logger.debug('response to %s: %s, %s, %s' % (environ['REMOTE_ADDR'], status, str(response_headers), str(response_body)))
+    else:
+        logger.info('GET from %s: %s' % (environ.get('REMOTE_ADDR', 'unknown'), environ['PATH_INFO']))
+        if environ['PATH_INFO'] == '/':
+            (status, response_body) = default_template(environ, response_headers) 
+        else:
+            (status, response_body) = ('404 Not Found', '404 Not Found')
+        logger.debug('response to %s: %s, %s' % (environ['REMOTE_ADDR'], status, str(response_headers)))
     
     start_response(status, response_headers)
-    print ("RESPONSE: " + str(response_body))
     return response_body
 
 

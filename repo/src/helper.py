@@ -21,6 +21,10 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+
+from random import randrange
+
+
 def datetime_to_fdb_timestamp(datetime):
     """
     Creates a fdb timestamp out of a datetime.
@@ -48,3 +52,10 @@ def datetime_to_fdb_timestamp(datetime):
         s = str(datetime.second)
 
     return "%s-%s-%s %s:%s:%s"%(y,m,d,h,mi,s)
+
+
+def generate_random_string(length):
+    """
+    Generates a random string with the desired length.
+    """
+    return '%030x' % randrange(16 ** length)

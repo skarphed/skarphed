@@ -24,6 +24,7 @@
 import fdb
 
 from config import Config
+from logger import logger
 
 
 class DatabaseMiddleware(object):
@@ -89,6 +90,7 @@ class DatabaseConnection(object):
                             user = self._user,
                             password = self._password)
             except fdb.fbcore.DatabaseError, e:
+                logger.error('failed to connect to database: %s' % str(e))
                 raise DatabaseException(str(e))
 
 

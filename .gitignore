@@ -10,6 +10,7 @@ repo/pkg/deb/skdrepo-web/tmp
 repo/pkg/deb/skdrepo-web/var
 repo/pkg/deb/skdrepo-web/usr
 repo/pkg/deb/skdrepo-web/DEBIAN/control
-repo/pkg/deb/skdrepo/etc
-repo/pkg/deb/skdrepo/usr
-repo/pkg/deb/skdrepo/DEBIAN/control
+repo/pkg/deb/skarphed-repo
+repo/pkg/deb/skarphed-repo/etc
+repo/pkg/deb/skarphed-repo/usr
+repo/pkg/deb/skarphed-repo/DEBIAN/control
