@@ -398,6 +398,33 @@ class TestPermissionFunctions(CoreTestCase):
         session_user.delete()
         permission_manager.remove_permission(permission1)
 
+    def test_su_revoke_root_permission(self):
+        """
+        Sessionuser tries to revoke right from rootuser (must never happen)
+        """
+        user_manager = self._core.get_user_manager()
+        session_user = user_manager.create_user("session_user","password")
+        session_manager = self._core.get_session_manager()
+        session = session_manager.create_session(session_user)
+        session_manager.set_current_session(session)
+        permission_manager = self._core.get_permission_manager()
+        permission1 = permission_manager.create_permission("lel","some_module")
+        session_user.grant_permission(permission1,ignore_check=True)
+
+        root = user_manager.get_user_by_name("root")
+        try:
+            root.revoke_permission(permission1)
+        except UserException:
+            pass
+        else:
+            self.assertFail()
+        self.assertTrue(root.check_permission(permission1))
+
+        session_manager.set_current_session(None)
+        session.delete()
+        session_user.delete()
+        permission_manager.remove_permission(permission1)
+
     def tearDown(self):
         CoreTestCase.tearDown(self)
         # permission_manager = self._core.get_permission_manager()
