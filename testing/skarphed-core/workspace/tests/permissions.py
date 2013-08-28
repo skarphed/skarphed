@@ -103,7 +103,7 @@ class TestPermissionFunctions(CoreTestCase):
         permission_manager = self._core.get_permission_manager()
         permission1 = permission_manager.create_permission("lel","some_module")
 
-        user = user_manager.create_user("user")
+        user = user_manager.create_user("user", "password")
         try:
             user.assign_permission(permission1)
         except UserException:
