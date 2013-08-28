@@ -68,5 +68,5 @@ class CoreTestCase(unittest.TestCase):
     def tearDown(self):
         unittest.TestCase.tearDown(self)
 
-    def assertFail(self):
-        self.assertTrue(False)
+    def assertFail(self, msg=""):
+        self.assertTrue(False,msg)
