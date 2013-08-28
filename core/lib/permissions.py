@@ -129,7 +129,7 @@ class Role(object):
                     WHERE RRI_ROL_ID = ? AND RIG_NAME = ?;"
         cur = db.query(self._core,stmnt,(self._id,permission))
         res = cur.fetchone()
-        return len(res) > 0
+        return res is not None and len(res) > 0
 
     def get_grantable_permissions(self):
         """
