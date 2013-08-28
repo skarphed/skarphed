@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+echo "Installing python dependencies via pip ..."
+pip install pycrypto
+pip install fdb
+
+python -m compileall /usr/share/skdrepo
+python -m compileall /usr/bin/skdrepo
+
+update-rc.d skdrepo defaults
+
+echo "Run skdrepo-setup in order to setup your skarphed repository!"

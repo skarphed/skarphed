@@ -1,0 +1,97 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          skdrepo
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Skarphed standalone repository
+# Description: With this file, a skarphed standalone repository can be handled
+#				as debian service
+### END INIT INFO
+
+# Author: Andre Kupka (freakout@skarphed.org)
+
+# Do NOT "set -e"
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="skarphed repository"
+NAME=skdrepo
+DAEMON=/usr/bin/${NAME}
+DAEMON_ARGS=""
+PIDFILE=/var/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+[ -x "$DAEMON" ] || exit 0
+
+do_start()
+{
+	# return
+	#	0 if daemon has been started
+	#	1 if daemon was already running
+	#	2 if daemon could not be started
+	start-stop-daemon -S -q -p $PIDFILE -x $DAEMON -b -m -t > /dev/null \
+		|| return 1
+	start-stop-daemon -S -q -p $PIDFILE -x $DAEMON -b -m -- $DAEMON_ARGS \
+		|| return 2
+}
+
+do_stop()
+{
+	# return
+	#	0 if daemon has been stopped
+	#	1 if daemon was already stopped
+	#	2 if daemon could not be stopped
+	#	other if a failure occured
+	start-stop-daemon -K -q -R "TERM/30/KILL/5" -p $PIDFILE
+	RET=$?
+	[ "$RET" = 2 ] && return 2
+	rm -f $PIDFILE
+	return "$RET"
+}
+
+case "$1" in
+start)
+	echo "Starting $DESC ..."
+	do_start
+	case "$?" in
+		0|1) ;;
+		2) echo "Failed starting $DESC!" ;;
+	esac
+	;;
+stop)
+	echo "Stopping $DESC ..."
+	do_stop
+	case "$?" in
+		0|1) ;;
+		2) echo "Failed stopping $DESC!" ;;
+	esac
+	;;
+status)
+	if [ -f $PIDFILE ]; then
+		echo "$DESC is running!"
+	else
+		echo "$DESC is not running!"
+	fi
+	;;
+restart|force-reload)
+	echo "Restarting $DESC ..."
+	do_stop
+	case "$?" in
+		0|1)
+			do_start
+			case "$?" in
+				0) ;;
+				*) echo "Failed starting $DESC!" ;;
+			esac
+			;;
+		*)
+			echo "Failed stopping $DESC!"
+			;;
+	esac
+	;;
+*)
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	exit 3
+	;;
+esac

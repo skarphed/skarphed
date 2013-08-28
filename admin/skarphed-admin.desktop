@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Skarphed
+GenericName=Web Management System
+X-GNOME-FullName=Skarphed FOSS Webmanagement System
+Comment=Create and manage whole web-infrastructures
+Icon=skarphed
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=GTK;Application;Network;
+MimeType=;
+Exec=skarphed %F

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+rm /var/lib/firebird/2.5/data/skdrepo.fdb

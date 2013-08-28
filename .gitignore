@@ -2,3 +2,14 @@
 *.tar.gz
 *.swp
 *.deb
+admin/pkg/deb/skarphed-admin/usr
+admin/pkg/deb/skarphed-admin/var
+admin/pkg/deb/skarphed-admin/DEBIAN
+repo/pkg/deb/skdrepo-web/etc
+repo/pkg/deb/skdrepo-web/tmp
+repo/pkg/deb/skdrepo-web/var
+repo/pkg/deb/skdrepo-web/usr
+repo/pkg/deb/skdrepo-web/DEBIAN/control
+repo/pkg/deb/skdrepo/etc
+repo/pkg/deb/skdrepo/usr
+repo/pkg/deb/skdrepo/DEBIAN/control
