@@ -221,7 +221,8 @@ class UserException(SkarphedException):
         12:"""Cant create an user with an empty username""",
         13:"""Cant create an user with an empty password""",
         14:"""One does not simply delete the root user""",
-        15:"""User already exists: """
+        15:"""User already exists: """,
+        16:"""One does not simply remove a permission from the root user"""
     }
 
 class ViewException(SkarphedException):

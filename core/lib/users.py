@@ -85,7 +85,7 @@ class User(object):
         Checks if this user has a specific Permission
         """
         permissionmanager = self._core.get_permission_manager()
-        if self.get_id() == 2 and self.get_name() == "roor":
+        if self.get_id() == ROOT_USER_ID and self.get_name() == "root":
             return True
         return permissionmanager.check_permission(permission,self)
 
@@ -218,6 +218,10 @@ class User(object):
         db = self._core.get_db()
         permissionmanager = self._core.get_permission_manager()
         session_user = None
+
+        if self.get_id() == ROOT_USER_ID and self.get_name() == "root":
+            raise UserException(UserException.get_msg(16))
+
         if not ignore_check:
             session_user = self._core.get_session_manager().get_current_session_user()
 
