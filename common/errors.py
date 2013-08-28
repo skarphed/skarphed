@@ -30,7 +30,7 @@ class SkarphedException(Exception):
 
     @classmethod
     def get_msg(cls,nr, info=""):
-        return cls.PREFIX+"_"+str(nr)+": "+cls.ERRORS[nr]+" "+info
+        return cls.PREFIX+"_"+str(nr)+": "+cls.ERRORS[nr]+" "+str(info)
 
     def set_tracebackstring(self, tb):
         self.tracebackstring = tb
@@ -156,7 +156,8 @@ class PermissionException(SkarphedException):
         10:"""Create Role: Cannot Create role without roleData""",
         11:"""Create Role: Cannot Create a role without a name""",
         12:"""Create Role: User is not permitted to create roles""",
-        13:"""Create Role: This role already exists: """
+        13:"""Create Role: This role already exists: """,
+        14:"""Get Role: There is no role with this ID: """
     }
 
 class ProfileException(SkarphedException):
