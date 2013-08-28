@@ -32,9 +32,9 @@ from common.errors import PermissionException
 class TestPermissionFunctions(CoreTestCase):
     def setUp(self):
         CoreTestCase.setUp(self)
-        permission_manager = self._core.get_permission_manager()
-        self.testrole = permission_manager.create_role({"name":"testrole2"})
-        self.testpermission = permission_manager.create_permission("testpermission","test_module")
+        # permission_manager = self._core.get_permission_manager()
+        # self.testrole = permission_manager.create_role({"name":"testrole2"})
+        # self.testpermission = permission_manager.create_permission("testpermission","test_module")
 
     def test_create_delete_role(self):
         permission_manager = self._core.get_permission_manager()
@@ -179,6 +179,6 @@ class TestPermissionFunctions(CoreTestCase):
 
     def tearDown(self):
         CoreTestCase.tearDown(self)
-        permission_manager = self._core.get_permission_manager()
-        permission_manager.remove_permission(self.testpermission)
-        self.testrole.delete()
+        # permission_manager = self._core.get_permission_manager()
+        # permission_manager.remove_permission(self.testpermission)
+        # self.testrole.delete()
