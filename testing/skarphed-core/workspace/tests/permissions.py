@@ -27,7 +27,7 @@ from skd_test import LIBPATH
 import sys
 sys.path.append(LIBPATH)
 
-from common.errors import PermissionException
+from common.errors import PermissionException, UserException
 
 class TestPermissionFunctions(CoreTestCase):
     def setUp(self):
