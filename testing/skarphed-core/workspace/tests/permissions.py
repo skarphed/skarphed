@@ -82,7 +82,7 @@ class TestPermissionFunctions(CoreTestCase):
         permission1 = permission_manager.create_permission("lel","some_module")
         session_user.assign_permission(permission1,ignore_check=True)
 
-        user = user_manager.create_user("user")
+        user = user_manager.create_user("user","password")
         user.assign_permission(permission1)
         self.assertTrue(user.check_permission(permission1))
 
