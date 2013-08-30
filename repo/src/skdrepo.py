@@ -30,12 +30,16 @@ sys.path.append('/usr/share/skdrepo/')
 from wsgiref.simple_server import make_server
 
 from config import Config
+from logger import logger
 import wsgi
+
+
+
 
 
 def main():
     """
-    Executes a skprepo as standalone application. 
+    Executes a skdrepo as standalone application. 
     """
 
     # set default values
@@ -67,11 +71,15 @@ def main():
     try:
         config.load_from_file(config_path)
     except IOError, e:
-        print('Error opening configuration file: %s' % config_path)
+        logger.error('Failed to open configuration file: %s' % config_path)
         sys.exit(1)
 
     # start skdrepo wsgi server
-    httpd = make_server(config['server.ip'], config['server.port'], wsgi.application)
+    listen_ip = config['server.ip']
+    listen_port = config['server.port']
+
+    logger.info('Skarphed repository listening on %s:%d' % (listen_ip, listen_port))
+    httpd = make_server(listen_ip, listen_port, wsgi.application)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt, e:
@@ -98,6 +106,6 @@ def version():
     print('')
     print('Written by Andre Kupka (freakout@skarphed.org)')
 
-    
+
 if __name__ == '__main__':
     main()

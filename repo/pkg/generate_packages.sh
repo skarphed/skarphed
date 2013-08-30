@@ -1,6 +1,6 @@
 #!/bin/bash
 
-deb_root="./deb/skdrepo/"
+deb_root="./deb/skarphed-repo/"
 
 function generate_deb {
 	rm -rf ${deb_root}usr
@@ -36,7 +36,7 @@ function generate_deb {
 
 	SIZE=`du -c -s ${deb_root}etc ${deb_root}usr | tail -n1 |  cut -f1`
 	cat << EOF > ${deb_root}DEBIAN/control
-Package: skdrepo
+Package: skarphed-repo
 Priority: optional
 Section: web
 Installed-Size: $SIZE
@@ -49,7 +49,7 @@ Description: A skarphed repository
 EOF
 
 	fakeroot dpkg-deb -z6 -Zgzip --build ${deb_root}
-	mv "./deb/skdrepo.deb" .
+	mv "./deb/skarphed-repo.deb" .
 }
 
 generate_deb

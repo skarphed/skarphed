@@ -21,7 +21,10 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+
+from logger import logger
 from mimetypes import guess_type
+
 
 class SharedDataMiddleware(object):
     """
@@ -41,7 +44,8 @@ class SharedDataMiddleware(object):
         If the wsgi PATH_INFO starts with the static contents location, it will be returned.
         Otherwise the wrapped application will be called.
         """
-        if environ['PATH_INFO'].startswith('/%s/' % self._location):
+        if environ['REQUEST_METHOD'] == 'GET' and environ['PATH_INFO'].startswith('/%s/' % self._location):
+            logger.info('GET from %s: %s' % (environ.get('REMOTE_ADDR', 'unknown'), environ['PATH_INFO']))
             prefix = "/usr/share/skdrepo/"
             path = prefix + environ['PATH_INFO'][1:]
             try:
@@ -53,11 +57,13 @@ class SharedDataMiddleware(object):
                 response_headers = [('Content-Type', mime)]
                 response_body = [data]
             except IOError, e:
+                logger.warning('failed to open file: %s' % path)
                 status = '404 Not Found'
                 response_headers = [('Content-Type', 'text/plain')]
                 response_body = ['404 Not Found - \'%s\'' % path]
 
             start_response(status, response_headers)
+            logger.debug('response to %s: %s, %s' % (environ['REMOTE_ADDR'], status, str(response_headers)))
             return response_body
 
         else:

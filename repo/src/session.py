@@ -23,10 +23,10 @@
 
 from hashlib import sha256
 from datetime import datetime, timedelta
-from random import randrange
 from Cookie import SimpleCookie
 from Cookie import CookieError
-from helper import datetime_to_fdb_timestamp
+from helper import datetime_to_fdb_timestamp, generate_random_string
+from logger import logger
 from config import Config
 
 class SessionMiddleware(object):
@@ -59,11 +59,9 @@ class SessionMiddleware(object):
                 cookie['session_id'] = session.get_id()
                 cookiestr = cookie.output().replace('Set-Cookie: ', '', 1)
                 headers.append(('Set-Cookie', cookiestr))
-                print ("RESPONSE HEADERS: " + str(headers)) # DEBUG
             return start_response(status, headers, exc_info)
 
         environ['session'] = session
-        print ("SESSION: " + session.get_id() + " " + str(session.is_admin())) # DEBUG
         return self._wrap_app(environ, session_start_response)
 
     def get_session(self, environ):
@@ -80,15 +78,14 @@ class SessionMiddleware(object):
                 return None
             expiration = result['SES_EXPIRES']
             is_admin = bool(result['SES_IS_ADMIN'])
-            print ("LOAD SESSION: " + session_id) # DEBUG
             session = Session(session_id, expiration, is_admin)
             if expiration < datetime.now():
-                print "EXPIRED" # DEBUG
+                logger.info('session expired: %s' % session_id)
                 session.delete(environ)
                 session = None
+            logger.info('loaded session: %s' % session_id)
             return session
         except KeyError, e:
-            print ("NO LOAD SESSION: " + str(e)) # DEBUG
             return None
 
 
@@ -96,19 +93,6 @@ class Session(object):
     """
     A session stores its id, its expiration time and whether the user is privileged for admin actions.
     """
-
-    def _generate_random_string(self, length):
-        """
-        Generates a random string with the desired length.
-        TODO: outsource this function to helpers
-        """
-        ret = ""
-        for i in range(length):
-            x = -1
-            while x in (-1,91,92,93,94,95,96,60,61,62,58,59,63,64):
-                x = randrange(48,123)
-            ret += chr(x)
-        return ret
 
     def __init__(self, id = None, expiration = None, is_admin = False):
         """
@@ -119,7 +103,8 @@ class Session(object):
         if id:
             self._id = id
         else:
-            self._id = sha256(self._generate_random_string(24)).hexdigest()
+            self._id = sha256(generate_random_string(24)).hexdigest()
+            logger.debug('created session: %s' % self._id)
         if expiration:
             self._expiration = expiration
         else:
