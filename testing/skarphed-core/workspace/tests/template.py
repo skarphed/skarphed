@@ -31,7 +31,7 @@ sys.path.append(LIBPATH)
 
 from common.errors import TemplateException
 
-class TestViewFunctions(CoreTestCase):
+class TestTemplateFunctions(CoreTestCase):
     def setUp(self):
         CoreTestCase.setUp(self)
 
@@ -242,6 +242,9 @@ class TestViewFunctions(CoreTestCase):
                                'type':'PageFile',
                                'msg':'File not in Package static/mainsite.css'}],errorlog)
         self.unsetSessionUser()
+
+    #TODO: maybe a test that assures, that a template installs, when only having
+    #      errors of severity 0
 
     def tearDown(self):
         CoreTestCase.tearDown(self)
