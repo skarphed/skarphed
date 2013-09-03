@@ -25,11 +25,35 @@
 This files accumulates all kind of enumerations throughout skarphed
 """
 
-class JSMandatory(object):
+class Enum(object):
+    """
+    @classmethod
+    def get_as_dict(cls):
+        ret = {}
+        for key, val in cls.__dict__:
+            if type(val) == int:
+                ret[key] = val
+        return ret
+    """
+
+    @classmethod
+    def is_valid_value(cls, valc):
+        for key, val in cls.__dict__:
+            if val == valc:
+                return True
+        return False
+
+
+class JSMandatory(Enum):
     NO=0
     SUPPORTED=1
     MANDATORY=2
 
-class BoxOrientation(object):
+class BoxOrientation(Enum):
     HORIZONTAL = 0
     VERTICAL = 1
+
+class ActivityType(Enum):
+    TEMPLATE = 0
+    MODULE = 1
+    WIDGET = 2
