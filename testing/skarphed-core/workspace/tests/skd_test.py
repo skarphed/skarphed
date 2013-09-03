@@ -38,6 +38,9 @@ del(cfgfile)
 
 LIBPATH=cfg["SCV_LIBPATH"]
 
+import common.erors
+import common.enums
+
 class CoreTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -68,5 +71,60 @@ class CoreTestCase(unittest.TestCase):
     def tearDown(self):
         unittest.TestCase.tearDown(self)
 
+    def setSessionUser(self, permissions=[]):
+        """
+        Set a sessionuser and give him a list of permissions
+        """
+        if type(permissions)!=list:
+            permissions = [permissions]
+
+        user_manager = self._core.get_user_manager()
+        session_user = user_manager.create_user("session_user","password")
+        session_manager = self._core.get_session_manager()
+        session = session_manager.create_session(session_user)
+        session_manager.set_current_session(session)
+        for permission in permissions:
+            session_user.grant_permission(permission,ignore_check=True)
+        self._session_user = session_user
+        self._session = session
+
+    def unsetSessionUser(self):
+        session_manager.set_current_session(None)
+        self._session.delete()
+        self._session_user.delete()
+
     def assertFail(self, msg=""):
+        """
+        Execute assertFail() to let a test fail instantly
+        """
         self.assertTrue(False,msg)
+
+    def setUpTestModule(self):
+        """
+        Set up a module in the database for testing purposes.
+        Returns the generated module.
+        """
+        db = self._core.get_db()
+        nr = db.get_seq_next("MOD_GEN")
+        stmnt = "INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_JSMANDATORY) \
+                      VALUES (?,?,?,?,?,?,?) ;"
+        db.query(self._core,stmnt,(nr,"testprogrammer_testmodule","TestModule",
+                                   10,11,
+                                   1337,common.enums.JSMandatory.NO),
+                 commit=True)
+        module_manager = self._core.get_module_manager()
+        return module_manager.get_module(nr)
+
+    def tearDownTestModule(self, module=None):
+        """
+        Tear down a testmodule and erase it from the database.
+        Removes every module if called without parameters.
+        if parameter module is given, removes only that module
+        """
+        db = self._core.get_db()
+        if module is None:
+            db.query(self._core,"DELETE FROM MODULES;",commit=True)
+        else:
+            stmnt = "DELETE FROM MODULES WHERE MOD_ID = ? ;"
+            db.query(self._core,stmnt,(module.get_id(),),commit=True)
+        return

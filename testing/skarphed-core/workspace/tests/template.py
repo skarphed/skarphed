@@ -35,6 +35,11 @@ class TestViewFunctions(CoreTestCase):
         CoreTestCase.setUp(self)
 
     def test_install_template(self):
+        testpermissions = ["skarphed.sites.create",
+                           "skarphed.sites.delete",
+                           "skarphed.sites.modify"]
+        self.setSessionUser(testpermissions)
+
         templatefile = open("testdata/default_template.tgz","r")
         templatedata = templatefile.read()
         templatefile.close()
@@ -44,7 +49,8 @@ class TestViewFunctions(CoreTestCase):
 
         template_manager.install_from_data(templatedata)
 
-        self.assertFalse(template_manager.is_template_installed())
+        self.assertTrue(template_manager.is_template_installed())
+        self.unsetSessionUser()
 
     def tearDown(self):
         CoreTestCase.tearDown(self)
