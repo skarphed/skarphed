@@ -25,6 +25,7 @@
 from skd_test import CoreTestCase
 from skd_test import LIBPATH
 import sys
+import os
 
 sys.path.append(LIBPATH)
 
@@ -155,6 +156,89 @@ class TestViewFunctions(CoreTestCase):
                            'msg':'JSON seems to be corrupt'}],errorlog)
         self.unsetSessionUser()
 
+    def test_install_multiple_errors(self):
+        """
+        Tries to install a template that has various malfunctions
+        """
+        testpermissions = ["skarphed.sites.create",
+                           "skarphed.sites.delete",
+                           "skarphed.sites.modify"]
+        self.setSessionUser(testpermissions)
+
+        templatefile = open("testdata/default_template_multiple.tgz","r")
+        templatedata = templatefile.read()
+        templatefile.close()
+
+        template_manager = self._core.get_template_manager()
+        self.assertFalse(template_manager.is_template_installed())
+
+        try:
+            template_manager.get_current_template()
+        except TemplateException:
+            pass
+        else:
+            self.assertFail()
+
+        errorlog = template_manager.install_from_data(templatedata)
+
+        self.assertFalse(template_manager.is_template_installed())
+
+        try:
+            template_manager.get_current_template()
+        except TemplateException:
+            pass
+        else:
+            self.assertFail()
+
+        self.assertEqual([{'severity':1,
+                           'type':'PackageFile',
+                           'msg':'File not in Package general.css'},
+                          {'severity':1,
+                           'type':'PageData',
+                           'msg':'Invalid format (allowed is .html and .htm: corruptsite.xml'},
+                          {'severity':1,
+                           'type':'PageFile',
+                           'msg':'File not in Package corruptsite.xml'}],errorlog)
+        self.unsetSessionUser()
+
+    def test_install_missing_pagecss(self):
+        """
+        Tries to install a template with a page that has no CSS file
+        """
+        testpermissions = ["skarphed.sites.create",
+                           "skarphed.sites.delete",
+                           "skarphed.sites.modify"]
+        self.setSessionUser(testpermissions)
+
+        templatefile = open("testdata/default_template_nopagecss.tgz","r")
+        templatedata = templatefile.read()
+        templatefile.close()
+
+        template_manager = self._core.get_template_manager()
+        self.assertFalse(template_manager.is_template_installed())
+
+        try:
+            template_manager.get_current_template()
+        except TemplateException:
+            pass
+        else:
+            self.assertFail()
+
+        errorlog = template_manager.install_from_data(templatedata)
+
+        self.assertFalse(template_manager.is_template_installed())
+
+        try:
+            template_manager.get_current_template()
+        except TemplateException:
+            pass
+        else:
+            self.assertFail()
+
+        self.assertEqual([{'severity':1,
+                               'type':'PageFile',
+                               'msg':'File not in Package static/mainsite.css'}],errorlog)
+        self.unsetSessionUser()
 
     def tearDown(self):
         CoreTestCase.tearDown(self)
