@@ -196,8 +196,8 @@ class TemplateException(SkarphedException):
     """
     PREFIX = "TPL"
     ERRORS = {
-        0:"""At least one Parameter for the Connection is missing"""
-        
+        0:"""At least one Parameter for the Connection is missing""",
+        1:"""There is no Template at the moment"""        
     }
 
 class UserException(SkarphedException):

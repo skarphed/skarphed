@@ -25,7 +25,7 @@
 from skd_test import CoreTestCase
 from skd_test import LIBPATH
 import sys
-import os
+
 sys.path.append(LIBPATH)
 
 from common.errors import TemplateException
@@ -47,9 +47,22 @@ class TestViewFunctions(CoreTestCase):
         template_manager = self._core.get_template_manager()
         self.assertFalse(template_manager.is_template_installed())
 
+        try:
+            template_manager.get_current_template()
+        except TemplateException:
+            pass
+        else:
+            self.assertFail()
+
         template_manager.install_from_data(templatedata)
 
         self.assertTrue(template_manager.is_template_installed())
+
+        template = template_manager.get_current_template()
+        self.assertIsNotNone(template)
+
+
+
         self.unsetSessionUser()
 
     def tearDown(self):

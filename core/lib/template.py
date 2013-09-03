@@ -67,6 +67,8 @@ class Template(object):
 
         cur = db.query(cls._core, stmnt)
         tpldata = cur.fetchonemap()
+        if tpldata is None:
+            raise TemplateException(TemplateException.get_msg(1))
 
         tpl = Template(cls._core)
         tpl.set_name(tpldata['TPL_NAME'])
