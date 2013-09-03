@@ -128,3 +128,35 @@ class CoreTestCase(unittest.TestCase):
             stmnt = "DELETE FROM MODULES WHERE MOD_ID = ? ;"
             db.query(self._core,stmnt,(module.get_id(),),commit=True)
         return
+
+    def setUpTestTemplate(self):
+        """
+        Sets up a test template
+        """
+        testpermissions = ["skarphed.sites.create",
+                           "skarphed.sites.delete",
+                           "skarphed.sites.modify"]
+        self.setSessionUser(testpermissions)
+
+        templatefile = open("testdata/default_template.tgz","r")
+        templatedata = templatefile.read()
+        templatefile.close()
+
+        template_manager = self._core.get_template_manager()
+        template_manager.install_from_data(templatedata)
+
+        self.unsetSessionUser()
+
+    def tearDownTestTemplate(self):
+        """
+        Removes the test template
+        """
+        testpermissions = ["skarphed.sites.create",
+                           "skarphed.sites.delete",
+                           "skarphed.sites.modify"]
+        self.setSessionUser(testpermissions)
+
+        template_manager = self._core.get_template_manager()
+        template = template_manager.get_current_template()
+        template.uninstall()
+        self.unsetSessionUser()
