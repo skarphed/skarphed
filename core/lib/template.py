@@ -129,7 +129,13 @@ class Template(object):
         os.unlink(temp_installpath+"/tpl.tar.gz")
 
         manifest_file = open(temp_installpath+"/manifest.json","r")
-        manifest = JSONDecoder().decode(manifest_file.read())
+        try:
+            manifest = JSONDecoder().decode(manifest_file.read())
+        except ValueError,e:
+            errorlog.append({'severity':1,
+                           'type':'PackageFile',
+                           'msg':'JSON seems to be corrupt'})
+            return errorlog
         manifest_file.close()
 
         #BEGIN TO VALIDATE DATA
