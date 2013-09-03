@@ -23,7 +23,6 @@
 ###########################################################
 
 import sys
-import os
 import unittest
 
 cfgfile = open("/etc/skarphed/skarphed.conf","r").read().split("\n")
@@ -37,6 +36,9 @@ for line in cfgfile:
 del(cfgfile)
 
 LIBPATH=cfg["SCV_LIBPATH"]
+
+sys.path.append(LIBPATH)
+import common.enums
 
 class CoreTestCase(unittest.TestCase):
     def setUp(self):
@@ -86,6 +88,7 @@ class CoreTestCase(unittest.TestCase):
         self._session = session
 
     def unsetSessionUser(self):
+        session_manager = self._core.get_session_manager()
         session_manager.set_current_session(None)
         self._session.delete()
         self._session_user.delete()
@@ -108,7 +111,7 @@ class CoreTestCase(unittest.TestCase):
         db.query(self._core,stmnt,(nr,"testprogrammer_testmodule","TestModule",
                                    10,11,
                                    1337,common.enums.JSMandatory.NO),
-                 commit=True)
+                                   commit=True)
         module_manager = self._core.get_module_manager()
         return module_manager.get_module(nr)
 
