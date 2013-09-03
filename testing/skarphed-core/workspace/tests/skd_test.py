@@ -38,7 +38,7 @@ del(cfgfile)
 
 LIBPATH=cfg["SCV_LIBPATH"]
 
-import common.erors
+import common.errors
 import common.enums
 
 class CoreTestCase(unittest.TestCase):
