@@ -101,5 +101,7 @@ echo -e "Moving latest tests to test directory ..."
 
 rm -r tests
 cp -r skarphed/testing/skarphed-core/workspace/tests ./
+rm -r testdata
+cp -r skarphed/testing/skarphed-core/workspace/testdata ./
 
 echo -e "[ done ]\n"

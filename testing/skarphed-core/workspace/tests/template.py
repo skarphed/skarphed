@@ -35,7 +35,16 @@ class TestViewFunctions(CoreTestCase):
         CoreTestCase.setUp(self)
 
     def test_install_template(self):
-        print os.getcwd()
+        templatefile = open("testdata/default_template.tgz","r")
+        templatedata = templatefile.read()
+        templatefile.close()
+
+        template_manager = self._core.get_template_manager()
+        self.assertFalse(template_manager.is_template_installed())
+
+        template_manager.install_from_data(templatedata)
+
+        self.assertFalse(template_manager.is_template_installed())
 
     def tearDown(self):
         CoreTestCase.tearDown(self)
