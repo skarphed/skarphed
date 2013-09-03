@@ -135,6 +135,7 @@ class Template(object):
             errorlog.append({'severity':1,
                            'type':'PackageFile',
                            'msg':'JSON seems to be corrupt'})
+            cleanup(temp_installpath)
             return errorlog
         manifest_file.close()
 
