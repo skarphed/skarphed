@@ -38,9 +38,6 @@ del(cfgfile)
 
 LIBPATH=cfg["SCV_LIBPATH"]
 
-import common.errors
-import common.enums
-
 class CoreTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
