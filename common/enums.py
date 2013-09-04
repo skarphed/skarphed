@@ -38,7 +38,7 @@ class Enum(object):
 
     @classmethod
     def is_valid_value(cls, valc):
-        for key, val in cls.__dict__:
+        for key, val in cls.__dict__.items():
             if val == valc:
                 return True
         return False
