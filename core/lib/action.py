@@ -737,7 +737,7 @@ class MenuItem(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM MENUITEMS WHERE MNI_ID = ? ;"
         db.query(self._core,stmnt, (self.get_id(),),commit=True)
-    self._core.get_poke_manager().add_activity(ActivityType.MENU)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def set_order(self, order):
         """
