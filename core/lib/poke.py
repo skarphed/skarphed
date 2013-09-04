@@ -75,6 +75,11 @@ class PokeManager(object):
         """
         activity_report = ActivityReport.generate()
         cls.cleanup()
+        session_manager = cls._core.get_session_manager()
+        session = session_manager.get_current_session()
+        db = cls._core.get_db()
+        stmnt = "UPDATE OR INSERT INTO SESSIONPOKE (SPO_SES_ID, SPO_ATV_ID) VALUES (?, ?) MATCHING (SPO_SES_ID) ;"
+        db.query(cls._core, stmnt, (session.get_id(),), commit=True)
         return activity_report.toJSON()
 
     @classmethod
@@ -83,7 +88,7 @@ class PokeManager(object):
         Remove activities that are no longer needed
         """
         db = cls._core.get_db()
-        stmnt = "DELETE FROM ACTIVITIES WHERE ATV_ID < (SELECT MIN(SPO_ATV_ID) FROM SESSIONPOKE) ;"
+        stmnt = "DELETE FROM ACTIVITIES WHERE ATV_ID < COALESCE ((SELECT MIN(SPO_ATV_ID) FROM SESSIONPOKE),0) ;"
         db.query(cls._core, stmnt, commit=True)
 
 
@@ -167,7 +172,7 @@ class ActivityReport(object):
 
         db = cls._core.get_db()
         stmnt = "SELECT ATV_TYPE, MAX(ATV_ID) AS LATEST_ID, COUNT(ATV_ID) AS AMOUNT FROM ACTIVITIES WHERE ATV_SES_ID != ? AND ATV_ID >= \
-                (SELECT SPO_ATV_ID FROM SESSIONPOKE WHERE SPO_SES_ID = ?) ORDER BY ATV_ID ASC GROUP BY ATV_TYPE;"
+                COALESCE((SELECT SPO_ATV_ID FROM SESSIONPOKE WHERE SPO_SES_ID = ?),0) ORDER BY ATV_ID ASC GROUP BY ATV_TYPE;"
         cur = db.query(cls._core, stmnt, (session.get_id(),))
 
         activity_report = ActivityReport()

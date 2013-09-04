@@ -54,6 +54,11 @@ class BoxOrientation(Enum):
     VERTICAL = 1
 
 class ActivityType(Enum):
-    TEMPLATE = 0
+    USER = 0
     MODULE = 1
     WIDGET = 2
+    ROLE = 3
+    PERMISSION = 4
+    MENU = 5
+    VIEW = 6
+    TEMPLATE = 7

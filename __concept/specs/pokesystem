@@ -15,3 +15,9 @@ resulted in more activity, on the other hand decreasing when there is no activit
 on the skarphed-core. There is a maxvalue for the highest pokerate and a minvalue
 for the slowest pokerate.
 
+Poke messages
+-------------
+
+Client: 
+
+{"amount":<int>,"activity_types":[(<int>),(<int>),(<int>),...]}
