@@ -29,8 +29,8 @@ import StringIO
 import re
 from copy import deepcopy
 
+from common.enums import ActivityType, BoxOrientation
 from common.errors import ViewException, PageException
-from common.enums import BoxOrientation
 
 class View(object):
     CURRENTLY_RENDERING = None
@@ -717,6 +717,7 @@ class View(object):
         stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
                   VALUES (?,?,?,?) MATCHING (VIE_ID) ;"
         db.query(self._core, stmnt, (self._id, self._page, self._name, int(self._default)),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.VIEW)
 
     def delete(self):
         """
@@ -734,6 +735,7 @@ class View(object):
         db.query(self._core, stmnt, (self._id,),commit=True)
         stmnt = "DELETE FROM VIEWS WHERE VIE_ID = ? ;"
         db.query(self._core, stmnt, (self._id,),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.VIEW)
 
 
 class ViewManager(object):
@@ -867,6 +869,7 @@ class Page(object):
                 new_box_id = db.get_seq_next("BOX_GEN")
                 orientation = int(typ == "vbox")
                 db.query(cls._core, stmnt_box, (new_box_id, new_sit_id, name, orientation), commit=True)
+        # only changes when template changes, so no activity
 
 
     def __init__(self,core):
@@ -950,6 +953,7 @@ class Page(object):
 
         stmnt = "DELETE FROM SITES WHERE SIT_ID = ? ;"
         db.query(self._core, stmnt, (self.get_id(),), commit=True)
+        # only changes when template changes, so no activity
         
 class PageManager(object):
     def __init__(self, core):

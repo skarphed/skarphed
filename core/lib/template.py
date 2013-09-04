@@ -28,6 +28,7 @@ import shutil
 from StringIO import StringIO
 from json import JSONDecoder
 
+from common.enums import ActivityType
 from common.errors import TemplateException
 
 
@@ -350,7 +351,7 @@ class Template(object):
 
     def store(self):
         """
-        strors the template information in the database
+        stores the template information in the database
         """
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO TEMPLATE_INFO (TPL_ID, TPL_NAME, TPL_DESC, TPL_AUTHOR) \
@@ -360,6 +361,7 @@ class Template(object):
         stmnt = "INSERT INTO TEMPLATE_BINARIES (TPB_TPL_ID, TPB_BIN_ID) VALUES (?,?) ;"
         for bin_id in self._binaries:
             db.query(self._core, stmnt, (0, bin_id), commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.TEMPLATE)
 
     def uninstall(self):
         """
@@ -383,3 +385,5 @@ class Template(object):
 
         stmnt = "DELETE FROM TEMPLATE_INFO ;"
         db.query(self._core, stmnt, commit=True)
+
+        self._core.get_poke_manager().add_activity(ActivityType.TEMPLATE)

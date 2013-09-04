@@ -22,6 +22,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+from common.enums import ActivityType
 from common.errors import PermissionException
 
 class Role(object):
@@ -78,6 +79,7 @@ class Role(object):
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID) ;"
         db.query(self._core,stmnt,(self._id,self._name),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.ROLE)
 
     def add_permission(self, permission):
         """
@@ -94,6 +96,7 @@ class Role(object):
                         VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) \
                       MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
         db.query(self._core,stmnt,(self._id, permission),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.ROLE)
 
     def remove_permission(self, permission):
         """
@@ -108,6 +111,7 @@ class Role(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ?); "
         db.query(self._core,stmnt,(self._id,permission),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.ROLE)
 
     def get_permissions(self):
         """
@@ -145,6 +149,7 @@ class Role(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM ROLES WHERE ROL_ID = ? ;"
         db.query(self._core,stmnt,(self._id,),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.ROLE)
 
     def assign_to(self,user):
         """
@@ -174,6 +179,7 @@ class Role(object):
                 stmnt = "UPDATE OR INSERT INTO USERROLES (URO_USR_ID, URO_ROL_ID) \
                     VALUES (?,?) MATCHING (URO_USR_ID, URO_ROL_ID) ;";
                 db.query(self._core,stmnt, (user.get_id(),self._id),commit=True)
+                self._core.get_poke_manager().add_activity(ActivityType.USER)
                 return
         raise PermissionException(PermissionException.get_msg(8))
 
@@ -187,6 +193,7 @@ class Role(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM USERROLES WHERE URO_USR_ID = ? AND URO_ROL_ID = ? ;";
         db.query(self._core,stmnt,(user.get_id(),self._id),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.USER)
 
     @classmethod
     def set_core(cls, core):
@@ -371,6 +378,7 @@ class Permission(object):
         new_id = db.get_seq_next('RIG_GEN')
         stmnt = "INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (?,?) ;"
         db.query(cls._core,stmnt,(new_id,module+"."+permission),commit=True)
+        cls._core.get_poke_manager().add_activity(ActivityType.PERMISSION)
         return module+"."+permission
 
     @classmethod
@@ -381,6 +389,7 @@ class Permission(object):
         db = cls._core.get_db()
         stmnt = "DELETE FROM RIGHTS WHERE RIG_NAME = ? ;"
         db.query(cls._core, stmnt, (permission,),commit=True)
+        cls._core.get_poke_manager().add_activity(ActivityType.PERMISSION)
 
     @classmethod
     def get_permissions_for_user(cls, user):

@@ -22,6 +22,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+from common.enums import ActivityType
 from common.errors import ActionException
 
 class ActionManager(object):
@@ -120,6 +121,7 @@ class Action(object):
         db.query(cls._core , stmnt, (action.get_id(), action.get_name(), action.get_action_list_id(),
                                      action.get_view_id(), action.get_space(), action.get_widget_id(),
                                      action.get_url(), action.get_order()),commit=True)
+        cls._core.get_poke_manager().add_activity(ActivityType.MENU)
         return action
 
     @classmethod
@@ -130,6 +132,7 @@ class Action(object):
         db = cls._core.get_db()
         stmnt = "DELETE FROM ACTIONS WHERE ACT_WGT_ID = ? ;"
         db.query(cls._core,stmnt,(widget.get_id(),),commit=True)
+        cls._core.get_poke_manager().add_activity(ActivityType.MENU)
         return
 
     @classmethod
@@ -140,6 +143,7 @@ class Action(object):
         db = cls._core.get_db()
         stmnt = "DELETE FROM ACTIONS WHERE ACT_WGT_ID IN (SELECT WGT_ID FROM WIDGETS WHERE WGT_MOD_ID = ?) ;"
         db.query(cls._core,stmnt,(module.get_id(),),commit=True)
+        cls._core.get_poke_manager().add_activity(ActivityType.MENU)
         return
 
     @classmethod
@@ -221,6 +225,7 @@ class Action(object):
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
             db.commit()
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def decrease_order(self):
         """
@@ -240,6 +245,7 @@ class Action(object):
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
             db.commit()
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def move_to_top_order(self):
         """
@@ -258,6 +264,7 @@ class Action(object):
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ? ;"
             db.query(self._core, stmnt, (row["NEWORDER"], self.get_id()),commit=True)
             db.commit()
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def move_to_bottom_order(self):
         """
@@ -276,6 +283,7 @@ class Action(object):
             stmnt = "UPDATE ACTIONS SET ACT_ORDER = ? WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
             db.commit()
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def set_action_list_id(self, action_list_id):
         """
@@ -342,6 +350,7 @@ class Action(object):
             stmnt = "UPDATE ACTIONS SET ACT_URL = ?, ACT_VIE_ID = NULL, \
                      ACT_WGT_ID = NULL, ACT_SPA_ID = NULL WHERE ACT_ID = ?;"
             db.query(self._core, stmnt, (self.get_url(),self.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def delete(self):
         """
@@ -350,6 +359,7 @@ class Action(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM ACTIONS WHERE ACT_ID = ? ;"
         db.query(self._core,stmnt, (self.get_id(),),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def set_widget_space_constellation(self, widget_id, space_id, ignore_db=False):
         """
@@ -370,6 +380,7 @@ class Action(object):
             stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_VIE_ID = NULL, \
                      ACT_WGT_ID = ?, ACT_SPA_ID = ? WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt, (self.get_widget_id(), self.get_space(), self.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def set_view_id(self, view_id, ignore_db = False):
         """
@@ -390,6 +401,7 @@ class Action(object):
             stmnt = "UPDATE ACTIONS SET ACT_URL = NULL, ACT_VIE_ID = ?, \
                      ACT_WGT_ID = NULL, ACT_SPA_ID = NULL WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt,(self.get_view_id(),self.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def unset_links(self):
         """
@@ -471,6 +483,7 @@ class ActionList(object):
         action_list.set_id(db.get_seq_next('ATL_GEN'))
         stmnt = "INSERT INTO ACTIONLISTS VALUES (?,?);"
         db.query(cls._core, stmnt, (action_list.get_id(), action_list.get_name()),commit=True)
+        cls._core.get_poke_manager().add_activity(ActivityType.MENU)
         return action_list
 
     @classmethod 
@@ -506,6 +519,7 @@ class ActionList(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM ACTIONLISTS WHERE ATL_ID = ? ;"
         db.query(self._core,stmnt, (self.get_id(),),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def set_name(self, name, ignore_db=False):
         """
@@ -551,6 +565,7 @@ class ActionList(object):
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_ATL_ID = ? WHERE ACT_ID = ? ;"
             db.query(self._core,stmnt, (self.get_id(),action.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def has_action(self,action):
         """
@@ -575,6 +590,7 @@ class ActionList(object):
         db = self._core.get_db()
         stmnt = "UPDATE ACTIONS SET ACT_ATL_ID = NULL WHERE ACT_ID = ? ;"
         db.query(self._core,stmnt, (action.get_id(),),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def load_actions(self):
         """
@@ -671,6 +687,7 @@ class MenuItem(object):
         action_manager = cls._core.get_action_manager()
         action_list = action_manager.create_action_list()
         menu_item.assign_action_list(action_list)
+        cls._core.get_poke_manager().add_activity(ActivityType.MENU)
         return menu_item
 
     @classmethod
@@ -720,6 +737,7 @@ class MenuItem(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM MENUITEMS WHERE MNI_ID = ? ;"
         db.query(self._core,stmnt, (self.get_id(),),commit=True)
+    self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def set_order(self, order):
         """
@@ -756,6 +774,7 @@ class MenuItem(object):
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
                 db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
+                self._core.get_poke_manager().add_activity(ActivityType.MENU)
         elif self.get_parent_menu_item_id() is not None:
             stmnt = "SELECT MIN(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? AND MNI_ORDER > ? ;"
             cur = db.query(self._core,stmnt, (self.get_parent_menu_item_id(), self.get_order()))
@@ -769,6 +788,7 @@ class MenuItem(object):
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
                 db.query(self._core, stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
+                self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def decrease_order(self):
         """
@@ -788,6 +808,7 @@ class MenuItem(object):
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
                 db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
+                self._core.get_poke_manager().add_activity(ActivityType.MENU)
         elif self.get_parent_menu_item_id() is not None:
             stmnt = "SELECT MAX(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? AND MNI_ORDER < ? ;"
             cur = db.query(self._core,stmnt, (self.get_parent_menu_item_id(), self.get_order()))
@@ -801,6 +822,7 @@ class MenuItem(object):
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
                 db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
+                self._core.get_poke_manager().add_activity(ActivityType.MENU)
     
     def move_to_top_order(self):
         """
@@ -820,6 +842,7 @@ class MenuItem(object):
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
                 db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
+                self._core.get_poke_manager().add_activity(ActivityType.MENU)
         elif self.get_parent_menu_item_id() is not None:
             stmnt = "SELECT MAX(MNI_ORDER) AS NEWORDER FROM MENUITEMS WHERE MNI_MNI_ID = ? ;"
             cur = db.query(self._core,stmnt, (self.get_parent_menu_item_id(),))
@@ -833,6 +856,7 @@ class MenuItem(object):
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
                 db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
+                self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def move_to_bottom_order(self):
         """
@@ -852,6 +876,7 @@ class MenuItem(object):
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
                 db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
+                self._core.get_poke_manager().add_activity(ActivityType.MENU)
         elif self.get_parent_menu_item_id() is not None:
             stmnt = "SELECT MIN(MNI_ORDER) AS NEWORDER, MNI_ID FROM MENUITEMS WHERE MNI_MNI_ID = ? ;"
             cur = db.query(self._core,stmnt, (self.get_parent_menu_item_id(),))
@@ -865,6 +890,7 @@ class MenuItem(object):
                 stmnt = "UPDATE MENUITEMS SET MNI_ORDER = ? WHERE MNI_ID = ? ;"
                 db.query(self._core,stmnt, (row["NEWORDER"], self.get_id()),commit=True)
                 db.commit()
+                self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def set_action_list_id(self,action_list_id):
         """
@@ -920,6 +946,7 @@ class MenuItem(object):
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_MNU_ID = ?, MNI_MNI_ID = NULL WHERE MNI_ID = ? ;"
             db.query(self._core,stmnt, (self._menu_id, self.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def set_parent_menu_item_id(self, parent_menu_item_id, ignore_db=False):
         """
@@ -933,6 +960,7 @@ class MenuItem(object):
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_MNI_ID = ?, MNI_MNU_ID = NULL WHERE MNI_ID = ? ;"
             db.query(self._core,stmnt, (self._parent_menu_item_id, self.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def get_parent_menu_item(self):
         """
@@ -959,6 +987,7 @@ class MenuItem(object):
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_NAME = ? WHERE MNI_ID = ? ;"
             db.query(self._core,stmnt, (self._name, self.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def get_name(self):
         """
@@ -988,6 +1017,7 @@ class MenuItem(object):
         db = self._core.get_db()
         stmnt = "UPDATE MENUITEMS SET MNI_ATL_ID = ? WHERE MNI_ID = ? ;"
         db.query(self._core,stmnt, (action_list_id, self.get_id()),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def add_menu_item(self, menu_item):
         """
@@ -998,6 +1028,7 @@ class MenuItem(object):
         db = self._core.get_db()
         stmnt = "UPDATE MENUITEMS SET MNI_MNI_ID = ? WHERE MNI_ID = ? ;"
         db.query(self._core,stmnt, (self.get_id(), menu_item_id),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def remove_menu_item(self, menu_item):
         """
@@ -1008,6 +1039,7 @@ class MenuItem(object):
         db = self._core.get_db()
         stmnt = "UPDATE MENUITEMS SET MNI_MNI_ID = NULL WHERE MNI_ID = ? ;"
         db.query(self._core,stmnt, (self.get_id(), menu_item_id),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def get_menu_items(self):
         """
@@ -1047,6 +1079,7 @@ class Menu(object):
         menu.set_name(name)
         stmnt = "INSERT INTO MENUS (MNU_ID,MNU_NAME, MNU_SIT_ID) VALUES (?,?, ?) ;"
         db.query(cls._core,stmnt, (menu.get_id(), menu.get_name(), page.get_id()),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
         return menu 
 
     @classmethod
@@ -1122,6 +1155,7 @@ class Menu(object):
             db = self._core.get_db()
             stmnt = "UPDATE MENUS SET MNU_NAME = ? WHERE MNU_ID = ? ;"
             db.query(self._core,stmnt, (self._name, self.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def get_name(self):
         """
@@ -1152,6 +1186,7 @@ class Menu(object):
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_MNU_ID = ? WHERE MNI_ID = ? ;"
             db.query(self._core,stmnt, (self.get_id(),menu_item.get_id()),commit=True)
+            self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def load_menu_items(self):
         """
@@ -1197,6 +1232,7 @@ class Menu(object):
         db = self._core.get_db()
         stmnt = "UPDATE MENUITEMS SET MNI_MNU_ID = NULL WHERE MNI_ID = ? ;"
         db.query(self._core,stmnt, (self.get_id(), menu_item_id),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
     def delete(self):
         """
@@ -1206,6 +1242,7 @@ class Menu(object):
         stmnt = "DELETE FROM MENUS WHERE MNU_ID = ? ;"
         db.query(self._core,stmnt, (self.get_id(),),commit=True)
         db.commit()
+        self._core.get_poke_manager().add_activity(ActivityType.MENU)
 
 
 
