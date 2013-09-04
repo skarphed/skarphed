@@ -160,6 +160,15 @@ class PermissionException(SkarphedException):
         14:"""Get Role: There is no role with this ID: """
     }
 
+class PokeException(SkarphedException):
+    """
+    Exceptions that concern the Poke-system
+    """
+    PREFIX="POKE"
+    ERRORS={
+        0:"""There is no such ActivityType: """
+    }
+
 class ProfileException(SkarphedException):
     """
     Exceptions that may occur related to userprofiles in GUI

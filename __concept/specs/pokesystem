@@ -1,0 +1,17 @@
+Poke system
+===========
+
+Definition:
+
+The poke system is a polling system that keeps skarphed clients up to 
+date and informed about changes that happen on the server.
+
+Pokes are messages that are sent from skarphed-admin to skarphed-core
+and get an answer that contains in which groups of datasets the admin must
+refresh it's data.
+
+The pokes happen periodically, but the period is increasing if previous pokes
+resulted in more activity, on the other hand decreasing when there is no activity
+on the skarphed-core. There is a maxvalue for the highest pokerate and a minvalue
+for the slowest pokerate.
+

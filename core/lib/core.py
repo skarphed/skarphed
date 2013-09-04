@@ -39,6 +39,7 @@ from view import ViewManager, PageManager, ViewException
 from rpc import Rpc
 from template import TemplateManager
 from pki import PkiManager
+from poke import PokeManager
 
 from maintenance import MAINTENANCE_HTML
 
@@ -69,6 +70,7 @@ class Core(object):
         self._page_manager = None
         self._template_manager = None
         self._pki_manager = None
+        self._poke_manager = None
         
         self.response_body = []
         self.response_header = []
@@ -151,6 +153,11 @@ class Core(object):
         if self._pki_manager is None:
             self._pki_manager = PkiManager(self)
         return self._pki_manager
+
+    def get_poke_manager(self):
+        if self._poke_manager is None:
+            self._poke_manager = PokeManager(self)
+        return self._poke_manager
 
     def get_name(self):
         return "de.masterprogs.skarphed.core"

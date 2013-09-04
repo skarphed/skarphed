@@ -915,3 +915,6 @@ class Rpc(object):
         widget = module_manager.get_widget(widget_id)
         widget.deactivate_viewgeneration()
         return
+
+    def poke(self, params):
+        return self._core.get_poke_manager().poke()
