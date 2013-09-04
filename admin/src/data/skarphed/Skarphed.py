@@ -26,6 +26,7 @@
 from data.Generic import ObjectStore, GenericSkarphedObject
 from data.Instance import Instance, InstanceType
 
+
 from Users import Users
 from Modules import Modules
 from Roles import Roles
@@ -34,12 +35,17 @@ from Template import Template
 from Operation import OperationManager, OperationDaemon
 from View import Views
 
-from threading import Thread
+import gobject
+from threading import Thread, Tracker
 import base64
 import random
 import os
+from time import sleep
 
 from common.errors import RepositoryException
+from common.enums import ActivityType
+
+#from glue.threads import KillableThread
 
 class AbstractInstaller(GenericSkarphedObject):
     class InstallThread(Thread):
@@ -112,6 +118,79 @@ class AbstractDestroyer(GenericSkarphedObject):
 
     def takedown(self):
         self.destroyThread.start()
+
+class PokeThread(Thread):
+    """
+    This thread is repsonsible for poking the skarphed-core
+    to get information about whether the skarphed-core has
+    new information to display. For example when another
+    user that operates on that server made some changes
+    """
+    POKEYNESS_MAX = 10
+    POKEYNESS_MIN = 0.1
+    def __init__(self, skarphed):
+        Thread.__init__(self)
+        self.pokeyness = 1
+        self.last_amount = 0
+        self.skarphed = skarphed
+        self.lock = False
+    
+    def run(self):
+        def poke_callback(data):
+            amount = data["amount"]
+            activity_types = data["activity_types"]
+            delta = self.last_amount-amount
+            self.pokeyness -= 0.2
+            if delta > 2:
+                self.pokeyness += 2
+
+            to_execute = []
+
+            if ActivityType.USER in activity_types:
+                to_execute.append(self.skarphed.getUsers().refresh)
+                
+            if ActivityType.MODULE in activity_types:
+                to_execute.append(self.skarphed.getModules().refresh)
+
+            if ActivityType.WIDGET in activity_types:
+                for module in self.skarphed.getModules().getAllModules():
+                    to_execute.append(module.loadWidgets)
+
+            if ActivityType.ROLE in activity_types:
+                to_execute.append(self.skarphed.getRoles().refresh)
+
+            if ActivityType.PERMISSION in activity_types:
+                if self.skarphed.getRoles().refresh not in to_execute:
+                    to_execute.append(self.skarphed.getRoles().refresh)
+
+            if ActivityType.MENU in activity_types:
+                for site in self.skarphed.getSites().getSites():
+                    to_execute.append(site.loadMenus)
+
+            if ActivityType.VIEW in activity_types:
+                views = self.skarphed.getViews().getViews()
+                for view in views:
+                    if view.isFullyLoaded():
+                        to_execute.append(view.loadFull)
+                to_execute.append(views.refresh)
+
+            if ActivityType.TEMPLATE in activity_types:
+                to_execute.append(self.skarphed.getTemplate().load)
+
+            for method in to_execute:
+                gobject.idle_add(method)
+
+            self.lock = False
+
+        while True:
+            sleep(1/self.pokeyness*3)
+            app = self.skarphed.getApplication()
+            app.doRPCCall(self.skarphed, poke_callback, "poke")
+            self.lock = True
+            while self.lock:
+                sleep(0.2)
+
+
 
 
 class Skarphed(Instance):
@@ -283,11 +362,10 @@ class Skarphed(Instance):
             self.addChild(self.template)
         if True: #'skarphed.operation.modify' in self.serverRights
             self.operationManager = OperationManager(self)
-        # if True: # 'skarphed.compositing' in self.serverRights
-        #     self.compositing = Compositing(self)
-        #     self.addChild(self.compositing)
         
         #TODO: restliche implementieren
+        self.pokethread = PokeThread(self)
+        self.pokethread.start()
     
     def authenticateCallback(self, result):
         if result == False:
@@ -409,6 +487,9 @@ class Skarphed(Instance):
 
     def getViews(self):
         return self.views
+
+    def getUsers(self):
+        return self.users
     
     def getServer(self):
         pass
