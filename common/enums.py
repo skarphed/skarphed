@@ -59,6 +59,7 @@ class ActivityType(Enum):
     WIDGET = 2
     ROLE = 3
     PERMISSION = 4
-    MENU = 5
+    MENU = 5 
     VIEW = 6
     TEMPLATE = 7
+    REPOSITORY = 8

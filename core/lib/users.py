@@ -27,6 +27,7 @@ from random import randrange
 
 ROOT_USER_ID = 1
 
+from common.enums import ActivityType
 from common.errors import UserException
 
 class User(object):
@@ -153,6 +154,7 @@ class User(object):
         res = db.query(self._core, stmnt_uri, (self._id,),commit=True)
         res = db.query(self._core, stmnt_uro, (self._id,),commit=True)
         res = db.query(self._core, stmnt_usr, (self._id,),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.USER)
 
     def store(self):
         """
@@ -171,6 +173,7 @@ class User(object):
                         USR_SALT = ? \
                       WHERE USR_ID = ?"
             db.query(self._core,stmnt,(self._name, self._password, self._salt, self._id),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.USER)
 
     def has_role(self, role):
         """
@@ -210,6 +213,7 @@ class User(object):
             raise UserException(UserException.get_msg(6))
         stmnt = "UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;"
         db.query(self._core,stmnt,(self._id,permission_id),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.USER)
 
     def revoke_permission(self,permission, ignore_check=False):
         """
@@ -232,6 +236,7 @@ class User(object):
             raise UserException(UserException.get_msg(8))            
         stmnt = "DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? ;"
         db.query(self._core,stmnt,(self._id,permission_id),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.USER)
 
     def get_grantable_permissions(self):
         """

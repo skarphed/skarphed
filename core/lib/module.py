@@ -38,8 +38,8 @@ from view import ViewException
 
 from helper import sluggify
 
+from common.enums import ActivityType, JSMandatory
 from common.errors import ModuleCoreException
-from common.enums import JSMandatory
 
 class AbstractModule(object):
     def __init__(self,core):
@@ -294,6 +294,7 @@ class Widget(object):
         stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_VIE_BASEVIEW, WGT_SPA_BASESPACE) \
                     VALUES (?,?,?,?,?,?) MATCHING (WGT_ID) ;"
         db.query(self._core,stmnt,(self._id,self._name, self._site_id,self._module.get_id(), self._baseview_id, self._baseview_space_id ),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.WIDGET)
 
     def get_module(self):
         """
@@ -319,6 +320,7 @@ class Widget(object):
 
         stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;"
         db.query(self._core,stmnt,(self._id,),commit=True)
+        self._core.get_poke_manager().add_activity(ActivityType.WIDGET)
 
     def activate_viewgeneration(self, baseview, space_id):
         """
@@ -540,9 +542,10 @@ class ModuleManager(object):
             permissionmanager.remove_permissions_for_module(module)
             os.remove(datapath)
             raise e
-
         
         os.remove(datapath)
+        self._core.get_poke_manager().add_activity(ActivityType.MODULE)
+
 
     def update_module(self,module):
         """
@@ -592,6 +595,8 @@ class ModuleManager(object):
             permissionmanager = self._core.get_permission_manager()
             permissionmanager.update_permissions_for_module(updated_module)
 
+        self._core.get_poke_manager().add_activity(ActivityType.MODULE)
+
 
     def uninstall_module(self,module, hard=False):
         """
@@ -624,6 +629,7 @@ class ModuleManager(object):
             shutil.rmtree(libpath+"/"+module.get_name()+"/v"+version[0]+"_"+version[1]+"_"+version[2])
 
         self._unregister_module(module)
+        self._core.get_poke_manager().add_activity(ActivityType.MODULE)
 
     def _register_module(self,manifest):
         """
@@ -951,6 +957,7 @@ class Repository(object):
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (1,?,?,?,?,?) MATCHING (REP_ID) ;"
         db.query(self._core,stmnt,(self._name, self._ip, self._port, self._lastupdate, self.get_public_key()),commit=True)
+        self._core.get_poke_manager.add_activity(ActivityType.REPOSITORY)
 
 
     def delete(self):
@@ -963,3 +970,4 @@ class Repository(object):
 
         stmnt = "DELETE FROM REPOSITORIES WHERE REP_ID = ? ;"
         db.query(self._core,stmnt,(self._id,),commit=True)
+        self._core.get_poke_manager.add_activity(ActivityType.REPOSITORY)
