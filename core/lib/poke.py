@@ -128,7 +128,7 @@ class Activity(object):
         db = self._core.get_db()
         if self._id is None:
             self.set_id(db.get_seq_next("ATV_GEN"))
-        stmnt = "UPDATE OR INSERT INTO ACTIVITIES (ATV_ID, ATV_TYPE, ATV_SES_ID) VALUES (?,?,?) MATCHING (ATV_ID) ;"
+        stmnt = "UPDATE OR INSERT INTO ACTIVITIES (ATV_ID, ATV_TYPE, ATV_SES_ID) VALUES (?,?.?) ;"
         db.query(self._core, stmnt, (self.get_id(), self.get_activity_type(), self.get_session_id()), commit=True)
 
     def delete(self):
