@@ -114,29 +114,30 @@ class Database(object):
         execute a query on the database. be sure to deliver the module.
         it is necessary to determine tablenames
         """
-        mutex = self._core.get_configuration().get_entry("core.webpath")+"/db.mutex"
-
-        if commit: #only if writing stuff
-            while os.path.exists(mutex):
-                time.sleep(0.000001)
-
-            os.mkdir(mutex)
-        if self._connection is None:
-            raise DatabaseException(DatabaseException.get_msg(2))
-        if module.get_name() != "de.masterprogs.skarphed.core":
-            statement = self._replace_module_tables(module,statement)
-        cur = self._connection.cursor()    
-        prepared, cur = self._queryCache(cur, statement)
         try:
-            cur.execute(prepared,args)
-        except fdb.fbcore.DatabaseError,e:
+            mutex = self._core.get_configuration().get_entry("core.webpath")+"/db.mutex"
+
+            if commit: #only if writing stuff
+                while os.path.exists(mutex):
+                    time.sleep(0.000001)
+
+                os.mkdir(mutex)
+
+            if self._connection is None:
+                raise DatabaseException(DatabaseException.get_msg(2))
+            if module.get_name() != "de.masterprogs.skarphed.core":
+                statement = self._replace_module_tables(module,statement)
+            cur = self._connection.cursor()    
+            try:
+                prepared, cur = self._queryCache(cur, statement)
+                cur.execute(prepared,args)
+            except fdb.fbcore.DatabaseError,e:
+                raise DatabaseException(str(e))
             if commit:
-                os.rmdir(mutex)
-            raise DatabaseException(str(e))
-        if commit:
-            self.commit()
+                self.commit()
+            return cur
+        finally:
             os.rmdir(mutex)
-        return cur
 
     def _replace_module_tables(self, module, query):
         """
