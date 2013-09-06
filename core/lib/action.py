@@ -1079,7 +1079,7 @@ class Menu(object):
         menu.set_name(name)
         stmnt = "INSERT INTO MENUS (MNU_ID,MNU_NAME, MNU_SIT_ID) VALUES (?,?, ?) ;"
         db.query(cls._core,stmnt, (menu.get_id(), menu.get_name(), page.get_id()),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.MENU)
+        cls._core.get_poke_manager().add_activity(ActivityType.MENU)
         return menu 
 
     @classmethod
