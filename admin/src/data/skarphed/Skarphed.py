@@ -127,24 +127,30 @@ class PokeThread(Thread):
     user that operates on that server made some changes
     """
     POKEYNESS_MAX = 10
-    POKEYNESS_MIN = 0.1
+    POKEYNESS_MIN = 1
     def __init__(self, skarphed):
         Thread.__init__(self)
-        self.pokeyness = 1
+        self.pokeyness = 1.0
         self.last_amount = 0
         self.skarphed = skarphed
         self.lock = False
+        if PokeThread.POKEYNESS_MAX < PokeThread.POKEYNESS_MIN:
+            raise Exception("Pokeyness MAX mustbe greater or equal MIN")
+
     
     def run(self):
         def poke_callback(data):
-            print(str(data))
-            print(type(data))
             amount = data["amount"]
             activity_types = data["activity_types"]
             delta = self.last_amount-amount
             self.pokeyness -= 0.2
+            if self.pokeyness < PokeThread.POKEYNESS_MIN:
+                self.pokeyness = PokeThread.POKEYNESS_MIN
             if delta > 2:
                 self.pokeyness += 2
+                if self.pokeyness > PokeThread.POKEYNESS_MAX:
+                    self.pokeyness = PokeThread.POKEYNESS_MAX
+
 
             to_execute = []
 
