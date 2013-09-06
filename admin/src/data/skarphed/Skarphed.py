@@ -137,6 +137,8 @@ class PokeThread(Thread):
     
     def run(self):
         def poke_callback(data):
+            print(str(data))
+            print(type(data))
             amount = data["amount"]
             activity_types = data["activity_types"]
             delta = self.last_amount-amount

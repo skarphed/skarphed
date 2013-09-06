@@ -79,8 +79,8 @@ class PokeManager(object):
         session = session_manager.get_current_session()
         db = cls._core.get_db()
         stmnt = "UPDATE OR INSERT INTO SESSIONPOKE (SPO_SES_ID, SPO_ATV_ID) VALUES (?, ?) MATCHING (SPO_SES_ID) ;"
-        db.query(cls._core, stmnt, (session.get_id(),), commit=True)
-        return activity_report.toJSON()
+        db.query(cls._core, stmnt, (session.get_id(), activity_report._latest_id+1), commit=True)
+        return activity_report.to_dict()
 
     @classmethod
     def cleanup(cls):
@@ -150,15 +150,15 @@ class ActivityReport(object):
         self._latest_id = 0
         self._amount = 0
 
-    def toJSON(self):
+    def to_dict(self):
         """
-        Returns a JSON-report in the form of:
+        Returns a dictionary report in the form of:
         {"amount":<int>,"activity_types":[(<int>),(<int>),(<int>),...]}
         """
         ret = {}
         ret["amount"] = self._amount
         ret["activity_types"] = [a.get_activity_type() for a in self._activities]
-        return json.dumps(ret)
+        return ret
 
     @classmethod
     def generate(cls):
@@ -172,8 +172,8 @@ class ActivityReport(object):
 
         db = cls._core.get_db()
         stmnt = "SELECT ATV_TYPE, MAX(ATV_ID) AS LATEST_ID, COUNT(ATV_ID) AS AMOUNT FROM ACTIVITIES WHERE ATV_SES_ID != ? AND ATV_ID >= \
-                COALESCE((SELECT SPO_ATV_ID FROM SESSIONPOKE WHERE SPO_SES_ID = ?),0) ORDER BY ATV_ID ASC GROUP BY ATV_TYPE;"
-        cur = db.query(cls._core, stmnt, (session.get_id(),))
+                COALESCE((SELECT SPO_ATV_ID FROM SESSIONPOKE WHERE SPO_SES_ID = ?),0) GROUP BY ATV_TYPE;"
+        cur = db.query(cls._core, stmnt, (session.get_id(), session.get_id()))
 
         activity_report = ActivityReport()
 
@@ -185,7 +185,9 @@ class ActivityReport(object):
 
             activity_report._activities.append(activity)
 
-            if ActivityReport._latest_id < row["LATEST_ID"]:
-                ActivityReport._latest_id = row["LATEST_ID"]
+            if activity_report._latest_id < row["LATEST_ID"]:
+                activity_report._latest_id = row["LATEST_ID"]
 
-            ActivityReport._amount += row["AMOUNT"]
+            activity_report._amount += row["AMOUNT"]
+        
+        return activity_report
