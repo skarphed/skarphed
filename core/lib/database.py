@@ -137,7 +137,8 @@ class Database(object):
                 self.commit()
             return cur
         finally:
-            os.rmdir(mutex)
+            if commit:
+                os.rmdir(mutex)
 
     def _replace_module_tables(self, module, query):
         """
