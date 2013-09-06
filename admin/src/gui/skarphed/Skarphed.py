@@ -113,10 +113,8 @@ class SkarphedPage(ObjectPageAbstract):
         if not skarphed:
             return
 
-        try:
-            self.repoEntry.set_text(skarphed.getRepoUrl())
-        except AttributeError:
-            pass
+
+        self.repoEntry.set_text(skarphed.getRepoURL())
         public_key = skarphed.getPublicKey()
         if public_key is not None:
             self.pki_textbuffer.set_text(public_key)

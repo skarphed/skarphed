@@ -36,7 +36,7 @@ from Operation import OperationManager, OperationDaemon
 from View import Views
 
 import gobject
-from threading import Thread, Tracker
+from threading import Thread
 import base64
 import random
 import os
@@ -159,9 +159,13 @@ class PokeThread(Thread):
             if ActivityType.ROLE in activity_types:
                 to_execute.append(self.skarphed.getRoles().refresh)
 
+            if ActivityType.REPOSITORY in activity_types:
+                to_execute.append(self.skarphed.getRepository)
+
             if ActivityType.PERMISSION in activity_types:
                 if self.skarphed.getRoles().refresh not in to_execute:
                     to_execute.append(self.skarphed.getRoles().refresh)
+
 
             if ActivityType.MENU in activity_types:
                 for site in self.skarphed.getSites().getSites():
@@ -395,9 +399,18 @@ class Skarphed(Instance):
         else:
             return "Unknown SkarphedServer"
     
+    def getRepoURL(self):
+        return self.repo_url    
+
+    def getRepositoryCallback(self, data):
+        self.repo_url = data["ip"]+":"+str(data["port"])
+        self.updated()
+
+    def getRepository(self):
+        self.getApplication().doRPCCall(self, self.getRepositoryCallback, "getRepository")
+        
     def setRepositoryCallback(self,res):
         self.modules.refresh()
-        
     def setRepository(self,repostring):
         hostname = ""
         port = 80

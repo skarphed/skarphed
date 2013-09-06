@@ -49,7 +49,7 @@ class Module(GenericSkarphedObject):
 
         if not os.path.exists(MODULEGUI):
             os.mkdir(MODULEGUI)
-            open(os.join(MODULEGUI,"__init__.py"),"w").close()
+            open(os.path.join(MODULEGUI,"__init__.py"),"w").close()
 
     def getName(self):
         if self.data.has_key('hrname'):
