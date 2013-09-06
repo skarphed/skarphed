@@ -41,6 +41,11 @@ class Users(GenericSkarphedObject):
                 self.addChild(User(self,user))
             else:
                 self.getUserById(user['id']).refresh(user)
+        data_users = [u['id'] for u in data]
+        for user in self.children:
+            if user.getId() not in data_users:
+                self.removeChild(user)
+        self.updated()
                 
     def getUserById(self,userId):
         for u in self.children:
