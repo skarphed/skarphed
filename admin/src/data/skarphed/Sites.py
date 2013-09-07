@@ -56,7 +56,7 @@ class Sites(GenericSkarphedObject):
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.refreshCallback, "getSites")
+        self.getSkarphed().doRPCCall(self.refreshCallback, "getSites")
     
     def getSites(self):
         return self.children

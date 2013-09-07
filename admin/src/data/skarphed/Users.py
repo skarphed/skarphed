@@ -54,7 +54,7 @@ class Users(GenericSkarphedObject):
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.refreshCallback, "getUsers")
+        self.getSkarphed().doRPCCall(self.refreshCallback, "getUsers")
     
     def getName(self):
         return "Users"
@@ -63,7 +63,7 @@ class Users(GenericSkarphedObject):
         self.refresh()
     
     def createUser(self,name):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.createUserCallback, "createUser", [name,"default"])
+        self.getSkarphed().doRPCCall(self.createUserCallback, "createUser", [name,"default"])
     
     def getPar(self):
         return self.par

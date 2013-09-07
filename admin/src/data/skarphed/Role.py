@@ -54,25 +54,25 @@ class Role(GenericSkarphedObject):
         self.updated()
     
     def fetchPermissions(self):
-        self.getApplication().doRPCCall(self.getRoles().getSkarphed(),self.fetchPermissionsCallback, "getRightsForRolePage", [self.getId()])
+        self.getRoles().getSkarphed().doRPCCall(self.fetchPermissionsCallback, "getRightsForRolePage", [self.getId()])
     
     def assignPermissionCallback(self,data):
         self.fetchPermissions()
     
     def assignPermission(self,perm):
-        self.getApplication().doRPCCall(self.getRoles().getSkarphed(),self.assignPermissionCallback, "grantRightToRole", [self.getId(),perm])
+        self.getRoles().getSkarphed().doRPCCall(self.assignPermissionCallback, "grantRightToRole", [self.getId(),perm])
     
     def removePermissionCallback(self,data):
         self.fetchPermissions()
     
     def removePermission(self,perm):
-        self.getApplication().doRPCCall(self.getRoles().getSkarphed(),self.removePermissionCallback, "revokeRightFromRole", [self.getId(),perm])
+        self.getRoles().getSkarphed().doRPCCall(self.removePermissionCallback, "revokeRightFromRole", [self.getId(),perm])
     
     def deleteCallback(self,json):
         self.destroy()
     
     def delete(self):
-        self.getApplication().doRPCCall(self.getRoles().getSkarphed(),self.deleteCallback, "deleteRole", [self.getId()])
+        self.getRoles().getSkarphed().doRPCCall(self.deleteCallback, "deleteRole", [self.getId()])
     
     def refresh(self,data):
         self.data = data

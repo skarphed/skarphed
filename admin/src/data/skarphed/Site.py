@@ -61,7 +61,7 @@ class Site(GenericSkarphedObject):
         self.updated()
     
     def update(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.refresh,"getSite",[self.getId()])
+        self.getSkarphed().doRPCCall(self.refresh,"getSite",[self.getId()])
     
     def getWidgetInSpace(self, spaceId):
         if self.data['spaces'][str(spaceId)] == 0:
@@ -82,18 +82,6 @@ class Site(GenericSkarphedObject):
     def getBox(self, box_id):
         return self.data['boxes'][str(box_id)]
     
-    # def removeWidgetFromSpaceCallback(self, json):
-    #     self.update()
-    
-    # def removeWidgetFromSpace(self, spaceId):
-    #     self.getApplication().doRPCCall(self.getSkarphed(),self.removeWidgetFromSpaceCallback, "removeWidgetFromSpace", [self.getId(), spaceId])
-    
-    # def addWidgetToSpaceCallback(self,json):
-    #     self.getSites().refresh()
-    
-    # def addWidgetToSpace(self,spaceId, widget):
-    #     self.getApplication().doRPCCall(self.getSkarphed(),self.addWidgetToSpaceCallback , "assignWidgetToSpace", [self.getId(), spaceId, widget.getId()])
-        
     def getUsedWidgetIds(self):
         ret = []
         if not self.data.has_key('spaces'):
@@ -143,15 +131,13 @@ class Site(GenericSkarphedObject):
         self.updated()
         
     def loadMenus(self):
-        self.getApplication().doRPCCall(self.getSites().getSkarphed(),
-                                        self.loadMenusCallback, "getMenusOfSite", [self.getId()])
+        self.getSkarphed().doRPCCall(self.loadMenusCallback, "getMenusOfSite", [self.getId()])
     
     def createMenuCallback(self,json):
         self.loadMenus()
         
     def createMenu(self):
-        self.getApplication().doRPCCall(self.getSites().getSkarphed(),
-                                        self.createMenuCallback, "createMenuForSite", [self.getId()])
+        self.getSkarphed().doRPCCall(self.createMenuCallback, "createMenuForSite", [self.getId()])
     
     def getPar(self):
         return self.par

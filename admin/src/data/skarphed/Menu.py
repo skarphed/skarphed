@@ -70,8 +70,7 @@ class Menu(GenericSkarphedObject):
         self.updated()
     
     def loadMenuItems(self):
-        self.getApplication().doRPCCall(self.getSite().getSites().getSkarphed(),
-                                        self.loadMenuItemsCallback,"getMenuItemsOfMenu",[self.getId()])
+        self.getSite().getSites().getSkarphed().doRPCCall(self.loadMenuItemsCallback,"getMenuItemsOfMenu",[self.getId()])
         
     def getMenuItemsRecursive(self):
         ret = [c.getLocalId() for c in self.children]
@@ -86,31 +85,27 @@ class Menu(GenericSkarphedObject):
         self.destroy()
         
     def delete(self):
-        self.getApplication().doRPCCall(self.getSite().getSites().getSkarphed(),
-                                        self.deleteCallback,"deleteMenu",[self.getId()])
+        self.getSite().getSites().getSkarphed().doRPCCall(self.deleteCallback,"deleteMenu",[self.getId()])
     
     def createMenuItemCallback(self,json):
         self.loadMenuItems()
         
     def createMenuItem(self):
-        self.getApplication().doRPCCall(self.getSite().getSites().getSkarphed(),
-                                        self.createMenuItemCallback,"createMenuItem",[self.getId(),'menu'])
+        self.getSite().getSites().getSkarphed().doRPCCall(self.createMenuItemCallback,"createMenuItem",[self.getId(),'menu'])
     
     def deleteMenuItemCallback(self,json):
         self.loadMenuItems()
     
     def deleteMenuItem(self,menuItem):
         if menuItem in self.children:
-            self.getApplication().doRPCCall(self.getSite().getSites().getSkarphed(),
-                                        self.deleteMenuItemCallback,"deleteMenuItem",[menuItem.getId()])
+            self.getSite().getSites().getSkarphed().doRPCCall(self.deleteMenuItemCallback,"deleteMenuItem",[menuItem.getId()])
     
     
     def renameCallback(self,json):
         self.getSite().loadMenus()
     
     def rename(self,name):
-        self.getApplication().doRPCCall(self.getSite().getSites().getSkarphed(),
-                                        self.renameCallback,"renameMenu",[self.getId(),name])
+        self.getSite().getSites().getSkarphed().doRPCCall(self.renameCallback,"renameMenu",[self.getId(),name])
     
     def getPar(self):
         return self.par
@@ -172,8 +167,8 @@ class MenuItem(GenericSkarphedObject):
         self.getMenu().updated()
         
     def loadMenuItems(self):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.loadMenuItemsCallback,"getMenuItemsOfMenuItem",[self.getId()])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.loadMenuItemsCallback,
+                                                                    "getMenuItemsOfMenuItem",[self.getId()])
     
     def getMenuItemsRecursive(self):
         ret = [c.getLocalId() for c in self.children]
@@ -185,20 +180,16 @@ class MenuItem(GenericSkarphedObject):
         self.getPar().loadMenuItems()
     
     def increaseOrder(self):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.orderCallback,"increaseMenuItemOrder",[self.getId()])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.orderCallback,"increaseMenuItemOrder",[self.getId()])
     
     def decreaseOrder(self):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.orderCallback,"decreaseMenuItemOrder",[self.getId()])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.orderCallback,"decreaseMenuItemOrder",[self.getId()])
     
     def moveToTop(self):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.orderCallback,"moveToTopMenuItemOrder",[self.getId()])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.orderCallback,"moveToTopMenuItemOrder",[self.getId()])
     
     def moveToBottom(self):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.orderCallback,"moveToBottomMenuItemOrder",[self.getId()])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.orderCallback,"moveToBottomMenuItemOrder",[self.getId()])
     
     def getMenuItems(self):
         return self.children
@@ -210,23 +201,20 @@ class MenuItem(GenericSkarphedObject):
         
     
     def delete(self):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.deleteCallback,"deleteMenuItem",[self.getId()])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.deleteCallback,"deleteMenuItem",[self.getId()])
 
     def createMenuItemCallback(self,json):
         self.loadMenuItems()
         
     
     def createMenuItem(self):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.createMenuItemCallback,"createMenuItem",[self.getId(),'menuItem'])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.createMenuItemCallback,"createMenuItem",[self.getId(),'menuItem'])
     
     def renameCallback(self, json):
         self.getPar().loadMenuItems()
 
     def rename(self, name):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.renameCallback,"renameMenuItem",[self.getId(),name])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.renameCallback,"renameMenuItem",[self.getId(),name])
     
     def getActionList(self):
         return self.actionList
@@ -239,16 +227,14 @@ class MenuItem(GenericSkarphedObject):
         self.updated()
     
     def loadActionList(self):
-        self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.loadActionListCallback,"getActionListForMenuItem",[self.getId()])
+        self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.loadActionListCallback,"getActionListForMenuItem",[self.getId()])
     
     def deleteMenuItemCallback(self,json):
         self.loadMenuItems()
     
     def deleteMenuItem(self,menuItem):
         if menuItem in self.children:
-            self.getApplication().doRPCCall(self.getMenu().getSite().getSites().getSkarphed(),
-                                        self.deleteMenuItemCallback,"deleteMenuItem",[menuItem.getId()])
+            self.getMenu().getSite().getSites().getSkarphed().doRPCCall(self.deleteMenuItemCallback,"deleteMenuItem",[menuItem.getId()])
     
     def getPar(self):
         return self.par
@@ -293,19 +279,19 @@ class Action(GenericSkarphedObject):
         self.getPar().loadActions()
     
     def increaseOrder(self):
-        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.orderCallback,"increaseActionOrder",[self.getId()])
     
     def decreaseOrder(self):
-        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.orderCallback,"decreaseActionOrder",[self.getId()])
     
     def moveToTop(self):
-        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.orderCallback,"moveToTopActionOrder",[self.getId()])
     
     def moveToBottom(self):
-        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.orderCallback,"moveToBottomActionOrder",[self.getId()])
     
     
@@ -313,17 +299,17 @@ class Action(GenericSkarphedObject):
         self.getPar().loadActions()
     
     def setUrl(self,url):
-        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.setNewTargetCallback,"setActionUrl",[self.getId(),url])
     
     def setWidgetSpaceConstellation(self, widgetId, space):
         widget = self.getApplication().getLocalObjectById(widgetId)
-        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.setNewTargetCallback,"setActionWidgetSpaceConstellation",[self.getId(),widget.getId(),space])
     
     def setView(self,viewId):
         view = self.getApplication().getLocalObjectById(viewId)
-        self.getApplication().doRPCCall(self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getActionList().getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.setNewTargetCallback,"setActionView",[self.getId(),view.getId()])
     
 
@@ -385,7 +371,7 @@ class ActionList(GenericSkarphedObject):
             
     
     def loadActions(self):
-        self.getApplication().doRPCCall(self.getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.loadActionsCallback,"getActionsOfActionList",[self.getId()])
     
     def getId(self):
@@ -398,7 +384,7 @@ class ActionList(GenericSkarphedObject):
         self.loadActions()
     
     def addAction(self):
-        self.getApplication().doRPCCall(self.getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.addActionCallback,"addActionToActionList",[self.getId()])
     
     def deleteActionCallback(self,json):
@@ -406,7 +392,7 @@ class ActionList(GenericSkarphedObject):
         
     
     def deleteAction(self,action):
-        self.getApplication().doRPCCall(self.getMenuItem().getMenu().getSite().getSites().getSkarphed(),
+        self.getMenuItem().getMenu().getSite().getSites().getSkarphed().doRPCCall(
                                         self.deleteActionCallback,"deleteAction",[action.getId()])
         self.children.remove(action)
         action.destroy()

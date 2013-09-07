@@ -26,7 +26,6 @@
 import gui
 import data.Generic
 import data.Profile
-import net.HTTPRpc
 import glue.threads
 import net.SSH
 import os
@@ -93,10 +92,6 @@ class Application(object):
     
     def setQuitRequest(self,val):
         self.quitrequest = val
-    
-    def doRPCCall(self, server, callback, method, params=[]):
-        call = net.HTTPRpc.SkarphedRPC(server,callback, method, params)
-        call.start()
     
     def raiseRPCException(self, exception):
         raise exception

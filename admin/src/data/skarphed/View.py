@@ -47,7 +47,7 @@ class View(GenericSkarphedObject):
         self.updated()
 
     def loadFull(self):
-        self.getApplication().doRPCCall(self.getViews().getSkarphed(),self.loadFullCallback, "getView", [self.getId()])
+        self.getViews().getSkarphed().doRPCCall(self.loadFullCallback, "getView", [self.getId()])
 
     def isFullyLoaded(self):
         return self.loaded_fully
@@ -101,13 +101,13 @@ class View(GenericSkarphedObject):
         self.loadFull()
 
     def setWidgetParamMapping(self, widget, mapping):
-        self.getApplication().doRPCCall(self.getViews().getSkarphed(),self.changeWidgetCallback, "setWidgetParamMapping", [self.getId(), widget.getId(), mapping])
+        self.getViews().getSkarphed().doRPCCall(self.changeWidgetCallback, "setWidgetParamMapping", [self.getId(), widget.getId(), mapping])
 
     def setSpaceWidgetMapping(self, mapping):
-        self.getApplication().doRPCCall(self.getViews().getSkarphed(),self.changeWidgetCallback, "setSpaceWidgetMapping", [self.getId(), mapping])
+        self.getViews().getSkarphed().doRPCCall(self.changeWidgetCallback, "setSpaceWidgetMapping", [self.getId(), mapping])
 
     def setBoxMapping(self, mapping):
-        self.getApplication().doRPCCall(self.getViews().getSkarphed(),self.changeWidgetCallback, "setBoxMapping", [self.getId(), mapping])
+        self.getViews().getSkarphed().doRPCCall(self.changeWidgetCallback, "setBoxMapping", [self.getId(), mapping])
 
     def getPar(self):
         return self.par
@@ -141,7 +141,7 @@ class Views(GenericSkarphedObject):
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.refreshCallback, "getViews")
+        self.getSkarphed().doRPCCall(self.refreshCallback, "getViews")
     
     def getViews(self):
         return self.children

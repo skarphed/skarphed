@@ -96,7 +96,7 @@ class OperationManager(GenericSkarphedObject):
         return None    
                 
     def refresh(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.refreshCallback, "getOperations")
+        self.getSkarphed().doRPCCall(self.refreshCallback, "getOperations")
     
     def getPar(self):
         return self.par
@@ -136,13 +136,13 @@ class Operation(GenericSkarphedObject):
         self.updated()
     
     def cancel(self):
-        self.getApplication().doRPCCall(self.getOperationManager().getSkarphed(),self.operationCommandCallback, "cancelOperation",[self.getId()])
+        self.getOperationManager().getSkarphed().doRPCCall(self.operationCommandCallback, "cancelOperation",[self.getId()])
     
     def drop(self):
-        self.getApplication().doRPCCall(self.getOperationManager().getSkarphed(),self.operationCommandCallback, "dropOperation",[self.getId()])
+        self.getOperationManager().getSkarphed().doRPCCall(self.operationCommandCallback, "dropOperation",[self.getId()])
     
     def retry(self):
-        self.getApplication().doRPCCall(self.getOperationManager().getSkarphed(),self.operationCommandCallback, "retryOperation",[self.getId()])
+        self.getOperationManager().getSkarphed().doRPCCall(self.operationCommandCallback, "retryOperation",[self.getId()])
     
     def getName(self):
         return "Operation"
@@ -172,19 +172,19 @@ class OperationDaemon(GenericSkarphedObject):
         self.updated()
 
     def refresh(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.refreshCallback, "getOperationDaemonStatus")
+        self.getSkarphed().doRPCCall(self.refreshCallback, "getOperationDaemonStatus")
 
     def opCallback(self, res):
         self.refresh()
 
     def start(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.opCallback, "startOperationDaemon")
+        self.getSkarphed().doRPCCall(self.opCallback, "startOperationDaemon")
 
     def stop(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.opCallback, "stopOperationDaemon")
+        self.getSkarphed().doRPCCall(self.opCallback, "stopOperationDaemon")
 
     def restart(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.opCallback, "restartOperationDaemon")
+        self.getSkarphed().doRPCCall(self.opCallback, "restartOperationDaemon")
 
     def getPar(self):
         return self.par

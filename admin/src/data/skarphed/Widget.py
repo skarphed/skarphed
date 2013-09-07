@@ -67,7 +67,7 @@ class Widget(GenericSkarphedObject):
     def loadCssPropertySet(self):
         nr = self.getId()
         if nr is not None:
-            self.getApplication().doRPCCall(self.getModule().getModules().getSkarphed(),self.loadCssPropertySetCallback, "getCssPropertySet", [None,nr,None])
+            self.getModule().getModules().getSkarphed().doRPCCall(self.loadCssPropertySetCallback, "getCssPropertySet", [None,nr,None])
     
     def getCssPropertySet(self):
         return self.cssPropertySet
@@ -79,19 +79,19 @@ class Widget(GenericSkarphedObject):
         self.loadCssPropertySet()
     
     def saveCssPropertySet(self):
-        self.getApplication().doRPCCall(self.getModule().getModules().getSkarphed(),self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.getModule().getModules().getSkarphed().doRPCCall(self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
 
     def activateGeneratingViewsCallback(self, data):
         self.getModule().loadWidgets()
 
     def activateGeneratingViews(self, view, spaceId):
-        self.getApplication().doRPCCall(self.getModule().getModules().getSkarphed(),self.activateGeneratingViewsCallback, "widgetActivateViewGeneration", [self.getId(), view.getId(), spaceId])
+        self.getModule().getModules().getSkarphed().doRPCCall(self.activateGeneratingViewsCallback, "widgetActivateViewGeneration", [self.getId(), view.getId(), spaceId])
 
     def deactivateGeneratingViewsCallback(self, data):
         self.getModule().loadWidgets()
 
     def deactivateGeneratingViews(self):
-        self.getApplication().doRPCCall(self.getModule().getModules().getSkarphed(),self.deactivateGeneratingViewsCallback, "widgetDeactivateViewGeneration", [self.getId()])
+        self.getModule().getModules().getSkarphed().doRPCCall(self.deactivateGeneratingViewsCallback, "widgetDeactivateViewGeneration", [self.getId()])
 
     def isGeneratingViews(self):
         return self.data['gviews']
@@ -107,7 +107,7 @@ class Widget(GenericSkarphedObject):
         self.destroy()
     
     def delete(self):
-        self.getApplication().doRPCCall(self.getModule().getModules().getSkarphed(),self.deleteCallback, "deleteWidget", [self.getId()])
+        self.getModule().getModules().getSkarphed().doRPCCall(self.deleteCallback, "deleteWidget", [self.getId()])
     
     def getPar(self):
         return self.par

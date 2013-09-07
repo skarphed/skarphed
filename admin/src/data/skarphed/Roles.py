@@ -50,7 +50,7 @@ class Roles(GenericSkarphedObject):
         return None
     
     def refresh(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.refreshCallback, "getRoles")
+        self.getSkarphed().doRPCCall(self.refreshCallback, "getRoles")
     
     def getName(self):
         return "Roles"
@@ -59,7 +59,7 @@ class Roles(GenericSkarphedObject):
         self.refresh()
     
     def createRole(self,name):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.createRoleCallback, "createRole", [{'name':name}])
+        self.getSkarphed().doRPCCall(self.createRoleCallback, "createRole", [{'name':name}])
     
     def getPar(self):
         return self.par

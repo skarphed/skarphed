@@ -25,7 +25,7 @@
 
 from data.Generic import ObjectStore, GenericSkarphedObject
 from data.Instance import Instance, InstanceType
-
+import net.HTTPRpc
 
 from Users import Users
 from Modules import Modules
@@ -186,6 +186,9 @@ class PokeThread(Thread):
                         to_execute.append(view.loadFull)
                 to_execute.append(views.refresh)
 
+            if ActivityType.REPOSITORY in activity_types:
+                pass
+
             if ActivityType.TEMPLATE in activity_types:
                 to_execute.append(self.skarphed.getTemplate().load)
 
@@ -196,8 +199,7 @@ class PokeThread(Thread):
 
         while True:
             sleep(1/self.pokeyness*3)
-            app = self.skarphed.getApplication()
-            app.doRPCCall(self.skarphed, poke_callback, "poke")
+            self.skarphed.doRPCCall(poke_callback, "poke")
             self.lock = True
             while self.lock:
                 sleep(0.2)
@@ -258,7 +260,7 @@ class Skarphed(Instance):
         destroyer.takedown()
 
     def invokeDestruction(self):
-        self.getApplication().doRPCCall(self,self.invokeDestructionCallback, "getInstanceId")
+        self.doRPCCall(self.invokeDestructionCallback, "getInstanceId")
 
     def setUrl(self,url):
         self.url= url
@@ -307,7 +309,7 @@ class Skarphed(Instance):
                 pass #TODO Implement Error behaviour. this means, the publickey changed since last login
 
     def loadPublicKey(self):
-        self.getApplication().doRPCCall(self,self.loadPublicKeyCallback, "getPublicKey")
+        self.doRPCCall(self.loadPublicKeyCallback, "getPublicKey")
     
     def getServerInfoCallback(self, result):
         self.data['name'] = result
@@ -316,20 +318,20 @@ class Skarphed(Instance):
         self.updated()
     
     def getServerInfo(self):
-        self.getApplication().doRPCCall(self,self.getServerInfoCallback, "getServerInfo")
+        self.doRPCCall(self.getServerInfoCallback, "getServerInfo")
     
     def getMaintenanceModeCallback(self,data):
         self.maintenance_mode = data
         self.updated()
 
     def getMaintenanceMode(self):
-        self.getApplication().doRPCCall(self,self.getMaintenanceModeCallback, "getMaintenanceMode")
+        self.doRPCCall(self.getMaintenanceModeCallback, "getMaintenanceMode")
 
     def setMaintenanceModeCallback(self,data):
         self.getMaintenanceMode()
 
     def setMaintenanceMode(self, active):
-        self.getApplication().doRPCCall(self,self.setMaintenanceModeCallback, "setMaintenanceMode", [active])    
+        self.doRPCCall(self.setMaintenanceModeCallback, "setMaintenanceMode", [active])    
 
     def isMaintenanceMode(self):
         return self.maintenance_mode
@@ -339,13 +341,13 @@ class Skarphed(Instance):
         self.updated()
 
     def loadRendermode(self):
-        self.getApplication().doRPCCall(self,self.loadRendermodeCallback, "getRendermode")
+        self.doRPCCall(self.loadRendermodeCallback, "getRendermode")
 
     def setRendermodeCallback(self, data):
         self.loadRendermode()
 
     def setRendermode(self, mode):
-        self.getApplication().doRPCCall(self,self.setRendermodeCallback, "setRendermode", [mode])
+        self.doRPCCall(self.setRendermodeCallback, "setRendermode", [mode])
 
     def getRendermode(self):
         return self.rendermode
@@ -393,7 +395,7 @@ class Skarphed(Instance):
         return permission in self.serverRights
         
     def authenticate(self):
-        self.getApplication().doRPCCall(self,self.authenticateCallback, "authenticateUser", [self.username,self.password])
+        self.doRPCCall(self.authenticateCallback, "authenticateUser", [self.username,self.password])
     
     def establishConnections(self):
         self.getServerInfo()
@@ -415,7 +417,7 @@ class Skarphed(Instance):
         self.updated()
 
     def getRepository(self):
-        self.getApplication().doRPCCall(self, self.getRepositoryCallback, "getRepository")
+        self.doRPCCall(self.getRepositoryCallback, "getRepository")
         
     def setRepositoryCallback(self,res):
         self.modules.refresh()
@@ -440,7 +442,7 @@ class Skarphed(Instance):
         if hostname == "":
             raise RepositoryException(RepositoryException.get_msg(102))
 
-        self.getApplication().doRPCCall(self,self.setRepositoryCallback, "setRepository", [hostname,port])
+        self.doRPCCall(self.setRepositoryCallback, "setRepository", [hostname,port])
         self.repo_url = hostname+":"+str(port)
         
     def loadProfileInfo(self,profileInfo):
@@ -457,13 +459,13 @@ class Skarphed(Instance):
         self.updated()
     
     def loadCssPropertySet(self):
-        self.getApplication().doRPCCall(self,self.loadCssPropertySetCallback, "getCssPropertySet", [None,None,None])
+        self.doRPCCall(self.loadCssPropertySetCallback, "getCssPropertySet", [None,None,None])
     
     def updateModulesCallback(self):
         self.modules.refresh()
     
     def updateModules(self):
-        self.getApplication().doRPCCall(self,self.updateModulesCallback, "updateModules")
+        self.doRPCCall(self.updateModulesCallback, "updateModules")
     
     def getCssPropertySet(self):
         return self.cssPropertySet
@@ -475,7 +477,7 @@ class Skarphed(Instance):
         self.loadCssPropertySet()
     
     def saveCssPropertySet(self):
-        self.getApplication().doRPCCall(self,self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.doRPCCall(self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
     
     def getOperationManager(self):
         return self.operationManager
@@ -495,7 +497,7 @@ class Skarphed(Instance):
         f.close()
         data = base64.b64encode(data)
         filename = filepath.split("/")[1:]
-        self.getApplication().doRPCCall(self,self.uploadBinaryCallback, "uploadBinary", [data, filename])
+        self.doRPCCall(self.uploadBinaryCallback, "uploadBinary", [data, filename])
 
     def getTemplate(self):
         return self.template
@@ -511,6 +513,13 @@ class Skarphed(Instance):
 
     def getUsers(self):
         return self.users
+
+    def doRPCCall(self, callback, method, params=[]):
+        """
+        sends an http-call to this instance
+        """
+        call = net.HTTPRpc.SkarphedRPC(self,callback, method, params)
+        call.start()
     
     def getServer(self):
         pass

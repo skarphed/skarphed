@@ -72,7 +72,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getSkarphed()
-        self.getApplication().doRPCCall(scv, self.loadContentCallback, "executeModuleMethod", [module.getId(), "get_content", [widget.getId()]])
+        scv.doRPCCall(self.loadContentCallback, "executeModuleMethod", [module.getId(), "get_content", [widget.getId()]])
 
     def setContentCallback(self, data):
         self.loadContent()
@@ -90,7 +90,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getSkarphed()
-        self.getApplication().doRPCCall(scv, self.setContentCallback, "executeModuleMethod", [module.getId(), "set_content", [widget.getId(), html, title]])        
+        scv.doRPCCall(self.setContentCallback, "executeModuleMethod", [module.getId(), "set_content", [widget.getId(), html, title]])        
 
     def getPar(self):
         return self.par

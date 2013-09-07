@@ -141,7 +141,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getSkarphed()
-        self.getApplication().doRPCCall(scv, self.loadNewsCallback, "executeModuleMethod", [module.getId(), "get_news", [widget.getId()]])
+        scv.doRPCCall(self.loadNewsCallback, "executeModuleMethod", [module.getId(), "get_news", [widget.getId()]])
 
 
     def loadNewsEntryCallback(self,data):
@@ -160,7 +160,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getSkarphed()
-        self.getApplication().doRPCCall(scv, self.loadNewsEntryCallback, "executeModuleMethod", [module.getId(), "get_news_entry", [widget.getId(), entry_id]])
+        scv.doRPCCall(self.loadNewsEntryCallback, "executeModuleMethod", [module.getId(), "get_news_entry", [widget.getId(), entry_id]])
 
     def chooseNewsCallback(self, tree=None, path=None, data=None):
         selection = self.builder.get_object("newsview").get_selection()
@@ -185,7 +185,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getSkarphed()
-        self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "save_news_entry", [widget.getId(), self._saving_entry]])
+        scv.doRPCCall(self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "save_news_entry", [widget.getId(), self._saving_entry]])
 
     def createNewEntryCallback(self, data):
         self.loadNews()
@@ -201,7 +201,7 @@ class WidgetPage(gtk.VBox):
         module = widget.getModule()
 
         scv = module.getModules().getSkarphed()
-        self.getApplication().doRPCCall(scv, self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "create_news_entry", [widget.getId(), title]])
+        scv.doRPCCall(self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "create_news_entry", [widget.getId(), title]])
 
     def getPar(self):
         return self.par

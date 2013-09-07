@@ -55,8 +55,7 @@ class User(GenericSkarphedObject):
         self.updated()
     
     def fetchRightsData(self):
-        self.getApplication().doRPCCall(self.getUsers().getSkarphed(),
-                                      self.fetchRightsDataCallback,
+        self.getUsers().getSkarphed().doRPCCall(self.fetchRightsDataCallback,
                                       "getRightsForUserPage",
                                       [self.getId()]
                                       )
@@ -66,8 +65,7 @@ class User(GenericSkarphedObject):
         self.updated()
     
     def fetchRoleData(self):
-        self.getApplication().doRPCCall(self.getUsers().getSkarphed(),
-                                      self.fetchRoleDataCallback,
+        self.getUsers().getSkarphed().doRPCCall(self.fetchRoleDataCallback,
                                       "getRolesForUserPage",
                                       [self.getName()]
                                       )
@@ -77,8 +75,7 @@ class User(GenericSkarphedObject):
         self.fetchRoleData()
     
     def assignRole(self,role):
-        self.getApplication().doRPCCall(self.getUsers().getSkarphed(),
-                                      self.assignRoleCallback,
+        self.getUsers().getSkarphed().doRPCCall(self.assignRoleCallback,
                                       "assignRoleToUser",
                                       [self.getName(),role]
                                       )
@@ -88,8 +85,7 @@ class User(GenericSkarphedObject):
         self.fetchRoleData()
     
     def removeRole(self,role):
-        self.getApplication().doRPCCall(self.getUsers().getSkarphed(),
-                                      self.removeRoleCallback,
+        self.getUsers().getSkarphed().doRPCCall(self.removeRoleCallback,
                                       "revokeRoleFromUser",
                                       [self.getName(),role]
                                       )
@@ -98,8 +94,7 @@ class User(GenericSkarphedObject):
         self.fetchRightsData()
     
     def assignPermission(self,right):
-        self.getApplication().doRPCCall(self.getUsers().getSkarphed(),
-                                      self.assignPermissionCallback,
+        self.getUsers().getSkarphed().doRPCCall(self.assignPermissionCallback,
                                       "grantRightToUser",
                                       [self.getId(),right]
                                       )
@@ -108,8 +103,7 @@ class User(GenericSkarphedObject):
         self.fetchRightsData()
     
     def removePermission(self,role):
-        self.getApplication().doRPCCall(self.getUsers().getSkarphed(),
-                                      self.removePermissionCallback,
+        self.getUsers().getSkarphed().doRPCCall(self.removePermissionCallback,
                                       "revokeRightFromUser",
                                       [self.getId(),role]
                                       )
@@ -117,8 +111,7 @@ class User(GenericSkarphedObject):
         self.destroy()
     
     def delete(self):
-        self.getApplication().doRPCCall(self.getUsers().getSkarphed(),
-                                      self.deleteCallback,
+        self.getUsers().getSkarphed().doRPCCall(self.deleteCallback,
                                       "deleteUser",
                                       [self.getId()]
                                       )
@@ -127,8 +120,7 @@ class User(GenericSkarphedObject):
         return True
     
     def alterPassword(self, new_password, old_password=None):
-        self.getApplication().doRPCCall(self.getUsers().getSkarphed(),
-                                        self.alterPasswordCallback,
+        self.getUsers().getSkarphed().doRPCCall(self.alterPasswordCallback,
                                         "alterPassword",
                                         [self.getId(), new_password, old_password])
 

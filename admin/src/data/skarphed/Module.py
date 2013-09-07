@@ -94,7 +94,7 @@ class Module(GenericSkarphedObject):
         self.getModules().getSkarphed().getOperationManager().refresh()
 
     def update(self):
-        self.getApplication().doRPCCall(self.getModules().getSkarphed(),self.updateCallback, "updateModule", [self.getId()])
+        self.getModules().getSkarphed(),self.updateCallback.doRPCCall("updateModule", [self.getId()])
 
     def refresh(self,data):
         self.data = data
@@ -107,7 +107,7 @@ class Module(GenericSkarphedObject):
     def loadCssPropertySet(self):
         obj_id = self.getId()
         if obj_id is not None:
-            self.getApplication().doRPCCall(self.getModules().getSkarphed(),self.loadCssPropertySetCallback, "getCssPropertySet", [obj_id,None,None])
+            self.getModules().getSkarphed().doRPCCall(self.loadCssPropertySetCallback, "getCssPropertySet", [obj_id,None,None])
     
     def getCssPropertySet(self):
         return self.cssPropertySet
@@ -119,7 +119,7 @@ class Module(GenericSkarphedObject):
         self.loadCssPropertySet()
     
     def saveCssPropertySet(self):
-        self.getApplication().doRPCCall(self.getModules().getSkarphed(),self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.getModules().getSkarphed().doRPCCall(self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
     
     def loadWidgetsCallback(self,data):
         widgetIds = [w.getId() for w in self.children]
@@ -137,7 +137,7 @@ class Module(GenericSkarphedObject):
         self.getModules().updated()
 
     def loadWidgets(self):
-        self.getApplication().doRPCCall(self.getModules().getSkarphed(),self.loadWidgetsCallback, "getWidgetsOfModule", [self.getId()])
+        self.getModules().getSkarphed().doRPCCall(self.loadWidgetsCallback, "getWidgetsOfModule", [self.getId()])
     
     def loadGuiCallback(self, result):
         if not os.path.exists(MODULEGUI):
@@ -178,7 +178,7 @@ class Module(GenericSkarphedObject):
             
 
     def loadGui(self):
-        self.getApplication().doRPCCall(self.getModules().getSkarphed(),self.loadGuiCallback, "getGuiForModule", [self.getId()])
+        self.getModules().getSkarphed().doRPCCall(self.loadGuiCallback, "getGuiForModule", [self.getId()])
 
     def isGuiAvailable(self):
         return os.path.exists(os.path.expanduser(os.path.join("~",".skarphedadmin","modulegui",self.getModuleName(),\
@@ -188,7 +188,7 @@ class Module(GenericSkarphedObject):
         self.loadWidgets()
     
     def createWidget(self,name):
-        self.getApplication().doRPCCall(self.getModules().getSkarphed(),self.createWidgetCallback, "createWidget", [self.getId(),name])
+        self.getModules().getSkarphed().doRPCCall(self.createWidgetCallback, "createWidget", [self.getId(),name])
     
     def getWidgetById(self,obj_id):
         for widget in self.children:
@@ -204,4 +204,3 @@ class Module(GenericSkarphedObject):
     
     def getModules(self):
         return self.getPar()
-    

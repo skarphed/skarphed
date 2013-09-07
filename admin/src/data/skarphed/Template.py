@@ -49,7 +49,7 @@ class Template(GenericSkarphedObject):
         self.refresh(res)
     
     def load(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.loadCallback, "getCurrentTemplate")
+        self.getSkarphed().doRPCCall(self.loadCallback, "getCurrentTemplate")
     
     def uploadCallback(self,res):
         severe_error_happened = False
@@ -65,7 +65,7 @@ class Template(GenericSkarphedObject):
     def upload(self, filepath):
         template_file = open(filepath,'r')
         templatedata = base64.b64encode(template_file.read())
-        self.getApplication().doRPCCall(self.getSkarphed(),self.uploadCallback, "installTemplate", [templatedata])
+        self.getSkarphed().doRPCCall(self.uploadCallback, "installTemplate", [templatedata])
         template_file.close()
 
     def repoTemplatesCallback(self, json):
@@ -73,7 +73,7 @@ class Template(GenericSkarphedObject):
         self.updated()
 
     def getRepoTemplates(self):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.repoTemplatesCallback, "refreshAvailableTemplates")
+        self.getSkarphed().doRPCCall(self.repoTemplatesCallback, "refreshAvailableTemplates")
 
     def getAvailableTemplates(self):
         return self.data['available']
@@ -84,7 +84,7 @@ class Template(GenericSkarphedObject):
         self.getSkarphed().getMaintenanceMode()
 
     def installFromRepo(self, nr):
-        self.getApplication().doRPCCall(self.getSkarphed(),self.installFromRepoCallback, "installTemplateFromRepo", [nr])
+        self.getSkarphed().doRPCCall(self.installFromRepoCallback, "installTemplateFromRepo", [nr])
 
     def getPar(self):
         return self.par
