@@ -483,7 +483,7 @@ class ModuleManager(object):
 
     def install_module(self,module_meta):
         """
-        actually installs the module
+        prepares the module installation by invoking the download
         """
         configuration = self._core.get_configuration()
         libpath = configuration.get_entry("global.libpath")
@@ -502,7 +502,13 @@ class ModuleManager(object):
             os.mkdir(modulepath)
 
         repo = self.get_repository()
-        datapath = repo.download_module(module_meta)
+        return self.install_module_write_changes(repo.download_module(module_meta), modulepath)
+
+    def install_module_write_changes(self, datapath, modulepath):
+        """
+        actually write changes to local installation
+        """
+
         tar = tarfile.open(datapath, "r:gz")
 
         tar.extractall(modulepath)
