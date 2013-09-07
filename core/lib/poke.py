@@ -92,7 +92,7 @@ class PokeManager(object):
         session = session_manager.get_current_session()
 
         db = cls._core.get_db()
-        stmnt = "DELETE FROM SESSIONPOKE WHERE SPO_SES_ID IN (SELECT SES_ID FROM SESSION WHERE SES_EXPIRES < NOW()) ;"
+        stmnt = "DELETE FROM SESSIONPOKE WHERE SPO_SES_ID IN (SELECT SES_ID FROM SESSIONS WHERE SES_EXPIRES < NOW()) ;"
         db.query(cls._core, stmnt, (session.get_id(),), commit=True)
         stmnt = "DELETE FROM ACTIVITIES WHERE ATV_ID < COALESCE ((SELECT MIN(SPO_ATV_ID) FROM SESSIONPOKE WHERE SPO_SES_ID != ?),0) ;"
         db.query(cls._core, stmnt, (session.get_id(),), commit=True)
