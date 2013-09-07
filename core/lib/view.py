@@ -228,7 +228,7 @@ class View(object):
         if row is None:
             view_id = db.get_seq_next("VIE_GEN")
             stmnt = "INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
-                       VALUES (?,2,'default',1) ;"
+                       VALUES (?,1,'default',1) ;"
             db.query(cls._core, stmnt, (view_id,), commit=True)
 
     @classmethod
