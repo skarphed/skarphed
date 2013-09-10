@@ -83,7 +83,12 @@ class View(object):
         if row is None:
             raise ViewException(ViewException.get_msg(0))
         else:
-            view = View(cls._core)
+            configuration = cls._core.get_configuration()
+            rendermode = configuration.get_entry("core.rendermode")
+            if rendermode == "pure":
+                view = PureView(cls._core)
+            elif rendermode == "ajax":
+                view = AJAXView(cls._core)
             view.set_name(row["VIE_NAME"])
             view.set_default(row["VIE_DEFAULT"])
             view.set_page(row["VIE_SIT_ID"])
@@ -128,11 +133,11 @@ class View(object):
     @classmethod
     def get_default_view(cls):
         db = cls._core.get_db()
-        stmnt = "SELECT VIE_NAME FROM VIEWS WHERE VIE_DEFAULT = 1 ;"
+        stmnt = "SELECT VIE_ID FROM VIEWS WHERE VIE_DEFAULT = 1 ;"
         cur = db.query(cls._core, stmnt)
         row = cur.fetchonemap()
         if row is not None:
-            return cls.get_from_name(row["VIE_NAME"])
+            return cls.get_from_id(row["VIE_ID"])
         else:
             raise ViewException(ViewException.get_msg(3))
 
@@ -181,7 +186,13 @@ class View(object):
         except ValueError:
             raise ViewException(ViewException.get_msg(7))
 
-        view = View(cls._core)
+        configuration = cls._core.get_configuration()
+        rendermode = configuration.get_entry("core.rendermode")
+        if rendermode == "pure":
+            view = PureView(cls._core)
+        elif rendermode == "ajax":
+            view = AJAXView(cls._core)
+
         if json.has_key('s'):
             view.set_page(json['s'])
         else:
@@ -489,154 +500,7 @@ class View(object):
             return "/web/?"+viewjsonstring
         else:
             return "/web/"+existing_name
-
-
-    def generate_link_from_actionlist(self,actionlist):
-        """
-        returns a link that describes a call to a view that results of the actionlist
-        """
-        target = {}
-        target['s'] = self.get_page()
-        target['v'] = deepcopy(self.get_space_widget_mapping())
-        target['b'] = deepcopy(self.get_box_mapping())
-        target['c'] = deepcopy(self.get_widget_param_mapping())
-        
-        for action in actionlist.get_actions():
-            if action.get_url() is not None:
-                return action.get_url()
-            elif action.get_view_id() is not None:
-                view = actionlist._core.get_view_manager().get_from_id(action.get_view_id())
-                name = view.get_name()
-                return "/web/"+quote(name)
-            elif action.get_space() is not None and action.get_widget_id() is not None:
-                target['v'][action.get_space()] = action.get_widget_id()
-                #delete any parameters of this widget. otherwise link will only
-                #load current state of that widget again
-                if target['c'].has_key(action.get_widget_id()):
-                    del(target['c'][action.get_widget_id()])
-
-        encoder = JSONEncoder()
-        viewjsonstring = quote(encoder.encode(target))
-        view_manager = self._core.get_view_manager()
-        checkview = view_manager.get_from_json(viewjsonstring)
-        existing_name = checkview.check_has_name()
-        if existing_name == False:
-            return "/web/?"+viewjsonstring
-        else:
-            return "/web/"+existing_name
-
-    def render_pure(self, environ):
-        """
-        renders this view with pure http-abilities. no script needed
-        """
-        frame = """
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>%(title)s</title>
-            <link href="/static/%(page_css)s" rel="stylesheet" type="text/css">
-            <link href="%(scv_css)s" rel="stylesheet" type="text/css">
-            %(head)s
-          </head>
-          <body>
-            %(body)s
-          </body>
-        </html>
-        """
-        page_manager = self._core.get_page_manager()
-        page = page_manager.get_page(self._page) 
-
-        head = page.get_html_head()
-        body = page.get_html_body()
-
-        module_manager = self._core.get_module_manager()
-        # Find placeholders to substitute
-        
-        space_name_map = page.get_space_names()
-        for space, widget_id in self._space_widget_mapping.items():
-            space_name = space_name_map[space]
-            widget = module_manager.get_widget(widget_id)
-
-            args = {} 
-            if self._widget_param_mapping.has_key(widget_id):
-                args.update(self._widget_param_mapping[widget_id])
-            elif self._widget_param_mapping.has_key(str(widget_id)):
-                args.update(self._widget_param_mapping[str(widget_id)])
             
-            if self._post_widget_id == widget_id:
-                # Check whether the viewjson-string is included here, too:
-                # if so, eliminate it.
-                post_args = FieldStorage(fp=environ['wsgi.input'],environ=environ)
-                for key in post_args.keys():
-                    args[key] = post_args[key].value
-
-            widget_html = widget.render_pure_html(args)
-            body = re.sub(r"<%%\s?space:%s\s?%%>"%space_name,widget_html,body)
-
-        for box, boxcontent in self._box_mapping.items():
-            box_orientation, box_name = self.get_box_info(box)
-            box_html = StringIO.StringIO()
-            for widget_id in boxcontent:
-                widget = module_manager.get_widget(widget_id)
-
-                args = {} 
-                if self._widget_param_mapping.has_key(widget_id):
-                    args.update(self._widget_param_mapping[widget_id])
-                elif self._widget_param_mapping.has_key(str(widget_id)):
-                    args.update(self._widget_param_mapping[str(widget_id)])
-
-                if self._post_widget_id == widget_id:
-                    # Check whether the viewjson-string is included here, too:
-                    # if so, eliminate it.
-                    post_args = FieldStorage(fp=environ['wsgi.input'],environ=environ)
-                    for key in post_args.keys():
-                        args[key] = post_args[key].value
-            
-                widget_html = widget.render_pure_html(args)
-                box_html.write(widget_html)
-                if box_orientation == BoxOrientation.VERTICAL:
-                    box_html.write("<br>")
-
-            if box_orientation == BoxOrientation.HORIZONTAL:
-                body = re.sub(r"<%%\s?hbox:%s\s?%%>"%box_name,box_html.getvalue(),body)
-            elif box_orientation == BoxOrientation.VERTICAL:
-                body = re.sub(r"<%%\s?vbox:%s\s?%%>"%box_name,box_html.getvalue(),body)
-
-        body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
-
-        css_manager = self._core.get_css_manager()
-        css_url = css_manager.get_css_url()
-
-        configuration = self._core.get_configuration()
-        title = configuration.get_entry("core.name")
-
-        page_css = page.get_css_filename()
-
-        return frame%{'title':title,
-                      'scv_css':css_url,
-                      'page_css':page_css,
-                      'head':head,
-                      'body':body}
-
-
-    def render_ajax(self, environ):
-        #TODO: Implement
-        pass
-
-    def render(self,environ):
-        """
-        render this view
-        """
-        View.set_currently_rendering_view(self)
-        configuration = self._core.get_configuration()
-        rendermode = configuration.get_entry("core.rendermode")
-        result = None
-        if rendermode == "pure":
-            result = self.render_pure(environ)
-        elif rendermode == "ajax":
-            result = self.render_ajax(environ)
-        View.set_currently_rendering_view(None)
-        return result
 
     def store(self):
         """
@@ -737,22 +601,173 @@ class View(object):
         db.query(self._core, stmnt, (self._id,),commit=True)
         self._core.get_poke_manager().add_activity(ActivityType.VIEW)
 
+class PureView(View):
+    """
+    Delivers some methods for Pure rendering
+    """
+    def generate_link_from_actionlist(self, actionlist):
+        """
+        returns a link that describes a call to a view that results of the actionlist
+        """
+        target = {}
+        target['s'] = self.get_page()
+        target['v'] = deepcopy(self.get_space_widget_mapping())
+        target['b'] = deepcopy(self.get_box_mapping())
+        target['c'] = deepcopy(self.get_widget_param_mapping())
+        
+        for action in actionlist.get_actions():
+            if action.get_url() is not None:
+                return action.get_url()
+            elif action.get_view_id() is not None:
+                view = actionlist._core.get_view_manager().get_from_id(action.get_view_id())
+                name = view.get_name()
+                return "/web/"+quote(name)
+            elif action.get_space() is not None and action.get_widget_id() is not None:
+                target['v'][action.get_space()] = action.get_widget_id()
+                #delete any parameters of this widget. otherwise link will only
+                #load current state of that widget again
+                if target['c'].has_key(action.get_widget_id()):
+                    del(target['c'][action.get_widget_id()])
 
-class ViewManager(object):
-    def __init__(self, core):
-        self._core = core
+        #AJAX-rendermode regarded here: ↓
+        encoder = JSONEncoder()
+        viewjsonstring = quote(encoder.encode(target))
+        view_manager = self._core.get_view_manager()
+        checkview = view_manager.get_from_json(viewjsonstring)
+        existing_name = checkview.check_has_name()
+        if existing_name == False:
+            return "/web/?"+viewjsonstring
+        else:
+            return "/web/"+existing_name
 
-        View.set_core(core)
-        self.get_viewlist = View.get_viewlist
-        self.get_from_id = View.get_from_id
-        self.get_from_name = View.get_from_name
-        self.get_from_json = View.get_from_json
-        self.get_default_view = View.get_default_view
-        self.create_default_view = View.create_default_view
-        self.get_currently_rendering_view = View.get_currently_rendering_view
-        self.create = View.create
-        self.delete_mappings_with_widget = View.delete_mappings_with_widget
-        self.delete_mappings_with_module = View.delete_mappings_with_module
+    def render(self, environ):
+        """
+        renders this view with pure http-abilities. no script needed
+        """
+        View.set_currently_rendering_view(self)
+        frame = """
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>%(title)s</title>
+            <link href="/static/%(page_css)s" rel="stylesheet" type="text/css">
+            <link href="%(scv_css)s" rel="stylesheet" type="text/css">
+            %(head)s
+          </head>
+          <body>
+            %(body)s
+          </body>
+        </html>
+        """
+        page_manager = self._core.get_page_manager()
+        page = page_manager.get_page(self._page) 
+
+        head = page.get_html_head()
+        body = page.get_html_body()
+
+        module_manager = self._core.get_module_manager()
+        # Find placeholders to substitute
+        
+        space_name_map = page.get_space_names()
+        for space, widget_id in self._space_widget_mapping.items():
+            space_name = space_name_map[space]
+            widget = module_manager.get_widget(widget_id)
+
+            args = {} 
+            if self._widget_param_mapping.has_key(widget_id):
+                args.update(self._widget_param_mapping[widget_id])
+            elif self._widget_param_mapping.has_key(str(widget_id)):
+                args.update(self._widget_param_mapping[str(widget_id)])
+            
+            if self._post_widget_id == widget_id:
+                # Check whether the viewjson-string is included here, too:
+                # if so, eliminate it.
+                post_args = FieldStorage(fp=environ['wsgi.input'],environ=environ)
+                for key in post_args.keys():
+                    args[key] = post_args[key].value
+
+            widget_html = widget.render_pure_html(args)
+            body = re.sub(r"<%%\s?space:%s\s?%%>"%space_name,widget_html,body)
+
+        for box, boxcontent in self._box_mapping.items():
+            box_orientation, box_name = self.get_box_info(box)
+            box_html = StringIO.StringIO()
+            for widget_id in boxcontent:
+                widget = module_manager.get_widget(widget_id)
+
+                args = {} 
+                if self._widget_param_mapping.has_key(widget_id):
+                    args.update(self._widget_param_mapping[widget_id])
+                elif self._widget_param_mapping.has_key(str(widget_id)):
+                    args.update(self._widget_param_mapping[str(widget_id)])
+
+                if self._post_widget_id == widget_id:
+                    # Check whether the viewjson-string is included here, too:
+                    # if so, eliminate it.
+                    post_args = FieldStorage(fp=environ['wsgi.input'],environ=environ)
+                    for key in post_args.keys():
+                        args[key] = post_args[key].value
+            
+                widget_html = widget.render_pure_html(args)
+                box_html.write(widget_html)
+                if box_orientation == BoxOrientation.VERTICAL:
+                    box_html.write("<br>")
+
+            if box_orientation == BoxOrientation.HORIZONTAL:
+                body = re.sub(r"<%%\s?hbox:%s\s?%%>"%box_name,box_html.getvalue(),body)
+            elif box_orientation == BoxOrientation.VERTICAL:
+                body = re.sub(r"<%%\s?vbox:%s\s?%%>"%box_name,box_html.getvalue(),body)
+
+        body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
+
+        css_manager = self._core.get_css_manager()
+        css_url = css_manager.get_css_url()
+
+        configuration = self._core.get_configuration()
+        title = configuration.get_entry("core.name")
+
+        page_css = page.get_css_filename()
+        View.set_currently_rendering_view(None)
+        return frame%{'title':title,
+                      'scv_css':css_url,
+                      'page_css':page_css,
+                      'head':head,
+                      'body':body}
+
+
+class AJAXView(View):
+    """
+    Delivers some methods for AJAX rendering
+    """
+    def generate_link_from_actionlist(self, actionlist):
+        """
+        Generates an ajaxlink from an actionlist.
+        ajaxlinks look like:
+        javascript:SkdAjax.load_link([{'w':<widget_id>,'p':{params}}, ... ])
+
+        the corresponding js on clientside should generate something like:
+        /ajax/{'w':<widget_id>,'p':{params}}
+        """
+        for action in actionlist.get_actions():
+            if action.get_url() is not None:
+                return action.get_url()
+            elif action.get_view_id() is not None:
+                view = actionlist._core.get_view_manager().get_from_id(action.get_view_id())
+                name = view.get_name()
+                return "/web/"+quote(name)
+            elif action.get_space() is not None and action.get_widget_id() is not None:
+                target['v'][action.get_space()] = action.get_widget_id()
+                #delete any parameters of this widget. otherwise link will only
+                #load current state of that widget again
+                if target['c'].has_key(action.get_widget_id()):
+                    del(target['c'][action.get_widget_id()])
+
+    def render(self, environ):
+        #TODO: Implement
+        View.set_currently_rendering_view(self)
+        result = ""
+        View.set_currently_rendering_view(None)
+        return result
 
 
 class Page(object):
