@@ -66,6 +66,11 @@ def application(environ, start_response):
         response_headers.extend(ret["header"])
         response_headers.append(('Content-Type', 'text/html'))
 
+    elif environ['PATH_INFO'].startswith("/ajax/"):
+        ret = core.ajax_call(environ)
+        response_body.extend(ret["body"])
+        response_headers.append(('Content-Type', 'application/json'))
+
     elif environ['PATH_INFO'].startswith("/debug/"):
         response_body = ['%s: %s' % (key, value)
                     for key, value in sorted(environ.items())]
