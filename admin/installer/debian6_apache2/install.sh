@@ -18,10 +18,14 @@ else
 	mkdir /etc/skarphed
 	cp ./skarphed.conf /etc/skarphed/
 	source /etc/skarphed/skarphed.conf
+
 	
 	mkdir $SCV_LIBPATH
 	cp -r ./lib/* $SCV_LIBPATH/
 	chown -R www-data:www-data $SCV_LIBPATH
+
+	mkdir -p $SCV_BINARY_CACHEPATH
+	chown -R www-data:www-data $SCV_BINARY_CACHEPATH
 
 	touch /etc/skarphed/GEN_INSTANCE
 	echo -1 > /etc/skarphed/GEN_INSTANCE

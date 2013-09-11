@@ -55,6 +55,7 @@ class Configuration(object):
         coreconfig = self._core.get_core_config(self)
         self._configuration["global.libpath"] = coreconfig["SCV_LIBPATH"]
         self._configuration["global.webpath"] = coreconfig["SCV_WEBPATH"]
+        self._configuration["global.binary_cache"] = coreconfig["SCV_BINARY_CACHEPATH"]
         self._configuration["core.instance_id"] = coreconfig["SCV_INSTANCE_SCOPE_ID"]
         self._configuration["core.webpath"] = self._configuration["global.webpath"]+ self._configuration["core.instance_id"]
         self._state = self.CONF_LOAD_GLOBAL

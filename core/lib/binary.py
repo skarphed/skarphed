@@ -22,6 +22,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+import os
 from hashlib import md5 as md5hash
 from hashlib import sha256 as sha256hash
 from StringIO import StringIO
@@ -63,16 +64,54 @@ class Binary(object):
 
     @classmethod
     def get_by_filename(cls, filename):
+        data_fetched = False
+        configuration = cls._core.get_configuration()
+        binary_cache_path = os.path.join(configuration.get_entry("global.binary_cache"),
+                                         configuration.get_entry("core.instance_id"))
+
+        if not os.path.exists(binary_cache_path):
+            os.mkdir(binary_cache_path,True)
+
         db = cls._core.get_db()
-        stmnt = "SELECT BIN_ID, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? ;"
-        cur = db.query(cls._core , stmnt, (filename,))
-        row = cur.fetchonemap()
+        if os.path.exists(os.path.join(binary_cache_path, filename)):
+            cachefile = open(os.path.join(binary_cache_path, filename),"rb")
+            data = cachefile.read()
+            cachefile.close()
+
+            md5 = md5hash(data).hexdigest()
+            sha256 = sha256hash(data).hexdigest()
+
+            stmnt = "SELECT BIN_ID, BIN_MIME, COALESCE  \
+                     ((SELECT BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? AND BIN_MD5 != ? AND BIN_SHA256 != ?), NULL) \
+                     FROM BINARIES WHERE BIN_FILENAME = ?  ;"
+            cur = db.query(cls._core , stmnt, (filename, md5, sha256))
+            row = cur.fetchonemap()
+            if row is not None:
+                data_fetched = True
+                if row["BIN_DATA"] is None:
+                    bin = Binary(cls._core)
+                    bin.set_id(row["BIN_ID"])
+                    bin.set_filename(filename)
+                    bin.set_mime(row["BIN_MIME"])
+                    bin.set_data(data)
+                    return bin
+            else:
+                raise BinaryException(BinaryException.get_msg(0, filename))
+        if not data_fetched:
+            stmnt = "SELECT BIN_ID, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? ;"
+            cur = db.query(cls._core , stmnt, (filename,))
+            row = cur.fetchonemap()
         if row is not None:
             bin = Binary(cls._core)
             bin.set_id(row["BIN_ID"])
             bin.set_filename(filename)
             bin.set_mime(row["BIN_MIME"])
             bin.set_data(base64.b64decode(row["BIN_DATA"]))
+
+            cachefile = open(os.path.join(binary_cache_path, filename),"wb")
+            cachefile.write(bin.get_data())
+            cachefile.close()
+
             return bin
         else:
             raise BinaryException(BinaryException.get_msg(0, filename))
