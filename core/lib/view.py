@@ -756,19 +756,103 @@ class AJAXView(View):
                 name = view.get_name()
                 return "/web/"+quote(name)
             elif action.get_space() is not None and action.get_widget_id() is not None:
-                target['v'][action.get_space()] = action.get_widget_id()
-                #delete any parameters of this widget. otherwise link will only
-                #load current state of that widget again
-                if target['c'].has_key(action.get_widget_id()):
-                    del(target['c'][action.get_widget_id()])
+                link = "SkdAJAX.execute_action(%s);"
+                linkjson = {"w":action.get_widget_id(), "s":action.get_space(), "p":{}}
+                encoder = JSONEncoder()
+                return link%encoder.dumps(encoder.dumps(linkjson)) # Double dumps to escape quotes in json
+                #necessary because they will probably used in a construct like <a href="SkdAJAX.execute_action({\"w\":1});">
 
     def render(self, environ):
-        #TODO: Implement
         View.set_currently_rendering_view(self)
-        result = ""
-        View.set_currently_rendering_view(None)
-        return result
+        frame = """
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>%(title)s</title>
+            <link href="/static/%(page_css)s" rel="stylesheet" type="text/css">
+            <link href="%(scv_css)s" rel="stylesheet" type="text/css">
+            %(head)s
+            <script type="text/javascript" src="/static/ajax.js"></script>
+          </head>
+          <body>
+            %(body)s
+          </body>
+        </html>
+        """
+        page_manager = self._core.get_page_manager()
+        page = page_manager.get_page(self._page) 
 
+        head = page.get_html_head()
+        body = page.get_html_body()
+
+        module_manager = self._core.get_module_manager()
+        # Find placeholders to substitute
+        
+        space_name_map = page.get_space_names()
+        for space, widget_id in self._space_widget_mapping.items():
+            space_name = space_name_map[space]
+            widget = module_manager.get_widget(widget_id)
+
+            args = {} 
+            if self._widget_param_mapping.has_key(widget_id):
+                args.update(self._widget_param_mapping[widget_id])
+            elif self._widget_param_mapping.has_key(str(widget_id)):
+                args.update(self._widget_param_mapping[str(widget_id)])
+            
+            if self._post_widget_id == widget_id:
+                # Check whether the viewjson-string is included here, too:
+                # if so, eliminate it.
+                post_args = FieldStorage(fp=environ['wsgi.input'],environ=environ)
+                for key in post_args.keys():
+                    args[key] = post_args[key].value
+
+            widget_html = widget.render_pure_html(args)
+            body = re.sub(r"<%%\s?space:%s\s?%%>"%space_name,widget_html,body)
+
+        for box, boxcontent in self._box_mapping.items():
+            box_orientation, box_name = self.get_box_info(box)
+            box_html = StringIO.StringIO()
+            for widget_id in boxcontent:
+                widget = module_manager.get_widget(widget_id)
+
+                args = {} 
+                if self._widget_param_mapping.has_key(widget_id):
+                    args.update(self._widget_param_mapping[widget_id])
+                elif self._widget_param_mapping.has_key(str(widget_id)):
+                    args.update(self._widget_param_mapping[str(widget_id)])
+
+                if self._post_widget_id == widget_id:
+                    # Check whether the viewjson-string is included here, too:
+                    # if so, eliminate it.
+                    post_args = FieldStorage(fp=environ['wsgi.input'],environ=environ)
+                    for key in post_args.keys():
+                        args[key] = post_args[key].value
+            
+                widget_html = widget.render_pure_html(args)
+                box_html.write(widget_html)
+                if box_orientation == BoxOrientation.VERTICAL:
+                    box_html.write("<br>")
+
+            if box_orientation == BoxOrientation.HORIZONTAL:
+                body = re.sub(r"<%%\s?hbox:%s\s?%%>"%box_name,box_html.getvalue(),body)
+            elif box_orientation == BoxOrientation.VERTICAL:
+                body = re.sub(r"<%%\s?vbox:%s\s?%%>"%box_name,box_html.getvalue(),body)
+
+        body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
+
+        css_manager = self._core.get_css_manager()
+        css_url = css_manager.get_css_url()
+
+        configuration = self._core.get_configuration()
+        title = configuration.get_entry("core.name")
+
+        page_css = page.get_css_filename()
+        View.set_currently_rendering_view(None)
+        return frame%{'title':title,
+                      'scv_css':css_url,
+                      'page_css':page_css,
+                      'head':head,
+                      'body':body}
 
 class Page(object):
     """
