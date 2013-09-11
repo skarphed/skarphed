@@ -40,6 +40,7 @@ from rpc import Rpc
 from template import TemplateManager
 from pki import PkiManager
 from poke import PokeManager
+from ajax import AJAXHandler
 
 from maintenance import MAINTENANCE_HTML
 
@@ -256,6 +257,22 @@ class Core(object):
         self.response_body.append(ext.encode('utf-8'))
 
         return {"body":self.response_body, "header":self.response_header}
+
+    def ajax_call(self, environment):
+        if self.get_configuration().get_entry("core.debug") == True:
+            self.environment = environment
+
+        if environment.has_key("HTTP_COOKIE"):
+            session_manager =  self.get_session_manager()
+            session_manager.set_current_session(session_manager.get_session(environment['HTTP_COOKIE']))
+
+        callstring = environment["PATH_INFO"].replace("/ajax/","",1)
+        answer = AJAXHandler(callstring).get_answer()
+        
+        self.response_body.append(answer.encode('utf-8'))
+
+        return {"body":self.response_body}
+
 
     def check_integrity(self):
         core_integrity_check_operation = CoreIntegrityCheckOperation(self)
