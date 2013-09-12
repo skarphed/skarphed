@@ -861,9 +861,9 @@ class Repository(object):
             self._jsondecoder = JSONDecoder()
         if self._jsonencoder is None:
             self._jsonencoder = JSONEncoder()
-        url = self.get_host()+"?j="+quote(self._jsonencoder.encode(msg).encode('utf-8'))
+        url = self.get_host()
         try:
-            http = urlopen(url,timeout=timeout)
+            http = urlopen(url,timeout=timeout, data="j="+quote(self._jsonencoder.encode(msg).encode('utf-8')))
         except URLError:
             raise ModuleCoreException(ModuleCoreException.get_msg(9))
         return self._jsondecoder.decode(http.read())
