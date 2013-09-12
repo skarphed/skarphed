@@ -55,3 +55,69 @@ class AJAXHandler(object):
         answer = encoder.dumps(answer)
         return answer
 
+AJAXScript = """
+(function() {
+  var SkdAJAX, SkdAjax,
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+  SkdAjax = {
+    constructor: function() {
+      if (typeof this.XMLHttpRequest === "undefined") {
+        console.log('XMLHttpRequest is undefined');
+        return this.XMLHttpRequest = function() {
+          var error;
+          try {
+            return new ActiveXObject("Msxml2.XMLHTTP.6.0");
+          } catch (_error) {
+            error = _error;
+          }
+          try {
+            return new ActiveXObject("Msxml2.XMLHTTP.3.0");
+          } catch (_error) {
+            error = _error;
+          }
+          try {
+            return new ActiveXObject("Microsoft.XMLHTTP");
+          } catch (_error) {
+            error = _error;
+          }
+          throw new Error("This browser does not support XMLHttpRequest.");
+        };
+      }
+    },
+    execute_action: function(jsonstring) {
+      var action, actionlist, _i, _len, _results;
+      actionlist = JSON.parse(jsonstring);
+      _results = [];
+      for (_i = 0, _len = actionlist.length; _i < _len; _i++) {
+        action = actionlist[_i];
+        _results.push(this.single_action(action));
+      }
+      return _results;
+    },
+    single_action: function(action) {
+      var req;
+      req = new XMLHttpRequest();
+      req.targetSpace = action.s;
+      req.addEventListener('readystatechange', function() {
+        var space, success_resultcodes, _ref;
+        if (req.readyState === 4) {
+          success_resultcodes = [200, 304];
+          if (_ref = req.state, __indexOf.call(success_resultcodes, _ref) >= 0) {
+            space = document.getElementById(req.targetSpace);
+            return space.innerHTML = req.responseText;
+          } else {
+            return console.log("Error Loading File");
+          }
+        }
+      });
+      delete action.s;
+      req.open('GET', '/ajax/' + JSON.toString(action));
+      return req.send();
+    }
+  };
+
+  SkdAJAX = new SkdAjax();
+
+}).call(this);
+"""

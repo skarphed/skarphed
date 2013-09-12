@@ -41,7 +41,6 @@ instanceid=`cat /etc/skarphed/GEN_INSTANCE`
 instanceid=`expr $instanceid + 1`
 
 mkdir -p $SCV_BINARY_CACHEPATH/$instanceid
-cp ./web/ajax.js $SCV_BINARY_CACHEPATH/$instanceid/
 chown -R www-data:www-data $SCV_BINARY_CACHEPATH/$instanceid
 
 mkdir $SCV_WEBPATH$instanceid

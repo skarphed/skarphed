@@ -29,6 +29,8 @@ import StringIO
 import re
 from copy import deepcopy
 
+from ajax import AJAXScript
+
 from common.enums import ActivityType, BoxOrientation
 from common.errors import ViewException, PageException
 
@@ -776,7 +778,7 @@ class AJAXView(View):
             <link href="/static/%(page_css)s" rel="stylesheet" type="text/css">
             <link href="%(scv_css)s" rel="stylesheet" type="text/css">
             %(head)s
-            <script type="text/javascript" src="/static/ajax.js"></script>
+            <script type="text/javascript">%(ajax_script)s</script>
           </head>
           <body>
             %(body)s
@@ -860,6 +862,7 @@ class AJAXView(View):
         return frame%{'title':title,
                       'scv_css':css_url,
                       'page_css':page_css,
+                      'ajax_script':AJAXScript,
                       'head':head,
                       'body':body}
 
