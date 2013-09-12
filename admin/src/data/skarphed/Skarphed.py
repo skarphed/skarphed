@@ -516,6 +516,9 @@ class Skarphed(Instance):
     def getUsers(self):
         return self.users
 
+    def getRoles(self):
+        return self.roles
+
     def doRPCCall(self, callback, method, params=[]):
         """
         sends an http-call to this instance
