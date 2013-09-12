@@ -77,7 +77,7 @@ class Module(AbstractModule):
         return render.getvalue()
 
     def render_html(self,widget_id,args={}):
-        return self.render_pure_html()
+        return self.render_pure_html(widget_id, args)
 
     def render_javascript(self,widget_id,args={}):
         return ""
