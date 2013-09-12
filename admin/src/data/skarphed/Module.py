@@ -94,7 +94,7 @@ class Module(GenericSkarphedObject):
         self.getModules().getSkarphed().getOperationManager().refresh()
 
     def update(self):
-        self.getModules().getSkarphed(),self.updateCallback.doRPCCall("updateModule", [self.getId()])
+        self.getModules().getSkarphed().doRPCCall(self.updateCallback,"updateModule", [self.getId()])
 
     def refresh(self,data):
         self.data = data
