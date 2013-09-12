@@ -81,8 +81,8 @@ class Binary(object):
             md5 = md5hash(data).hexdigest()
             sha256 = sha256hash(data).hexdigest()
 
-            stmnt = "SELECT BIN_ID, BIN_MIME, COALESCE  \
-                     ((SELECT BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? AND BIN_MD5 != ? AND BIN_SHA256 != ?), NULL) \
+            stmnt = "SELECT BIN_ID, BIN_MIME,   \
+                     (SELECT BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? AND BIN_MD5 != ? AND BIN_SHA256 != ?) AS BIN_DATA \
                      FROM BINARIES WHERE BIN_FILENAME = ?  ;"
             cur = db.query(cls._core , stmnt, (filename, md5, sha256))
             row = cur.fetchonemap()
