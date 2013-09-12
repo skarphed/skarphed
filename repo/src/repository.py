@@ -160,97 +160,100 @@ class Repository(object):
         return modules
 
 
-    def resolve_dependencies_downwards(self, environ, module):
+    def _get_modules_by_ids(self, environ, module_ids):
+        if module_ids:
+            substr = ','.join('?' * len(module_ids))
+            cur = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, \
+                    MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
+                    FROM MODULES WHERE MOD_ID IN (%s);' % substr,
+                    tuple(module_ids))
+            result = cur.fetchallmap()
+            modules = [{'name' : m['MOD_NAME'],
+                    'hrname' : m['MOD_DISPLAYNAME'],
+                    'version_major' : m['MOD_VERSIONMAJOR'],
+                    'version_minor' : m['MOD_VERSIONMINOR'],
+                    'revision' : m['MOD_VERSIONREV'],
+                    'signature' : m['MOD_SIGNATURE']} for m in result]
+            return modules
+        else:
+            return []
+
+
+    def _resolve_direct_dependencies_downwards(self, environ, module):
         """
-        Returns a list of all downward dependencies of a module. Downward dependencies are all
-        modules that are necessary for the specified module to work.
+        Returns all direct downward dependencies of the specified module.
         """
-        result = environ['db'].query('SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? \
+        cur = environ['db'].query('SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? \
                 AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ? \
                 AND MOD_SIGNATURE = ?;',
                 (module['name'], module['version_major'], module['version_minor'],
                 module['revision'], module['signature']))
-        result = result.fetchallmap()
+        result = cur.fetchonemap();
+
         if result:
-            mod_id = result[0]['MOD_ID']
-            result = environ['db'].query('SELECT DISTINCT DEP_MOD_DEPENDSON \
+            mod_id = result['MOD_ID']
+            cur = environ['db'].query('SELECT DISTINCT DEP_MOD_DEPENDSON \
                     FROM DEPENDENCIES \
                     WHERE DEP_MOD_ID = ?;', mod_id)
-            result = result.fetchallmap()
-            mod_ids = [mod_id]
-
-            while result:
-                for mod in result:
-                    mod_ids.append(mod['DEP_MOD_DEPENDSON'])
-                mod_ids_sub = ','.join('?' * len(mod_ids))
-                result = environ['db'].query('SELECT DEP_MOD_DEPENDSON \
-                        FROM DEPENDENCIES \
-                        WHERE DEP_MOD_ID IN (%s) AND DEP_MOD_DEPENDSON NOT IN (%s);' %
-                        (mod_ids_sub, mod_ids_sub), tuple(2 * mod_ids))
-                result = result.fetchallmap()
-
-            mod_ids_sub = ','.join('?' * len(mod_ids))
-            result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, \
-                    MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
-                    FROM MODULES WHERE MOD_ID IN (%s) AND MOD_ID != ?;' % mod_ids_sub, 
-                    tuple(mod_ids + [mod_id]));
-            result = result.fetchallmap()
-            modules = [{'name' : m['MOD_NAME'],
-                        'hrname' : m['MOD_DISPLAYNAME'],
-                        'version_major' : m['MOD_VERSIONMAJOR'],
-                        'version_minor' : m['MOD_VERSIONMINOR'],
-                        'revision' : m['MOD_VERSIONREV'],
-                        'signature' : m['MOD_SIGNATURE']} for m in result]
-            return modules
-
+            result = cur.fetchallmap()
+            dependency_ids = [row['DEP_MOD_DEPENDSON'] for row in result]
+            
+            return self._get_modules_by_ids(environ, dependency_ids)
         else:
             raise create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
+
+
+    def resolve_dependencies_downwards(self, environ, module):
+        """
+        Returns a tree of all downward dependencies of a module. Downward dependencies are all
+        modules that are necessary for the specified module to work.
+        """
+        direct_dependencies = self._resolve_direct_dependencies_downwards(environ, module)
+
+        for dependency in direct_dependencies:
+            sub_dependencies = self.resolve_dependencies_downwards(environ, dependency)
+            dependency['dependencies'] = sub_dependencies
+        
+        return direct_dependencies
+
+
+    def _resolve_direct_dependencies_upwards(self, environ, module):
+        """
+        Returns all direct upward dependencies of the specified module.
+        """
+        cur = environ['db'].query('SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? \
+                AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? AND MOD_VERSIONREV = ? \
+                AND MOD_SIGNATURE = ?;',
+                (module['name'], module['version_major'], module['version_minor'],
+                module['revision'], module['signature']))
+        result = cur.fetchonemap();
+
+        if result:
+            mod_id = result['MOD_ID']
+            cur = environ['db'].query('SELECT DISTINCT DEP_MOD_ID \
+                    FROM DEPENDENCIES \
+                    WHERE DEP_MOD_DEPENDSON = ?;', mod_id)
+            result = cur.fetchallmap()
+            dependency_ids = [row['DEP_MOD_ID'] for row in result]
+
+            return self._get_modules_by_ids(environ, dependency_ids)
+        else:
+            return create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
 
 
     def resolve_dependencies_upwards(self, environ, module):
         """
-        Returns a list of all upward dependencies of a module. Upward dependencies are all
+        Returns a tree of all upward dependencies of a module. Upward dependencies are all
         modules that needs the specified module to work.
         """
-        result = environ['db'].query('SELECT MOD_ID \
-                FROM MODULES \
-                WHERE MOD_NAME = ? AND MOD_VERSIONMAJOR = ? AND MOD_VERSIONMINOR = ? \
-                AND MOD_VERSIONREV = ? AND MOD_SIGNATURE = ?;',
-                (module['name'], module['version_major'], module['version_minor'],
-                module['revision'], module['signature']))
-        result = result.fetchallmap()
-        if result:
-            mod_id = result[0]['MOD_ID']
-            result = environ['db'].query('SELECT DISTINCT DEP_MOD_ID \
-                    FROM DEPENDENCIES \
-                    WHERE DEP_MOD_DEPENDSON = ?;', mod_id);
-            result = result.fetchallmap()
-            mod_ids = [mod_id]
-            while result:
-                for mod in result:
-                    mod_ids.append(mod['DEP_MOD_ID'])
-                mod_ids_str = ','.join(map(str, mod_ids))
-                result = environ['db'].query('SELECT DEP_MOD_ID \
-                        FROM DEPENDENCIES \
-                        WHERE DEP_MOD_DEPENDSON IN ? AND DEP_MOD_ID NOT IN ?;',
-                        (mod_ids_str, mod_ids_str))
-                result = result.fetchallmap()
+        direct_dependencies = self._resolve_direct_dependencies_upwards(environ, module)
 
-            result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, \
-                    MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
-                    FROM MODULES \
-                    WHERE MOD_ID IN (?) AND MOD_ID != ?;',
-                    (','.join(map(str, mod_ids)), mod_id))
-            result = result.fetchallmap()
-            modules = [{'name' : m['MOD_NAME'],
-                        'hrname' : m['MOD_DISPLAYNAME'],
-                        'version_major' : m['MOD_VERSIONMAJOR'],
-                        'version_minor' : m['MOD_VERSIONMINOR'],
-                        'revision' : m['MOD_VERSIONREV'],
-                        'signature' : m['MOD_SIGNATURE']} for m in result]
-            return modules
-        else:
-            raise create_repository_exception(RepositoryErrorCode.MODULE_NOT_FOUND, module)
+        for dependency in direct_dependencies:
+            sub_dependencies = self.resolve_dependencies_upwards(environ, dependency)
+            dependency['dependencies'] = sub_dependencies
+        
+        return direct_dependencies
+
 
 
     def download_module(self, environ, module):
