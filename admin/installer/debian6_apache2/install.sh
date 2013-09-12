@@ -40,6 +40,9 @@ fi
 instanceid=`cat /etc/skarphed/GEN_INSTANCE`
 instanceid=`expr $instanceid + 1`
 
+mkdir -p $SCV_BINARY_CACHEPATH/$instanceid
+cp ./web/coffee.js $SCV_BINARY_CACHEPATH/$instanceid/
+
 mkdir $SCV_WEBPATH$instanceid
 cp -r ./web/* $SCV_WEBPATH$instanceid/
 echo "SCV_INSTANCE_SCOPE_ID = \"$instanceid\"" > $SCV_WEBPATH$instanceid/instanceconf.py

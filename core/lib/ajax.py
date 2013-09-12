@@ -47,9 +47,9 @@ class AJAXHandler(object):
         Handles an AJAX call
         """
         module_manager = self._core.get_module_manager()
-        module = module_manager.get_module_from_widget_id(self._widget_id)
-        html = module.render_html(self._widget_id, self._params)
-        js   = module.render_javascript(self._widget_id, self._params)
+        widget = module_manager.get_widget(self._widget_id)
+        html = widget.render_html(self._params)
+        js   = widget.render_javascript(self._params)
         answer = {'h':html, 'j':js}
         encoder = JSONEncoder()
         answer = encoder.dumps(answer)

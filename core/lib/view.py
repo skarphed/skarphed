@@ -783,6 +783,7 @@ class AJAXView(View):
           </body>
         </html>
         """
+        js_frame = """<script type="text/javascript" id="%d_scr">%s</script>"""
         page_manager = self._core.get_page_manager()
         page = page_manager.get_page(self._page) 
 
@@ -810,7 +811,9 @@ class AJAXView(View):
                 for key in post_args.keys():
                     args[key] = post_args[key].value
 
-            widget_html = widget.render_pure_html(args)
+            widget_html = widget.render_html(args)
+            widget_js = widget.render_javascript(args)
+            widget_html += js_frame%(widget.get_id(), widget_js)
             body = re.sub(r"<%%\s?space:%s\s?%%>"%space_name,widget_html,body)
 
         for box, boxcontent in self._box_mapping.items():
@@ -832,7 +835,9 @@ class AJAXView(View):
                     for key in post_args.keys():
                         args[key] = post_args[key].value
             
-                widget_html = widget.render_pure_html(args)
+                widget_html = widget.render_html(args)
+                widget_js = widget.render_javascript(args)
+                widget_html += js_frame%(widget.get_id(), widget_js)
                 box_html.write(widget_html)
                 if box_orientation == BoxOrientation.VERTICAL:
                     box_html.write("<br>")
@@ -857,6 +862,23 @@ class AJAXView(View):
                       'page_css':page_css,
                       'head':head,
                       'body':body}
+
+class ViewManager(object):
+    def __init__(self, core):
+        self._core = core
+
+        View.set_core(core)
+        self.get_viewlist = View.get_viewlist
+        self.get_from_id = View.get_from_id
+        self.get_from_name = View.get_from_name
+        self.get_from_json = View.get_from_json
+        self.get_default_view = View.get_default_view
+        self.create_default_view = View.create_default_view
+        self.get_currently_rendering_view = View.get_currently_rendering_view
+        self.create = View.create
+        self.delete_mappings_with_widget = View.delete_mappings_with_widget
+        self.delete_mappings_with_module = View.delete_mappings_with_module
+
 
 class Page(object):
     """

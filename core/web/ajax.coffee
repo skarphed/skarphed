@@ -43,16 +43,20 @@ SkdAjax =
     single_action: (action) ->
         req = new XMLHttpRequest()
         req.targetSpace = action.s
+        req.widgetId = action.w
         req.addEventListener 'readystatechange', ->
             if req.readyState is 4
                 success_resultcodes = [200,304]
                 if req.state in success_resultcodes
-                    space = document.getElementById "space_"+req.targetSpace 
-                    space.innerHTML = req.responseText
+                    space = document.getElementById "space_"+req.targetSpace
+                    widget_script = document.getElementById req.widgetId+"_scr"
+                    response = JSON.parse req.responseText
+                    space.innerHTML = response.h
+                    widget_script.innerHTML = response.j
                 else
-                    console.log "Error Loading File"
+                    console.log "Error Loading Content"
         delete(action.s)
-        req.open 'GET', '/ajax/'+JSON.toString(action)
+        req.open 'GET', '/ajax/'+JSON.toString action
         req.send()
 
 SkdAJAX = new SkdAjax()
