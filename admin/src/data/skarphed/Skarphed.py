@@ -198,6 +198,8 @@ class PokeThread(Thread):
             self.lock = False
 
         while True:
+            if self.skarphed.getApplication().quitrequest:
+                break
             sleep(1/self.pokeyness*3)
             self.skarphed.doRPCCall(poke_callback, "poke")
             self.lock = True
