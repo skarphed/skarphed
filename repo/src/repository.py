@@ -182,16 +182,18 @@ class Repository(object):
             while result:
                 for mod in result:
                     mod_ids.append(mod['DEP_MOD_DEPENDSON'])
-                mod_ids_str = ','.join(map(str, mod_ids))
+                mod_ids_sub = ','.join('?' * len(mod_ids))
                 result = environ['db'].query('SELECT DEP_MOD_DEPENDSON \
                         FROM DEPENDENCIES \
-                        WHERE DEP_MOD_ID IN ? AND DEP_MOD_DEPENDSON NOT IN ?;', 
-                        (mod_ids_str, mod_ids_str));
+                        WHERE DEP_MOD_ID IN (%s) AND DEP_MOD_DEPENDSON NOT IN (%s);' %
+                        (mod_ids_sub, mod_ids_sub), tuple(2 * mod_ids))
                 result = result.fetchallmap()
+
+            mod_ids_sub = ','.join('?' * len(mod_ids))
             result = environ['db'].query('SELECT MOD_NAME, MOD_DISPLAYNAME, MOD_SIGNATURE, MOD_ID, \
                     MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV \
-                    FROM MODULES WHERE MOD_ID IN (?) AND MOD_ID != ?;', 
-                    (','.join(map(str, mod_ids)), mod_id));
+                    FROM MODULES WHERE MOD_ID IN (%s) AND MOD_ID != ?;' % mod_ids_sub, 
+                    tuple(mod_ids + [mod_id]));
             result = result.fetchallmap()
             modules = [{'name' : m['MOD_NAME'],
                         'hrname' : m['MOD_DISPLAYNAME'],
