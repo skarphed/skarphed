@@ -84,7 +84,7 @@ class Binary(object):
             stmnt = "SELECT BIN_ID, BIN_MIME,   \
                      (SELECT BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? AND BIN_MD5 != ? AND BIN_SHA256 != ?) AS BIN_DATA \
                      FROM BINARIES WHERE BIN_FILENAME = ?  ;"
-            cur = db.query(cls._core , stmnt, (filename, md5, sha256))
+            cur = db.query(cls._core , stmnt, (filename, md5, sha256, filename))
             row = cur.fetchonemap()
             if row is not None:
                 data_fetched = True
@@ -203,6 +203,10 @@ class Binary(object):
         db = self._core.get_db()
         stmnt = "DELETE FROM BINARIES WHERE BIN_ID = ? ;"
         db.query(self._core, stmnt, (self.get_id(),), commit=True)
+        configuration = self._core.get_configuration()
+        binary_cache_path = os.path.join(configuration.get_entry("global.binary_cache"),
+                                         configuration.get_entry("core.instance_id"))
+        os.unlink(os.path.join(binary_cache_path, self.get_filename()))
         
 
 class Image(Binary):
