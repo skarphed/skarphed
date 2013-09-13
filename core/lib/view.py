@@ -758,14 +758,16 @@ class AJAXView(View):
                 name = view.get_name()
                 return "/web/"+quote(name)
             elif action.get_space() is not None and action.get_widget_id() is not None:
-                link = "SkdAJAX.execute_action(%s);"
+                link = "javascript:SkdAJAX.execute_action(%s);"
                 page_manager = self._core.get_page_manager()
                 page = page_manager.get_page(self.get_page())
                 space_names = page.get_space_names()
                 space_name = space_names[action.get_space()]
                 linkjson = {"w":action.get_widget_id(), "s":space_name, "p":{}}
                 encoder = JSONEncoder()
-                return link%encoder.dumps(encoder.dumps(linkjson)) # Double dumps to escape quotes in json
+                ajaxdata = encoder.encode(linkjson)
+                ajaxdata = ajaxdata.replace('"',"'")
+                return link%ajaxdata# Double dumps to escape quotes in json
                 #necessary because they will probably used in a construct like <a href="SkdAJAX.execute_action({\"w\":1});">
 
     def render(self, environ):

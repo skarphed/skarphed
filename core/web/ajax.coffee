@@ -19,6 +19,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+root = exports ? this
+
 SkdAjax = 
     constructor: ->
         if (typeof @XMLHttpRequest == "undefined")
@@ -37,6 +39,7 @@ SkdAjax =
 
 
     execute_action: (jsonstring) ->
+        jsonstring = jsonstring.replace /'/g, '"'
         actionlist = JSON.parse jsonstring
         this.single_action action for action in actionlist
 
@@ -59,5 +62,5 @@ SkdAjax =
         req.open 'GET', '/ajax/'+JSON.toString action
         req.send()
 
-SkdAJAX = new SkdAjax()
-
+unless root.SkdAJAX
+    root.SkdAJAX = new SkdAjax()

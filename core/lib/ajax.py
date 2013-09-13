@@ -57,8 +57,10 @@ class AJAXHandler(object):
 
 AJAXScript = """
 (function() {
-  var SkdAJAX, SkdAjax,
+  var SkdAjax, root,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+  root = typeof exports !== "undefined" && exports !== null ? exports : this;
 
   SkdAjax = {
     constructor: function() {
@@ -87,6 +89,7 @@ AJAXScript = """
     },
     execute_action: function(jsonstring) {
       var action, actionlist, _i, _len, _results;
+      jsonstring = jsonstring.replace(/'/g, '"');
       actionlist = JSON.parse(jsonstring);
       _results = [];
       for (_i = 0, _len = actionlist.length; _i < _len; _i++) {
@@ -99,15 +102,19 @@ AJAXScript = """
       var req;
       req = new XMLHttpRequest();
       req.targetSpace = action.s;
+      req.widgetId = action.w;
       req.addEventListener('readystatechange', function() {
-        var space, success_resultcodes, _ref;
+        var response, space, success_resultcodes, widget_script, _ref;
         if (req.readyState === 4) {
           success_resultcodes = [200, 304];
           if (_ref = req.state, __indexOf.call(success_resultcodes, _ref) >= 0) {
-            space = document.getElementById(req.targetSpace);
-            return space.innerHTML = req.responseText;
+            space = document.getElementById("space_" + req.targetSpace);
+            widget_script = document.getElementById(req.widgetId + "_scr");
+            response = JSON.parse(req.responseText);
+            space.innerHTML = response.h;
+            return widget_script.innerHTML = response.j;
           } else {
-            return console.log("Error Loading File");
+            return console.log("Error Loading Content");
           }
         }
       });
@@ -117,7 +124,9 @@ AJAXScript = """
     }
   };
 
-  SkdAJAX = new SkdAjax();
+  if (!root.SkdAJAX) {
+    root.SkdAJAX = new SkdAjax();
+  }
 
 }).call(this);
 """
