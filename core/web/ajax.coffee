@@ -19,10 +19,11 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-root = exports ? this
+this.SkdAJAX = 
+    execute_action: (actionlist) ->
+        this.single_action action for action in actionlist
 
-SkdAjax = 
-    constructor: ->
+    single_action: (action) ->
         if (typeof @XMLHttpRequest == "undefined")
             console.log 'XMLHttpRequest is undefined'
             @XMLHttpRequest = ->
@@ -37,13 +38,6 @@ SkdAjax =
                 catch error
                 throw new Error("This browser does not support XMLHttpRequest.")
 
-
-    execute_action: (jsonstring) ->
-        jsonstring = jsonstring.replace /'/g, '"'
-        actionlist = JSON.parse jsonstring
-        this.single_action action for action in actionlist
-
-    single_action: (action) ->
         req = new XMLHttpRequest()
         req.targetSpace = action.s
         req.widgetId = action.w
@@ -59,8 +53,6 @@ SkdAjax =
                 else
                     console.log "Error Loading Content"
         delete(action.s)
-        req.open 'GET', '/ajax/'+JSON.toString action
+        url = '/ajax/'+JSON.stringify (action)
+        req.open 'GET', url, true
         req.send()
-
-unless root.SkdAJAX
-    root.SkdAJAX = new SkdAjax()

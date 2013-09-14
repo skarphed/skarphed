@@ -22,7 +22,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-from json import JSONDecoder, JSONEncoder
+import json
 
 class AJAXHandler(object):
     """
@@ -34,8 +34,7 @@ class AJAXHandler(object):
         """
         self._core = core
 
-        decoder = JSONDecoder()
-        call = decoder.loads(callstring)
+        call = json.loads(callstring)
 
         self._widget_id = call["w"]
         self._params = {}
@@ -51,22 +50,28 @@ class AJAXHandler(object):
         html = widget.render_html(self._params)
         js   = widget.render_javascript(self._params)
         answer = {'h':html, 'j':js}
-        encoder = JSONEncoder()
-        answer = encoder.dumps(answer)
+        answer = json.dumps(answer)
         return answer
 
 AJAXScript = """
 (function() {
-  var SkdAjax, root,
-    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  root = typeof exports !== "undefined" && exports !== null ? exports : this;
-
-  SkdAjax = {
-    constructor: function() {
+  this.SkdAJAX = {
+    execute_action: function(actionlist) {
+      var action, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = actionlist.length; _i < _len; _i++) {
+        action = actionlist[_i];
+        _results.push(this.single_action(action));
+      }
+      return _results;
+    },
+    single_action: function(action) {
+      var req, url;
       if (typeof this.XMLHttpRequest === "undefined") {
         console.log('XMLHttpRequest is undefined');
-        return this.XMLHttpRequest = function() {
+        this.XMLHttpRequest = function() {
           var error;
           try {
             return new ActiveXObject("Msxml2.XMLHTTP.6.0");
@@ -86,20 +91,6 @@ AJAXScript = """
           throw new Error("This browser does not support XMLHttpRequest.");
         };
       }
-    },
-    execute_action: function(jsonstring) {
-      var action, actionlist, _i, _len, _results;
-      jsonstring = jsonstring.replace(/'/g, '"');
-      actionlist = JSON.parse(jsonstring);
-      _results = [];
-      for (_i = 0, _len = actionlist.length; _i < _len; _i++) {
-        action = actionlist[_i];
-        _results.push(this.single_action(action));
-      }
-      return _results;
-    },
-    single_action: function(action) {
-      var req;
       req = new XMLHttpRequest();
       req.targetSpace = action.s;
       req.widgetId = action.w;
@@ -119,14 +110,11 @@ AJAXScript = """
         }
       });
       delete action.s;
-      req.open('GET', '/ajax/' + JSON.toString(action));
-      return req.send();
+      url = '/ajax/' + JSON.stringify(action);
+      req.open('GET', url, true);
+      req.send();
     }
   };
-
-  if (!root.SkdAJAX) {
-    root.SkdAJAX = new SkdAjax();
-  }
 
 }).call(this);
 """

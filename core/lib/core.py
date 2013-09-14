@@ -267,7 +267,7 @@ class Core(object):
             session_manager.set_current_session(session_manager.get_session(environment['HTTP_COOKIE']))
 
         callstring = environment["PATH_INFO"].replace("/ajax/","",1)
-        answer = AJAXHandler(callstring).get_answer()
+        answer = AJAXHandler(self,callstring).get_answer()
         
         self.response_body.append(answer.encode('utf-8'))
 
