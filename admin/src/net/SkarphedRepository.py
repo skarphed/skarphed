@@ -27,11 +27,11 @@ import os
 import urllib2, cookielib
 import json
 import gobject
+from glue.paths import COOKIEPATH
 from glue.threads import Tracker, KillableThread
 from MultiPartForm import MultiPartForm
 import logging
 
-COOKIEPATH = os.path.expanduser('~/.skarphedadmin/cookies.txt')
 cookiejar = cookielib.LWPCookieJar()
 
 if os.path.exists(COOKIEPATH):

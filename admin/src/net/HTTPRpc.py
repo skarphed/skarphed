@@ -28,10 +28,11 @@ import time
 import json
 import gobject
 from glue.threads import Tracker, KillableThread
+from glue.paths import COOKIEPATH
 from common.errors import getAppropriateException, UnknownCoreException
 import logging
 
-COOKIEPATH = os.path.expanduser('~/.skarphedadmin/cookies.txt')
+
 cookiejar = cookielib.LWPCookieJar()
 
 if os.path.exists(COOKIEPATH):

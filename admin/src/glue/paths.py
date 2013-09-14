@@ -40,6 +40,7 @@ if exists(join(P,"DEVMODE")):
         LOCALE = join(P,"..","locale")
         COREFILES = join(P,"..","..","core")
         MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))
+        COOKIEPATH = expanduser(join("~",".skarphedadmin","cookies.txt"))
     elif platform == 'win32':
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
@@ -47,6 +48,7 @@ if exists(join(P,"DEVMODE")):
         LOCALE = join(P,"..","locale")
         COREFILES = join(P,"..","..","core")
         MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))
+        COOKIEPATH = expanduser(join("~",".skarphedadmin","cookies.txt"))
     elif platform == 'darwin':
         DATA = join(P,"..","data")
         ICON = join(DATA,"icon")
@@ -54,6 +56,7 @@ if exists(join(P,"DEVMODE")):
         LOCALE = join(P,"..","locale")
         COREFILES = join(P,"..","..","core")
         MODULEGUI = expanduser(join("~",".skarphedadmin","modulegui"))
+        COOKIEPATH = expanduser(join("~",".skarphedadmin","cookies.txt"))
 
 else:
     ###
