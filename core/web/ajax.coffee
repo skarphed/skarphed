@@ -22,6 +22,7 @@
 this.SkdAJAX = 
     execute_action: (actionlist) ->
         this.single_action action for action in actionlist
+        return undefined
 
     single_action: (action) ->
         if (typeof @XMLHttpRequest == "undefined")
@@ -44,7 +45,7 @@ this.SkdAJAX =
         req.addEventListener 'readystatechange', ->
             if req.readyState is 4
                 success_resultcodes = [200,304]
-                if req.state in success_resultcodes
+                if req.status in success_resultcodes
                     space = document.getElementById "space_"+req.targetSpace
                     widget_script = document.getElementById req.widgetId+"_scr"
                     response = JSON.parse req.responseText
@@ -55,4 +56,4 @@ this.SkdAJAX =
         delete(action.s)
         url = '/ajax/'+JSON.stringify (action)
         req.open 'GET', url, true
-        req.send()
+        req.send null

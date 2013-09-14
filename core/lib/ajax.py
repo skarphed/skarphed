@@ -59,13 +59,12 @@ AJAXScript = """
 
   this.SkdAJAX = {
     execute_action: function(actionlist) {
-      var action, _i, _len, _results;
-      _results = [];
+      var action, _i, _len;
       for (_i = 0, _len = actionlist.length; _i < _len; _i++) {
         action = actionlist[_i];
-        _results.push(this.single_action(action));
+        this.single_action(action);
       }
-      return _results;
+      return void 0;
     },
     single_action: function(action) {
       var req, url;
@@ -98,7 +97,7 @@ AJAXScript = """
         var response, space, success_resultcodes, widget_script, _ref;
         if (req.readyState === 4) {
           success_resultcodes = [200, 304];
-          if (_ref = req.state, __indexOf.call(success_resultcodes, _ref) >= 0) {
+          if (_ref = req.status, __indexOf.call(success_resultcodes, _ref) >= 0) {
             space = document.getElementById("space_" + req.targetSpace);
             widget_script = document.getElementById(req.widgetId + "_scr");
             response = JSON.parse(req.responseText);
@@ -112,7 +111,7 @@ AJAXScript = """
       delete action.s;
       url = '/ajax/' + JSON.stringify(action);
       req.open('GET', url, true);
-      req.send();
+      return req.send(null);
     }
   };
 
