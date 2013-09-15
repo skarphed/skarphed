@@ -184,7 +184,7 @@ class PokeThread(Thread):
                 for view in views:
                     if view.isFullyLoaded():
                         to_execute.append(view.loadFull)
-                to_execute.append(views.refresh)
+                to_execute.append(self.skarphed.getViews().refresh)
 
             if ActivityType.REPOSITORY in activity_types:
                 pass
