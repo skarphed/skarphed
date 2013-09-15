@@ -32,14 +32,6 @@ from glue.threads import Tracker, KillableThread
 from MultiPartForm import MultiPartForm
 import logging
 
-cookiejar = cookielib.LWPCookieJar()
-
-if os.path.exists(COOKIEPATH):
-    cookiejar.load(COOKIEPATH)
-
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
-urllib2.install_opener(opener)
-
 class SkarphedRepositoryException(Exception):
     SIMPLE_ERRORS = {
         2: "Authentication Failed. You are no Administrator",
@@ -105,14 +97,22 @@ class SkarphedRepository(KillableThread):
                 'Cache-Control':'no-cache, no-cache',
                 'Connection':'Keep-Alive',
                 'User-agent' : 'SkarphedAdmin'}
+
+    @classmethod
+    def initialize(cls):
+        cls.cookiejar = cookielib.LWPCookieJar()
+
+        if os.path.exists(COOKIEPATH):
+            cls.cookiejar.load(COOKIEPATH)
+
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cls.cookiejar))
+        urllib2.install_opener(opener)
+
     
     def __init__(self,repo, command, callback=None):
         KillableThread.__init__(self)
         self.repo = repo
         self.callback=callback
-        global cookiejar
-        self.cookiejar = cookiejar
-        
         assert SkarphedRepository.COMMANDS.has_key(command['c'])
         
         url = str(repo.getUrl())
@@ -153,5 +153,7 @@ class SkarphedRepository(KillableThread):
         Wraps the callback, so there will be no concurrent write-operatons
         on the COOKIEFILE
         """
-        self.cookiejar.save(COOKIEPATH, ignore_discard=True, ignore_expires=True)
+        SkarphedRepository.cookiejar.save(COOKIEPATH, ignore_discard=True, ignore_expires=True)
         callback(result)
+
+SkarphedRepository.initialize()

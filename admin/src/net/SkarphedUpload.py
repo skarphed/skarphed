@@ -28,14 +28,6 @@ import gobject
 from glue.paths import COOKIEPATH
 from glue.threads import Tracker, KillableThread
 
-cookiejar = cookielib.LWPCookieJar()
-
-if os.path.exists(COOKIEPATH):
-    cookiejar.load(COOKIEPATH)
-
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
-urllib2.install_opener(opener)
-
 class SkarphedUpload(KillableThread):
     TYPE_TEMPLATE = 0
     RESULT_OK    = 0
@@ -48,6 +40,17 @@ class SkarphedUpload(KillableThread):
                 'Cache-Control':'no-cache, no-cache',
                 'Connection':'Keep-Alive',
                 'User-agent' : 'SkarphedAdmin'}
+
+    @classmethod
+    def initialize(cls):
+        cls.cookiejar = cookielib.LWPCookieJar()
+
+        if os.path.exists(COOKIEPATH):
+            cls.cookiejar.load(COOKIEPATH)
+
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cls.cookiejar))
+        urllib2.install_opener(opener)
+
     
     def __init__(self,server, uploadtype, form, callback=None):
         KillableThread.__init__(self)
@@ -82,7 +85,4 @@ class SkarphedUpload(KillableThread):
         if self.callback is not None:
             gobject.idle_add(self.callback,result)
         
-        
-        
-        
-        
+SkarphedUpload.initialize()

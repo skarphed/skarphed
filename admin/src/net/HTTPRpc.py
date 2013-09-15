@@ -32,15 +32,6 @@ from glue.paths import COOKIEPATH
 from common.errors import getAppropriateException, UnknownCoreException
 import logging
 
-
-cookiejar = cookielib.LWPCookieJar()
-
-if os.path.exists(COOKIEPATH):
-    cookiejar.load(COOKIEPATH)
-
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
-urllib2.install_opener(opener)
-
 class SkarphedRPC(KillableThread):
     HEADERS = { 'Accept-Language':'en-us,en;q=0.5',        
                 'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7', 
@@ -50,14 +41,22 @@ class SkarphedRPC(KillableThread):
                 'Cache-Control':'no-cache, no-cache',
                 'Connection':'Keep-Alive',
                 'User-agent' : 'SkarphedAdmin'}
+    @classmethod
+    def initialize(cls):
+        cls.cookiejar = cookielib.LWPCookieJar()
+
+        if os.path.exists(COOKIEPATH):
+            cls.cookiejar.load(COOKIEPATH)
+
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cls.cookiejar))
+        urllib2.install_opener(opener)
+
     
     def __init__(self,server,callback, method, params=[], errorcallback = None):
         KillableThread.__init__(self)
         self.server = server
         self.callback = callback
         self.errorcallback = errorcallback
-        global cookiejar
-        self.cookiejar = cookiejar
         #TODO: Server Muss online sein! Check!
         
         json_enc = json.JSONEncoder()
@@ -101,5 +100,7 @@ class SkarphedRPC(KillableThread):
         Wraps the callback, so there will be no concurrent write-operatons
         on the COOKIEFILE
         """
-        self.cookiejar.save(COOKIEPATH, ignore_discard=True, ignore_expires=True)
+        SkarphedRPC.cookiejar.save(COOKIEPATH, ignore_discard=True, ignore_expires=True)
         callback(result)
+
+SkarphedRPC.initialize()
