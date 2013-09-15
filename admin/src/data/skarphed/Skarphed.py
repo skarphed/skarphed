@@ -231,6 +231,7 @@ class Skarphed(Instance):
         self.scv_loggedin = self.SCV_LOCKED
         self.load = self.LOADED_NONE
         self.data = {}
+        self.refreshSessionState = False
         
         self.url = url
         self.username = username
@@ -264,12 +265,24 @@ class Skarphed(Instance):
     def invokeDestruction(self):
         self.doRPCCall(self.invokeDestructionCallback, "getInstanceId")
 
+    def setRefreshSessionFlag(self):
+        self.refreshSessionState = True
+
+    def unsetRefreshSessionFlag(self):
+        self.refreshSessionState = False
+
+    def isRefreshingSession(self):
+        return self.refreshSessionState
+
     def setUrl(self,url):
         self.url= url
         self.updated()
     
-    def getUrl(self):
-        return self.url
+    def getUrl(self,without_proto=False):
+        if without_proto:
+            return self.url.replace("http://","",1)
+        else:
+            return self.url
     
     def setScvName(self,name):
         self.username = name
@@ -519,11 +532,11 @@ class Skarphed(Instance):
     def getRoles(self):
         return self.roles
 
-    def doRPCCall(self, callback, method, params=[]):
+    def doRPCCall(self, callback, method, params=[], ignore_session_lock=False):
         """
         sends an http-call to this instance
         """
-        call = net.HTTPRpc.SkarphedRPC(self,callback, method, params)
+        call = net.HTTPRpc.SkarphedRPC(self,callback, method, params, ignore_session_lock)
         call.start()
     
     def getServer(self):

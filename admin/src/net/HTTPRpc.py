@@ -52,11 +52,13 @@ class SkarphedRPC(KillableThread):
         urllib2.install_opener(opener)
 
     
-    def __init__(self,server,callback, method, params=[], errorcallback = None):
+    def __init__(self,server,callback, method, params=[], errorcallback = None, ignore_session_lock=False):
         KillableThread.__init__(self)
         self.server = server
         self.callback = callback
         self.errorcallback = errorcallback
+        self.in_rerun = False
+        self.ignore_session_lock = ignore_session_lock
         #TODO: Server Muss online sein! Check!
         
         json_enc = json.JSONEncoder()
@@ -67,8 +69,21 @@ class SkarphedRPC(KillableThread):
         self.request = urllib2.Request(url,post,self.HEADERS)
 
         Tracker().addThread(self)
+
+    def rerun(self, data):
+        """
+        rerun workload of this thread after session refresh
+        """
+        print "got refreshd session n shit"
+        self.server.unsetRefreshSessionFlag()
+        Tracker().addThread(self)
+        self.in_rerun = True
+        self.run()
         
-    def run(self):        
+    def run(self):
+        while self.server.isRefreshingSession() and not self.ignore_session_lock:
+            time.sleep(0.01)
+
         json_dec = json.JSONDecoder()
         
         try:
@@ -81,6 +96,15 @@ class SkarphedRPC(KillableThread):
         Tracker().removeThread(self)
 
         if result.has_key('error'):
+            # Catch necessity for establishing a new session
+            if result['error'].has_key('message') and result['error']['message'].startswith('SE_0') and not self.in_rerun:
+                self.server.setRefreshSessionFlag()
+                print "About to refresh shit"
+                SkarphedRPC.cookiejar.clear(self.server.getUrl(without_proto=True))
+                print SkarphedRPC.cookiejar
+                self.server.doRPCCall(self.rerun, "authenticateUser", [self.server.getScvName(), self.server.getScvPass()], ignore_session_lock=True)
+                return
+
             if self.errorcallback is None:
                 logging.debug(result['error']['traceback'])
                 exctyp = getAppropriateException(result['error']['class'])
@@ -88,6 +112,7 @@ class SkarphedRPC(KillableThread):
                    exctyp = UnknownCoreException
                 exc = exctyp(result['error']['message'])
                 exc.set_tracebackstring(result['error']['traceback'])
+
                 gobject.idle_add(self.server.getApplication().raiseRPCException, exc) 
             else:
                 gobject.idle_add(self.errorcallback,result)

@@ -24,6 +24,7 @@
 
 import os
 import logging
+import json
 
 from configuration import Configuration
 from database import Database
@@ -44,7 +45,7 @@ from ajax import AJAXHandler
 
 from maintenance import MAINTENANCE_HTML
 
-from common.errors import CoreException
+from common.errors import CoreException, SessionException
 
 class Core(object):
     """
@@ -202,9 +203,18 @@ class Core(object):
         if self.get_configuration().get_entry("core.debug") == True:
             self.environment = environment
 
-        if environment.has_key("HTTP_COOKIE"):
-            session_manager =  self.get_session_manager()
-            session_manager.set_current_session(session_manager.get_session(environment['HTTP_COOKIE']))
+        try:
+            if environment.has_key("HTTP_COOKIE"):
+                session_manager =  self.get_session_manager()
+                session_manager.set_current_session(session_manager.get_session(environment['HTTP_COOKIE']))
+        except SessionException, e:
+            answer = {}
+            answer['error'] = {}
+            answer['error']['traceback'] = ""
+            answer['error']['class'] = e.__class__.__name__
+            answer['error']['message'] = str(e)
+            self.response_body.append(json.dumps(answer))
+            return {"body":self.response_body, "header":self.response_header}
 
         try:
             request_body_size = int(environment.get('CONTENT_LENGTH', 0))
