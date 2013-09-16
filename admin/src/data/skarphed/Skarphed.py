@@ -532,11 +532,11 @@ class Skarphed(Instance):
     def getRoles(self):
         return self.roles
 
-    def doRPCCall(self, callback, method, params=[], ignore_session_lock=False):
+    def doRPCCall(self, callback, method, params=[]):
         """
         sends an http-call to this instance
         """
-        call = net.HTTPRpc.SkarphedRPC(self,callback, method, params, ignore_session_lock)
+        call = net.HTTPRpc.SkarphedRPC(self,callback, method, params)
         call.start()
     
     def getServer(self):

@@ -22,74 +22,48 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-import os
-import urllib2, cookielib
+import urllib2
 import time
 import json
 import gobject
+from net import HTTPCookies, HTTPCall
 from glue.threads import Tracker, KillableThread
-from glue.paths import COOKIEPATH
 from common.errors import getAppropriateException, UnknownCoreException
 import logging
 
-class SkarphedRPC(KillableThread):
-    HEADERS = { 'Accept-Language':'en-us,en;q=0.5',        
-                'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7', 
-                'Content-Type':'application/json; charset=UTF-8',
-                'Keep-Alive':'300', 
-                'Pragma':'no-cache, no-cache',
-                'Cache-Control':'no-cache, no-cache',
-                'Connection':'Keep-Alive',
-                'User-agent' : 'SkarphedAdmin'}
-    @classmethod
-    def initialize(cls):
-        cls.cookiejar = cookielib.LWPCookieJar()
-
-        if os.path.exists(COOKIEPATH):
-            cls.cookiejar.load(COOKIEPATH)
-
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cls.cookiejar))
-        urllib2.install_opener(opener)
-
-    
-    def __init__(self,server,callback, method, params=[], errorcallback = None, ignore_session_lock=False):
+class SkarphedRPC(KillableThread, HTTPCall):    
+    def __init__(self,skarphed,callback, method, params=[], errorcallback = None):
         KillableThread.__init__(self)
-        self.server = server
+        self.skarphed = skarphed
         self.callback = callback
         self.errorcallback = errorcallback
-        self.in_rerun = False
-        self.ignore_session_lock = ignore_session_lock
-        #TODO: Server Muss online sein! Check!
+        #TODO: skarphed Muss online sein! Check!
         
         json_enc = json.JSONEncoder()
         
-        url = str(server.getUrl()+'/rpc/?nocache='+ str(int (time.time()*1000)))
+        url = str(skarphed.getUrl()+'/rpc/?nocache='+ str(int (time.time()*1000)))
         post = '{"service":"skarphed_admin.scvRpc","method":"'+method+'","id":1,"params":'+json_enc.encode(params)+'}'
         
         self.request = urllib2.Request(url,post,self.HEADERS)
 
         Tracker().addThread(self)
 
-    def rerun(self, data):
+    def rerun(self):
         """
         rerun workload of this thread after session refresh
         """
-        print "got refreshd session n shit"
-        self.server.unsetRefreshSessionFlag()
+        self.skarphed.unsetRefreshSessionFlag()
         Tracker().addThread(self)
-        self.in_rerun = True
         self.run()
         
     def run(self):
-        while self.server.isRefreshingSession() and not self.ignore_session_lock:
+        while self.skarphed.isRefreshingSession():
             time.sleep(0.01)
 
-        json_dec = json.JSONDecoder()
-        
         try:
             answer = urllib2.urlopen(self.request)
             plaintext = answer.read() #Line is obviously unnescessary, but a good debugging point :)
-            result = json_dec.decode(plaintext)
+            result = json.loads(plaintext)
         except urllib2.URLError:
             result = {'error':'HTTP-ERROR'}
     
@@ -97,12 +71,10 @@ class SkarphedRPC(KillableThread):
 
         if result.has_key('error'):
             # Catch necessity for establishing a new session
-            if result['error'].has_key('message') and result['error']['message'].startswith('SE_0') and not self.in_rerun:
-                self.server.setRefreshSessionFlag()
-                print "About to refresh shit"
-                SkarphedRPC.cookiejar.clear(self.server.getUrl(without_proto=True))
-                print SkarphedRPC.cookiejar
-                self.server.doRPCCall(self.rerun, "authenticateUser", [self.server.getScvName(), self.server.getScvPass()], ignore_session_lock=True)
+            if result['error'].has_key('message') and result['error']['message'].startswith('SE_0'):
+                self.skarphed.setRefreshSessionFlag()
+                ses = SessionRefreshCall(self.skarphed, self.rerun)
+                ses.start()
                 return
 
             if self.errorcallback is None:
@@ -113,7 +85,7 @@ class SkarphedRPC(KillableThread):
                 exc = exctyp(result['error']['message'])
                 exc.set_tracebackstring(result['error']['traceback'])
 
-                gobject.idle_add(self.server.getApplication().raiseRPCException, exc) 
+                gobject.idle_add(self.skarphed.getApplication().raiseRPCException, exc) 
             else:
                 gobject.idle_add(self.errorcallback,result)
         else:
@@ -125,7 +97,49 @@ class SkarphedRPC(KillableThread):
         Wraps the callback, so there will be no concurrent write-operatons
         on the COOKIEFILE
         """
-        SkarphedRPC.cookiejar.save(COOKIEPATH, ignore_discard=True, ignore_expires=True)
+        HTTPCookies.save()
         callback(result)
 
-SkarphedRPC.initialize()
+class SessionRefreshCall(KillableThread, HTTPCall):
+    """
+    This thread is called to refresh a session with a skarphed instance,
+    this occurs when said session expired
+    """
+
+    def __init__(self, skarphed, callback):
+        KillableThread.__init__(self)
+        self.skarphed = skarphed
+        self.callback = callback
+
+        params = [skarphed.getScvName(), skarphed.getScvPass()]
+
+        url = str(skarphed.getUrl()+'/rpc/?nocache='+ str(int (time.time()*1000)))
+        post = '{"service":"skarphed_admin.scvRpc","method":"authenticateUser","id":1,"params":'+json.dumps(params)+'}'
+        
+        self.request = urllib2.Request(url,post,self.HEADERS)
+
+    def run(self):
+        """
+        refresh the coookie
+        """
+        HTTPCookies.clear(self.skarphed.getUrl(without_proto=True))
+
+        try:
+            answer = urllib2.urlopen(self.request)
+            plaintext = answer.read() #Line is obviously unnescessary, but a good debugging point :)
+            result = json.loads(plaintext)
+        except urllib2.URLError:
+            result = {'error':'HTTP-ERROR'}
+
+        if result.has_key('error'):
+            logging.debug('Could not reestablish session')
+        else:
+            gobject.idle_add(self._callbackWrapper, self.callback)
+
+    def _callbackWrapper(self, callback):
+        """
+        Wraps the callback, so there will be no concurrent write-operatons
+        on the COOKIEFILE
+        """
+        HTTPCookies.save()
+        callback()

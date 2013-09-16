@@ -22,12 +22,10 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-import os
-
-import urllib2, cookielib
+import urllib2
 import json
 import gobject
-from glue.paths import COOKIEPATH
+from net import HTTPCookies, HTTPCall
 from glue.threads import Tracker, KillableThread
 from MultiPartForm import MultiPartForm
 import logging
@@ -64,7 +62,7 @@ class SkarphedRepositoryException(Exception):
             self.message = "Unknown RepositoryError: %d"%errorcode
 
 
-class SkarphedRepository(KillableThread):
+class SkarphedRepository(KillableThread, HTTPCall):
     TYPE_TEMPLATE = 0
     RESULT_OK    = 0
     RESULT_ERROR = 1
@@ -98,17 +96,6 @@ class SkarphedRepository(KillableThread):
                 'Connection':'Keep-Alive',
                 'User-agent' : 'SkarphedAdmin'}
 
-    @classmethod
-    def initialize(cls):
-        cls.cookiejar = cookielib.LWPCookieJar()
-
-        if os.path.exists(COOKIEPATH):
-            cls.cookiejar.load(COOKIEPATH)
-
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cls.cookiejar))
-        urllib2.install_opener(opener)
-
-    
     def __init__(self,repo, command, callback=None):
         KillableThread.__init__(self)
         self.repo = repo
@@ -153,7 +140,5 @@ class SkarphedRepository(KillableThread):
         Wraps the callback, so there will be no concurrent write-operatons
         on the COOKIEFILE
         """
-        SkarphedRepository.cookiejar.save(COOKIEPATH, ignore_discard=True, ignore_expires=True)
+        HTTPCookies.save()
         callback(result)
-
-SkarphedRepository.initialize()
