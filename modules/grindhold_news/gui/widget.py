@@ -28,7 +28,7 @@ import gtk
 
 import os
 
-from data.Generic import GenericObjectStoreException
+from data.skarphed.Skarphed import module_rpc
 
 from gui.skarphed.ViewGenerationControl import ViewGenerationControl
 from gui.InputBox import InputBox
@@ -133,15 +133,12 @@ class WidgetPage(gtk.VBox):
         self._news = data
         self.render()
 
-    def loadNews(self):
-        try:
-            widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException:
-            self.destroy()
-        module = widget.getModule()
+    @module_rpc(loadNewsCallback)
+    def get_news(self):
+        pass
 
-        scv = module.getModules().getSkarphed()
-        scv.doRPCCall(self.loadNewsCallback, "executeModuleMethod", [module.getId(), "get_news", [widget.getId()]])
+    def loadNews(self):
+        self.get_news()
 
 
     def loadNewsEntryCallback(self,data):
@@ -151,16 +148,12 @@ class WidgetPage(gtk.VBox):
 
         self.render()
 
+    @module_rpc(loadNewsEntryCallback)
+    def get_news_entry(self, entry_id):
+        pass
 
     def loadNewsEntry(self, entry_id):
-        try:
-            widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException:
-            self.destroy()
-        module = widget.getModule()
-
-        scv = module.getModules().getSkarphed()
-        scv.doRPCCall(self.loadNewsEntryCallback, "executeModuleMethod", [module.getId(), "get_news_entry", [widget.getId(), entry_id]])
+        self.get_news_entry(entry_id)
 
     def chooseNewsCallback(self, tree=None, path=None, data=None):
         selection = self.builder.get_object("newsview").get_selection()
@@ -171,6 +164,10 @@ class WidgetPage(gtk.VBox):
     def savedEntryCallback(self, data):
         self.loadNewsEntry(self._current_entry["id"])
 
+    @module_rpc(savedEntryCallback)
+    def save_news_entry(self, saving_entry):
+        pass
+
     def saveCallback(self, widget=None, data=None):
         self._saving_entry = self._current_entry
 
@@ -178,14 +175,7 @@ class WidgetPage(gtk.VBox):
         textbuffer = self.builder.get_object("content").get_buffer()
         self._saving_entry["content"] = textbuffer.get_text(textbuffer.get_start_iter(),textbuffer.get_end_iter())
 
-        try:
-            widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException:
-            self.destroy()
-        module = widget.getModule()
-
-        scv = module.getModules().getSkarphed()
-        scv.doRPCCall(self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "save_news_entry", [widget.getId(), self._saving_entry]])
+        self.save_news_entry(self._saving_entry)
 
     def createNewEntryCallback(self, data):
         self.loadNews()
@@ -193,15 +183,12 @@ class WidgetPage(gtk.VBox):
     def newCallback(self, widget=None, data=None):
         InputBox(self, "Please enter the title of the new news-entry", self.executeNew, notEmpty=True)
 
-    def executeNew(self, title):
-        try:
-            widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException:
-            self.destroy()
-        module = widget.getModule()
+    @module_rpc(newCallback)
+    def create_news_entry(self, title):
+        pass
 
-        scv = module.getModules().getSkarphed()
-        scv.doRPCCall(self.createNewEntryCallback, "executeModuleMethod", [module.getId(), "create_news_entry", [widget.getId(), title]])
+    def executeNew(self, title):
+        self.create_news_entry(title)
 
     def getPar(self):
         return self.par

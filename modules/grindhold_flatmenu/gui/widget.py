@@ -31,6 +31,8 @@ import os
 from gui.ObjectCombo import ObjectCombo
 from data.Generic import GenericObjectStoreException
 
+from data.skarphed.Skarphed import module_rpc
+
 class WidgetPage(gtk.VBox):
     HORIZONTALLY = 0
     VERTICALLY = 1
@@ -94,18 +96,19 @@ class WidgetPage(gtk.VBox):
         self._orientation = data['orientation']
         self.render()
 
-    def loadContent(self):
-        try:
-            widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException:
-            self.destroy()
-        module = widget.getModule()
+    @module_rpc(loadContentCallback)
+    def get_content(self):
+        pass
 
-        scv = module.getModules().getSkarphed()
-        scv.doRPCCall(self.loadContentCallback, "executeModuleMethod", [module.getId(), "get_content", [widget.getId()]])
+    def loadContent(self):
+        self.get_content()
 
     def setContentCallback(self, data):
         self.loadContent()
+
+    @module_rpc(setContentCallback)
+    def set_content(self, menuId, orientation):
+        pass
 
     def saveCallback(self, widget=None, data=None):
         menu = self.menu_selector.getSelected()
@@ -115,15 +118,8 @@ class WidgetPage(gtk.VBox):
             orientation = WidgetPage.HORIZONTALLY
         else:
             orientation = WidgetPage.VERTICALLY
-        
-        try:
-            widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException:
-            self.destroy()
-        module = widget.getModule()
 
-        scv = module.getModules().getSkarphed()
-        scv.doRPCCall(self.setContentCallback, "executeModuleMethod", [module.getId(), "set_content", [widget.getId(), menuId, orientation]])        
+        self.set_content(menuId, orientation)        
 
     def getPar(self):
         return self.par

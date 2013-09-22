@@ -28,7 +28,7 @@ import gtk
 
 import os
 
-from data.Generic import GenericObjectStoreException
+from data.skarphed.Skarphed import module_rpc
 
 class WidgetPage(gtk.VBox):
     def __init__(self, parent, widget):
@@ -64,18 +64,19 @@ class WidgetPage(gtk.VBox):
         self._title = data['title']
         self.render()
 
-    def loadContent(self):
-        try:
-            widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
-            self.destroy()
-        module = widget.getModule()
+    @module_rpc(loadContentCallback)
+    def get_content(self):
+        pass
 
-        scv = module.getModules().getSkarphed()
-        scv.doRPCCall(self.loadContentCallback, "executeModuleMethod", [module.getId(), "get_content", [widget.getId()]])
+    def loadContent(self):
+        self.get_content()
 
     def setContentCallback(self, data):
         self.loadContent()
+
+    @module_rpc(setContentCallback)
+    def set_content(self, title, html):
+        pass
 
     def saveCallback(self, widget=None, data=None):
         buff = self.builder.get_object("html_buffer")
@@ -83,14 +84,7 @@ class WidgetPage(gtk.VBox):
         title_entry = self.builder.get_object("title_entry")
         title = title_entry.get_text()
         
-        try:
-            widget = self.getApplication().getLocalObjectById(self.widgetId)
-        except GenericObjectStoreException, e:
-            self.destroy()
-        module = widget.getModule()
-
-        scv = module.getModules().getSkarphed()
-        scv.doRPCCall(self.setContentCallback, "executeModuleMethod", [module.getId(), "set_content", [widget.getId(), html, title]])        
+        self.set_content(html, title)        
 
     def getPar(self):
         return self.par
