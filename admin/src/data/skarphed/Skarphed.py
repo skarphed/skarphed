@@ -23,7 +23,7 @@
 ###########################################################
 
 
-from data.Generic import ObjectStore, GenericSkarphedObject
+from data.Generic import ObjectStore, GenericSkarphedObject, GenericObjectStoreException
 from data.Instance import Instance, InstanceType
 import net.HTTPRpc
 
@@ -69,6 +69,67 @@ def rpc(callback=None, errorhandler=None):
             functionToCall = func.__name__
             args = cleanupArgs(*args,**kwargs)
             skarphed.doRPCCall(callback, functionToCall, handled_object, args, errorhandler)
+        return tortilla
+    return inner_rpc
+
+def module_rpc(callback=None, errorhandler=None):
+    """
+    Module-RPC-Decorator.
+    Basically the same thing as the regular rpc-decorator
+    except, that this decorator is used to acces rpc-methods
+    of the module that calls them.
+
+    if the module on server-side has a methode retrieveId()
+    you can write on the client-implementation of your module:
+
+    def getIdCallback(self,data):
+        pass
+        #do tings with data
+
+    @module_rpc(getIdCallback)
+    def retrieveId(self):
+        pass
+
+    """
+    def inner_rpc(func):
+        def tortilla(*args, **kwargs):
+            def cleanupArgs(*args, **kwargs):
+                retargs = list(args)
+                del(retargs[0])
+                if func.__defaults__ is not None:
+                    retargs.extend(func.__defaults__)
+                return retargs
+
+            handled_object = obj = args[0]
+            application = args[0].getApplication()
+
+            widget = None
+            module = None
+            while type(obj) != Skarphed:
+                if obj.__class__.__name__ == "WidgetPage":
+                    try:
+                        widget = application.getLocalObjectById(obj.widgetId)
+                        obj = widget.getPar()
+                    except GenericObjectStoreException:
+                        return
+                if obj.__class__.__name__ == "ModulePage":
+                    try:
+                        module = application.getLocalObjectById(obj.moduleId)
+                        obj = module.getPar()
+                    except GenericObjectStoreException:
+                        return
+                if obj.__class__.__name__ == "Module":
+                    module = obj
+                obj = obj.getPar()
+            skarphed = obj
+            functionToCall = func.__name__
+            args = cleanupArgs(*args,**kwargs)
+            print widget
+            print module
+            print skarphed
+            if widget is not None:
+                args.insert(0, widget.getId())
+            skarphed.doRPCCall(callback, "executeModuleMethod", handled_object, [module.getId(), functionToCall, args], errorhandler)
         return tortilla
     return inner_rpc
 
