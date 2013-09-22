@@ -137,7 +137,7 @@ class UsersARC(ActionRenderContext):
         self.addAction(_('Create User...'), IconStock.USER, self.createUser)
 
     def createUser(self,data=None):
-        InputBox(self,_("What should be the name of the new User?"), self.obj.createUser,notEmpty=True)
+        InputBox(self,_("What should be the name of the new User?"), self.obj.createNewUser,notEmpty=True)
     
 class UserARC(ActionRenderContext):
     def __init__(self, par, user):
@@ -160,7 +160,7 @@ class ModuleARC(ActionRenderContext):
             self.addAction(_('Update'), IconStock.UPDATE, self.update)
     
     def createWidget(self,data=None):
-        InputBox(self,_("what should be the name of the new Widget?"), self.obj.createWidget, notEmpty=True)
+        InputBox(self,_("what should be the name of the new Widget?"), self.obj.createNewWidget, notEmpty=True)
 
     def cssEditor(self,data=None):
         self.getApplication().mainwin.openCssEditor(self.obj)
@@ -219,7 +219,7 @@ class RolesARC(ActionRenderContext):
         self.addAction(_('Create Role...'), IconStock.ROLE, self.createRole)
 
     def createRole(self, data=None):
-        InputBox(self,_("What should be the name of the new Widget?"), self.obj.createRole)
+        InputBox(self,_("What should be the name of the new Widget?"), self.obj.createNewRole)
     
 class RoleARC(ActionRenderContext):
     def __init__(self, par, role):

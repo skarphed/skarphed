@@ -335,14 +335,14 @@ class Rpc(object):
                 'signature':base64.b64encode(signature),
                 'libstring':configuration.get_entry('global.libpath')}
 
-    def setRepository(self, params):
+    def changeRepository(self, params):
         ip = str(params[0])
         port = int(params[1])
 
         module_manager = self._core.get_module_manager()
         module_manager.set_repository(ip, port, '(default)')
 
-    def getRepository(self, params):
+    def retrieveRepository(self, params):
         module_manager = self._core.get_module_manager()
         repo = module_manager.get_repository()
         return {"id":repo.get_id(), "ip":repo.get_ip(), 
@@ -357,7 +357,7 @@ class Rpc(object):
         module_manager.invoke_update(module_meta)
         return True
 
-    def updateModules(self, params):
+    def invokeUpdateModules(self, params):
         module_manager = self._core.get_module_manager()
         module_manager.updateModules()
         return 0
@@ -414,7 +414,7 @@ class Rpc(object):
 
         return operations
 
-    def getSites(self, params):
+    def retrieveSites(self, params):
         page_manager = self._core.get_page_manager()
 
         pages = page_manager.get_pages()
@@ -806,7 +806,7 @@ class Rpc(object):
             running = False
         return running
 
-    def getViews(self, params):
+    def retrieveViews(self, params):
         view_manager = self._core.get_view_manager()
         viewlist = view_manager.get_viewlist()
         return viewlist
@@ -857,7 +857,7 @@ class Rpc(object):
         view.set_params_for_widget(widget_id, mapping)
         view.store()
 
-    def uploadBinary(self, params):
+    def storeBinary(self, params):
         data = base64.b64decode(params[0])
         filename = str(params[1])
 
@@ -867,7 +867,7 @@ class Rpc(object):
         binary.store()
         return binary.get_id()
 
-    def setMaintenanceMode(self, params):
+    def changeMaintenanceMode(self, params):
         state = bool(params[0])
 
         session_user = self._core.get_session_manager().get_current_session_user()
@@ -881,10 +881,10 @@ class Rpc(object):
 
         return True
 
-    def getMaintenanceMode(self, params):
+    def retrieveMaintenanceMode(self, params):
         return self._core.is_maintenance_mode()
 
-    def setRendermode(self,params):
+    def changeRendermode(self,params):
         mode = str(params[0])
 
         session_user = self._core.get_session_manager().get_current_session_user()
@@ -893,7 +893,7 @@ class Rpc(object):
 
         return self._core.set_rendermode(mode)
 
-    def getRendermode(self,params):
+    def retrieveRendermode(self,params):
         return self._core.get_rendermode()
 
     def widgetActivateViewGeneration(self, params):

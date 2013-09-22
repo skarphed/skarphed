@@ -25,6 +25,7 @@
 import base64
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
 class Template(GenericSkarphedObject):
     def __init__(self,parent, data = {}):
@@ -48,8 +49,12 @@ class Template(GenericSkarphedObject):
     def loadCallback(self,res):
         self.refresh(res)
     
+    @rpc(loadCallback)
+    def getCurrentTemplate(self):
+        pass
+
     def load(self):
-        self.getSkarphed().doRPCCall(self.loadCallback, "getCurrentTemplate")
+        self.getCurrentTemplate()
     
     def uploadCallback(self,res):
         severe_error_happened = False
@@ -62,18 +67,26 @@ class Template(GenericSkarphedObject):
             self.load()
             self.getSkarphed().getMaintenanceMode()
     
+    @rpc(uploadCallback)
+    def installTemplate(self, template_data):
+        pass
+
     def upload(self, filepath):
         template_file = open(filepath,'r')
         templatedata = base64.b64encode(template_file.read())
-        self.getSkarphed().doRPCCall(self.uploadCallback, "installTemplate", [templatedata])
+        self.installTemplate(templatedata)
         template_file.close()
 
     def repoTemplatesCallback(self, json):
         self.data['available'] = json
         self.updated()
 
+    @rpc(repoTemplatesCallback)
+    def refreshAvailableTemplates(self):
+        pass
+
     def getRepoTemplates(self):
-        self.getSkarphed().doRPCCall(self.repoTemplatesCallback, "refreshAvailableTemplates")
+        self.refreshAvailableTemplates()
 
     def getAvailableTemplates(self):
         return self.data['available']
@@ -83,8 +96,12 @@ class Template(GenericSkarphedObject):
         self.load()
         self.getSkarphed().getMaintenanceMode()
 
+    @rpc(installFromRepoCallback)
+    def installTemplateFromRepo(self, template_nr):
+        pass
+
     def installFromRepo(self, nr):
-        self.getSkarphed().doRPCCall(self.installFromRepoCallback, "installTemplateFromRepo", [nr])
+        self.installTemplateFromRepo(nr)
 
     def getPar(self):
         return self.par

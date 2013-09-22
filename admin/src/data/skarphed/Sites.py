@@ -24,6 +24,7 @@
 
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
 from Site import Site
 
@@ -55,8 +56,12 @@ class Sites(GenericSkarphedObject):
                 return menu
         return None
     
+    @rpc(refreshCallback)
+    def retrieveSites(self):
+        pass
+
     def refresh(self):
-        self.getSkarphed().doRPCCall(self.refreshCallback, "getSites")
+        self.retrieveSites()
     
     def getSites(self):
         return self.children

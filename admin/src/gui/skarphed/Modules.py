@@ -161,7 +161,7 @@ class ModulesPage(ObjectPageAbstract):
         modules = self.getMyObject()
         if not modules:
             return
-        modules.installModule(module)
+        modules.invokeInstallModule(module)
     
     def aListReceiveCallback(self, treeview, context, x, y, selection, info , timestamp):
         if context.get_source_widget().get_name() != "IList":
@@ -170,7 +170,7 @@ class ModulesPage(ObjectPageAbstract):
         modules = self.getMyObject()
         if not modules:
             return
-        modules.uninstallModule(module)
+        modules.invokeUninstallModule(module)
     
     def getModuleIterById(self, moduleList, moduleId):
         def search(model, path, rowiter, moduleId):

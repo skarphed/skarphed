@@ -147,7 +147,7 @@ class ViewPage(ObjectPageAbstract):
                     raise ViewException(ViewException.get_msg(8,wgt.getName()))
                 mapping[spacewidget.getSpaceId()]= widgetId
                 used_widgetIds.append(widgetId)
-        view.setSpaceWidgetMapping(mapping)
+        view.changeSpaceWidgetMapping(mapping)
         
         boxmapping = {}
         for boxwidget in self.compose_boxwidgets.values():
@@ -160,7 +160,7 @@ class ViewPage(ObjectPageAbstract):
                     boxmapping[boxwidget.getBoxId()] = []
                 boxmapping[boxwidget.getBoxId()].append(widgetId)
                 used_widgetIds.append(widgetId)
-        view.setBoxMapping(boxmapping)
+        view.changeBoxMapping(boxmapping)
             
     def changedPageCallback(self, widget=None, data=None):
         pass
@@ -550,7 +550,7 @@ class ParamWidget(gtk.VBox):
             self.destroy()
             return
 
-        view.setWidgetParamMapping(widget, self.liststore.newWidgetParamMapping)
+        view.changeWidgetParamMapping(widget, self.liststore.newWidgetParamMapping)
 
 
     def setWidget(self, widget):

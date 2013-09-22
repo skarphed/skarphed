@@ -24,6 +24,7 @@
 
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
 from Role import Role
 
@@ -42,6 +43,12 @@ class Roles(GenericSkarphedObject):
             else:
                 self.getRoleById(role['id']).refresh(role)
                 
+    @rpc(refreshCallback)
+    def getRoles(self):
+        pass
+    
+    def refresh(self):
+        self.getRoles()
     
     def getRoleById(self,id):
         for role in self.children:
@@ -49,17 +56,18 @@ class Roles(GenericSkarphedObject):
                 return role
         return None
     
-    def refresh(self):
-        self.getSkarphed().doRPCCall(self.refreshCallback, "getRoles")
-    
     def getName(self):
         return "Roles"
     
     def createRoleCallback(self,json):
         self.refresh()
     
-    def createRole(self,name):
-        self.getSkarphed().doRPCCall(self.createRoleCallback, "createRole", [{'name':name}])
+    @rpc(createRoleCallback)
+    def createRole(self,roledata):
+        pass
+    
+    def createNewRole(self,name):
+        self.createRole({'name':name})
     
     def getPar(self):
         return self.par

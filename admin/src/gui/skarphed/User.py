@@ -192,9 +192,9 @@ class UserPage(ObjectPageAbstract):
             if newpw1 == "":
                 return False # New password is empty
             if is_active_user:
-                user.alterPassword(newpw1,oldpw)
+                user.changePassword(newpw1,oldpw)
             else:
-                user.alterPassword(newpw1)
+                user.changePassword(newpw1)
     
     def toggledRole(self,render=None,path=None):
         rowiter = self.perm_rolelist.get_iter(path)

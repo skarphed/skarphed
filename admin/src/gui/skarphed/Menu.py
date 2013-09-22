@@ -131,11 +131,11 @@ class MenuPage(ObjectPageAbstract):
             self.addbutton.set_sensitive(True)
         
     def cb_Add(self,widget=None,data=None):
-        self.edit_menutree.getSelectedMenuItem().createMenuItem()
+        self.edit_menutree.getSelectedMenuItem().createNewMenuItem()
     
     def cb_Remove(self,widget=None,data=None):
         item = self.edit_menutree.getSelectedMenuItem()
-        item.getPar().deleteMenuItem(item)
+        item.getPar().deleteChildItem(item)
     
     def cb_Increase(self,widget=None,data=None):
         self.edit_menutree.getSelectedMenuItem().increaseOrder()
@@ -347,7 +347,7 @@ class ActionWidgetConfig(gtk.Table):
     
     def deleteCallback(self, widget=None, data=None):
         action = self.getApplication().getLocalObjectById(self.actionId)
-        action.getPar().deleteAction(action)
+        action.getPar().deleteChildAction(action)
     
     def increaseOrderCallback(self, widget=None, data=None):
         action = self.getApplication().getLocalObjectById(self.actionId)

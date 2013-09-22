@@ -23,6 +23,7 @@
 ###########################################################
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
 import hashlib
 import base64
@@ -60,8 +61,12 @@ class Site(GenericSkarphedObject):
         self.data = data
         self.updated()
     
+    @rpc(refresh)
+    def getSite(self, siteId):
+        pass
+
     def update(self):
-        self.getSkarphed().doRPCCall(self.refresh,"getSite",[self.getId()])
+        self.getSite(self.getId())
     
     def getWidgetInSpace(self, spaceId):
         if self.data['spaces'][str(spaceId)] == 0:
@@ -129,15 +134,23 @@ class Site(GenericSkarphedObject):
             else:
                 self.getMenuById(menu['id']).update(menu)
         self.updated()
-        
+    
+    @rpc(loadMenusCallback)
+    def getMenusOfSite(self, siteId):
+        pass
+
     def loadMenus(self):
-        self.getSkarphed().doRPCCall(self.loadMenusCallback, "getMenusOfSite", [self.getId()])
+        self.getMenusOfSite(self.getId())
     
     def createMenuCallback(self,json):
         self.loadMenus()
-        
+    
+    @rpc(createMenuCallback)
+    def createMenuForSite(self, siteid):
+        pass
+
     def createMenu(self):
-        self.getSkarphed().doRPCCall(self.createMenuCallback, "createMenuForSite", [self.getId()])
+        self.createMenuForSite(self.getId())
     
     def getPar(self):
         return self.par

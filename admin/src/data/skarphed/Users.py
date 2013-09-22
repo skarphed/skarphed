@@ -24,6 +24,7 @@
 
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
 from User import User
 
@@ -47,14 +48,18 @@ class Users(GenericSkarphedObject):
                 self.removeChild(user)
         self.updated()
                 
+    @rpc(refreshCallback)
+    def getUsers(self):
+        pass
+
+    def refresh(self):
+        self.getUsers()
+    
     def getUserById(self,userId):
         for u in self.children:
             if u.getId() == userId:
                 return u
         return None
-    
-    def refresh(self):
-        self.getSkarphed().doRPCCall(self.refreshCallback, "getUsers")
     
     def getName(self):
         return "Users"
@@ -62,9 +67,13 @@ class Users(GenericSkarphedObject):
     def createUserCallback(self,json):
         self.refresh()
     
-    def createUser(self,name):
-        self.getSkarphed().doRPCCall(self.createUserCallback, "createUser", [name,"default"])
+    @rpc(createUserCallback)
+    def createUser(self,name, password="default"):
+        pass
     
+    def createNewUser(self, name):
+        self.createUser(name)
+
     def getPar(self):
         return self.par
     

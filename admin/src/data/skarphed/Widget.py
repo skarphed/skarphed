@@ -24,6 +24,7 @@
 
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
 class Widget(GenericSkarphedObject):
     def __init__(self,parent, data = {}):
@@ -64,34 +65,50 @@ class Widget(GenericSkarphedObject):
         self.cssPropertySet = json
         self.updated()
     
+    @rpc(loadCssPropertySetCallback)
+    def getCssPropertySet(self, module_id, widget_id, session_id=None):
+        pass
+
     def loadCssPropertySet(self):
         nr = self.getId()
         if nr is not None:
-            self.getModule().getModules().getSkarphed().doRPCCall(self.loadCssPropertySetCallback, "getCssPropertySet", [None,nr,None])
+            self.getCssPropertySet(None,nr,None)
     
-    def getCssPropertySet(self):
+    def getCssPropertySetForGui(self):
         return self.cssPropertySet
     
-    def setCssPropertySet(self,cssPropertySet):
+    def setCssPropertySetFromGui(self,cssPropertySet):
         self.cssPropertySet['properties'] = cssPropertySet
     
     def saveCssPropertySetCallback(self,json):
         self.loadCssPropertySet()
     
+    @rpc(saveCssPropertySetCallback)
+    def setCssPropertySet(self, cssPropertySet):
+        pass
+
     def saveCssPropertySet(self):
-        self.getModule().getModules().getSkarphed().doRPCCall(self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.setCssPropertySet(self.cssPropertySet)
 
     def activateGeneratingViewsCallback(self, data):
         self.getModule().loadWidgets()
 
+    @rpc(activateGeneratingViewsCallback)
+    def widgetActivateViewGeneration(self, widgetId, viewId, spaceId):
+        pass
+
     def activateGeneratingViews(self, view, spaceId):
-        self.getModule().getModules().getSkarphed().doRPCCall(self.activateGeneratingViewsCallback, "widgetActivateViewGeneration", [self.getId(), view.getId(), spaceId])
+        self.widgetActivateViewGeneration(self.getId(), view.getId(), spaceId)
 
     def deactivateGeneratingViewsCallback(self, data):
         self.getModule().loadWidgets()
 
+    @rpc(deactivateGeneratingViewsCallback)
+    def widgetDeactivateViewGeneration(self, widgetId):
+        pass
+
     def deactivateGeneratingViews(self):
-        self.getModule().getModules().getSkarphed().doRPCCall(self.deactivateGeneratingViewsCallback, "widgetDeactivateViewGeneration", [self.getId()])
+        self.widgetDeactivateViewGeneration(self.getId())
 
     def isGeneratingViews(self):
         return self.data['gviews']
@@ -106,8 +123,12 @@ class Widget(GenericSkarphedObject):
             actionlist.loadActions()
         self.destroy()
     
+    @rpc(deleteCallback)
+    def deleteWidget(self, widget_id):
+        pass
+
     def delete(self):
-        self.getModule().getModules().getSkarphed().doRPCCall(self.deleteCallback, "deleteWidget", [self.getId()])
+        self.deleteWidget(self.getId())
     
     def getPar(self):
         return self.par

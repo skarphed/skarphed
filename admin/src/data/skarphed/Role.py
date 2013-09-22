@@ -22,10 +22,8 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-
 from data.Generic import GenericSkarphedObject
-
-import json
+from data.skarphed.Skarphed import rpc
 
 class Role(GenericSkarphedObject):
     def __init__(self,parent, data = {}):
@@ -53,26 +51,42 @@ class Role(GenericSkarphedObject):
         self.permissiondata=data
         self.updated()
     
+    @rpc(fetchPermissionsCallback)
+    def getRightsForRolePage(self, roleId):
+        pass
+
     def fetchPermissions(self):
-        self.getRoles().getSkarphed().doRPCCall(self.fetchPermissionsCallback, "getRightsForRolePage", [self.getId()])
+        self.getRightsForRolePage(self.getId())
     
     def assignPermissionCallback(self,data):
         self.fetchPermissions()
+
+    @rpc(assignPermissionCallback)
+    def grantRightToRole(self, roleId, permission):
+        pass
     
     def assignPermission(self,perm):
-        self.getRoles().getSkarphed().doRPCCall(self.assignPermissionCallback, "grantRightToRole", [self.getId(),perm])
+        self.grantRightToRole(self.getId(),perm)
     
     def removePermissionCallback(self,data):
         self.fetchPermissions()
+
+    @rpc(removePermissionCallback)
+    def revokeRightFromRole(self, roleId, permission):
+        pass
     
     def removePermission(self,perm):
-        self.getRoles().getSkarphed().doRPCCall(self.removePermissionCallback, "revokeRightFromRole", [self.getId(),perm])
+        self.revokeRightFromRole(self.getId(),perm)
     
     def deleteCallback(self,json):
         self.destroy()
     
+    @rpc(deleteCallback)
+    def deleteRole(self, roleId):
+        pass
+
     def delete(self):
-        self.getRoles().getSkarphed().doRPCCall(self.deleteCallback, "deleteRole", [self.getId()])
+        self.deleteRole(self.getId())
     
     def refresh(self,data):
         self.data = data

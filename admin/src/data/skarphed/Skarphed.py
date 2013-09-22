@@ -27,6 +27,51 @@ from data.Generic import ObjectStore, GenericSkarphedObject
 from data.Instance import Instance, InstanceType
 import net.HTTPRpc
 
+def rpc(callback=None, errorhandler=None):
+    """
+    This decorator is used to declare that a function
+    exists at a core-site that can be called via rpc.
+
+    for example: if you have a function doStuff()
+    in core/lib/rpc.py, and want to call that function, write 
+    like this in GUI-code:
+
+    def doStuffCallback(self, data):
+        print data 
+        # do something with data
+
+    @rpc(doStuffCallback)
+    def doStuff(self, param1, param2, param3, param4="default"):
+        pass
+
+    calling doStuff("a","b","c") will cause the gui to do an
+    rpc call to the skarphed-instance and deliver the result
+    to doStuffCallback
+
+    IMPORTANT: kwargs do _not_ work as expected here. you can only
+      specify a default-argument for this function that will be
+      transmitted _everytime_. You CANNOT overwrite them by using
+      a different kwarg in your call
+      As in our example, param4 will allways be "default".
+    """
+    def inner_rpc(func):
+        def tortilla(*args, **kwargs):
+            def cleanupArgs(*args, **kwargs):
+                retargs = list(args)
+                del(retargs[0])
+                if func.__defaults__ is not None:
+                    retargs.extend(func.__defaults__)
+                return retargs
+
+            handled_object = skarphed = args[0]
+            while type(skarphed) != Skarphed:
+                skarphed = skarphed.getPar()
+            functionToCall = func.__name__
+            args = cleanupArgs(*args,**kwargs)
+            skarphed.doRPCCall(callback, functionToCall, handled_object, args, errorhandler)
+        return tortilla
+    return inner_rpc
+
 from Users import Users
 from Modules import Modules
 from Roles import Roles
@@ -139,72 +184,79 @@ class PokeThread(Thread):
 
     
     def run(self):
-        def poke_callback(data):
-            amount = data["amount"]
-            activity_types = data["activity_types"]
-            delta = self.last_amount-amount
-            self.pokeyness -= 0.2
-            if self.pokeyness < PokeThread.POKEYNESS_MIN:
-                self.pokeyness = PokeThread.POKEYNESS_MIN
-            if delta > 2:
-                self.pokeyness += 2
-                if self.pokeyness > PokeThread.POKEYNESS_MAX:
-                    self.pokeyness = PokeThread.POKEYNESS_MAX
-
-
-            to_execute = []
-
-            if ActivityType.USER in activity_types:
-                to_execute.append(self.skarphed.getUsers().refresh)
-                
-            if ActivityType.MODULE in activity_types:
-                to_execute.append(self.skarphed.getModules().refresh)
-
-            if ActivityType.WIDGET in activity_types:
-                for module in self.skarphed.getModules().getAllModules():
-                    to_execute.append(module.loadWidgets)
-
-            if ActivityType.ROLE in activity_types:
-                to_execute.append(self.skarphed.getRoles().refresh)
-
-            if ActivityType.REPOSITORY in activity_types:
-                to_execute.append(self.skarphed.getRepository)
-
-            if ActivityType.PERMISSION in activity_types:
-                if self.skarphed.getRoles().refresh not in to_execute:
-                    to_execute.append(self.skarphed.getRoles().refresh)
-
-
-            if ActivityType.MENU in activity_types:
-                for site in self.skarphed.getSites().getSites():
-                    to_execute.append(site.loadMenus)
-
-            if ActivityType.VIEW in activity_types:
-                views = self.skarphed.getViews().getViews()
-                for view in views:
-                    if view.isFullyLoaded():
-                        to_execute.append(view.loadFull)
-                to_execute.append(self.skarphed.getViews().refresh)
-
-            if ActivityType.REPOSITORY in activity_types:
-                pass
-
-            if ActivityType.TEMPLATE in activity_types:
-                to_execute.append(self.skarphed.getTemplate().load)
-
-            for method in to_execute:
-                gobject.idle_add(method)
-
-            self.lock = False
-
         while True:
             if self.skarphed.getApplication().quitrequest:
                 break
             sleep(1/self.pokeyness*3)
-            self.skarphed.doRPCCall(poke_callback, "poke")
+            self.poke()
             self.lock = True
             while self.lock:
                 sleep(0.2)
+
+    def poke_callback(self, data):
+        amount = data["amount"]
+        activity_types = data["activity_types"]
+        delta = self.last_amount-amount
+        self.pokeyness -= 0.2
+        if self.pokeyness < PokeThread.POKEYNESS_MIN:
+            self.pokeyness = PokeThread.POKEYNESS_MIN
+        if delta > 2:
+            self.pokeyness += 2
+            if self.pokeyness > PokeThread.POKEYNESS_MAX:
+                self.pokeyness = PokeThread.POKEYNESS_MAX
+
+
+        to_execute = []
+
+        if ActivityType.USER in activity_types:
+            to_execute.append(self.skarphed.getUsers().refresh)
+            
+        if ActivityType.MODULE in activity_types:
+            to_execute.append(self.skarphed.getModules().refresh)
+
+        if ActivityType.WIDGET in activity_types:
+            for module in self.skarphed.getModules().getAllModules():
+                to_execute.append(module.loadWidgets)
+
+        if ActivityType.ROLE in activity_types:
+            to_execute.append(self.skarphed.getRoles().refresh)
+
+        if ActivityType.REPOSITORY in activity_types:
+            to_execute.append(self.skarphed.getRepository)
+
+        if ActivityType.PERMISSION in activity_types:
+            if self.skarphed.getRoles().refresh not in to_execute:
+                to_execute.append(self.skarphed.getRoles().refresh)
+
+
+        if ActivityType.MENU in activity_types:
+            for site in self.skarphed.getSites().getSites():
+                to_execute.append(site.loadMenus)
+
+        if ActivityType.VIEW in activity_types:
+            views = self.skarphed.getViews().getViews()
+            for view in views:
+                if view.isFullyLoaded():
+                    to_execute.append(view.loadFull)
+            to_execute.append(self.skarphed.getViews().refresh)
+
+        if ActivityType.REPOSITORY in activity_types:
+            pass
+
+        if ActivityType.TEMPLATE in activity_types:
+            to_execute.append(self.skarphed.getTemplate().load)
+
+        for method in to_execute:
+            gobject.idle_add(method)
+
+        self.lock = False
+
+    @rpc(poke_callback)
+    def poke(self):
+        pass
+
+    def getPar(self):
+        return self.skarphed
 
 
 
@@ -262,8 +314,15 @@ class Skarphed(Instance):
         destroyer = target.getDestroyer()(int(instanceId), self)
         destroyer.takedown()
 
+    @rpc(invokeDestructionCallback)
+    def getInstanceId(self):
+        #HERE BE DRAGONS: invoke destruction is currently the only use
+        #                 of getInstanceId, but this may change in the
+        #                 future. Works for now, but likely won't always.
+        pass
+
     def invokeDestruction(self):
-        self.doRPCCall(self.invokeDestructionCallback, "getInstanceId")
+        self.getInstanceId()
 
     def setRefreshSessionFlag(self):
         self.refreshSessionState = True
@@ -311,7 +370,7 @@ class Skarphed(Instance):
     def setPublicKey(self, publickey):
         self.publickey = publickey
 
-    def getPublicKey(self):
+    def getPublickey(self):
         return self.publickey
 
     def loadPublicKeyCallback(self, result):
@@ -323,8 +382,12 @@ class Skarphed(Instance):
             else:
                 pass #TODO Implement Error behaviour. this means, the publickey changed since last login
 
+    @rpc(loadPublicKeyCallback)
+    def getPublicKey(self):
+        pass
+
     def loadPublicKey(self):
-        self.doRPCCall(self.loadPublicKeyCallback, "getPublicKey")
+        self.getPublicKey()
     
     def getServerInfoCallback(self, result):
         self.data['name'] = result
@@ -332,21 +395,33 @@ class Skarphed(Instance):
         self.state = self.STATE_ONLINE
         self.updated()
     
+    @rpc(getServerInfoCallback)
     def getServerInfo(self):
-        self.doRPCCall(self.getServerInfoCallback, "getServerInfo")
+        pass
     
+    def loadServerInfo(self):
+        self.getServerInfo()
+
     def getMaintenanceModeCallback(self,data):
         self.maintenance_mode = data
         self.updated()
 
+    @rpc(getMaintenanceModeCallback)
+    def retrieveMaintenanceMode(self):
+        pass
+
     def getMaintenanceMode(self):
-        self.doRPCCall(self.getMaintenanceModeCallback, "getMaintenanceMode")
+        self.retrieveMaintenanceMode()
 
     def setMaintenanceModeCallback(self,data):
         self.getMaintenanceMode()
 
+    @rpc(setMaintenanceModeCallback)
+    def changeMaintenanceMode(self, state):
+        pass
+
     def setMaintenanceMode(self, active):
-        self.doRPCCall(self.setMaintenanceModeCallback, "setMaintenanceMode", [active])    
+        self.changeMaintenanceMode(active)    
 
     def isMaintenanceMode(self):
         return self.maintenance_mode
@@ -355,14 +430,22 @@ class Skarphed(Instance):
         self.rendermode = data
         self.updated()
 
+    @rpc(loadRendermodeCallback)
+    def retrieveRendermode(self):
+        pass
+
     def loadRendermode(self):
-        self.doRPCCall(self.loadRendermodeCallback, "getRendermode")
+        self.retrieveRendermode()
 
     def setRendermodeCallback(self, data):
         self.loadRendermode()
 
+    @rpc(setRendermodeCallback)
+    def changeRendermode(self, mode):
+        pass
+
     def setRendermode(self, mode):
-        self.doRPCCall(self.setRendermodeCallback, "setRendermode", [mode])
+        self.changeRendermode(mode)
 
     def getRendermode(self):
         return self.rendermode
@@ -406,14 +489,18 @@ class Skarphed(Instance):
         self.updated()
         self.loadSkarphedChildren()
 
+    @rpc(authenticateCallback)
+    def authenticateUser(self, username, password):
+        pass
+
+    def authenticate(self):
+        self.authenticateUser(self.username,self.password)
+    
     def checkPermission(self, permission):
         return permission in self.serverRights
-        
-    def authenticate(self):
-        self.doRPCCall(self.authenticateCallback, "authenticateUser", [self.username,self.password])
     
     def establishConnections(self):
-        self.getServerInfo()
+        self.loadServerInfo()
         self.authenticate()
     
     def getName(self):
@@ -431,11 +518,20 @@ class Skarphed(Instance):
         self.repo_url = data["ip"]+":"+str(data["port"])
         self.updated()
 
+    @rpc(getRepositoryCallback)
+    def retrieveRepository(self):
+        pass
+
     def getRepository(self):
-        self.doRPCCall(self.getRepositoryCallback, "getRepository")
+        self.retrieveRepository()
         
     def setRepositoryCallback(self,res):
         self.modules.refresh()
+
+    @rpc(setRepositoryCallback)
+    def changeRepository(self, hostname, port):
+        pass
+
     def setRepository(self,repostring):
         hostname = ""
         port = 80
@@ -457,7 +553,7 @@ class Skarphed(Instance):
         if hostname == "":
             raise RepositoryException(RepositoryException.get_msg(102))
 
-        self.doRPCCall(self.setRepositoryCallback, "setRepository", [hostname,port])
+        self.changeRepository(hostname,port)
         self.repo_url = hostname+":"+str(port)
         
     def loadProfileInfo(self,profileInfo):
@@ -473,26 +569,38 @@ class Skarphed(Instance):
         self.cssPropertySet = res
         self.updated()
     
+    @rpc(loadCssPropertySetCallback)
+    def getCssPropertySet(self, module_id=None, widget_id=None, session_id=None):
+        pass
+
     def loadCssPropertySet(self):
-        self.doRPCCall(self.loadCssPropertySetCallback, "getCssPropertySet", [None,None,None])
+        self.getCssPropertySet()
     
     def updateModulesCallback(self):
         self.modules.refresh()
     
+    @rpc(updateModulesCallback)
+    def invokeUpdateModules(self):
+        pass
+
     def updateModules(self):
-        self.doRPCCall(self.updateModulesCallback, "updateModules")
+        self.invokeUpdateModules()
     
-    def getCssPropertySet(self):
+    def getCssPropertySetForGui(self):
         return self.cssPropertySet
     
-    def setCssPropertySet(self,cssPropertySet):
+    def setCssPropertySetFromGui(self,cssPropertySet):
         self.cssPropertySet['properties'] = cssPropertySet
     
     def saveCssPropertySetCallback(self,res):
         self.loadCssPropertySet()
+
+    @rpc(saveCssPropertySetCallback)
+    def setCssPropertySet(self, csspropertyset):
+        pass
     
     def saveCssPropertySet(self):
-        self.doRPCCall(self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.setCssPropertySet(self.cssPropertySet)
     
     def getOperationManager(self):
         return self.operationManager
@@ -506,13 +614,17 @@ class Skarphed(Instance):
         # res is the new ID of the uploaded binary file
         return res
 
+    @rpc(uploadBinaryCallback)
+    def storeBinary(self, data, filename):
+        pass
+
     def uploadBinary(self, filepath):
         f = open(filepath, 'r')
         data = f.read()
         f.close()
         data = base64.b64encode(data)
         filename = filepath.split("/")[1:]
-        self.doRPCCall(self.uploadBinaryCallback, "uploadBinary", [data, filename])
+        self.storeBinary(data, filename)
 
     def getTemplate(self):
         return self.template
@@ -532,11 +644,11 @@ class Skarphed(Instance):
     def getRoles(self):
         return self.roles
 
-    def doRPCCall(self, callback, method, params=[]):
+    def doRPCCall(self, callback, method, handled_object, params=[], errorcallback=None):
         """
         sends an http-call to this instance
         """
-        call = net.HTTPRpc.SkarphedRPC(self,callback, method, params)
+        call = net.HTTPRpc.SkarphedRPC(self,callback, method, handled_object, params, errorcallback)
         call.start()
     
     def getServer(self):
@@ -551,3 +663,4 @@ def getServers():
 
 def createServer():
     return Skarphed()
+

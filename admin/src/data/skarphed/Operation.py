@@ -24,8 +24,8 @@
 
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
-import gobject
 from threading import Thread
 from time import sleep
 
@@ -93,10 +93,14 @@ class OperationManager(GenericSkarphedObject):
         for operation in self.children:
             if operation.data['id'] == operationId:
                 return operation
-        return None    
+        return None
+
+    @rpc(refreshCallback)
+    def getOperations(self):
+        pass
                 
     def refresh(self):
-        self.getSkarphed().doRPCCall(self.refreshCallback, "getOperations")
+        self.getOperations()
     
     def getPar(self):
         return self.par
@@ -135,14 +139,26 @@ class Operation(GenericSkarphedObject):
     def operationCommandCallback(self,json):
         self.updated()
     
+    @rpc(operationCommandCallback)
+    def cancelOperation(self, operationId):
+        pass
+
     def cancel(self):
-        self.getOperationManager().getSkarphed().doRPCCall(self.operationCommandCallback, "cancelOperation",[self.getId()])
+        self.cancelOperation(self.getId())
     
+    @rpc(operationCommandCallback)
+    def dropOperation(self, operationId):
+        pass
+
     def drop(self):
-        self.getOperationManager().getSkarphed().doRPCCall(self.operationCommandCallback, "dropOperation",[self.getId()])
+        self.dropOperation(self.getId())
     
+    @rpc(operationCommandCallback)
+    def retryOperation(self, operationId):
+        pass
+
     def retry(self):
-        self.getOperationManager().getSkarphed().doRPCCall(self.operationCommandCallback, "retryOperation",[self.getId()])
+        self.retryOperation(self.getId())
     
     def getName(self):
         return "Operation"
@@ -171,20 +187,36 @@ class OperationDaemon(GenericSkarphedObject):
         self.status = res
         self.updated()
 
+    @rpc(refreshCallback)
+    def getOperationDaemonStatus(self):
+        pass
+
     def refresh(self):
-        self.getSkarphed().doRPCCall(self.refreshCallback, "getOperationDaemonStatus")
+        self.getOperationDaemonStatus()
 
     def opCallback(self, res):
         self.refresh()
 
+    @rpc(opCallback)
+    def startOperationDaemon(self):
+        pass
+
     def start(self):
-        self.getSkarphed().doRPCCall(self.opCallback, "startOperationDaemon")
+        self.startOperationDaemon()
+
+    @rpc(opCallback)
+    def stopOperationDaemon(self):
+        pass
 
     def stop(self):
-        self.getSkarphed().doRPCCall(self.opCallback, "stopOperationDaemon")
+        self.stopOperationDaemon()
+
+    @rpc(opCallback)
+    def restartOperationDaemon(self):
+        pass
 
     def restart(self):
-        self.getSkarphed().doRPCCall(self.opCallback, "restartOperationDaemon")
+        self.restartOperationDaemon()
 
     def getPar(self):
         return self.par

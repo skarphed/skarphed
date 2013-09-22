@@ -24,6 +24,7 @@
 
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
 class View(GenericSkarphedObject):
     def __init__(self,parent, data):
@@ -46,8 +47,12 @@ class View(GenericSkarphedObject):
         self.loaded_fully = True
         self.updated()
 
+    @rpc(loadFullCallback)
+    def getView(self, viewId):
+        pass
+
     def loadFull(self):
-        self.getViews().getSkarphed().doRPCCall(self.loadFullCallback, "getView", [self.getId()])
+        self.getView(self.getId())
 
     def isFullyLoaded(self):
         return self.loaded_fully
@@ -100,14 +105,26 @@ class View(GenericSkarphedObject):
     def changeWidgetCallback(self, json):
         self.loadFull()
 
-    def setWidgetParamMapping(self, widget, mapping):
-        self.getViews().getSkarphed().doRPCCall(self.changeWidgetCallback, "setWidgetParamMapping", [self.getId(), widget.getId(), mapping])
+    @rpc(changeWidgetCallback)
+    def setWidgetParamMapping(self, viewId, widgetId, mapping):
+        pass
 
-    def setSpaceWidgetMapping(self, mapping):
-        self.getViews().getSkarphed().doRPCCall(self.changeWidgetCallback, "setSpaceWidgetMapping", [self.getId(), mapping])
+    def changeWidgetParamMapping(self, widget, mapping):
+        self.setWidgetParamMapping(self.getId(), widget.getId(), mapping)
 
-    def setBoxMapping(self, mapping):
-        self.getViews().getSkarphed().doRPCCall(self.changeWidgetCallback, "setBoxMapping", [self.getId(), mapping])
+    @rpc(changeWidgetCallback)
+    def setSpaceWidgetMapping(self, viewId, mapping):
+        pass
+    
+    def changeSpaceWidgetMapping(self, mapping):
+        self.setSpaceWidgetMapping(self.getId(), mapping)
+
+    @rpc(changeWidgetCallback)
+    def setBoxMapping(self, viewId, mapping):
+        pass
+
+    def changeBoxMapping(self, mapping):
+        self.setBoxMapping(self.getId(), mapping)
 
     def getPar(self):
         return self.par
@@ -134,14 +151,18 @@ class Views(GenericSkarphedObject):
                 existing_view = self.getViewById(view['id'])
                 existing_view.refresh(view)                
     
+    @rpc(refreshCallback)
+    def retrieveViews(self):
+        pass
+
+    def refresh(self):
+        self.retrieveViews()
+    
     def getViewById(self,nr):
         for view in self.children:
             if view.getId() == nr:
                 return view
         return None
-    
-    def refresh(self):
-        self.getSkarphed().doRPCCall(self.refreshCallback, "getViews")
     
     def getViews(self):
         return self.children

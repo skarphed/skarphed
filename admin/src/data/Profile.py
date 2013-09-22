@@ -164,7 +164,7 @@ class Profile(object):
                             'url':instance.getUrl(),
                             'username':instance.getUsername(),
                             'password':instance.getPassword(),
-                            'publickey':instance.getPublicKey()})
+                            'publickey':instance.getPublickey()})
                 else:
                     instances.append({'typename':instance.instanceTypeName,
                             'typedisp':instance.displayName,

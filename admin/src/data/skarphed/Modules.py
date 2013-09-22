@@ -24,6 +24,7 @@
 
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
 
 from Module import Module
 
@@ -50,9 +51,13 @@ class Modules(GenericSkarphedObject):
                 self.removeChild(module)
         self.updated()
         self.getApplication().getObjectStore().updated()
-    
+
+    @rpc(refreshCallback)
+    def getModules(self, installed_only=False):
+        pass
+
     def refresh(self):
-        self.getSkarphed().doRPCCall(self.refreshCallback, "getModules",[False])
+        self.getModules()
     
     def getRepoState(self):
         return self._repo_state
@@ -93,12 +98,20 @@ class Modules(GenericSkarphedObject):
         self.refresh()
         self.getSkarphed().getOperationManager().refresh()
     
-    def installModule(self, module):
-        self.getSkarphed().doRPCCall(self.moduleOperationCallback, "installModule",[module.data])       
+    @rpc(moduleOperationCallback)
+    def installModule(self, moduledata):
+        pass
     
-    def uninstallModule(self, module):
-        self.getSkarphed().doRPCCall(self.moduleOperationCallback, "uninstallModule",[module.data])
+    @rpc(moduleOperationCallback)
+    def uninstallModule(self, moduledata):
+        pass
     
+    def invokeInstallModule(self, module):
+        self.installModule(module.data)
+
+    def invokeUninstallModule(self, module):
+        self.uninstallModule(module.data)
+
     def getPar(self):
         return self.par
     

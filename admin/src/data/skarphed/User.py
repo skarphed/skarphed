@@ -24,6 +24,8 @@
 
 
 from data.Generic import GenericSkarphedObject
+from data.skarphed.Skarphed import rpc
+
 
 class User(GenericSkarphedObject):
     def __init__(self,parent, data = {}):
@@ -54,75 +56,85 @@ class User(GenericSkarphedObject):
         self.permissiondata = data
         self.updated()
     
+    @rpc(fetchRightsDataCallback)
+    def getRightsForUserPage(self, userId):
+        pass
+
     def fetchRightsData(self):
-        self.getUsers().getSkarphed().doRPCCall(self.fetchRightsDataCallback,
-                                      "getRightsForUserPage",
-                                      [self.getId()]
-                                      )
+        self.getRightsForUserPage(self.getId())
     
     def fetchRoleDataCallback(self,data):
         self.roledata = data
         self.updated()
+
+    @rpc(fetchRoleDataCallback)
+    def getRolesForUserPage(self, username):
+        #TODO: Fetch rights with id instead of name
+        pass
     
     def fetchRoleData(self):
-        self.getUsers().getSkarphed().doRPCCall(self.fetchRoleDataCallback,
-                                      "getRolesForUserPage",
-                                      [self.getName()]
-                                      )
+        self.getRolesForUserPage(self.getName())
     
     def assignRoleCallback(self,data):
         self.fetchRightsData()
         self.fetchRoleData()
+
+    @rpc(assignRoleCallback)
+    def assignRoleToUser(self, username, role):
+        #TODO: Fetch rights with id instead of name
+        pass
     
     def assignRole(self,role):
-        self.getUsers().getSkarphed().doRPCCall(self.assignRoleCallback,
-                                      "assignRoleToUser",
-                                      [self.getName(),role]
-                                      )
+        self.assignRoleToUser(self.getName(),role)
     
     def removeRoleCallback(self,data):
         self.fetchRightsData()
         self.fetchRoleData()
     
+    @rpc(removeRoleCallback)
+    def revokeRoleFromUser(self, username, role):
+        #TODO: Fetch rights with id instead of name
+        pass
+
     def removeRole(self,role):
-        self.getUsers().getSkarphed().doRPCCall(self.removeRoleCallback,
-                                      "revokeRoleFromUser",
-                                      [self.getName(),role]
-                                      )
+        self.revokeRoleFromUser(self.getName(),role)
     
-    def assignPermissionCallback(self,data):
+    def changePermissionCallback(self,data):
         self.fetchRightsData()
     
+    @rpc(changePermissionCallback)
+    def grantRightToUser(self, userId, permission):
+        pass
+
     def assignPermission(self,right):
-        self.getUsers().getSkarphed().doRPCCall(self.assignPermissionCallback,
-                                      "grantRightToUser",
-                                      [self.getId(),right]
-                                      )
-    
-    def removePermissionCallback(self,data):
-        self.fetchRightsData()
-    
-    def removePermission(self,role):
-        self.getUsers().getSkarphed().doRPCCall(self.removePermissionCallback,
-                                      "revokeRightFromUser",
-                                      [self.getId(),role]
-                                      )
+        self.grantRightToUser(self.getId(),right)
+
+    @rpc(changePermissionCallback)
+    def revokeRightFromUser(self, userId, permission):
+        pass
+
+    def removePermission(self,permission):
+        self.revokeRightFromUser(self.getId(),permission)
+
     def deleteCallback(self,json):
         self.destroy()
     
-    def delete(self):
-        self.getUsers().getSkarphed().doRPCCall(self.deleteCallback,
-                                      "deleteUser",
-                                      [self.getId()]
-                                      )
+    @rpc(deleteCallback)
+    def deleteUser(self, userId):
+        pass
 
-    def alterPasswordCallback(self, json):
+    def delete(self):
+        self.deleteUser(self.getId())
+
+    def changePasswordCallback(self, json):
         return True
     
-    def alterPassword(self, new_password, old_password=None):
-        self.getUsers().getSkarphed().doRPCCall(self.alterPasswordCallback,
-                                        "alterPassword",
-                                        [self.getId(), new_password, old_password])
+    @rpc(changePasswordCallback)
+    def alterPassword(self, userId, newPassword, oldPassword):
+        pass
+
+    def changePassword(self, new_password, old_password=None):
+        self.alterPassword(self.getId(), new_password, old_password)
 
     def getPar(self):
         return self.par

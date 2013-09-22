@@ -32,11 +32,12 @@ from common.errors import getAppropriateException, UnknownCoreException
 import logging
 
 class SkarphedRPC(KillableThread, HTTPCall):    
-    def __init__(self,skarphed,callback, method, params=[], errorcallback = None):
+    def __init__(self,skarphed,callback, method, handled_object, params=[], errorcallback = None):
         KillableThread.__init__(self)
         self.skarphed = skarphed
         self.callback = callback
         self.errorcallback = errorcallback
+        self.handled_object = handled_object
         #TODO: skarphed Muss online sein! Check!
         
         json_enc = json.JSONEncoder()
@@ -90,15 +91,15 @@ class SkarphedRPC(KillableThread, HTTPCall):
                 gobject.idle_add(self.errorcallback,result)
         else:
             logging.debug(result)
-            gobject.idle_add(self._callbackWrapper, self.callback,result['result'])
+            gobject.idle_add(self._callbackWrapper, self.callback, self.handled_object, result['result'])
 
-    def _callbackWrapper(self, callback, result):
+    def _callbackWrapper(self, callback, handled_object, result):
         """
         Wraps the callback, so there will be no concurrent write-operatons
         on the COOKIEFILE
         """
         HTTPCookies.save()
-        callback(result)
+        callback(handled_object, result)
 
 class SessionRefreshCall(KillableThread, HTTPCall):
     """

@@ -103,7 +103,7 @@ class CssEditor(gtk.Window):
         self.store.newPropertySet = {}
         self.store.foreach(loop)
         obj = self.getApplication().getLocalObjectById(self.objId)
-        obj.setCssPropertySet(self.store.newPropertySet)
+        obj.setCssPropertySetFromGui(self.store.newPropertySet)
         obj.saveCssPropertySet()
     
     def addCallback(self,widget=None,data=None):
@@ -119,7 +119,7 @@ class CssEditor(gtk.Window):
         except GenericObjectStoreException:
             self.destroy()
             return
-        propertySet = obj.getCssPropertySet()
+        propertySet = obj.getCssPropertySetForGui()
         self.store.clear()
         self.listview.model_selector.clear()
         self.listview.model_property.clear()

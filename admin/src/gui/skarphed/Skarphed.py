@@ -115,7 +115,7 @@ class SkarphedPage(ObjectPageAbstract):
 
 
         self.repoEntry.set_text(skarphed.getRepoURL())
-        public_key = skarphed.getPublicKey()
+        public_key = skarphed.gePublickey()
         if public_key is not None:
             self.pki_textbuffer.set_text(public_key)
         else:

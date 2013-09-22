@@ -26,6 +26,7 @@ import os
 
 from data.Generic import GenericSkarphedObject
 from Widget import Widget
+from data.skarphed.Skarphed import rpc
 
 import tarfile
 import shutil
@@ -93,8 +94,12 @@ class Module(GenericSkarphedObject):
     def updateCallback(self, result):
         self.getModules().getSkarphed().getOperationManager().refresh()
 
+    @rpc(updateCallback)
+    def updateModule(self, moduleId):
+        pass
+
     def update(self):
-        self.getModules().getSkarphed().doRPCCall(self.updateCallback,"updateModule", [self.getId()])
+        self.updateModule(self.getId())
 
     def refresh(self,data):
         self.data = data
@@ -103,23 +108,31 @@ class Module(GenericSkarphedObject):
     def loadCssPropertySetCallback(self,result):
         self.cssPropertySet = result
         self.updated()
+
+    @rpc(loadCssPropertySetCallback)
+    def getCssPropertySet(self, module_id,widget_id=None,session_id=None):
+        pass
     
     def loadCssPropertySet(self):
         obj_id = self.getId()
         if obj_id is not None:
-            self.getModules().getSkarphed().doRPCCall(self.loadCssPropertySetCallback, "getCssPropertySet", [obj_id,None,None])
+            self.getCssPropertySet(obj_id)
     
-    def getCssPropertySet(self):
+    def getCssPropertySetForGui(self):
         return self.cssPropertySet
     
-    def setCssPropertySet(self,cssPropertySet):
+    def setCssPropertySetFromGui(self,cssPropertySet):
         self.cssPropertySet['properties'] = cssPropertySet
     
     def saveCssPropertySetCallback(self,json):
         self.loadCssPropertySet()
+
+    @rpc(saveCssPropertySetCallback)
+    def setCssPropertySet(self, cssPropertySet):
+        pass
     
     def saveCssPropertySet(self):
-        self.getModules().getSkarphed().doRPCCall(self.saveCssPropertySetCallback, "setCssPropertySet", [self.cssPropertySet])
+        self.setCssPropertySet(self.cssPropertySet)
     
     def loadWidgetsCallback(self,data):
         widgetIds = [w.getId() for w in self.children]
@@ -136,8 +149,12 @@ class Module(GenericSkarphedObject):
         self.updated()
         self.getModules().updated()
 
+    @rpc(loadWidgetsCallback)
+    def getWidgetsOfModule(self, moduleId):
+        pass
+
     def loadWidgets(self):
-        self.getModules().getSkarphed().doRPCCall(self.loadWidgetsCallback, "getWidgetsOfModule", [self.getId()])
+        self.getWidgetsOfModule(self.getId())
     
     def loadGuiCallback(self, result):
         if not os.path.exists(MODULEGUI):
@@ -154,7 +171,7 @@ class Module(GenericSkarphedObject):
         signature = base64.b64decode(result['signature'])
         libstring = result['libstring']
 
-        publickeyraw = self.getModules().getSkarphed().getPublicKey()
+        publickeyraw = self.getModules().getSkarphed().getPublickey()
         publickey = RSA.importKey(publickeyraw)
         hashed = SHA256.new(data)
         verifier = PKCS1_v1_5.new(publickey)
@@ -175,10 +192,13 @@ class Module(GenericSkarphedObject):
         else:
             shutil.rmtree(os.path.join(MODULEGUI,self.getModuleName(),self.getVersionFolderString()))
             raise Exception("GuiData did not validate against Signature!")
-            
+    
+    @rpc(loadGuiCallback)
+    def getGuiForModule(self, moduleId):
+        pass    
 
     def loadGui(self):
-        self.getModules().getSkarphed().doRPCCall(self.loadGuiCallback, "getGuiForModule", [self.getId()])
+        self.getGuiForModule(self.getId())
 
     def isGuiAvailable(self):
         return os.path.exists(os.path.expanduser(os.path.join("~",".skarphedadmin","modulegui",self.getModuleName(),\
@@ -187,8 +207,12 @@ class Module(GenericSkarphedObject):
     def createWidgetCallback(self, json):
         self.loadWidgets()
     
-    def createWidget(self,name):
-        self.getModules().getSkarphed().doRPCCall(self.createWidgetCallback, "createWidget", [self.getId(),name])
+    @rpc(createWidgetCallback)
+    def createWidget(self, moduleId, name):
+        pass
+
+    def createNewWidget(self,name):
+        self.createWidget(self.getId(),name)
     
     def getWidgetById(self,obj_id):
         for widget in self.children:
