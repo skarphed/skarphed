@@ -37,7 +37,7 @@ from glue.lng import _
 class RolePage(ObjectPageAbstract):
     def __init__(self,parent,role):
         ObjectPageAbstract.__init__(self,parent,role)
-        
+        self.roleId = role.getLocalId()
         role.fetchPermissions()
         
         self.headline = gtk.Label()
