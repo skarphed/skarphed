@@ -39,7 +39,7 @@ from view import ViewException
 from helper import sluggify
 
 from common.enums import ActivityType, JSMandatory
-from common.errors import ModuleCoreException
+from common.errors import ModuleCoreException, ConfigurationException
 
 class AbstractModule(object):
     def __init__(self,core):
@@ -351,7 +351,11 @@ class Widget(object):
         commands provided in the dictionary commands
         """
         module = self.get_module()
-        if module.get_config_entry("generate_views", self.get_id()) == "True":
+        try:
+            setting = module.get_config_entry("generate_views", self.get_id())
+        except ConfigurationException:
+            setting = "False"
+        if setting == "True":
             viewmanager = self._core.get_view_manager()
             newview = viewmanager.get_from_id(self.get_baseview_id()).clone()
             viewname = sluggify(viewname)
