@@ -536,9 +536,9 @@ class Skarphed(Instance):
         if True: #'skarphed.operation.modify' in self.serverRights
             self.operationManager = OperationManager(self)
         
-        #TODO: restliche implementieren
-        self.pokethread = PokeThread(self)
-        self.pokethread.start()
+        #TODO: Fix Poke-GUI-hangup bug and uncomment following lines
+        #self.pokethread = PokeThread(self)
+        #self.pokethread.start()
     
     def authenticateCallback(self, result):
         if result == False:
