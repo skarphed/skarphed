@@ -117,6 +117,8 @@ class Profile(object):
                 for instance in server['instances']:
                     instanceType = InstanceType(instance['typename'],instance['typedisp'])
                     createdInstance = srv.createInstance(instanceType,instance['url'],instance['username'],instance['password'])
+                    if createdInstance is None or createdInstance == False:
+                        continue
                     if instance['typename'] == "database":
                         for schema in instance['schemas']:
                             createdInstance.registerSchema(schema['name'], schema['user'], schema['pass'])

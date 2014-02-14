@@ -25,7 +25,7 @@
 
 import socket
 import re
-
+import logging
 
 from Generic import GenericSkarphedObject
 from Generic import ObjectStore
@@ -238,7 +238,12 @@ class Server(GenericSkarphedObject):
                     print hostname
                 else:
                     return False
-                host = socket.gethostbyname(hostname)
+                try:
+                    host = socket.gethostbyname(hostname)
+                except socket.gaierror:
+                    logging.warn("Non-Resolvable URL for instance: %s . This Instance is in Limbo"\
+                                    %(url))
+                    return False
             if host != self.getIp(): # check wheter the resulting IP belongs to this server
                 return False
         exec "from "+instanceType.instanceTypeName+"."+instanceType.instanceTypeName.capitalize()+\
