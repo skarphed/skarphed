@@ -158,6 +158,8 @@ class WidgetPage(gtk.VBox):
     def chooseNewsCallback(self, tree=None, path=None, data=None):
         selection = self.builder.get_object("newsview").get_selection()
         rowiter = selection.get_selected()[1]
+        if not rowiter:
+            return
         nr = self._newsstore.get_value(rowiter,4)
         self.loadNewsEntry(nr)
 
@@ -183,7 +185,7 @@ class WidgetPage(gtk.VBox):
     def newCallback(self, widget=None, data=None):
         InputBox(self, "Please enter the title of the new news-entry", self.executeNew, notEmpty=True)
 
-    @module_rpc(newCallback)
+    @module_rpc(createNewEntryCallback)
     def create_news_entry(self, title):
         pass
 
