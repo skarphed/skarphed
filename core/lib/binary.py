@@ -185,7 +185,7 @@ class Binary(object):
         Stores this binary into the database
         """
         db = self._core.get_db()
-        data_io = StringIO(base64.b64encode(self._data))
+        data_io = base64.b64encode(self._data)
         md5 = md5hash(self._data).hexdigest()
         sha256 = sha256hash(self._data).hexdigest()
         if self._id is None:
@@ -197,7 +197,6 @@ class Binary(object):
                    BIN_DATE_LASTCHANGE, BIN_SHA256, BIN_MD5, BIN_DATA) \
                  VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ? ) MATCHING (BIN_ID) ;"
         db.query(self._core,stmnt, (self._id, self._filename, self._mime, user_id, user_id, sha256, md5, data_io),commit=True)
-        data_io.close()
 
     def delete(self):
         db = self._core.get_db()

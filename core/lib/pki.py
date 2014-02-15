@@ -82,14 +82,13 @@ class Pki(object):
         database
         """
         key = RSA.generate(1024, os.urandom)
-        pubkey = key.publickey()
-        key_io = StringIO(key.exportKey())
-        pubkey_io = StringIO(pubkey.exportKey())
+        privatekey = key.exportKey()
+        pubkey = key.publickey().exportKey()
 
         db = cls._core.get_db()
         stmnt = "INSERT INTO PKI (PKI_ID, PKI_KEY, PKI_HAS_PKI) VALUES (?,?, NULL) ;"
-        db.query(cls._core, stmnt, (1, key_io), commit=True)
-        db.query(cls._core, stmnt, (2, pubkey_io), commit=True)
+        db.query(cls._core, stmnt, (1, privatekey), commit=True)
+        db.query(cls._core, stmnt, (2, pubkey), commit=True)
         stmnt = "INSERT INTO PKI (PKI_ID, PKI_KEY, PKI_HAS_PKI) VALUES (3, NULL, 1) ;"
         db.query(cls._core, stmnt, commit=True)
         cls._pki_is_present = True

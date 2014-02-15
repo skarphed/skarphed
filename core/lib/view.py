@@ -960,9 +960,6 @@ class Page(object):
         if len(placeholders) < 1:
             pass # Eventually we need to check for Pages with no spaces. Not an error yet
 
-        html_head_io = StringIO.StringIO(html_head)
-        html_body_io = StringIO.StringIO(html_body)
-
         binary_manager = cls._core.get_binary_manager()
         
         minimap_id = None
@@ -983,7 +980,7 @@ class Page(object):
         db = cls._core.get_db()
         new_sit_id = db.get_seq_next("SIT_GEN")
 
-        db.query(cls._core, stmnt , (new_sit_id, html_body_io, html_head_io, description, name, minimap_id, css_id), commit=True)
+        db.query(cls._core, stmnt , (new_sit_id, html_body, html_head, description, name, minimap_id, css_id), commit=True)
 
         stmnt_space= "INSERT INTO SPACES (SPA_ID, SPA_SIT_ID, SPA_NAME ) VALUES (?,?,?) ; "
         stmnt_box = "INSERT INTO BOXES (BOX_ID, BOX_SIT_ID, BOX_NAME, BOX_ORIENTATION) VALUES (?,?,?,?) ;"

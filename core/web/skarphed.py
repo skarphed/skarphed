@@ -43,7 +43,7 @@ def application(environ, start_response):
         data = binary.get_data()
         
         response_body=[data]
-        response_headers.append(('Content-Type', binary.get_mime()))
+        response_headers.append(('Content-Type', bytes(binary.get_mime())))
 
     elif environ['PATH_INFO'].startswith("/rpc/"):
         ret = core.rpc_call(environ)
@@ -64,7 +64,7 @@ def application(environ, start_response):
         ret = core.web_call(environ)
         response_body.extend(ret["body"])
         response_headers.extend(ret["header"])
-        response_headers.append(('Content-Type', 'text/html'))
+        response_headers.append(('Content-Type', 'text/html; charset=utf-8'))
 
     elif environ['PATH_INFO'].startswith("/ajax/"):
         ret = core.ajax_call(environ)

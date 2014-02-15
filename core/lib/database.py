@@ -68,7 +68,8 @@ class Database(object):
                         host=self._ip, 
                         database='/var/lib/firebird/2.5/data/'+self._dbname,
                         user=self._user, 
-                        password=self._password)
+                        password=self._password,
+                        charset="UTF8")
         except fdb.fbcore.DatabaseError, e:
             raise DatabaseException(e.args[0])
         return
