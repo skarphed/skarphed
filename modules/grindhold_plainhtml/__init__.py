@@ -57,8 +57,8 @@ class Module(AbstractModule):
         return ""
 
     def set_content(self, widget_id, content="", title=""):
-        title = str(title)
-        content = StringIO(str(content))
+        title = unicode(title)
+        content = unicode(content)
         db = self._core.get_db()
         stmnt = "UPDATE OR INSERT INTO ${html} (MOD_INSTANCE_ID, HTM_TITLE, HTM_HTML) \
                    VALUES (?,?,?) MATCHING (MOD_INSTANCE_ID) ;"
