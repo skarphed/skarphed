@@ -157,7 +157,8 @@ class PermissionException(SkarphedException):
         11:"""Create Role: Cannot Create a role without a name""",
         12:"""Create Role: User is not permitted to create roles""",
         13:"""Create Role: This role already exists: """,
-        14:"""Get Role: There is no role with this ID: """
+        14:"""Get Role: There is no role with this ID: """,
+        15:"""Insufficient Permissions: User does not have permission """
     }
 
 class PokeException(SkarphedException):

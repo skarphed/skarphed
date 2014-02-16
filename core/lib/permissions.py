@@ -369,6 +369,25 @@ class Permission(object):
         res = res[0]
         return res == 1
 
+    @classmethod
+    def permission(cls, permission):
+        """ A decorator to allow a function only to be executed with
+            sufficient permissions as in:
+            
+            @permission('core.adduser')
+            def doStuff(param):
+                pass # do stuff here
+        """
+        def inner_permission(func):
+            def tortilla(*args,**kwargs):
+                session_manager = cls._core.get_session_manager()
+                current_user = session_manager.get_current_session_user()
+                if not cls.check_permission(permission, current_user):
+                    raise PermissionException(PermissionException.get_msg(15, info=permission))
+                func(*args, **kwargs)
+            return tortilla
+        return inner_permission
+
     @classmethod #MODULEINVOLVED
     def create_permission(cls, permission, module=""):
         """
@@ -541,6 +560,7 @@ class PermissionManager(object):
         Permission.set_core(core)
         Role.set_core(core)
 
+        self.permission = Permission.permission
         self.check_permission = Permission.check_permission
         self.create_permission = Permission.create_permission
         self.create_permissions_for_module = Permission.create_permissions_for_module
