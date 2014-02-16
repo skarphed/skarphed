@@ -55,7 +55,7 @@ class User(object):
         """
         trivial
         """
-        self._name = str(name)
+        self._name = unicode(name)
 
     def set_password(self,password):
         """
@@ -94,7 +94,7 @@ class User(object):
         """
         checks if the given password fits to this user
         """
-        if sha512(password+self._salt).hexdigest() == self._password:
+        if sha512(password.encode('utf-8')+self._salt).hexdigest() == self._password:
             return True
         else:
             raise UserException(UserException.get_msg(2))
@@ -104,7 +104,7 @@ class User(object):
         Changes the password of a User
         """
         db = self._core.get_db()
-        if (sha512(old_password+self._salt).hexdigest() == self._password ) \
+        if (sha512(old_password.encode('utf-8')+self._salt).hexdigest() == self._password ) \
                 != new_user: # != substituts xor
             pw, salt = self._generateSaltedPassword(new_password)
             self.set_password(pw)
@@ -124,7 +124,7 @@ class User(object):
         Creates a new Password consisting of pw-hash (sha512) and a 128bit salt
         """
         salt = self._generateRandomString(128)
-        pw = sha512(password+salt).hexdigest()
+        pw = sha512(password.encode('utf-8')+salt).hexdigest()
         return (pw, salt)          
 
     def _generateRandomString(self,length=8):

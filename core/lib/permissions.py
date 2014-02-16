@@ -61,7 +61,7 @@ class Role(object):
         """
         trivial
         """
-        self._name = str(name)
+        self._name = unicode(name)
 
     def store(self):
         """

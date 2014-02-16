@@ -30,7 +30,7 @@ class SkarphedException(Exception):
 
     @classmethod
     def get_msg(cls,nr, info=""):
-        return cls.PREFIX+"_"+str(nr)+": "+cls.ERRORS[nr]+" "+str(info)
+        return cls.PREFIX+"_"+str(nr)+": "+cls.ERRORS[nr]+" "+unicode(info)
 
     def set_tracebackstring(self, tb):
         self.tracebackstring = tb

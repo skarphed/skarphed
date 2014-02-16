@@ -93,8 +93,8 @@ class Rpc(object):
             return None
 
     def authenticateUser(self,params):
-        username = params[0]
-        password = params[1]
+        username = unicode(params[0])
+        password = unicode(params[1])
         
         session_manager = self._core.get_session_manager()
 
@@ -118,9 +118,9 @@ class Rpc(object):
             return False
 
     def alterPassword(self, params):
-        user_id = params[0]
-        new_password = params[1]
-        old_password = params[2]
+        user_id = int(params[0])
+        new_password = unicode(params[1])
+        old_password = unicode(params[2])
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
@@ -160,8 +160,8 @@ class Rpc(object):
         return False
 
     def createUser(self,params):
-        username = str(params[0])
-        password = str(params[1])
+        username = unicode(params[0])
+        password = unicode(params[1])
 
         session_manager = self._core.get_session_manager()
         session_user = session_manager.get_current_session_user()
@@ -507,7 +507,7 @@ class Rpc(object):
 
     def createWidget(self,params):
         module_id = int(params[0])
-        new_widget_name = str(params[1])
+        new_widget_name = unicode(params[1])
 
         module_manager = self._core.get_module_manager()
         module = module_manager.get_module(module_id)

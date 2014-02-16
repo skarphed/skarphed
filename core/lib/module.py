@@ -238,7 +238,7 @@ class Widget(object):
         self._id = int(nr)
 
     def set_name(self,name):
-        self._name=str(name)
+        self._name = unicode(name)
 
     #TODO: Check if Widgets really still net Site-reference
     def set_site(self,site):
