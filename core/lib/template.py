@@ -325,19 +325,19 @@ class Template(object):
         return 0
 
     def set_name(self, name):
-        self._name = str(name)
+        self._name = unicode(name)
 
     def get_name(self):
         return self._name 
 
     def set_description(self, desc):
-        self._description = str(desc)
+        self._description = unicode(desc)
 
     def get_description(self):
         return self._description
 
     def set_author(self, author):
-        self._author = str(author)
+        self._author = unicode(author)
 
     def get_author(self):
         return self._author
