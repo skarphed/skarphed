@@ -512,6 +512,7 @@ class Skarphed(Instance):
         return self.rendermode
 
     def loadSkarphedChildren(self):
+        self.clearChildren()
         self.loadPublicKey()
         self.getMaintenanceMode()
         self.loadRendermode()

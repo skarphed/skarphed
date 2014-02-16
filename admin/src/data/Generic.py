@@ -139,7 +139,12 @@ class GenericSkarphedObject(object):
     def removeChild(self, child):
         if child in self.children:
             self.children.remove(child)
-    
+
+    def clearChildren(self):
+        for child in self.children:
+            child.destroy()
+        self.children = []
+   
     def getPar(self):
         if self.par is None:
             raise GenericObjectStoreException("This object has no parent")
