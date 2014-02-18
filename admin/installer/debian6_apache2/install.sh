@@ -11,9 +11,9 @@ else
 	
 	#external component installation
 
-	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev sudo
+	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev python-cssutils sudo
 
-	pip install fdb pycrypto tinycss
+	pip install fdb pycrypto
 
 	mkdir /etc/skarphed
 	cp ./skarphed.conf /etc/skarphed/

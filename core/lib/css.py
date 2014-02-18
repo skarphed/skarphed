@@ -23,8 +23,7 @@
 ###########################################################
 
 import os
-
-from tinycss.css21 import CSS21Parser
+import cssutils
 
 from common.errors import CSSException
 
@@ -79,18 +78,15 @@ class CSSPropertySet(object):
         """
         creates a csspropertyset from css-code
         """
-        parser = CSS21Parser()
-        stylesheet = None
-        #try:
-        stylesheet = parser.parse_stylesheet_bytes(css)
-        #except Exception,e :
-        #    raise e # implement correct error handling
+        stylesheet = cssutils.parseString(css)
         propertyset = CSSPropertySet(cls._core)
-        for rule in stylesheet.rules:
-            selector = ",".join([s.as_css() for s in rule.selector])
-            for declaration in rule.declarations:
-                values = [val.value for val in declaration.value]
-                propertyset.edit_value(selector, declaration.name, ",".join(values))
+        for rule in stylesheet.cssRules:
+            if type(rule) == cssutils.css.CSSFontFaceRule:
+                selector = "@font-face"
+            else:
+                selector = rule.selectorText
+            for declaration in rule.style.getProperties():
+                propertyset.edit_value(selector, declaration.name, declaration.value)
         return propertyset
 
 
