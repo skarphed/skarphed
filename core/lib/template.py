@@ -266,10 +266,13 @@ class Template(object):
                 bin_file = open(temp_installpath+"/static/"+bin_filename,"rb")
                 bin_data = bin_file.read()
                 bin_file.close()
+                # TODO: Find more generic way to determine mimetype
                 if bin_filename.endswith(".png"):
                     binary = binary_manager.create("image/png", bin_data)
                 if bin_filename.endswith(".jpeg") or bin_filename.endswith(".jpg"):
                     binary = binary_manager.create("image/jpeg", bin_data)
+                else:
+                    binary = binary_manager.create("application/octet-stream", bin_data)
                 if binary is not None:
                     binary.set_filename(bin_filename)
                     binary.store()
