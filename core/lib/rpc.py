@@ -621,7 +621,7 @@ class Rpc(object):
 
     def createMenuItem(self, params):
         parent_id = int(params[0])
-        parent_type = str(params[1])
+        parent_type = unicode(params[1])
 
         if parent_type == "menu":
             action_manager = self._core.get_action_manager()
@@ -646,7 +646,7 @@ class Rpc(object):
 
     def renameMenuItem(self, params):
         menu_item_id = int(params[0])
-        new_name = str(params[1])
+        new_name = unicode(params[1])
 
         action_manager = self._core.get_action_manager()
         menu_item = action_manager.get_menu_item_by_id(menu_item_id)
@@ -758,7 +758,7 @@ class Rpc(object):
 
     def renameMenu(self, params):
         menu_id = int(params[0])
-        new_name = str(params[1])
+        new_name = unicode(params[1])
 
         action_manager = self._core.get_action_manager()
         menu = action_manager.get_menu_by_id(menu_id)

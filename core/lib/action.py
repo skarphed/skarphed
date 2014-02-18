@@ -296,7 +296,7 @@ class Action(object):
         """
         Sets the Name of the action
         """
-        self._name = str(name)
+        self._name = unicode(name)
         if not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE ACTIONS SET ACT_NAME = ? WHERE ACT_ID = ? ;"
@@ -525,7 +525,7 @@ class ActionList(object):
         """
         Sets the Name of the actionList
         """
-        self._name = str(name)
+        self._name = unicode(name)
         if self._id is not None and not ignore_db:
             db= self._core.get_db()
             stmnt= "UPDATE ACTIONLISTS SET ATL_NAME = ? WHERE ATL_ID = ? ;"
@@ -982,7 +982,7 @@ class MenuItem(object):
         """
         Sets the name of this MenuItem
         """
-        self._name = str(name)
+        self._name = unicode(name)
         if self.get_id() is not None and not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE MENUITEMS SET MNI_NAME = ? WHERE MNI_ID = ? ;"
@@ -1150,7 +1150,7 @@ class Menu(object):
         """
         Sets the name of this menu
         """
-        self._name = str(name)
+        self._name = unicode(name)
         if self.get_id() is not None and not ignore_db:
             db = self._core.get_db()
             stmnt = "UPDATE MENUS SET MNU_NAME = ? WHERE MNU_ID = ? ;"
