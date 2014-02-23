@@ -1,6 +1,7 @@
 *.pyc
 *.tar.gz
 *.swp
+*.swo
 *.deb
 admin/pkg/deb/skarphed-admin/usr
 admin/pkg/deb/skarphed-admin/var
