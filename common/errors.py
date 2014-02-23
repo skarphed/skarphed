@@ -191,6 +191,12 @@ class RepositoryException(SkarphedException):
         102:"""Hostname must not be empty"""
     }
 
+class RpcException(SkarphedException):
+    PREFIX ="RPC"
+    ERRORS = {
+        0:"""Method not supported"""
+    }
+
 class SessionException(SkarphedException):
     PREFIX ="SE"
     ERRORS = {

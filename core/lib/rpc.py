@@ -49,7 +49,9 @@ class Rpc(object):
         params = instructions['params']
 
         if not hasattr(self,method):
-            answer['error'] = "The Rpc-backed does not support this method %s"%method
+            answer['error'] = {}
+            answer['error']['message'] = "The Rpc-backed does not support this method %s"%method
+            answer['error']['class'] = "RpcException"
             self._core.response_body.append(je.encode(answer))
             return
         try:
