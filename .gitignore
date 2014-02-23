@@ -14,3 +14,4 @@ repo/pkg/deb/skdrepo-web/DEBIAN/control
 repo/pkg/deb/skarphed-repo/etc
 repo/pkg/deb/skarphed-repo/usr
 repo/pkg/deb/skarphed-repo/DEBIAN/control
+tags
