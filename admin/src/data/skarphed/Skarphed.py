@@ -135,6 +135,7 @@ def module_rpc(callback=None, errorhandler=None):
 
 from Users import Users
 from Modules import Modules
+from Media import Media
 from Roles import Roles
 from Sites import Sites
 from Template import Template
@@ -534,6 +535,9 @@ class Skarphed(Instance):
         if True: #'skarphed.template.modify' in self.serverRights
             self.template = Template(self)
             self.addChild(self.template)
+        if True:
+            self.media = Media(self)
+            self.addChild(self.media)
         if True: #'skarphed.operation.modify' in self.serverRights
             self.operationManager = OperationManager(self)
         

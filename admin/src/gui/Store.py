@@ -42,7 +42,8 @@ class Store(gtk.TreeStore):
                         "MenuItem",
                         "Installer",
                         "Destroyer",
-                        "OperationDaemon")
+                        "OperationDaemon",
+                        "Binary")
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
         assert kwargs['objectStore'] is not None, _("Need ObjectStore")

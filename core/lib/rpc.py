@@ -869,6 +869,10 @@ class Rpc(object):
         binary.store()
         return binary.get_id()
 
+    def loadMedia(self, params):
+        binary_manager = self._core.get_binary_manager()
+        return binary_manager.get_binaries_for_gui()
+
     def changeMaintenanceMode(self, params):
         state = bool(params[0])
 

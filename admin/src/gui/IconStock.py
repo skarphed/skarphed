@@ -44,7 +44,6 @@ JS_NO                   = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(ICON
 JS_SUPPORTED            = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(ICON,"js_supported.png"),16,16)
 JS_MANDATORY            = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(ICON,"js_mandatory.png"),16,16)
 MEDIA                   = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(ICON,"media.png"),16,16)
-
 MENU                    = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(ICON,"menu.png"),16,16)
 MENUITEM                = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(ICON,"menuitem.png"),16,16)
 MODULE_UPDATEABLE       = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(ICON,"module_updateable.png"),16,16)
@@ -82,6 +81,8 @@ icon_object_map = {
                    "User"             : USER,
                    "Modules"          : MODULE,
                    "Module"           : MODULE,
+                   "Media"            : MEDIA,
+                   "Binary"           : BINARY,
                    "Roles"            : ROLE,
                    "Role"             : ROLE,
                    "Sites"            : SITE,

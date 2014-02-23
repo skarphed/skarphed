@@ -40,6 +40,7 @@ class BinaryManager(object):
         self.get_by_id = Binary.get_by_id
         self.get_by_md5 = Binary.get_by_md5
         self.get_by_filename = Binary.get_by_filename
+        self.get_binaries_for_gui = Binary.get_binaries_for_gui
 
 class Binary(object):
     """
@@ -206,7 +207,21 @@ class Binary(object):
         binary_cache_path = os.path.join(configuration.get_entry("global.binary_cache"),
                                          configuration.get_entry("core.instance_id"))
         os.unlink(os.path.join(binary_cache_path, self.get_filename()))
-        
+
+    @classmethod    
+    def get_binaries_for_gui(cls):
+        #TODO: Check permission
+        db = cls._core.get_db()
+        stmnt = "SELECT BIN_ID, BIN_FILENAME, BIN_MIME, OCTET_LENGTH(BIN_DATA) AS BIN_SIZE \
+                 FROM BINARIES ;"
+        cur = db.query(cls._core, stmnt, ())
+        ret = []
+        for dataset in cur.fetchallmap():
+            ret.append({'filename': dataset['BIN_FILENAME'],
+                        'size': dataset['BIN_SIZE'],
+                        'mime': dataset['BIN_MIME'],
+                        'id': dataset['BIN_ID']})
+        return ret
 
 class Image(Binary):
     def resize(self, w, h):
