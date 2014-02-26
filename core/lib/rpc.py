@@ -873,6 +873,13 @@ class Rpc(object):
         binary_manager = self._core.get_binary_manager()
         return binary_manager.get_binaries_for_gui()
 
+    def deleteBinaries(self, params):
+        binary_ids = params[0]
+        
+        binary_manager = self._core.get_binary_manager()
+        binary_manager.delete_binaries(binary_ids)
+        return None
+
     def changeMaintenanceMode(self, params):
         state = bool(params[0])
 

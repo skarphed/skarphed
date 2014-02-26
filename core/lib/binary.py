@@ -41,6 +41,7 @@ class BinaryManager(object):
         self.get_by_md5 = Binary.get_by_md5
         self.get_by_filename = Binary.get_by_filename
         self.get_binaries_for_gui = Binary.get_binaries_for_gui
+        self.delete_binaries = Binary.delete_binaries
 
 class Binary(object):
     """
@@ -222,6 +223,14 @@ class Binary(object):
                         'mime': dataset['BIN_MIME'],
                         'id': dataset['BIN_ID']})
         return ret
+
+    @classmethod
+    def delete_binaries(cls, binaryIds):
+        db = cls._core.get_db()
+        stmnt = "DELETE FROM BINARIES WHERE BIN_ID = ? ;"
+        for binaryId in binaryIds:
+            db.query(cls._core, stmnt, (binaryId,), commit=True)
+        
 
 class Image(Binary):
     def resize(self, w, h):
