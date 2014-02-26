@@ -698,6 +698,9 @@ class Skarphed(Instance):
     def getModules(self):
         return self.modules
 
+    def getMedia(self):
+        return self.media
+
     def getSites(self):
         return self.sites
 
