@@ -66,6 +66,7 @@ class Template(GenericSkarphedObject):
         if not severe_error_happened:
             self.load()
             self.getSkarphed().getMaintenanceMode()
+            self.getSkarphed().getMedia().loadMedia()
     
     @rpc(uploadCallback)
     def installTemplate(self, template_data):
@@ -95,6 +96,7 @@ class Template(GenericSkarphedObject):
         self.getRepoTemplates()
         self.load()
         self.getSkarphed().getMaintenanceMode()
+        self.getSkarphed().getMedia().loadMedia()
 
     @rpc(installFromRepoCallback)
     def installTemplateFromRepo(self, template_nr):
