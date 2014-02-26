@@ -299,7 +299,7 @@ class TabPage(gtk.VBox):
             self.getPar().closePage(self.objId)
         else:
             self.breadcrumbs.render()
-            self.body.render()
+            #self.body.render()
         #TODO: Implement
         
     def getObject(self):
