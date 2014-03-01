@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>skarphed - Documentation</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+        <link href="static/logo_32.png" rel="icon" type="image/png">
+        <link href="static/mainsite.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="body_overlay" >
+            <header>
+                <div id="headercontent">
+                    <a class="bclink" href="http://skarphed.org">
+                    <img src="static/logo_32.png" alt="skarphed" style="float:left; margin-right: 10px;"></a>
+                        <a class="bclink" href="index.html">Documentation 
+                    </a>
+                    <a class="bclink" href="dev_man.html">
+                        → Developers Manual
+                    </a>
+                    <a class="bclink" href="dm_modules.html">
+                        → Introduction (Modules)
+                    </a>
+                </div>
+            </header>
+
+            <div id="space_content">
+                <span class="headerlink_nohover"><h2> Introduction (Modules) </h2></span>
+                <p>A module is a set of files that provide skarphed with additional functionality
+                do display different kinds of content. For example an image galery, a blog or a
+                simple HTML page. There may come a time when you need such content for your special
+                needs that does not exist by now. The solution is to write your own. In this section,
+                i will explain of which parts a module is made up, which requirements it must fulfill
+                and how to get your very own module into your skarphed installation.
+                </p>
+                <h3> Structure of a module </h3>
+                <p>
+                We are going to create a folder for the development of a module.
+                </p>
+                <p>A module consists of two parts: One part to describe the logic that applies for
+                the <i>skarphed-core</i> and one part that describes how the module is represented
+                in <i>skarphed-admin</i>.
+                The part relevant for <i>skarphed-admin</i> consists of at least two files. One is
+                called <em>module.py</em>. Skarphed expects to find a class called <em>ModulePage</em>
+                in it. It contains all controls necessary to apply configuration options that affect
+                the scope of the whole module. The second, and the probably more important part is a
+                file called <em>widget.py</em>. This file must contain a class called <em>WidgetPage
+                </em> which defines a GUI that is used to control each widget that is being created
+                of this module. Place these files in a subfolder called <em>gui</em> in the dev-folder                of your module.
+                </p><p>
+                Then you must place a file called <em>__init__.py</em> in the dev-folder. This file
+                will contain the logic that is being used in the <i>skarphed-core</i>. Further add
+                a file that is called <em>manifest.json</em>. The manifest-file contains metadata
+                about your module and defines which database-tables are necessary to represent the
+                data of your module in the database.<br>
+                A minimal filetree should finally look like this:
+                <pre>
+                + myname_mymodule
+                +- __init__.py
+                +- manifest.json 
+                +-+ gui
+                  +- widget.py
+                  +- module.py
+                </pre>
+                Typically the dev-folder will contain more files, for example you probably want
+                to design the GUI for your module with glade, so you need to contain the glade-files
+                </p>
+            </div>
+
+
+            <footer id="space_footer"></p><a href="/imprint.html">Imprint / Impressum</a></p>
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+            </footer>
+        </div>
+
+    </body>
+</html>

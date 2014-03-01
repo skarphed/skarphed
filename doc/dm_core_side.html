@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>skarphed - Documentation</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+        <link href="static/logo_32.png" rel="icon" type="image/png">
+        <link href="static/mainsite.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="body_overlay" >
+            <header>
+                <div id="headercontent">
+                    <a class="bclink" href="http://skarphed.org">
+                    <img src="static/logo_32.png" alt="skarphed" style="float:left; margin-right: 10px;"></a>
+                        <a class="bclink" href="index.html">Documentation 
+                    </a>
+                    <a class="bclink" href="dev_man.html">
+                        → Developers Manual
+                    </a>
+                    <a class="bclink" href="dm_modules.html">
+                        → Core Side Development
+                    </a>
+                </div>
+            </header>
+
+            <div id="space_content">
+                <span class="headerlink_nohover"><h2> Core Side Development </h2></span>
+                <p>This section will explain to you how to script modules on the clientside</p>
+                <h3> The Interface to the Skarphed-Core </h3>
+                <p> The module-code in a __init__.py is represented as a class. A frame for a module
+                looks like this:
+                </p>
+                <code><pre>
+                from module import AbstractModule
+                import os
+
+                class Module(AbstractModule):
+                    def __init__(self, core):
+                        AbstractModule.__init__(self, core)
+                        self._path = os.path.dirname(__file__)
+                        self._load_manifest()
+                        self._data = None
+
+
+                    def render_pure_html(self, widget_id, args={}):
+                        return "&lt;p&gt;Hello World&lt;/p&gt;"
+                    
+                    def render_html(self, widget_id, args={}):
+                        return "&lt;p&gt;Hello World&lt;/p&gt;"
+                    
+                    def render_javascript(self, widget_id, args={}):
+                        return "&lt;script type='text/javascript'&gt;alert('Hello World');&lt;/script&gt;"
+                </pre></code>
+                <p> As you can see, the module provides three methods to render the content of the side. The skarphed-core passes two parameters to each of them: the <i>widget_id</i> of the widget that is currently being rendered, and a dictionary called <i>args</i> which contains the parameters that are targeted at this widget. <i>render_pure_html</i> will be called if the <i>skarphed-core </i>runs in Pure-HTML-Mode. The methods <i>render_html</i> and <i>render_javascript</i> will be called if the <i>skarpehd-core</i> runs in AJAX-mode.
+                <h3> Communication with the Admin GUI </h3>
+                <p>The module can be called from outside not only by HTTP-calls to the <i>skarphed-core</i> but also from the <i>skarphed-admin</i> via rpc-json. To handle this communication, think about which information the module will have to pass to <i>skarphed-admin</i> and which information it will be given by <i>skarphed-admin</i>. In the easiest case, this will lead to two methods. One to get the current data of the module/widget and one to (over-)write the data of the module/widget. For example:</p>
+                <code><pre>
+                    def set_data(self, widget_id, data):
+                        self._data = data
+
+                    def get_data(self, widget_id):
+                        if self._data is not None:
+                            return self._data
+                </pre></code>
+                <p> We will discuss later how you call these two methods from <i>skarphed-admin</i></p>
+                <h3> Using SQL from within a module </h3>
+                <p>
+                    If you want to store persistent data, you probably want to execute some
+                    SQL-statements on the database. <i>skarphed</i> uses the <i>Firebird</i>-database
+                    and therefore uses their SQL-syntax. Still there are some things that work
+                    different than when working with simple fdb.
+                    At first you want to obtain a <i>Database</i>-object from the core.
+                    This is possible via <code> db = self._core.get_db() </code>.<br>
+                    After retrieving the database-object you can execute SQL-statements. Here comes
+                    the first difference to regular Firebird-style-SQL; the table-names are placed
+                    inside <code>${}</code>. For example, if you named your table 
+                    <code>entry</code> in the manifest-file, you will write a select from it like
+                    the following: <code> SELECT * FROM ${entry} ;</code>. In order to map every
+                    dataset in a module-related table to a widget, skarphed automatically creates
+                    the column "MOD_INSTANCE_ID" in every table of your module. You can use this
+                    column in a WHERE-clause to get only the results that affect the current widget.
+                    <br>
+                    Use the db-object's <code>execute</code>-method to exectue the statement against
+                    the database. The execute method must be given the module itself as first
+                    parameter. Why, will be explained in the next paragraph. The second argument is
+                    your statement. The third argument is a set of parameters that you want to pass
+                    to the statement. The last and optional parameter is called "commit" and must
+                    be executed if your statement writes to the database.
+                    The execution of the statement will return a cursor object.
+                    You can apply the method <code>fetchallmap()</code> of the cursor to iterate over
+                    the resulting datasets and do stuff with the result.
+                    In code it will look like this:
+                </p>
+                <code><pre>
+                    def set_data(self, widget_id, data):
+                        db = self._core.get_db()
+                        stmnt = "UPDATE ${entry} SET ENT_CONTENT = ? WHERE MOD_INSTANCE_ID = ?;"
+                        cur = db.execute(self, stmnt, (data, widget_id), commit=True)
+                    
+                    def get_data(self, widget_id):
+                        db = self._core.get_db()
+                        stmnt = "SELECT ENT_CONTENT FROM ${entry} WHERE MOD_INSTANCE_ID = ?;"
+                        cur = db.execute(self, stmnt, (widget_id,), commit=True)
+                        result = cur.fetchallmap()
+                        return result[0]['ENT_CONTENT']
+                </pre></code>
+                <h4> Intertwined SQL-statements </h4>
+                <p>
+                    Maybe your module is supposed to work together with another module and
+                    therefore access the other module's tables. You can do this easily with the
+                    ${}-syntax. Let's assume you have two modules installed: dev_module1 and
+                    dev_module2. dev_module1 provides additional information to dev_module2.
+                    dev_module1 has a table "table" with a column MD1_ENTRY which contains 
+                    the content of the additional
+                    information and a second column MD1_MD2_ID which links it to the MOD_INSTANCE_ID
+                    of dev_module2. dev_module2's table "table"  has only one column: MD2_ENTRY.
+                    If you want to select an entry from dev_module2 together with the additional info
+                    from dev_module1, an appropriate SQL-statement could look like this:
+                    <code> SELECT MD2_ENTRY, MD1_ENTRY FROM ${table} INNER JOIN ${dev_module1.table}
+                    ON (${table}.MOD_INSTANCE_ID = MD1_MD2_ID) WHERE ${table}.MOD_INSTANCE_ID = ?;
+                    </code>
+                <h3> Creating links to other content </h3>
+                <p>
+                    It is very likely that you want to create links, that pass other parameters
+                    to the rendering functions in order to create one or another form of navigation
+                    through your module. For example, if your module creates a list of objects
+                    and you want to see a detail view of a certain object by clicking on it.
+                    To do this you can use a feature of the <i>skarphed-core</i>'s view-system.
+                    Every view in skarphed is being represented by a comprehensive JSON. You
+                    can obtain this json in your module's code, apply a diff that you specify
+                    accordingly to what you want to do and then you get a href-string returned
+                    which you print in your html. This looks like this:
+                </p>
+                <code><pre>
+                    def render_pure_html(self, widget_id, args={}):
+                        if args.has_key("new_parameter"):
+                            np = args["new_parameter"]
+                        else:
+                            np = 0
+                        view_manager = self._core.get_view_manager()
+                        view = view_manager.get_currently_rendering_view()
+                        target_view = {'c': {widget_id:{"new_parameter":np+1}}}
+                        link = view.generate_link_from_dict(target_view)
+                        return "&lt;p&gt; %s &lt;a href="%s"&gt;Increment \
+                                &lt;/a&gt;&lt;/p&gt;"%(np, link)
+                </pre></code>
+                <p>
+                    This example code creates a link that passes "new_parameter" to via args
+                    which is an integer. If it gets a "new_parameter" in args, it takes it and
+                    increments it by 1. The link and the current value of "new_parameter" is then
+                    rendered to html. Everytime, you click on the link, "new_parameter" will be
+                    incremented.
+                </p>
+            </div>
+
+
+            <footer id="space_footer"></p><a href="/imprint.html">Imprint / Impressum</a></p>
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+            </footer>
+        </div>
+
+    </body>
+</html>
