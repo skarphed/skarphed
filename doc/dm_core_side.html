@@ -150,6 +150,10 @@
                     increments it by 1. The link and the current value of "new_parameter" is then
                     rendered to html. Everytime, you click on the link, "new_parameter" will be
                     incremented.
+                    When the input-form for the things you want to link contains POST-data, you
+                    must specify in the dict, which widget is supposed to receive the POST-data.
+                    in this case, you to this via the 'p'-attribute:
+                    <code> {'p': widget_id, 'c': {widget_id: {}}} </code>
                 </p>
             </div>
 
