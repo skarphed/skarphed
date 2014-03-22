@@ -30,7 +30,7 @@
                 <p>This is a little unconvenient until now, because this feature has not been needed during development (will be fixed). First obtain the IP of the server the <em>skarphed-repo</em> runs on. Then add this IP as a <a href="um_servers.html">server</a>. Right mouseclick on the newly entered server. Click <em>Properties...</em>. Click on <em>Add</em> in the Instances-Frame. Select the <em>InstanceType</em> <em>SkarphedRepository</em>. Enter the URL of the repiository into <em>URL</em> you can also enter IPs here like <em>http://10.10.10.10</em>. If you are an administrator of this <em>skarphed-repo</em> you may enter your password into the field <em>Password</em>.
                 Now you have a repository.</p>
                 <h3>Set up an own repository</h3>
-                <p>Setting up an own is a bit tricky until now. First, generate a debian-package of <em>skarphed-repo</em> from the sources by executing the following commands:<br>
+                <p>Setting up an own is a bit tricky until  we get a debian-package into the official package-sources of debian. First, generate a debian-package of <em>skarphed-repo</em> from the sources by executing the following commands:<br>
                 <code>
                     user@skarphed-admin:~$ cd /path/to/skarphed/repo/install<br>
                     user@scpville-admin:~$ ./generate_packages.sh
@@ -39,7 +39,7 @@
                 <code>
                     user@skarphed-admin:~$ scp  skarphed-repo.deb user@machine:/tmp/
                 </code><br>
-                After that SSH into the machine and install the package<br>
+                After that SSH into the machine and attempt to install the package<br>
                 <code>
                     user@skarphed-admin:~$ ssh user@machine<br>
                     user@skarphed-repo:~$ cd /tmp<br>
@@ -47,9 +47,17 @@
                     root@skarphed-repo:~# dpkg -i skarphed-repo.deb<br>
                     root@skarphed-repo:~# apt-get -f -y install
                 </code><br>
-                Follow instructions on screen.
+                The former steps install all dependencies needed by the repo. Afterwards you will need to set a SYSDBA-password for firebird, activate firebird and trigger the setup-script of skarphed-repo:<br>
+                <code>
+                    root@skarphed-repo:~# dpkg-reconfigure firebird2.5-super
+                    root@skarphed-repo:~# skdrepo-setup
+                </code><br>
+                Follow instructions on screen. The last step is firing up your new repo:<br>
+                <code>
+                    root@skarphed-repo:~# /etc/init.d/skdrepo start
+                </code><br>
                 You can now call the URL that points to your <em>skarphed-repo</em>-Machine and should be able to see the machines public key.
-                Cońtinue with the section above to register your new repository with <em>skarphed-admin</em>.
+                Continue with the section above to register your new repository with <em>skarphed-admin</em>.
                 
             </div>
 
