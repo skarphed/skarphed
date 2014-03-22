@@ -154,7 +154,7 @@ class Database(GenericSkarphedObject):
         return self.par
 
     def getName(self):
-        return "Firebird 2.5 Database"
+        return "Firebird 2.5 "+self.getServer().getName()
     
     def getServer(self):
         return self.getPar()
