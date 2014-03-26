@@ -132,7 +132,9 @@ class Installer(AbstractInstaller):
         con = self.server.getSSH()
         con_stdin, con_stdout, con_stderr = con.exec_command("cd /tmp/scvinst"+str(self.installationId)+"; tar xvfz scv_install.tar.gz -C / ; chmod 755 install.sh ; ./install.sh ")
 
-        logging.debug(con_stdout.read())
+        output = con_stdout.read()
+        logging.debug("SSH-outputlength: %d"%len(output))
+        logging.debug(output)
         
         shutil.rmtree(self.BUILDPATH)
         self.status = 100
