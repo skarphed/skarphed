@@ -100,12 +100,15 @@ class Installer(AbstractInstaller):
 
         shutil.copytree(os.path.join(COREFILES,"web"), os.path.join(self.BUILDPATH, "web"))
         shutil.copytree(os.path.join(COREFILES,"lib"), os.path.join(self.BUILDPATH,"lib"))
+        shutil.copyfile(os.path.join(COREFILES,"skarphedcore-0.1.egg-info"),
+                        os.path.join(self.BUILDPATH,"skarphedcore-0.1.egg-info"))
 
         tar = tarfile.open(os.path.join(self.BUILDPATH,"scv_install.tar.gz"),"w:gz")
         tar.add(os.path.join(self.BUILDPATH,"apache2.conf"))
         tar.add(os.path.join(self.BUILDPATH,"config.json"))
         tar.add(os.path.join(self.BUILDPATH,"skarphed.conf"))
         tar.add(os.path.join(self.BUILDPATH,"install.sh"))
+        tar.add(os.path.join(self.BUILDPATH,"skarphedcore-0.1.egg-info"))
         tar.add(os.path.join(self.BUILDPATH,"web"))
         tar.add(os.path.join(self.BUILDPATH,"lib"))
         tar.close()

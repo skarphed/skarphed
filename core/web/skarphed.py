@@ -15,17 +15,12 @@ for line in cfgfile:
 
 del(cfgfile)
 
-p = os.path.realpath(__file__)
-p = p.replace("skarphed.pyc","")
-p = p.replace("skarphed.py","")
-sys.path.append(p)
+sys.path.append(os.path.dirname(__file__))
 
 from instanceconf import SCV_INSTANCE_SCOPE_ID
 cfg["SCV_INSTANCE_SCOPE_ID"] = SCV_INSTANCE_SCOPE_ID
 
-sys.path.append(cfg["SCV_LIBPATH"])
-
-from scv import Core
+from skarphedcore.scv import Core
 
 def application(environ, start_response):
     response_body = []

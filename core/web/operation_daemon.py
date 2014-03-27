@@ -18,10 +18,8 @@ sys.path.append(os.path.dirname(__file__))
 from instanceconf import SCV_INSTANCE_SCOPE_ID
 cfg["SCV_INSTANCE_SCOPE_ID"] = SCV_INSTANCE_SCOPE_ID
 
-sys.path.append(cfg["SCV_LIBPATH"])
-
-from scv import Core
-from scv import OperationDaemon
+from skarphedcore.scv import Core
+from skarphedcore.scv import OperationDaemon
 
 core = Core(cfg)
 configuration = core.get_configuration()

@@ -1,0 +1,10 @@
+Metadata-Version: 0.1
+Name: skarphedcore
+Version: 2014.01
+Summary: Core for the skarphed webmanagement system
+Homepage: http://www.skarphed.org
+Author: Daniel 'grindhold' Brendle
+License: AGPLv3
+Description: skarphedcore delivers functionality to run skarphed-instances on webservers
+
+        Read more about this in the skarphed-documentation: http://skarphed.org/dox/

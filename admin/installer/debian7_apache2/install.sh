@@ -20,9 +20,10 @@ else
 	source /etc/skarphed/skarphed.conf
 
 	
-	mkdir $SCV_LIBPATH
+	mkdir -p $SCV_LIBPATH
 	cp -r ./lib/* $SCV_LIBPATH/
-	chown -R www-data:www-data $SCV_LIBPATH
+    cp ./skarphedcore-0.1.egg-info $SCV_LIBPATH/..
+	chmod -R 755 $SCV_LIBPATH
 
 	mkdir -p $SCV_BINARY_CACHEPATH
 	chown -R www-data:www-data $SCV_BINARY_CACHEPATH
