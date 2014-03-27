@@ -171,9 +171,9 @@ class AbstractModule(object):
 
     def get_guidata(self):
         configuration = self._core.get_configuration()
-        libpath = configuration.get_entry("global.libpath")
+        modpath = configuration.get_entry("global.modpath")
 
-        modulepath = libpath+"/"+self._name+"/v"+\
+        modulepath = modpath+"/"+self._name+"/v"+\
                               str(self._version_major)+"_"+ \
                               str(self._version_minor)+"_"+ \
                               str(self._revision)
@@ -410,7 +410,7 @@ class ModuleManager(object):
         cur = db.query(self._core,stmnt,(module_id,))
         row = cur.fetchonemap()
         if row is not None:
-            exec "from %s.v%d_%d_%d import Module as ModuleImplementation"%(row["MOD_NAME"], row["MOD_VERSIONMAJOR"], row["MOD_VERSIONMINOR"], row["MOD_VERSIONREV"])
+            exec "from skarphedcore.modules.%s.v%d_%d_%d import Module as ModuleImplementation"%(row["MOD_NAME"], row["MOD_VERSIONMAJOR"], row["MOD_VERSIONMINOR"], row["MOD_VERSIONREV"])
             module = ModuleImplementation(self._core) 
             module.set_id(module_id)
             return module
@@ -471,9 +471,9 @@ class ModuleManager(object):
         rows = cur.fetchallmap()
         for row in rows:
             configuration = self._core.get_configuration()
-            libpath = configuration.get_entry("global.libpath")
+            modpath = configuration.get_entry("global.modpath")
 
-            modulepath = libpath+"/"+row["MOD_NAME"]+"/v"+\
+            modulepath = modpath+"/"+row["MOD_NAME"]+"/v"+\
                                   str(row["MOD_VERSIONMAJOR"])+"_"+ \
                                   str(row["MOD_VERSIONMINOR"])+"_"+ \
                                   str(row["MOD_VERSIONREV"])
@@ -490,19 +490,19 @@ class ModuleManager(object):
         prepares the module installation by invoking the download
         """
         configuration = self._core.get_configuration()
-        libpath = configuration.get_entry("global.libpath")
+        modpath = configuration.get_entry("global.modpath")
 
-        modulepath = libpath+"/"+module_meta["name"]+"/v"+\
+        modulepath = modpath+"/"+module_meta["name"]+"/v"+\
                               str(module_meta["version_major"])+"_"+ \
                               str(module_meta["version_minor"])+"_"+ \
                               str(module_meta["revision"])
 
-        if os.path.exists(libpath+"/"+module_meta["name"]):
+        if os.path.exists(modpath+"/"+module_meta["name"]):
             if not os.path.exists(modulepath):
                 os.mkdir(modulepath)
         else:
-            os.mkdir(libpath+"/"+module_meta["name"])
-            open(libpath+"/"+module_meta["name"]+"/__init__.py","w").close()
+            os.mkdir(modpath+"/"+module_meta["name"])
+            open(modpath+"/"+module_meta["name"]+"/__init__.py","w").close()
             os.mkdir(modulepath)
 
         repo = self.get_repository()
@@ -573,12 +573,12 @@ class ModuleManager(object):
             module = self.get_module(nr)
 
         configuration = self._core.get_configuration()
-        libpath = configuration.get_entry('global.libpath')
+        modpath = configuration.get_entry('global.modpath')
 
         repo = self.get_repository()
         latest_version = repo.get_latest_version(module)
 
-        latest_path = libpath+"/"+latest_version["name"]+"/v"+\
+        latest_path = modpath+"/"+latest_version["name"]+"/v"+\
                               str(latest_version["version_major"])+"_"+ \
                               str(latest_version["version_minor"])+"_"+ \
                               str(latest_version["revision"])
@@ -611,7 +611,7 @@ class ModuleManager(object):
     def uninstall_module(self,module, hard=False):
         """
         uninstall a module
-        the flag "hard" actually deletes the files of this module in libpath
+        the flag "hard" actually deletes the files of this module in modpath
         module can be module or module meta
         """
         if module.__class__.__name__ != "Module":
@@ -634,9 +634,9 @@ class ModuleManager(object):
 
         if hard:
             configuration = self._core.get_configuration()
-            libpath = configuration.get_entry('global.libpath')
+            modpath = configuration.get_entry('global.modpath')
             version = module.get_version()
-            shutil.rmtree(libpath+"/"+module.get_name()+"/v"+version[0]+"_"+version[1]+"_"+version[2])
+            shutil.rmtree(modpath+"/"+module.get_name()+"/v"+version[0]+"_"+version[1]+"_"+version[2])
 
         self._unregister_module(module)
         self._core.get_poke_manager().add_activity(ActivityType.MODULE)

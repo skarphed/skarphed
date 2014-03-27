@@ -24,6 +24,11 @@ else
 	cp -r ./lib/* $SCV_LIBPATH/
     cp ./skarphedcore-0.1.egg-info $SCV_LIBPATH/..
 	chmod -R 755 $SCV_LIBPATH
+ 
+    mkdir -p $SCV_MODPATH
+    chown -R www-data:www-data $SCV_MODPATH
+    touch $SCV_MODPATH/__init__.py
+    ln -s $SCV_MODPATH $SCV_LIBPATH/modules
 
 	mkdir -p $SCV_BINARY_CACHEPATH
 	chown -R www-data:www-data $SCV_BINARY_CACHEPATH

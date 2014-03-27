@@ -335,7 +335,7 @@ class Rpc(object):
 
         return {'data':moduleguidata,
                 'signature':base64.b64encode(signature),
-                'libstring':configuration.get_entry('global.libpath')}
+                'libstring':configuration.get_entry('global.modpath')}
 
     def changeRepository(self, params):
         ip = str(params[0])
