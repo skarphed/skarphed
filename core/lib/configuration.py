@@ -62,6 +62,7 @@ class Configuration(object):
 
         configjson = open(self._configuration["core.webpath"]+"/config.json").read()
         self._configuration.update(JSONDecoder().decode(configjson))
+        configjson.close()
         self._local_config_keys = self._configuration.keys()
         self._state = self.CONF_LOAD_LOCAL
 

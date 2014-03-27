@@ -13,7 +13,7 @@ for line in cfgfile:
     key, value = line.split("=")
     cfg[key]=value
 
-del(cfgfile)
+cfgfile.close()
 
 sys.path.append(os.path.dirname(__file__))
 
