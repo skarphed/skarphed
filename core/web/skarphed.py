@@ -5,15 +5,15 @@
 import sys
 import os
 
-cfgfile = open("/etc/skarphed/skarphed.conf","r").read().split("\n")
+cfgfile = open("/etc/skarphed/skarphed.conf","r")
+cfgtext = cfgfile.read().split("\n")
+cfgfile.close()
 cfg = {}
-for line in cfgfile:
+for line in cfgtext:
     if line.startswith("#") or line.find("=") == -1:
         continue
     key, value = line.split("=")
     cfg[key]=value
-
-cfgfile.close()
 
 sys.path.append(os.path.dirname(__file__))
 

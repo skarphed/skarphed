@@ -55,15 +55,16 @@ class Configuration(object):
         coreconfig = self._core.get_core_config(self)
         self._configuration["global.libpath"] = coreconfig["SCV_LIBPATH"]
         self._configuration["global.webpath"] = coreconfig["SCV_WEBPATH"]
-        self._configuration["global.modpath"] = corecofnig["SCV_MODPATH"]
+        self._configuration["global.modpath"] = coreconfig["SCV_MODPATH"]
         self._configuration["global.binary_cache"] = coreconfig["SCV_BINARY_CACHEPATH"]
         self._configuration["core.instance_id"] = coreconfig["SCV_INSTANCE_SCOPE_ID"]
         self._configuration["core.webpath"] = self._configuration["global.webpath"]+ self._configuration["core.instance_id"]
         self._state = self.CONF_LOAD_GLOBAL
 
-        configjson = open(self._configuration["core.webpath"]+"/config.json").read()
+        configfile = open(self._configuration["core.webpath"]+"/config.json")
+        configjson = configfile.read()
+        configfile.close()
         self._configuration.update(JSONDecoder().decode(configjson))
-        configjson.close()
         self._local_config_keys = self._configuration.keys()
         self._state = self.CONF_LOAD_LOCAL
 
