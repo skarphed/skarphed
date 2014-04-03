@@ -191,6 +191,7 @@ class BoxWidget(gtk.VBox):
         self.temporaryBoxcontent = copy(view.getBoxContent(self.boxId))
 
         self.show_all()
+        self.render()
 
     def render(self):
         try:
@@ -200,6 +201,7 @@ class BoxWidget(gtk.VBox):
             return
 
         box_name, box_orientation = view.getPage().getBox(self.boxId)
+
         if box_orientation == BoxOrientation.HORIZONTAL:
             self.label.set_text(_("Horizontal Box:")+" "+box_name)
         else:
