@@ -296,7 +296,7 @@ class BoxSpace(gtk.HBox):
             return
 
         boxcontent = self.getPar().getTemporaryBoxContent()
-        del(boxcontent[self.orderNumber])
+        boxcontent.remove(boxcontent[self.orderNumber])
 
         self.getPar().render()
 

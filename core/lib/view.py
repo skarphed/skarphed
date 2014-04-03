@@ -553,7 +553,7 @@ class View(object):
                 order +=1
 
         # delete boxwidgets that are not used anymore
-        stmnt = "DELETE FROM BOXWIDGETS WHERE BWT_BOX_ID = ? AND BWT_VIE_ID = ? AND BWT_VIE_ID = ? ;"
+        stmnt = "DELETE FROM BOXWIDGETS WHERE BWT_BOX_ID = ? AND BWT_WGT_ID = ? AND BWT_VIE_ID = ? ;"
         for box_id, widget_id in dbBoxMapping.keys():
             db.query(self._core, stmnt, (box_id, widget_id, self.get_id()), commit=True)
 
