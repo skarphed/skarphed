@@ -212,6 +212,7 @@ class BoxWidget(gtk.VBox):
 
         order = 0
         self.boxSpaces = []
+
         for widgetId in self.temporaryBoxcontent:
             self.boxSpaces.append(BoxSpace(self, view, self.boxId, order))
             self.spaceList.pack_start(self.boxSpaces[order],False)
@@ -267,6 +268,7 @@ class BoxSpace(gtk.HBox):
         self.boxId = boxId
         self.orderNumber = orderNumber
 
+        self.spaceWidget = None
         self.spaceWidget = SpaceWidget(self, view, boxId=boxId, orderNumber=orderNumber)
         self.buttonhbox = gtk.VBox()
         self.raiseOrderButton = gtk.Button(stock=gtk.STOCK_GO_UP)
@@ -306,9 +308,10 @@ class BoxSpace(gtk.HBox):
         except GenericObjectStoreException:
             self.destroy()
             return
-        boxcontent = self.getPar().getTemporaryBoxContent()
-        widgetId = self.spaceWidget.getWidgetId()
-        boxcontent[self.orderNumber] = widgetId
+        if self.spaceWidget:
+            boxcontent = self.getPar().getTemporaryBoxContent()
+            widgetId = self.spaceWidget.getWidgetId()
+            boxcontent[self.orderNumber] = widgetId
 
     def cb_raiseOrder(self, widget=None, data=None):
         try:
@@ -378,6 +381,7 @@ class SpaceWidget(gtk.Frame):
         self.spacelabel = gtk.Label(_("Widget in this Space:"))
 
         self.widget_combo = ObjectCombo(self, "Widget", virtualRootObject=view.getViews().getSkarphed().getModules(), noneElement=True)
+        self.widget_combo.connect("changed", self.cb_changed)
         self.expander = gtk.Expander()
         self.expander.set_label_widget(gtk.Label(_("Edit Widget Parameters")))
         self.param_widget = ParamWidget(self, view)
@@ -425,6 +429,10 @@ class SpaceWidget(gtk.Frame):
         self.param_widget.setWidget(widget)
         self.param_widget.render()
     
+    def cb_changed(self, widget=None, data=None):
+        if type(self.getPar()) == BoxSpace:
+            self.getPar().tempStoreWidgetId()
+
     def getWidgetId(self):
         widget = self.widget_combo.getSelected()
         if widget is None:
