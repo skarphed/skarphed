@@ -518,6 +518,12 @@ class View(object):
         if self._id is None:
             self._id = db.get_seq_next("VIE_GEN")
         
+        # update the view itself
+        stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
+                  VALUES (?,?,?,?) MATCHING (VIE_ID) ;"
+        db.query(self._core, stmnt, (self._id, self._page, self._name, int(self._default)),\
+                 commit=True)
+
         if not onlyOneOperation or onlySpaceWidgetMapping:
             # Get current space-widgetmapping to determine, which mappings to delete
             stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
@@ -594,11 +600,6 @@ class View(object):
             for widget_id, key in dbWidgetParamMap.keys():
                 db.query(self._core, stmnt, (self.get_id(), widget_id, key), commit=True)
 
-        # update the view itself
-        stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
-                  VALUES (?,?,?,?) MATCHING (VIE_ID) ;"
-        db.query(self._core, stmnt, (self._id, self._page, self._name, int(self._default)),\
-                 commit=True)
         self._core.get_poke_manager().add_activity(ActivityType.VIEW)
 
     def delete(self):
