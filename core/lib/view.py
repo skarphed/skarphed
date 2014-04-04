@@ -504,85 +504,101 @@ class View(object):
             return "/web/"+existing_name
             
 
-    def store(self):
+    def store(self, onlySpaceWidgetMapping=False, 
+              onlyBoxMapping=False, onlyWidgetParamMapping=False):
         """
         stores this view in the database
+
+        the programmer may store only parts of the view by activating several flags
+        this is necessary to avoid a race condition between to simultaneous calls
+        when editing a view.
         """
+        onlyOneOperation = onlySpaceWidgetMapping or onlyBoxMapping or onlyWidgetParamMapping
         db = self._core.get_db()
         if self._id is None:
             self._id = db.get_seq_next("VIE_GEN")
         
-        # Get current space-widgetmapping to determine, which mappings to delete
-        stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
-        cur = db.query(self._core, stmnt, (self.get_id(),))
-        dbSpaceWidgetMap = {}
-        for row in cur.fetchallmap():
-            dbSpaceWidgetMap[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
+        if not onlyOneOperation or onlySpaceWidgetMapping:
+            # Get current space-widgetmapping to determine, which mappings to delete
+            stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
+            cur = db.query(self._core, stmnt, (self.get_id(),))
+            dbSpaceWidgetMap = {}
+            for row in cur.fetchallmap():
+                dbSpaceWidgetMap[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
 
-        # update widgets
-        stmnt = "UPDATE OR INSERT INTO VIEWWIDGETS (VIW_VIE_ID, VIW_SPA_ID, VIW_WGT_ID) \
-                  VALUES (?,?,?) MATCHING (VIW_VIE_ID, VIW_SPA_ID) ;"
-        for space_id, widget_id in self._space_widget_mapping.items():
-            db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
-            try:
-                del(dbSpaceWidgetMap[int(space_id)])
-            except KeyError: pass
-
-        # delete Removed Widgets
-        stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? AND VIW_SPA_ID = ? ;"
-        for space_id in dbSpaceWidgetMap.keys():
-            db.query(self._core, stmnt, (self.get_id(), space_id), commit=True)
-
-        # get current box_widget_mapping to determine which mappings to delete
-        stmnt = "SELECT BWT_BOX_ID, BWT_WGT_ID FROM BOXWIDGETS WHERE BWT_VIE_ID = ? ;"
-        cur = db.query(self._core, stmnt, (self.get_id(),))
-        dbBoxMapping = {}
-        for row in cur.fetchallmap():
-            dbBoxMapping[(row["BWT_BOX_ID"],row["BWT_WGT_ID"])] = 1
-
-        # insert new box-related entries and change existing ones
-        stmnt = "UPDATE OR INSERT INTO BOXWIDGETS (BWT_BOX_ID, BWT_WGT_ID, BWT_ORDER, BWT_VIE_ID) \
-                  VALUES (?,?,?,?) MATCHING (BWT_BOX_ID, BWT_VIE_ID, BWT_WGT_ID) ;"
-        for box_id, boxcontent in self._box_mapping.items():
-            order = 0
-            for widget_id in boxcontent:
-                db.query(self._core, stmnt, (box_id, widget_id, order, self.get_id()), commit=True)
+            # update widgets
+            stmnt = "UPDATE OR INSERT INTO VIEWWIDGETS (VIW_VIE_ID, VIW_SPA_ID, VIW_WGT_ID) \
+                      VALUES (?,?,?) MATCHING (VIW_VIE_ID, VIW_SPA_ID) ;"
+            for space_id, widget_id in self._space_widget_mapping.items():
+                db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
                 try:
-                    del(dbBoxMapping[(int(box_id),int(widget_id))])
-                except KeyError: pass
-                order +=1
-
-        # delete boxwidgets that are not used anymore
-        stmnt = "DELETE FROM BOXWIDGETS WHERE BWT_BOX_ID = ? AND BWT_WGT_ID = ? AND BWT_VIE_ID = ? ;"
-        for box_id, widget_id in dbBoxMapping.keys():
-            db.query(self._core, stmnt, (box_id, widget_id, self.get_id()), commit=True)
-
-        # get all widget-param-mappings to determine which have to been deleted
-        stmnt = "SELECT VWP_WGT_ID, VWP_KEY FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ;"
-        cur = db.query(self._core, stmnt, (self.get_id(),))
-        dbWidgetParamMap = {}
-        for row in cur.fetchallmap():
-            dbWidgetParamMap[(row["VWP_WGT_ID"],row["VWP_KEY"])] = 1
-
-        # insert new widget params and update existing ones
-        stmnt = "UPDATE OR INSERT INTO VIEWWIDGETPARAMS (VWP_VIE_ID, VWP_WGT_ID, VWP_KEY, VWP_VALUE) \
-                  VALUES (?,?,?,?) MATCHING (VWP_VIE_ID, VWP_WGT_ID) ;"
-        for widget_id, propdict in self._widget_param_mapping.items():
-            for key, value in propdict.items():
-                db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)),commit=True)
-                try:
-                    del(dbWidgetParamMap[(widget_id,key)])
+                    del(dbSpaceWidgetMap[int(space_id)])
                 except KeyError: pass
 
-        # delete widget params that dont exist anymore
-        stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VPW_VIE_ID = ? AND VWP_WGT_ID = ? AND VWP_KEY = ? ;"
-        for widget_id, key in dbWidgetParamMap.keys():
-            db.query(self._core, stmnt, (self.get_id(), widget_id, key), commit=True)
+            # delete Removed Widgets
+            stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? AND VIW_SPA_ID = ? ;"
+            for space_id in dbSpaceWidgetMap.keys():
+                db.query(self._core, stmnt, (self.get_id(), space_id), commit=True)
+
+        if not onlyOneOperation or onlyBoxMapping:
+            # get current box_widget_mapping to determine which mappings to delete
+            stmnt = "SELECT BWT_BOX_ID, BWT_WGT_ID FROM BOXWIDGETS WHERE BWT_VIE_ID = ? ;"
+            cur = db.query(self._core, stmnt, (self.get_id(),))
+            dbBoxMapping = {}
+            for row in cur.fetchallmap():
+                dbBoxMapping[(row["BWT_BOX_ID"],row["BWT_WGT_ID"])] = 1
+
+            # insert new box-related entries and change existing ones
+            stmnt = "UPDATE OR INSERT INTO BOXWIDGETS \
+                      (BWT_BOX_ID, BWT_WGT_ID, BWT_ORDER, BWT_VIE_ID) \
+                      VALUES (?,?,?,?) MATCHING (BWT_BOX_ID, BWT_VIE_ID, BWT_WGT_ID) ;"
+            for box_id, boxcontent in self._box_mapping.items():
+                order = 0
+                for widget_id in boxcontent:
+                    db.query(self._core, stmnt, (box_id, widget_id, order, self.get_id()), \
+                             commit=True)
+                    try:
+                        del(dbBoxMapping[(int(box_id),int(widget_id))])
+                    except KeyError: pass
+                    order +=1
+
+            # delete boxwidgets that are not used anymore
+            stmnt = "DELETE FROM BOXWIDGETS \
+                     WHERE BWT_BOX_ID = ? AND BWT_WGT_ID = ? AND BWT_VIE_ID = ? ;"
+            for box_id, widget_id in dbBoxMapping.keys():
+                db.query(self._core, stmnt, (box_id, widget_id, self.get_id()), commit=True)
+
+        if onlyOneOperation or onlyWidgetParamMapping:
+            # get all widget-param-mappings to determine which have to been deleted
+            stmnt = "SELECT VWP_WGT_ID, VWP_KEY FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ;"
+            cur = db.query(self._core, stmnt, (self.get_id(),))
+            dbWidgetParamMap = {}
+            for row in cur.fetchallmap():
+                dbWidgetParamMap[(row["VWP_WGT_ID"],row["VWP_KEY"])] = 1
+
+            # insert new widget params and update existing ones
+            stmnt = "UPDATE OR INSERT INTO VIEWWIDGETPARAMS \
+                      (VWP_VIE_ID, VWP_WGT_ID, VWP_KEY, VWP_VALUE) \
+                      VALUES (?,?,?,?) MATCHING (VWP_VIE_ID, VWP_WGT_ID) ;"
+            for widget_id, propdict in self._widget_param_mapping.items():
+                for key, value in propdict.items():
+                    db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)),\
+                             commit=True)
+                    try:
+                        del(dbWidgetParamMap[(widget_id,key)])
+                    except KeyError: pass
+
+            # delete widget params that dont exist anymore
+            stmnt = "DELETE FROM VIEWWIDGETPARAMS \
+                     WHERE VPW_VIE_ID = ? AND VWP_WGT_ID = ? AND VWP_KEY = ? ;"
+            for widget_id, key in dbWidgetParamMap.keys():
+                db.query(self._core, stmnt, (self.get_id(), widget_id, key), commit=True)
 
         # update the view itself
         stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
                   VALUES (?,?,?,?) MATCHING (VIE_ID) ;"
-        db.query(self._core, stmnt, (self._id, self._page, self._name, int(self._default)),commit=True)
+        db.query(self._core, stmnt, (self._id, self._page, self._name, int(self._default)),\
+                 commit=True)
         self._core.get_poke_manager().add_activity(ActivityType.VIEW)
 
     def delete(self):

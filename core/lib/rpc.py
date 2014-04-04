@@ -836,7 +836,7 @@ class Rpc(object):
         view_manager = self._core.get_view_manager()
         view = view_manager.get_from_id(view_id)
         view.set_space_widget_mapping(mapping)
-        view.store()
+        view.store(onlySpaceWidgetMapping=True)
         return True
 
     def setBoxMapping(self, params):
@@ -846,7 +846,7 @@ class Rpc(object):
         view_manager = self._core.get_view_manager()
         view = view_manager.get_from_id(view_id)
         view.set_box_mapping(mapping)
-        view.store()
+        view.store(onlyBoxMapping=True)
         return True
 
     def setWidgetParamMapping(self, params):
@@ -857,7 +857,7 @@ class Rpc(object):
         view_manager = self._core.get_view_manager()
         view = view_manager.get_from_id(view_id)
         view.set_params_for_widget(widget_id, mapping)
-        view.store()
+        view.store(onlyWidgetParamMapping=True)
 
     def storeBinary(self, params):
         data = base64.b64decode(params[0])
