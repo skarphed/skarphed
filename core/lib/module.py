@@ -357,7 +357,7 @@ class Widget(object):
             setting = "False"
         if setting == "True":
             viewmanager = self._core.get_view_manager()
-            newview = viewmanager.get_from_id(self.get_baseview_id()).clone()
+            newview = viewmanager.get_from_id(self.get_baseview_id()).derive()
             viewname = sluggify(viewname)
             extcount = 0
             while True:

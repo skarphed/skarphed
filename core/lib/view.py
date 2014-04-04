@@ -79,7 +79,8 @@ class View(object):
         returns the view that is given by this id
         """
         db = cls._core.get_db()
-        stmnt = "SELECT VIE_NAME, VIE_SIT_ID, VIE_DEFAULT FROM VIEWS WHERE VIE_ID = ? ;"
+        stmnt = "SELECT VIE_NAME, VIE_SIT_ID, VIE_VIE_BASEVIEW, VIE_DEFAULT\
+                  FROM VIEWS WHERE VIE_ID = ? ;"
         cur = db.query(cls._core, stmnt, (int(nr),))
         row = cur.fetchonemap()
         if row is None:
@@ -94,21 +95,36 @@ class View(object):
             view.set_name(row["VIE_NAME"])
             view.set_default(row["VIE_DEFAULT"])
             view.set_page(row["VIE_SIT_ID"])
+            view.set_baseview_id(row["VIE_VIE_BASEVIEW"])
             view.set_id(nr)
-
-        stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
-        cur = db.query(cls._core, stmnt, (view.get_id(),))
+        
+        # get the widget space mapping. if the view has a baseview, also get those of
+        # the baseview. store into a dictionary. overwrite the space widget mapping
+        # of the baseview with those of the view. the derived view only stores the
+        # differences of itself and the baseview (same goes for widget_param_mapping
+        # and box_mapping
+        stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS \
+                    WHERE VIW_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID = ?) \
+                 UNION SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
+        cur = db.query(cls._core, stmnt, (view.get_id(), view.get_id()))
         rows = cur.fetchallmap()
         space_widget_mapping = {}
         for row in rows:
             space_widget_mapping[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
         view.set_space_widget_mapping(space_widget_mapping)
-
-        stmnt = "SELECT BOX_ID, BWT_WGT_ID \
-                 FROM BOXES LEFT JOIN BOXWIDGETS ON (BOX_ID = BWT_BOX_ID) \
-                 WHERE BWT_VIE_ID = ? OR (BWT_VIE_ID IS NULL AND BOX_SIT_ID = ?) \
-                 ORDER BY BWT_BOX_ID, BWT_ORDER ;"
-        cur = db.query(cls._core, stmnt, (view.get_id(), view.get_page()))
+        
+        # get the box mapping. this mapping maps box_ids to a list of widget_ids.
+        stmnt = "SELECT BOX_ID, BWT_WGT_ID FROM (\
+                 SELECT BOX_ID, BWT_WGT_ID, BWT_BOX_ID, BWT_ORDER, 0 AS UNIONSORT \
+                     FROM BOXES LEFT JOIN BOXWIDGETS ON (BOX_ID = BWT_BOX_ID) \
+                     WHERE BWT_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID = ?) \
+                     OR (BWT_VIE_ID IS NULL AND BOX_SIT_ID = ?) \
+                 UNION SELECT BOX_ID, BWT_WGT_ID, BWT_BOX_ID, BWT_ORDER, 1 AS UNIONSORT \
+                     FROM BOXES LEFT JOIN BOXWIDGETS ON (BOX_ID = BWT_BOX_ID) \
+                     WHERE BWT_VIE_ID = ? OR (BWT_VIE_ID IS NULL AND BOX_SIT_ID = ?)) \
+                 ORDER BY UNIONSORT, BWT_BOX_ID, BWT_ORDER ;"
+        cur = db.query(cls._core, stmnt, (view.get_id(), view.get_page(),
+                                          view.get_id(), view.get_page()))
         rows = cur.fetchallmap()
         box_mapping = {}
         for row in rows:
@@ -119,8 +135,16 @@ class View(object):
                 box_mapping[box_id].append(row["BWT_WGT_ID"])
         view.set_box_mapping(box_mapping)
 
-        stmnt = "SELECT VWP_KEY, VWP_VALUE, VWP_WGT_ID FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ORDER BY VWP_WGT_ID;"
-        cur = db.query(cls._core, stmnt, (view.get_id(),))
+        # get the widget_param mapping. this maps a dictionary of parameters to
+        # a widget_id
+        stmnt = "SELECT VWP_KEY, VWP_VALUE, VWP_WGT_ID FROM ( \
+                     SELECT VWP_KEY, VWP_VALUE, VWP_WGT_ID, 0 AS UNIONSORT FROM VIEWWIDGETPARAMS \
+                     WHERE VWP_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID = ?) \
+                     UNION \
+                     SELECT VWP_KEY, VWP_VALUE, VWP_WGT_ID, 1 AS UNIONSORT FROM VIEWWIDGETPARAMS \
+                     WHERE VWP_VIE_ID = ?)\
+                 ORDER BY UNIONSORT, VWP_WGT_ID;"
+        cur = db.query(cls._core, stmnt, (view.get_id(),view.get_id()))
         rows = cur.fetchallmap()
         widget_param_mapping = {}
         for row in rows:
@@ -289,6 +313,15 @@ class View(object):
         self._name = None
         self._post_widget_id = None
         self._default = False
+        self._baseview_id = None
+
+    def derive(self):
+        """
+        Creates a view derived from this view
+        """
+        view = View(self._core)
+        view.set_baseview_id(self.get_id())
+        return view
 
     def clone(self):
         view = View(self._core)
@@ -358,6 +391,12 @@ class View(object):
     def get_widget_param_mapping(self):
         return self._widget_param_mapping
 
+    def set_baseview_id(self, baseview_id):
+        self.baseview_id = baseview_id
+
+    def is_derived(self):
+        return self._baseview_id is None
+
     def get_box_info(self, box_id):
         stmnt = "SELECT BOX_ORIENTATION, BOX_NAME FROM BOXES WHERE BOX_ID = ? ;"
         db = self._core.get_db()
@@ -416,14 +455,16 @@ class View(object):
         #TODO: Rewrite. Doesn't work anyways and needs code for boxes
         db = self._core.get_db()
         stmnt_params = []
-        stmnt = "SELECT COUNT(VIW_VIE_ID) AS CNT, VIW_VIE_ID FROM VIEWWIDGETS INNER JOIN VIEWS ON VIW_VIE_ID = VIE_ID WHERE 1=0"
+        stmnt = "SELECT COUNT(VIW_VIE_ID) AS CNT, VIW_VIE_ID \
+                 FROM VIEWWIDGETS INNER JOIN VIEWS ON VIW_VIE_ID = VIE_ID WHERE 1=0"
         for space_id , widget_id in self._space_widget_mapping.items():
             stmnt += " OR VIW_SPA_ID = ? AND VIW_WGT_ID = ? AND VIE_SIT_ID = ? "
             stmnt_params.extend((int(space_id), int(widget_id), self._page))
         stmnt += " GROUP BY VIW_VIE_ID ;"
 
         stmnt2_params = []
-        stmnt2 = "SELECT COUNT(VWP_VIE_ID) AS CNT, VWP_VIE_ID FROM VIEWWIDGETPARAMS INNER JOIN VIEWS ON VWP_VIE_ID = VIE_ID WHERE 1=0"
+        stmnt2 = "SELECT COUNT(VWP_VIE_ID) AS CNT, VWP_VIE_ID \
+                  FROM VIEWWIDGETPARAMS INNER JOIN VIEWS ON VWP_VIE_ID = VIE_ID WHERE 1=0"
         for wgt_id, params in self._widget_param_mapping.items():
             for key, value in params.items():
                 stmnt2 += " OR VWP_WGT_ID = ? AND VWP_KEY = ? AND VWP_VALUE = ? AND VIE_SIT_ID = ? "
@@ -447,9 +488,11 @@ class View(object):
                 view_paramcount = 0
                 for wgt_id , params in self._widget_param_mapping.items():
                     view_paramcount += len(params)
-                if db_param_mappingcounts.has_key(row["VIW_VIE_ID"]) and view_paramcount == 0:
+                if db_param_mappingcounts.has_key(row["VIW_VIE_ID"]) \
+                        and view_paramcount == 0:
                     continue
-                if (db_param_mappingcounts.has_key(row["VIW_VIE_ID"]) and db_param_mappingcounts[row["VIW_VIE_ID"]] == view_paramcount) \
+                if (db_param_mappingcounts.has_key(row["VIW_VIE_ID"]) \
+                        and db_param_mappingcounts[row["VIW_VIE_ID"]] == view_paramcount) \
                         or view_paramcount == 0:
                     possible_views.append(row["VIW_VIE_ID"])
 
@@ -460,7 +503,6 @@ class View(object):
             return row["VIE_NAME"]
         else:
             return False
-
 
     def generate_link_from_action(self,action):
         """
@@ -518,6 +560,13 @@ class View(object):
         if self._id is None:
             self._id = db.get_seq_next("VIE_GEN")
         
+        # update the view itself
+        stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_VIE_BASEVIEW, \
+                    VIE_NAME, VIE_DEFAULT) \
+                 VALUES (?,?,?,?,?) MATCHING (VIE_ID) ;"
+        db.query(self._core, stmnt, (self._id, self._page, self._baseview_id, self._name, int(self._default)),\
+                 commit=True)
+
         if not onlyOneOperation or onlySpaceWidgetMapping:
             # Get current space-widgetmapping to determine, which mappings to delete
             stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
@@ -526,10 +575,23 @@ class View(object):
             for row in cur.fetchallmap():
                 dbSpaceWidgetMap[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
 
+            # get space-widget-mapping of baseview to determine, which allocations are
+            # identical to those of the baseview and thus shall not be stored
+            if self.is_derived():
+                stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS \
+                         WHERE VIW_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID=?) ;"
+                baseviewSpaceWidgetMap = {}
+                cur = db.query(self._core, stmnt, (self.get_id(),))
+                for row in cur.fetchallmap():
+                    baseviewSpaceWidgetMap[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
+
             # update widgets
             stmnt = "UPDATE OR INSERT INTO VIEWWIDGETS (VIW_VIE_ID, VIW_SPA_ID, VIW_WGT_ID) \
                       VALUES (?,?,?) MATCHING (VIW_VIE_ID, VIW_SPA_ID) ;"
             for space_id, widget_id in self._space_widget_mapping.items():
+                # ignore allocation if present in baseview
+                if self.is_derived() and baseviewSpaceWidgetMap[space_id] == widget_id:
+                    continue
                 db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
                 try:
                     del(dbSpaceWidgetMap[int(space_id)])
@@ -547,6 +609,16 @@ class View(object):
             dbBoxMapping = {}
             for row in cur.fetchallmap():
                 dbBoxMapping[(row["BWT_BOX_ID"],row["BWT_WGT_ID"])] = 1
+            
+            # get box widget mapping of baseview to ignore boxmappings that are
+            # present in the baseview
+            if self.is_derived():
+                stmnt = "SELECT BWT_BOX_ID, BWT_WGT_ID, BWT_ORDER FROM BOXWIDGETS \
+                         WHERE BWT_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID=?) ;"
+                baseviewBoxMapping = {}
+                cur = db.query(self._core, stmnt, (self.get_id(),))
+                for row in cur.fetchallmap():
+                    baseviewBoxMapping[row["BWT_BOX_ID"],row["BWT_ORDER"]] = row["BWT_WGT_ID"]
 
             # insert new box-related entries and change existing ones
             stmnt = "UPDATE OR INSERT INTO BOXWIDGETS \
@@ -555,6 +627,9 @@ class View(object):
             for box_id, boxcontent in self._box_mapping.items():
                 order = 0
                 for widget_id in boxcontent:
+                    # ignore allocation if present in baseview
+                    if self.is_derived() and baseviewBoxMapping[box_id,order] == widget_id:
+                        continue
                     db.query(self._core, stmnt, (box_id, widget_id, order, self.get_id()), \
                              commit=True)
                     try:
@@ -576,12 +651,25 @@ class View(object):
             for row in cur.fetchallmap():
                 dbWidgetParamMap[(row["VWP_WGT_ID"],row["VWP_KEY"])] = 1
 
+            # get widget-param-mappings of baseview to determine which mappings shall
+            # not be stored
+            if self.is_derived():
+                stmnt =  "SELECT VWP_WGT_ID, VWP_KEY, VWP_VALUE FROM VIEWWIDGETPARAMS\
+                          WHERE VWP_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID=?) ;"
+                baseviewWidgetParamMap = {}
+                cur = db.query(self._core, stmnt, (self.get_id(),))
+                for row in cur.fetchallmap():
+                    baseviewWidgetParamMap[row["VWP_WGT_ID"], row["VWP_KEY"]] = row["VWP_VALUE"]
+
             # insert new widget params and update existing ones
             stmnt = "UPDATE OR INSERT INTO VIEWWIDGETPARAMS \
                       (VWP_VIE_ID, VWP_WGT_ID, VWP_KEY, VWP_VALUE) \
                       VALUES (?,?,?,?) MATCHING (VWP_VIE_ID, VWP_WGT_ID) ;"
             for widget_id, propdict in self._widget_param_mapping.items():
                 for key, value in propdict.items():
+                    #ignore if present in baseview:
+                    if self.is_derived() and baseviewWidgetParamMap[widget_id, key] == value:
+                        continue
                     db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)),\
                              commit=True)
                     try:
@@ -594,11 +682,6 @@ class View(object):
             for widget_id, key in dbWidgetParamMap.keys():
                 db.query(self._core, stmnt, (self.get_id(), widget_id, key), commit=True)
 
-        # update the view itself
-        stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
-                  VALUES (?,?,?,?) MATCHING (VIE_ID) ;"
-        db.query(self._core, stmnt, (self._id, self._page, self._name, int(self._default)),\
-                 commit=True)
         self._core.get_poke_manager().add_activity(ActivityType.VIEW)
 
     def delete(self):
