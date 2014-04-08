@@ -454,6 +454,8 @@ class View(object):
         Returns False if there is no corresponding view
         """
         #TODO: Rewrite. Doesn't work anyways and needs code for boxes
+        if self._post_widget_id is not None:
+            return False
         db = self._core.get_db()
         stmnt_params = []
         stmnt = "SELECT COUNT(VIW_VIE_ID) AS CNT, VIW_VIE_ID \
