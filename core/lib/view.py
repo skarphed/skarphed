@@ -321,6 +321,7 @@ class View(object):
         """
         view = View(self._core)
         view.set_baseview_id(self.get_id())
+        view.set_page(self._page)
         return view
 
     def clone(self):
@@ -392,7 +393,7 @@ class View(object):
         return self._widget_param_mapping
 
     def set_baseview_id(self, baseview_id):
-        self.baseview_id = baseview_id
+        self._baseview_id = baseview_id
 
     def is_derived(self):
         return self._baseview_id is None
@@ -564,8 +565,7 @@ class View(object):
         stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_VIE_BASEVIEW, \
                     VIE_NAME, VIE_DEFAULT) \
                  VALUES (?,?,?,?,?) MATCHING (VIE_ID) ;"
-        db.query(self._core, stmnt, (self._id, self._page, self._baseview_id, self._name, int(self._default)),\
-                 commit=True)
+        db.query(self._core, stmnt, (self._id, self._page, self._baseview_id, self._name, int(self._default)), commit=True)
 
         if not onlyOneOperation or onlySpaceWidgetMapping:
             # Get current space-widgetmapping to determine, which mappings to delete
@@ -590,7 +590,10 @@ class View(object):
                       VALUES (?,?,?) MATCHING (VIW_VIE_ID, VIW_SPA_ID) ;"
             for space_id, widget_id in self._space_widget_mapping.items():
                 # ignore allocation if present in baseview
-                if self.is_derived() and baseviewSpaceWidgetMap[space_id] == widget_id:
+                space_id = int(space_id)
+                if self.is_derived() \
+                        and baseviewSpaceWidgetMap.has_key(space_id) \
+                        and baseviewSpaceWidgetMap[space_id] == widget_id:
                     continue
                 db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
                 try:
@@ -628,7 +631,9 @@ class View(object):
                 order = 0
                 for widget_id in boxcontent:
                     # ignore allocation if present in baseview
-                    if self.is_derived() and baseviewBoxMapping[box_id,order] == widget_id:
+                    if self.is_derived() \
+                            and baseviewBoxMapping.has_key((box_id,order)) \
+                            and baseviewBoxMapping[box_id,order] == widget_id:
                         continue
                     db.query(self._core, stmnt, (box_id, widget_id, order, self.get_id()), \
                              commit=True)
@@ -643,7 +648,7 @@ class View(object):
             for box_id, widget_id in dbBoxMapping.keys():
                 db.query(self._core, stmnt, (box_id, widget_id, self.get_id()), commit=True)
 
-        if onlyOneOperation or onlyWidgetParamMapping:
+        if not onlyOneOperation or onlyWidgetParamMapping:
             # get all widget-param-mappings to determine which have to been deleted
             stmnt = "SELECT VWP_WGT_ID, VWP_KEY FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ;"
             cur = db.query(self._core, stmnt, (self.get_id(),))
@@ -668,7 +673,9 @@ class View(object):
             for widget_id, propdict in self._widget_param_mapping.items():
                 for key, value in propdict.items():
                     #ignore if present in baseview:
-                    if self.is_derived() and baseviewWidgetParamMap[widget_id, key] == value:
+                    if self.is_derived() \
+                            and baseviewWidgetParamMap.has_key((widget_id, key)) \
+                            and baseviewWidgetParamMap[widget_id, key] == value:
                         continue
                     db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)),\
                              commit=True)
