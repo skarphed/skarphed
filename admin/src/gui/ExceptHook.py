@@ -23,7 +23,7 @@
 import inspect, linecache, pydoc, sys, traceback
 from cStringIO import StringIO
 from gettext import gettext as _
-import common.errors
+import skarphedcommon.errors
 
 import pygtk
 pygtk.require ('2.0')
@@ -181,7 +181,7 @@ def _info (exctyp, value, tb):
             trace += analyse_simple (exctyp, value, tb).getvalue()
         except:
             trace = _("Exception while analyzing the exception.")
-    if type(value) == common.errors.UnknownCoreException:
+    if type(value) == skarphedcommon.errors.UnknownCoreException:
         trace = value.get_tracebackstring()
     buf = textview.get_buffer()
     buf.set_text (trace)
@@ -239,7 +239,7 @@ class ExpectedErrorHandler(gtk.MessageDialog):
                 SkarphedRepositoryException : 1
             }
 
-        for exc in common.errors.getCommonExceptions():
+        for exc in skarphedcommon.errors.getCommonExceptions():
             self.knownExceptions[exc] = 1
 
         self.add_button (gtk.STOCK_OK, gtk.RESPONSE_OK)
@@ -257,7 +257,7 @@ class ExpectedErrorHandler(gtk.MessageDialog):
             self.set_markup (value.__class__.__name__)
             if exctyp is SkarphedRepositoryException:
                 self.format_secondary_text(str(value))
-            elif issubclass(exctyp, common.errors.SkarphedException):
+            elif issubclass(exctyp, skarphedcommon.errors.SkarphedException):
                 self.format_secondary_text (str(value))
             else:
                 pass # TODO: This case should never happen, handle otherwise

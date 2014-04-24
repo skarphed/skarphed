@@ -29,7 +29,7 @@ import os
 import data.Server
 from Instance import InstanceType
 
-from common.errors import ProfileException
+from skarphedcommon.errors import ProfileException
 
 class Profile(object):
     STATE_EMPTY = 0

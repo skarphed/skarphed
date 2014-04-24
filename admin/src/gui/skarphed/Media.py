@@ -35,7 +35,7 @@ from gui.IconStock import MEDIA, BINARY
 
 from glue.lng import _
 
-from common.errors import BinaryException
+from skarphedcommon.errors import BinaryException
 
 class MediaPage(ObjectPageAbstract):
     def __init__(self, par, media):

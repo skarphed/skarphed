@@ -1,0 +1,7 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Name: skarphed-common
+Source: https://github.com/grindhold/skarphed
+
+Files: *
+Copyright: 2011-2013 Daniel 'grindhold' Brendle
+License: AGPL-3+

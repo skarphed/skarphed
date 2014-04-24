@@ -34,7 +34,7 @@ from gui.OperationTool import OperationTool
 import gui.IconStock
 
 from glue.lng import _
-from common.enums import JSMandatory
+from skarphedcommon.enums import JSMandatory
 
 class ModulesPage(ObjectPageAbstract):
     def __init__(self,parent,modules):

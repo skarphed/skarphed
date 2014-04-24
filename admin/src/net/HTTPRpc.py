@@ -28,7 +28,7 @@ import json
 import gobject
 from net import HTTPCookies, HTTPCall
 from glue.threads import Tracker, KillableThread
-from common.errors import getAppropriateException, UnknownCoreException
+from skarphedcommon.errors import getAppropriateException, UnknownCoreException
 import logging
 
 class SkarphedRPC(KillableThread, HTTPCall):    

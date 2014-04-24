@@ -30,7 +30,7 @@ import glue.threads
 import net.SSH
 import os
 import logging
-from common.errors import getAppropriateException
+from skarphedcommon.errors import getAppropriateException
 
 from glue.autosave import AutoSaveThread
 

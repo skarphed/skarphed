@@ -149,8 +149,8 @@ import random
 import os
 from time import sleep
 
-from common.errors import RepositoryException
-from common.enums import ActivityType
+from skarphedcommon.errors import RepositoryException
+from skarphedcommon.enums import ActivityType
 
 #from glue.threads import KillableThread
 

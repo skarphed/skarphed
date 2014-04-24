@@ -42,8 +42,6 @@ function generate_deb {
 	rm ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/skarphed.iss
 	rm ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/setup.py
 	rm ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/DEVMODE
-	rm ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/common
-	cp -r ../../common ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/
 	touch ${deb_root}usr/lib/python2.7/dist-packages/skarphedadmin/__init__.py
 
 	cp -r ../data/* ${deb_root}usr/share/skarphed/

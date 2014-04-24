@@ -1,0 +1,12 @@
+Metadata-Version: 1.0
+Name: skarphedcommon
+Version: 0.1.1
+Summary: skarphed Common (Web Management System)
+Home-page: http://skarphed.org
+Author: Daniel Brendle
+Author-email: grindhold@skarphed.org
+License: AGPL v3 or greater
+Description: This package contains code commonly used in all components of skarphed. Skarphed is a Free and Opensource Web- and Contentmanagementsystem. To create and maintain multiple websites in one convenient environment.
+Platform: Linux
+Platform: MacOS
+Platform: Windows

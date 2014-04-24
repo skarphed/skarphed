@@ -39,8 +39,8 @@ from gui.DefaultEntry import DefaultEntry
 
 from glue.lng import _
 
-from common.errors import ViewException
-from common.enums import BoxOrientation
+from skarphedcommon.errors import ViewException
+from skarphedcommon.enums import BoxOrientation
 
 class ViewPage(ObjectPageAbstract):
     def __init__(self, par, view):
