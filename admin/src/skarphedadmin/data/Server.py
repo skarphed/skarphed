@@ -62,6 +62,20 @@ class InstallationTarget(object):
     def setExtraParams(self, extraParams):
         self._extraParams = dict(extraParams)
 
+class NoneTarget(InstallationTarget):
+    class EmptyInstaller(object):
+        def execute_installation(self):
+            pass
+    class EmptyDestroyer(object):
+        def execute_destruction(self):
+            pass
+
+    def __init__(self):
+        InstallationTarget.__init__(self)
+        self._name = "None/None"
+        self._destroyer = NoneTarget.EmptyDestroyer()
+        self._installer = NoneTarget.EmptyInstaller()
+
 class Server(GenericSkarphedObject):
     URL_PROT_STRIP = re.compile(r".+://")
     URL_TAIL_STRIP = re.compile(r"(:(\d{1}|\d{2}|\d{3}|\d{4}|\d{5}))?/.+")
@@ -78,7 +92,7 @@ class Server(GenericSkarphedObject):
      
     instanceTypesLoaded=False
      
-    INSTALLATION_TARGETS = []
+    INSTALLATION_TARGETS = [NoneTarget()]
 
     @classmethod
     def addInstallationTarget(cls, target):

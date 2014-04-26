@@ -103,7 +103,7 @@ class Application(object):
         return skarphedadmin.data.getObjectStore()
     
     def getData(self):
-        return data
+        return skarphedadmin.data
 
     def getMainWindow(self):
         return self.mainwin
