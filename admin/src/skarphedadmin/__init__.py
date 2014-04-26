@@ -42,10 +42,10 @@ class Application(object):
     
     def __init__(self):
         os.environ['PYGTK_FATAL_EXCEPTIONS'] = '1'
-        data.Generic.setApplicationReference(self)
-        self.mainwin = gui.MainWindow(self)
+        skarphedadmin.data.Generic.setApplicationReference(self)
+        self.mainwin = skarphedadmin.gui.MainWindow(self)
         self.quitrequest = False
-        self.tracker = glue.threads.Tracker(self)
+        self.tracker = skarphedadmin.glue.threads.Tracker(self)
         self.tracker.start()
         self.state = self.STATE_LOGGEDOUT
         self.activeProfile=None
@@ -62,7 +62,7 @@ class Application(object):
     
     def run(self):
         try:
-            gui.run()
+            skarphedadmin.gui.run()
         except KeyboardInterrupt, e:
             self.mainwin.cb_Close()
         
@@ -70,7 +70,7 @@ class Application(object):
         if self.state == self.STATE_LOGGEDIN:
             self.activeProfile.updateProfile()
             self.activeProfile.save()
-            data.Generic.ObjectStore().clear()
+            skarphedadmin.data.Generic.ObjectStore().clear()
             del(self.activeProfile)
             self.state = self.STATE_LOGGEDOUT
         else:
@@ -78,14 +78,14 @@ class Application(object):
     
     def doLoginTry(self,username,password):
         if self.state == self.STATE_LOGGEDOUT:
-            profile = data.Profile.Profile(username,password)
+            profile = skarphedadmin.data.Profile.Profile(username,password)
             profile.load()
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
             
     def createProfile(self,username,password):
         if self.state == self.STATE_LOGGEDOUT:
-            profile = data.Profile.Profile(username,password)
+            profile = skarphedadmin.data.Profile.Profile(username,password)
             profile.create()
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
@@ -97,10 +97,10 @@ class Application(object):
         raise exception
 
     def getSSHConnection(self,server):
-        net.SSH.SSHConnector(server).start()
+        skarphedadmin.net.SSH.SSHConnector(server).start()
     
     def getObjectStore(self):
-        return data.getObjectStore()
+        return skarphedadmin.data.getObjectStore()
     
     def getData(self):
         return data
@@ -118,7 +118,7 @@ class Application(object):
         return self.instanceTypes
     
     def createServerFromInstanceUrl(self, instanceurl):
-        return data.createServerFromInstanceUrl(instanceurl)
+        return skarphedadmin.data.createServerFromInstanceUrl(instanceurl)
 
 if __name__=="__main__":
     application = Application()

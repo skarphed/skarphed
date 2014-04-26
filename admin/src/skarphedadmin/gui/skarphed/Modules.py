@@ -40,7 +40,7 @@ class ModulesPage(ObjectPageAbstract):
     def __init__(self,parent,modules):
         ObjectPageAbstract.__init__(self,parent,modules)
         
-        self.info = PageFrame(self,_("Information"), gui.IconStock.REPO)
+        self.info = PageFrame(self,_("Information"), skarphedadmin.gui.IconStock.REPO)
         self.infobox = gtk.VBox()
         self.info_table = gtk.Table(2,2,False)
         self.info_labelName = gtk.Label(_("Name:"))
@@ -55,7 +55,7 @@ class ModulesPage(ObjectPageAbstract):
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.mod = PageFrame(self,_("Available and installed modules"), gui.IconStock.MODULE)
+        self.mod = PageFrame(self,_("Available and installed modules"), skarphedadmin.gui.IconStock.MODULE)
         self.modbox = gtk.Table(5,2,False)
         self.modbox.set_row_spacings(10)
         self.modbox.set_col_spacings(10)
@@ -193,9 +193,9 @@ class ModulesPage(ObjectPageAbstract):
                 model.itersToRemove.append(rowiter)
         
         js_iconmap = {
-            JSMandatory.NO : gui.IconStock.JS_NO,
-            JSMandatory.SUPPORTED : gui.IconStock.JS_SUPPORTED,
-            JSMandatory.MANDATORY : gui.IconStock.JS_MANDATORY
+            JSMandatory.NO : skarphedadmin.gui.IconStock.JS_NO,
+            JSMandatory.SUPPORTED : skarphedadmin.gui.IconStock.JS_SUPPORTED,
+            JSMandatory.MANDATORY : skarphedadmin.gui.IconStock.JS_MANDATORY
         }
 
         modules = self.getMyObject()
@@ -217,18 +217,18 @@ class ModulesPage(ObjectPageAbstract):
             if module.data.has_key('installed') and module.data['installed'] == True:
                 rowiter = self.getModuleIterById(self.mod_IListStore,module.getLocalId())
                 if rowiter is None:
-                    self.mod_IListStore.append((gui.IconStock.getAppropriateIcon(module), module.getName(), js_iconmap[module.getJSMandatory()], module.getLocalId() ))
+                    self.mod_IListStore.append((skarphedadmin.gui.IconStock.getAppropriateIcon(module), module.getName(), js_iconmap[module.getJSMandatory()], module.getLocalId() ))
                 else:
-                    self.mod_IListStore.set_value(rowiter,0,gui.IconStock.getAppropriateIcon(module))
+                    self.mod_IListStore.set_value(rowiter,0,skarphedadmin.gui.IconStock.getAppropriateIcon(module))
                     self.mod_IListStore.set_value(rowiter,1,module.getName())
                     self.mod_IListStore.set_value(rowiter,2,js_iconmap[module.getJSMandatory()])
                 self.processedIListIds.append(module.getLocalId())
             else:
                 rowiter = self.getModuleIterById(self.mod_AListStore,module.getLocalId())
                 if rowiter is None:
-                    self.mod_AListStore.append((gui.IconStock.MODULE, module.getName(), js_iconmap[module.getJSMandatory()], module.getLocalId() ))
+                    self.mod_AListStore.append((skarphedadmin.gui.IconStock.MODULE, module.getName(), js_iconmap[module.getJSMandatory()], module.getLocalId() ))
                 else:
-                    self.mod_AListStore.set_value(rowiter,0,gui.IconStock.getAppropriateIcon(module))
+                    self.mod_AListStore.set_value(rowiter,0,skarphedadmin.gui.IconStock.getAppropriateIcon(module))
                     self.mod_IListStore.set_value(rowiter,1,module.getName())
                     self.mod_IListStore.set_value(rowiter,2,js_iconmap[module.getJSMandatory()])
                 self.processedAListIds.append(module.getLocalId())

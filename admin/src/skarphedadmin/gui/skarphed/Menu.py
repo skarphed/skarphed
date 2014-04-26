@@ -23,7 +23,7 @@
 ###########################################################
 
 import pygtk
-from gui import IconStock
+from skarphedadmin.gui import IconStock
 pygtk.require("2.0")
 import gtk
 

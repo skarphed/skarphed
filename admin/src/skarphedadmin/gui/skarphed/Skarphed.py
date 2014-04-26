@@ -44,7 +44,7 @@ class SkarphedPage(ObjectPageAbstract):
         self.headline = gtk.Label(_("Skarphed Instance"))
         self.pack_start(self.headline,False)
         
-        self.repo = PageFrame(self,_("Repository"), gui.IconStock.REPO)
+        self.repo = PageFrame(self,_("Repository"), skarphedadmin.gui.IconStock.REPO)
         self.repoDummy = gtk.Label("")
         self.repoHBox = gtk.HBox()
         self.repotable = gtk.Table(2,3)
@@ -67,7 +67,7 @@ class SkarphedPage(ObjectPageAbstract):
         self.opd = OperationDaemonControl(self,skarphed.getOperationDaemon())
         self.pack_start(self.opd,False)
         
-        self.pki = PageFrame(self, _("Public Key"), gui.IconStock.CREDENTIAL)
+        self.pki = PageFrame(self, _("Public Key"), skarphedadmin.gui.IconStock.CREDENTIAL)
         self.pki_label = gtk.Label(_("Instance Public Key:"))
         self.pki_textview = gtk.TextView()
         self.pki_textbuffer = gtk.TextBuffer()
@@ -78,7 +78,7 @@ class SkarphedPage(ObjectPageAbstract):
         self.pki.add(self.pki_vbox)
         self.pack_start(self.pki, False)
 
-        self.settings = PageFrame(self, _("Server Settings"), gui.IconStock.SKARPHED)
+        self.settings = PageFrame(self, _("Server Settings"), skarphedadmin.gui.IconStock.SKARPHED)
         self.settings_vbox = gtk.VBox()
         self.settings_maintenance_toggle_lock = False
         self.settings_maintenance_hbox = gtk.HBox()

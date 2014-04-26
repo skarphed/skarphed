@@ -26,7 +26,6 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 import os
-import skarphedadmin.gui.IconStock
 from ObjectCombo import ObjectCombo
 from DefaultEntry import DefaultEntry
 from skarphedadmin.data.Server import Server

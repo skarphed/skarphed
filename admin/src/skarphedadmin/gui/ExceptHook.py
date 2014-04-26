@@ -228,7 +228,7 @@ def _dialog_response_cb(dialog, resp, trace):
 #
 ####################################################
 
-from net.SkarphedRepository import SkarphedRepositoryException
+from skarphedadmin.net.SkarphedRepository import SkarphedRepositoryException
 
 class ExpectedErrorHandler(gtk.MessageDialog):
     def __init__(self):

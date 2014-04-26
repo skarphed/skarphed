@@ -42,7 +42,7 @@ class TemplatePage(ObjectPageAbstract):
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
         
-        self.info = PageFrame(self,_("Currently Installed"), gui.IconStock.TEMPLATE)
+        self.info = PageFrame(self,_("Currently Installed"), skarphedadmin.gui.IconStock.TEMPLATE)
         self.infobox = gtk.VBox()
         self.info_table = gtk.Table(2,3,False)
         self.info_labelName = gtk.Label(_("Name:"))
@@ -61,7 +61,7 @@ class TemplatePage(ObjectPageAbstract):
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.upload = PageFrame(self,_("Upload new Template"), gui.IconStock.TEMPLATE)
+        self.upload = PageFrame(self,_("Upload new Template"), skarphedadmin.gui.IconStock.TEMPLATE)
         self.uploadbox = gtk.HBox()
         self.uploadbox.set_border_width(10)
         self.upload_label = gtk.Label(_("Please choose the template and click OK"))
@@ -78,7 +78,7 @@ class TemplatePage(ObjectPageAbstract):
         self.upload.add(self.uploadbox)
         self.pack_start(self.upload,False)
         
-        self.repo = PageFrame(self,_("Install Template from Repository"), gui.IconStock.TEMPLATE)
+        self.repo = PageFrame(self,_("Install Template from Repository"), skarphedadmin.gui.IconStock.TEMPLATE)
         self.repoVBox = gtk.VBox()
         self.repoButtonbox = gtk.HBox()
         self.repoDummy = gtk.Label("")
@@ -133,7 +133,7 @@ class TemplatePage(ObjectPageAbstract):
 
         self.repostore.clear()
         for available_template in template.getAvailableTemplates():
-            self.repostore.append((gui.IconStock.TEMPLATE,
+            self.repostore.append((skarphedadmin.gui.IconStock.TEMPLATE,
                                    available_template['name'],
                                    available_template['description'],
                                    available_template['author'],

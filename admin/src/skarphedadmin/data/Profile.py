@@ -107,7 +107,7 @@ class Profile(object):
             self.state = self.STATE_LOADED
             profilefile.close()
             for server in self.data['server']:
-                srv = data.Server.createServer()
+                srv = skarphedadmin.data.Server.createServer()
                 srv.setIp(server['ip'])
                 srv.setName(server['name'])
                 srv.setSSHName(server['ssh_username'])
@@ -145,7 +145,7 @@ class Profile(object):
     
     def updateProfile(self, save=False):
         self.data['server'] = []
-        for server in data.Server.getServers():
+        for server in skarphedadmin.data.Server.getServers():
             instances = []
             for instance in server.getInstances():
                 if instance.instanceTypeName == "database":

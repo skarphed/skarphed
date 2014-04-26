@@ -717,7 +717,7 @@ class Skarphed(Instance):
         """
         sends an http-call to this instance
         """
-        call = net.HTTPRpc.SkarphedRPC(self,callback, method, handled_object, params, errorcallback)
+        call = skarphedadmin.net.HTTPRpc.SkarphedRPC(self,callback, method, handled_object, params, errorcallback)
         call.start()
     
     def getServer(self):

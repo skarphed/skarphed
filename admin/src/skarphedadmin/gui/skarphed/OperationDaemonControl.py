@@ -36,7 +36,7 @@ from skarphedadmin.glue.lng import _
 
 class OperationDaemonControl(PageFrame):
     def __init__(self, par, opdaemon):
-        PageFrame.__init__(self, par,_("Operation Daemon"),gui.IconStock.OPERATION)
+        PageFrame.__init__(self, par,_("Operation Daemon"),skarphedadmin.gui.IconStock.OPERATION)
         self.par = par
 
         self.operationdaemonId = opdaemon.getLocalId()

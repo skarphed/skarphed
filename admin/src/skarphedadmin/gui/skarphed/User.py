@@ -45,19 +45,19 @@ class UserPage(ObjectPageAbstract):
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
         
-        self.info = PageFrame(self,_("Information"), gui.IconStock.USER)
+        self.info = PageFrame(self,_("Information"), skarphedadmin.gui.IconStock.USER)
         self.infobox = gtk.VBox()
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.perm = PageFrame(self,_("Permissions / Roles"), gui.IconStock.ROLE)
+        self.perm = PageFrame(self,_("Permissions / Roles"), skarphedadmin.gui.IconStock.ROLE)
         self.permbox = gtk.Table(2,2,False)
         self.permbox.set_row_spacings(10)
         self.permbox.set_col_spacings(10)
         self.permbox.set_border_width(10)
         
-        self.perm_permlabel = FrameLabel(self,_("Please choose the Permissions you want to assign to the user here:"),gui.IconStock.PERMISSION)
-        self.perm_rolelabel = FrameLabel(self,_("Please choose the Rights you want to assign to the user here:"),gui.IconStock.ROLE)
+        self.perm_permlabel = FrameLabel(self,_("Please choose the Permissions you want to assign to the user here:"),skarphedadmin.gui.IconStock.PERMISSION)
+        self.perm_rolelabel = FrameLabel(self,_("Please choose the Rights you want to assign to the user here:"),skarphedadmin.gui.IconStock.ROLE)
         
         self.perm_permlistview = gtk.TreeView()
         self.perm_permlist = gtk.ListStore(int, str,str)
@@ -111,7 +111,7 @@ class UserPage(ObjectPageAbstract):
         self.perm.add(self.permbox)
         self.pack_start(self.perm,False)
 
-        self.alterpw = PageFrame(self, _("Alter Password"), gui.IconStock.CREDENTIAL)
+        self.alterpw = PageFrame(self, _("Alter Password"), skarphedadmin.gui.IconStock.CREDENTIAL)
         self.alterpwhbox = gtk.HBox()
         self.alterpwdummy = gtk.Label("")
         self.alterpwbox = gtk.Table(2,4,False)
