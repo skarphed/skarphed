@@ -52,6 +52,8 @@ class Installer(AbstractInstaller):
         nginx_template = open(os.path.join(p,"nginx.conf"),"r").read()
         nginx_domain = ""
         domainlineterm = ""
+        if self.data['nginx.port'] == "":
+            self.data['nginx.port'] = "80"
         if self.data['nginx.domain'] != "":
             nginx_domain = "server_name "+self.data['nginx.domain']
             self.domain = self.data['nginx.domain']
