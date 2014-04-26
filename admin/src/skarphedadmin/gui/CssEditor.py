@@ -29,7 +29,7 @@ import gtk
 from skarphedadmin.data.Generic import GenericObjectStoreException
 from skarphedadmin.gui.Tabs import FrameLabel
 
-from IconStock import CSS
+from skarphedadmin.gui import IconStock
 
 from skarphedadmin.glue.lng import _
 
@@ -40,7 +40,7 @@ class CssEditor(gtk.Window):
         self.objId = obj.getLocalId()
         
         self.set_title(_("Skarphed Admin :: CssEditor :: ")+obj.getName())
-        self.set_icon(CSS)
+        self.set_icon(IconStock.CSS)
         self.set_size_request(600,500)
         
         self.set_border_width(10)

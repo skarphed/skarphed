@@ -27,7 +27,7 @@ pygtk.require("2.0")
 import gtk
 
 
-from IconStock import SKARPHED
+from skarphedadmin.gui import IconStock
 from ViewPasswordButton import ViewPasswordButton
 from InstancePage import InstancePage
 from skarphedadmin.data.Generic import GenericObjectStoreException
@@ -175,7 +175,7 @@ class ServerPropertyPage(gtk.Frame):
         self.instStore.clear()
         if server is not None:
             for instance in server.getInstances():
-                icon = SKARPHED #TODO: Implement Icon
+                icon = IconStock.SKARPHED #TODO: Implement Icon
                 self.instStore.append((icon,instance.getName(),instance.getLocalId()))
         self.cb_cursorChanged()
 

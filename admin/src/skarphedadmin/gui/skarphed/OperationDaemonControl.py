@@ -30,13 +30,13 @@ import gtk
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
 from skarphedadmin.data.Generic import GenericObjectStoreException
-import skarphedadmin.gui.IconStock
+from skarphedadmin.gui import IconStock
 
 from skarphedadmin.glue.lng import _
 
 class OperationDaemonControl(PageFrame):
     def __init__(self, par, opdaemon):
-        PageFrame.__init__(self, par,_("Operation Daemon"),skarphedadmin.gui.IconStock.OPERATION)
+        PageFrame.__init__(self, par,_("Operation Daemon"), IconStock.OPERATION)
         self.par = par
 
         self.operationdaemonId = opdaemon.getLocalId()

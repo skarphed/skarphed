@@ -31,7 +31,7 @@ from GenericObject import PageFrame
 from GenericObject import FrameLabel
 from skarphedadmin.data.Generic import GenericObjectStoreException
 
-from skarphedadmin.gui.IconStock import MEDIA, BINARY
+from skarphedadmin.gui import IconStock
 
 from skarphedadmin.glue.lng import _
 
@@ -41,7 +41,7 @@ class MediaPage(ObjectPageAbstract):
     def __init__(self, par, media):
         ObjectPageAbstract.__init__(self, par, media)
 
-        self.media = PageFrame(self, _("Media"), MEDIA)
+        self.media = PageFrame(self, _("Media"), IconStock.MEDIA)
         self.store = gtk.ListStore(bool, gtk.gdk.Pixbuf, str, str, str, int)
         self.view = gtk.TreeView()
         self.view.set_model(self.store)
@@ -96,7 +96,7 @@ class MediaPage(ObjectPageAbstract):
             print "adding"
             self.store.append((
                 False,
-                BINARY,
+                IconStock.BINARY,
                 binary.getFilename(),
                 binary.getMime(),
                 binary.getSize(),

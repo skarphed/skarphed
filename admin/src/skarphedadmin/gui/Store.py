@@ -26,7 +26,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-import IconStock
+from skarphedadmin.gui import IconStock
 from skarphedadmin.data.Generic import GenericObjectStoreException
 
 from skarphedadmin.glue.lng import _

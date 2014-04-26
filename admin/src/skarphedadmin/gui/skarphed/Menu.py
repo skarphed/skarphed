@@ -23,10 +23,10 @@
 ###########################################################
 
 import pygtk
-from skarphedadmin.gui import IconStock
 pygtk.require("2.0")
 import gtk
 
+from skarphedadmin.gui import IconStock
 from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from skarphedadmin.data.Generic import GenericObjectStoreException

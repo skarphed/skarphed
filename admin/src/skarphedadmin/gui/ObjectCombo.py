@@ -27,7 +27,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
-import IconStock
+from skarphedadmin.gui import IconStock
 
 class ObjectCombo(gtk.ComboBox):
     def __init__(self, par, objectType, selectedObject=None, selectFirst=False, virtualRootObject=None, noneElement=False):

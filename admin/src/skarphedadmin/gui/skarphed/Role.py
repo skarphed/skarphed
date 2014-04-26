@@ -30,7 +30,7 @@ import gtk
 from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
-import skarphedadmin.gui.IconStock
+from skarphedadmin.gui import IconStock
 
 from skarphedadmin.glue.lng import _
 
@@ -43,18 +43,18 @@ class RolePage(ObjectPageAbstract):
         self.headline = gtk.Label()
         self.pack_start(self.headline,False)
         
-        self.info = PageFrame(self,_("Information"), skarphedadmin.gui.IconStock.ROLE)
+        self.info = PageFrame(self,_("Information"), IconStock.ROLE)
         self.infobox = gtk.VBox()
         self.info.add(self.infobox)
         self.pack_start(self.info,False)
         
-        self.perm = PageFrame(self,_("Permissions"), skarphedadmin.gui.IconStock.PERMISSION)
+        self.perm = PageFrame(self,_("Permissions"), IconStock.PERMISSION)
         self.permbox = gtk.Table(1,2,False)
         self.permbox.set_row_spacings(10)
         self.permbox.set_col_spacings(10)
         self.permbox.set_border_width(10)
         
-        self.perm_permlabel = FrameLabel(self,_("Please choose the Permissions you want to assign to the user here:"), skarphedadmin.gui.IconStock.PERMISSION)
+        self.perm_permlabel = FrameLabel(self,_("Please choose the Permissions you want to assign to the user here:"), IconStock.PERMISSION)
         
         self.perm_permlistview = gtk.TreeView()
         self.perm_permlist = gtk.ListStore(int, str,str)

@@ -29,7 +29,7 @@ from skarphedadmin.gui.database.NewSchemaPage import NewSchemaPage
 from skarphedadmin.gui.database.RegisterSchemaPage import RegisterSchemaPage
 from InputBox import InputBox
 from YesNoPage import YesNoPage
-import IconStock 
+from skarphedadmin.gui import IconStock 
 
 from skarphedadmin.glue.lng import _
 

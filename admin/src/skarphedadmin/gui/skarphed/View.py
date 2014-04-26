@@ -33,7 +33,7 @@ from GenericObject import PageFrame
 from GenericObject import FrameLabel
 from skarphedadmin.data.Generic import GenericObjectStoreException
 
-from skarphedadmin.gui.IconStock import WIDGET, SITE, VIEW, SPACE
+from skarphedadmin.gui import IconStock
 from skarphedadmin.gui.ObjectCombo import ObjectCombo
 from skarphedadmin.gui.DefaultEntry import DefaultEntry
 
@@ -46,7 +46,7 @@ class ViewPage(ObjectPageAbstract):
     def __init__(self, par, view):
         ObjectPageAbstract.__init__(self, par, view)
 
-        self.view = PageFrame(self, _("View"), VIEW)
+        self.view = PageFrame(self, _("View"), IconStock.VIEW)
         self.view_hbox = gtk.HBox(spacing=10)
         self.view_label = gtk.Label(_("Name of this View: "))
         self.view_entry = DefaultEntry()
@@ -56,7 +56,7 @@ class ViewPage(ObjectPageAbstract):
         self.view.add(self.view_hbox)
         self.pack_start(self.view, False)
 
-        self.page = PageFrame(self, _("Site"), SITE)
+        self.page = PageFrame(self, _("Site"), IconStock.SITE)
         self.page_hbox = gtk.HBox(spacing=10)
         self.page_label = gtk.Label(_("Site to Render: "))
         self.page_combobox = ObjectCombo(self, "Site", virtualRootObject=view.getViews().getSkarphed().getSites())
@@ -65,7 +65,7 @@ class ViewPage(ObjectPageAbstract):
         self.page.add(self.page_hbox)
         self.pack_start(self.page,False)
 
-        self.compose = PageFrame(self, _("Compositing"), WIDGET)
+        self.compose = PageFrame(self, _("Compositing"), IconStock.WIDGET)
         self.compose_dummy = gtk.Label()
         self.compose_scroll = gtk.ScrolledWindow()
         self.compose_scroll.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
@@ -376,7 +376,7 @@ class SpaceWidget(gtk.Frame):
 
         self.vbox = gtk.VBox()
         self.hbox = gtk.HBox(spacing=10)
-        self.framelabel = FrameLabel(self,_("Space: "), SPACE)
+        self.framelabel = FrameLabel(self,_("Space: "), IconStock.SPACE)
         self.set_label_widget(self.framelabel)
         self.spacelabel = gtk.Label(_("Widget in this Space:"))
 

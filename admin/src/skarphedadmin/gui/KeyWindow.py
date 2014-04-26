@@ -27,7 +27,6 @@ pygtk.require("2.0")
 import gtk
 
 
-from IconStock import SKARPHED
 from ViewPasswordButton import ViewPasswordButton
 from skarphedadmin.data.Generic import GenericObjectStoreException
 
