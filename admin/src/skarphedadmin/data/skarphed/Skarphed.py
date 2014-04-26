@@ -105,7 +105,7 @@ def module_rpc(callback=None, errorhandler=None):
 
             widget = None
             module = None
-            while type(obj) != Skarphed:
+            while type(obj) != skarphedadmin.data.skarphed.Skarphed.Skarphed:
                 if obj.__class__.__name__ == "WidgetPage":
                     try:
                         widget = application.getLocalObjectById(obj.widgetId)
@@ -121,6 +121,7 @@ def module_rpc(callback=None, errorhandler=None):
                 if obj.__class__.__name__ == "Module":
                     module = obj
                 obj = obj.getPar()
+                print type(obj)
             skarphed = obj
             functionToCall = func.__name__
             args = cleanupArgs(*args,**kwargs)
