@@ -11,7 +11,7 @@ else
 	
 	#external component installation
 	apt-get update
-	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev python-cssutils python-crypto sudo
+	apt-get install -y apache2 libapache2-mod-wsgi python-pip libfbclient2 python-dev python-cssutils python-crypto python-imaging sudo
 
 	pip install fdb
 
