@@ -31,6 +31,7 @@ gtk.gdk.threads_init()
 import ExceptHook
 import MainWindow as MainWindow_
 
+from skarphedadmin import Application
 
 MainWindow = MainWindow_.MainWindow
 
@@ -40,6 +41,6 @@ def run():
 
 class Gui(object):
     def __init__(self,app):
-        self.app = app
+        self.app = Application()
     def doLoginTry(self,username,password):
         self.app.doLoginTry(username,password)

@@ -25,6 +25,6 @@
 
 from skarphedadmin.data.Generic import GenericSkarphedObject
 from skarphedadmin.data.Instance import InstanceType
-o = GenericSkarphedObject()
-o.getApplication().registerInstanceType(InstanceType("database","Skarphed Database"))
-o.destroy()
+
+def register(application):
+    application.registerInstanceType(InstanceType("database","Skarphed Database"))

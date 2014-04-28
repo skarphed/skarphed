@@ -23,11 +23,10 @@
 ###########################################################
 
 
-import skarphedadmin.gui
-import skarphedadmin.data.Generic
-import skarphedadmin.data.Profile
-import skarphedadmin.glue.threads
-import skarphedadmin.net.SSH
+import skarphedadmin.data
+from skarphedadmin.data.Profile import Profile
+from skarphedadmin.glue.threads import Tracker
+from skarphedadmin.net.SSH import SSHConnector
 import os
 import logging
 from skarphedcommon.errors import getAppropriateException
@@ -39,30 +38,55 @@ class ApplicationException(Exception): pass
 class Application(object):
     STATE_LOGGEDIN = 1
     STATE_LOGGEDOUT = 0
-    
+ 
+    _borg_mind = {}
+   
     def __init__(self):
-        os.environ['PYGTK_FATAL_EXCEPTIONS'] = '1'
-        skarphedadmin.data.Generic.setApplicationReference(self)
-        self.mainwin = skarphedadmin.gui.MainWindow(self)
-        self.quitrequest = False
-        self.tracker = skarphedadmin.glue.threads.Tracker(self)
-        self.tracker.start()
-        self.state = self.STATE_LOGGEDOUT
-        self.activeProfile=None
-        self.instanceTypes = []
-        
-        if not os.path.exists(os.path.expanduser('~/.skarphedadmin/')):
-            os.mkdir(os.path.expanduser('~/.skarphedadmin/'))
+        self.__dict__ = Application._borg_mind
+        print self.__dict__
+        if self.__dict__ == {}:
+            # register instance-types
+            self.instanceTypes = []
+            from skarphedadmin.data.skarphed_repo import register as skarphed_repo_register
+            skarphed_repo_register(self)
+            from skarphedadmin.data.database import register as database_register
+            database_register(self)
+            from skarphedadmin.data.skarphed import register as skarphed_register
+            skarphed_register(self)
+            
+            # set application reference
+            os.environ['PYGTK_FATAL_EXCEPTIONS'] = '1'
+            import skarphedadmin.data.Generic
+            skarphedadmin.data.Generic.setApplicationReference(self)
 
-        logging.basicConfig(filename=os.path.expanduser('~/.skarphedadmin/generic.log'),level=logging.DEBUG)
-        AutoSaveThread(self).start()
+            # register official repository
+            from skarphedadmin.data.skarphed_repo.Skarphed_repo import OfficialRepo
+            OfficialRepo()
 
-        
-        from data import skarphed
+            # start up gui
+            from skarphedadmin.gui import MainWindow
+            self.mainwin = MainWindow(self)
+            self.quitrequest = False
+
+            # start up process tracker
+            self.tracker = Tracker(self)
+            self.tracker.start()
+            self.state = self.STATE_LOGGEDOUT
+            self.activeProfile=None
+            
+            if not os.path.exists(os.path.expanduser('~/.skarphedadmin/')):
+                os.mkdir(os.path.expanduser('~/.skarphedadmin/'))
+
+            logging.basicConfig(filename=os.path.expanduser('~/.skarphedadmin/generic.log'),level=logging.DEBUG)
+            AutoSaveThread(self).start()
+
+            
+            from data import skarphed
     
     def run(self):
         try:
-            skarphedadmin.gui.run()
+            from skarphedadmin.gui import run as guirun
+            guirun()
         except KeyboardInterrupt, e:
             self.mainwin.cb_Close()
         
@@ -70,7 +94,8 @@ class Application(object):
         if self.state == self.STATE_LOGGEDIN:
             self.activeProfile.updateProfile()
             self.activeProfile.save()
-            skarphedadmin.data.Generic.ObjectStore().clear()
+            from skarphedadmin.data.Generic import Generic
+            Generic.ObjectStore().clear()
             del(self.activeProfile)
             self.state = self.STATE_LOGGEDOUT
         else:
@@ -78,14 +103,14 @@ class Application(object):
     
     def doLoginTry(self,username,password):
         if self.state == self.STATE_LOGGEDOUT:
-            profile = skarphedadmin.data.Profile.Profile(username,password)
+            profile = Profile(username,password)
             profile.load()
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
             
     def createProfile(self,username,password):
         if self.state == self.STATE_LOGGEDOUT:
-            profile = skarphedadmin.data.Profile.Profile(username,password)
+            profile = Profile(username,password)
             profile.create()
             self.state = self.STATE_LOGGEDIN
             self.activeProfile = profile
@@ -97,7 +122,7 @@ class Application(object):
         raise exception
 
     def getSSHConnection(self,server):
-        skarphedadmin.net.SSH.SSHConnector(server).start()
+        SSHConnector(server).start()
     
     def getObjectStore(self):
         return skarphedadmin.data.getObjectStore()

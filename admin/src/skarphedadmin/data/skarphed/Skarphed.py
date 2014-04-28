@@ -25,7 +25,7 @@
 
 from skarphedadmin.data.Generic import ObjectStore, GenericSkarphedObject, GenericObjectStoreException
 from skarphedadmin.data.Instance import Instance, InstanceType
-import skarphedadmin.net.HTTPRpc
+from skarphedadmin.net.HTTPRpc import SkarphedRPC
 
 def rpc(callback=None, errorhandler=None):
     """
@@ -105,7 +105,7 @@ def module_rpc(callback=None, errorhandler=None):
 
             widget = None
             module = None
-            while type(obj) != skarphedadmin.data.skarphed.Skarphed.Skarphed:
+            while obj.__class__.__name__ != "Skarphed":
                 if obj.__class__.__name__ == "WidgetPage":
                     try:
                         widget = application.getLocalObjectById(obj.widgetId)
@@ -121,13 +121,9 @@ def module_rpc(callback=None, errorhandler=None):
                 if obj.__class__.__name__ == "Module":
                     module = obj
                 obj = obj.getPar()
-                print type(obj)
             skarphed = obj
             functionToCall = func.__name__
             args = cleanupArgs(*args,**kwargs)
-            print widget
-            print module
-            print skarphed
             if widget is not None:
                 args.insert(0, widget.getId())
             skarphed.doRPCCall(callback, "executeModuleMethod", handled_object, [module.getId(), functionToCall, args], errorhandler)
@@ -718,7 +714,7 @@ class Skarphed(Instance):
         """
         sends an http-call to this instance
         """
-        call = skarphedadmin.net.HTTPRpc.SkarphedRPC(self,callback, method, handled_object, params, errorcallback)
+        call = SkarphedRPC(self,callback, method, handled_object, params, errorcallback)
         call.start()
     
     def getServer(self):

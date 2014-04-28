@@ -32,6 +32,8 @@ from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from GenericObject import FrameLabel
 from skarphedadmin.data.Generic import GenericObjectStoreException
+from skarphedadmin.data.skarphed.Site import Site
+from skarphedadmin.data.skarphed.Widget import Widget
 
 from skarphedadmin.gui import IconStock
 from skarphedadmin.gui.ObjectCombo import ObjectCombo
@@ -59,7 +61,9 @@ class ViewPage(ObjectPageAbstract):
         self.page = PageFrame(self, _("Site"), IconStock.SITE)
         self.page_hbox = gtk.HBox(spacing=10)
         self.page_label = gtk.Label(_("Site to Render: "))
-        self.page_combobox = ObjectCombo(self, "Site", virtualRootObject=view.getViews().getSkarphed().getSites())
+        self.page_combobox = ObjectCombo(self, \
+                                Site, \
+                                virtualRootObject=view.getViews().getSkarphed().getSites())
         self.page_hbox.pack_start(self.page_label,False)
         self.page_hbox.pack_start(self.page_combobox,False)
         self.page.add(self.page_hbox)
@@ -380,7 +384,10 @@ class SpaceWidget(gtk.Frame):
         self.set_label_widget(self.framelabel)
         self.spacelabel = gtk.Label(_("Widget in this Space:"))
 
-        self.widget_combo = ObjectCombo(self, "Widget", virtualRootObject=view.getViews().getSkarphed().getModules(), noneElement=True)
+        self.widget_combo = ObjectCombo(self, \
+                                Widget, \
+                                virtualRootObject=view.getViews().getSkarphed().getModules(), \
+                                noneElement=True)
         self.widget_combo.connect("changed", self.cb_changed)
         self.expander = gtk.Expander()
         self.expander.set_label_widget(gtk.Label(_("Edit Widget Parameters")))

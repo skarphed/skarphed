@@ -221,7 +221,13 @@ class Skarphed_repo(Instance):
     
     def getParent(self):
         return self.par
-    
+ 
+class OfficialRepo(Skarphed_repo):
+    def __init__(self):
+        Skarphed_repo.__init__(self, None, "http://repo.skarphed.org")
+    def getName(self):
+        return "The skarphed.org Repository"
+   
 def getServers():
     return ObjectStore().getServers()
 

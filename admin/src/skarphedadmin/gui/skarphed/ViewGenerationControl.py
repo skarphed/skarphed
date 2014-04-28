@@ -27,6 +27,7 @@ pygtk.require("2.0")
 import gtk
 
 from skarphedadmin.data.Generic import GenericObjectStoreException
+from skarphedadmin.data.skarphed.View import View
 
 from skarphedadmin.gui.ObjectCombo import ObjectCombo
 from skarphedadmin.gui.skarphed.Menu import SpaceCombo
@@ -47,7 +48,7 @@ class ViewGenerationControl(gtk.Frame):
         self.label_view = gtk.Label(_("Baseview:"))
         self.label_space = gtk.Label(_("Targetspace:"))
         self.combo_view = ObjectCombo(self, 
-                                     "View",
+                                     View,
                                      selectFirst=True,
                                      noneElement=True,
                                      virtualRootObject=widget.getModule().getModules().getSkarphed())

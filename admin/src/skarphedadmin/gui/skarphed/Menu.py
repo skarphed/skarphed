@@ -30,6 +30,8 @@ from skarphedadmin.gui import IconStock
 from GenericObject import ObjectPageAbstract
 from GenericObject import PageFrame
 from skarphedadmin.data.Generic import GenericObjectStoreException
+from skarphedadmin.data.skarphed.Widget import Widget
+from skarphedadmin.data.skarphed.View import View
 from skarphedadmin.gui.ObjectCombo import ObjectCombo
 from skarphedadmin.gui.DefaultEntry import DefaultEntry
 
@@ -276,12 +278,12 @@ class ActionWidgetConfig(gtk.Table):
         
         self.entry_url = DefaultEntry(default_message=_("http://www.example.org"))
         self.entry_widget = ObjectCombo(self, 
-                                     "Widget",
+                                     Widget,
                                      selectFirst=True,
                                      virtualRootObject=action.getActionList().getMenuItem().getMenu().getSite().getSkarphed())
         self.entry_space = SpaceCombo(self,action.getActionList().getMenuItem().getMenu().getSite())
         self.entry_view = ObjectCombo(self, 
-                                   "View",
+                                   View,
                                    selectFirst=True,
                                    virtualRootObject=action.getActionList().getMenuItem().getMenu().getSite().getSkarphed())
         self.entry_url.connect("focus-in-event",self.focusCallback)

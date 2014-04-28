@@ -43,7 +43,8 @@ class Store(gtk.TreeStore):
                         "Installer",
                         "Destroyer",
                         "OperationDaemon",
-                        "Binary")
+                        "Binary",
+                        "OfficialRepo")
     def __init__(self,*args,**kwargs):
         '''Constructor --'''
         assert kwargs['objectStore'] is not None, _("Need ObjectStore")

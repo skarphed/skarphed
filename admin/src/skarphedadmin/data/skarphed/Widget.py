@@ -118,7 +118,9 @@ class Widget(GenericSkarphedObject):
         # update views because viewmappings with this widgets have been deleted
         self.getModule().getModules().getSkarphed().getViews().refresh()
         # update actionlists because viewmappings with this widgets have been deleted
-        actionlists = self.getApplication().getObjectStore().getAllOfClass("ActionList",parent=self.getModule().getModules().getSkarphed())
+        actionlists = self.getApplication().getObjectStore().getAllOfClass(\
+                            skarphedadmin.data.Menu.ActionList,
+                            parent=self.getModule().getModules().getSkarphed())
         for actionlist in actionlists:
             actionlist.loadActions()
         self.destroy()

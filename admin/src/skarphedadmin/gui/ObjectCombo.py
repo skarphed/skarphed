@@ -38,10 +38,9 @@ class ObjectCombo(gtk.ComboBox):
         self.firstSelected = False
         self.showNoneElement = noneElement
 
-        if type(objectType) != str:
-            self.objectType = objectType.__class__.__name__
-        else:
-            self.objectType = objectType
+        assert type(objectType) == type, "must be true type"
+        self.objectType = objectType
+
         self.virtualRootObject = virtualRootObject
 
         self.selectedObjectId = None
@@ -133,7 +132,7 @@ class ObjectCombo(gtk.ComboBox):
     def setSelected(self, obj):
         if obj is None and not self.showNoneElement:
             raise Exception("Cannot Select None when Noneelement is inactive")
-        if obj is not None and obj.__class__.__name__ != self.objectType:
+        if obj is not None and type(obj) != self.objectType:
             raise TypeError()
         if obj is None:
             activeiter = self.getIterById(self.model, -3) 

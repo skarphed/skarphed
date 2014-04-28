@@ -29,7 +29,10 @@ import os
 from ObjectCombo import ObjectCombo
 from DefaultEntry import DefaultEntry
 from skarphedadmin.data.Server import Server
+from skarphedadmin.data.skarphed_repo.Skarphed_repo import Skarphed_repo
 from skarphedadmin.data.Generic import GenericObjectStoreException
+from skarphedadmin.data.database.Database import Database
+from skarphedadmin.data.database.Schema import Schema
 
 from skarphedadmin.glue.lng import _
 
@@ -64,7 +67,7 @@ class NewSkarphedPage(gtk.Frame):
         self.frm_target_tbl = gtk.Table(3,1,False)
         self.frm_root_tbl = gtk.Table(2,2,False)
 
-        self.srv_combobox = ObjectCombo(self,"Server", server)
+        self.srv_combobox = ObjectCombo(self,Server, server)
 
         self.srv_label = gtk.Label(_("Server:"))
         self.srv_name_label = gtk.Label(_("New Instance Name:"))
@@ -76,7 +79,9 @@ class NewSkarphedPage(gtk.Frame):
         self.frm_srv_tbl.attach(self.srv_name_entry,1,2,1,2)
         self.frm_srv.add(self.frm_srv_tbl)
 
-        self.repo_combobox = ObjectCombo(self,"Skarphed_repo", selectFirst=True)
+        self.repo_combobox = ObjectCombo(self, \
+                                    Skarphed_repo, \
+                                    selectFirst=True)
         self.repo_label = gtk.Label(_("Repository"))
 
         self.frm_repo_tbl.attach(self.repo_label,0,1,0,1)
@@ -85,8 +90,12 @@ class NewSkarphedPage(gtk.Frame):
 
         self.db_radio_new = gtk.RadioButton(None,_("Create new on Database:"))
         self.db_radio_use = gtk.RadioButton(self.db_radio_new,_("Use existing Schema:"))
-        self.db_db_combo = ObjectCombo(self,"Database", selectFirst=True)
-        self.db_schema_combo = ObjectCombo(self,"Schema", selectFirst=True)
+        self.db_db_combo = ObjectCombo(self, \
+                                    Database, \
+                                    selectFirst=True)
+        self.db_schema_combo = ObjectCombo(self, \
+                                    Schema, \
+                                    selectFirst=True)
         self.db_schema_combo.set_sensitive(False)
 
         self.db_radio_new.connect("toggled", self.cb_ToggledDb,1)

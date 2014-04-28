@@ -30,9 +30,8 @@ from skarphedadmin.glue.paths import INSTALLER
 from os import listdir
 from sys import path
 
-o = GenericSkarphedObject()
-o.getApplication().registerInstanceType(InstanceType("skarphed","Skarphed"))
-o.destroy()
+def register(application):
+    application.registerInstanceType(InstanceType("skarphed","Skarphed"))
 
 path.append(INSTALLER)
 installers = listdir(INSTALLER)

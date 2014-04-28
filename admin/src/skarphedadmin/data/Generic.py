@@ -23,7 +23,6 @@
 ###########################################################
 
 
-
 def setApplicationReference(app):
     global APPLICATION
     APPLICATION = app
@@ -69,19 +68,18 @@ class ObjectStore(object):
             cb()
     
     def getAllOfClass(self, obj, parent=None):
-        if type(obj) != str:
-            obj = obj.__class__.__name__
         res = []
         #TODO: Add performance by using parent.children if parent is set instead of ObjectStore.localObjects
         for element in ObjectStore.localObjects.values():
-            if element.__class__.__name__ == obj:
+            if isinstance(element, obj):
                 if parent is not None and not element.isChildOf(parent):
                     continue
                 res.append(element)
         return res
 
     def getServers(self):
-        return self.getAllOfClass("Server")
+        from skarphedadmin.data.Server import Server
+        return self.getAllOfClass(Server)
     
     def clear(self):
         """
