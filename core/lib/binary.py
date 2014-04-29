@@ -25,8 +25,10 @@
 import os
 from hashlib import md5 as md5hash
 from hashlib import sha256 as sha256hash
+import Image as PILImage
 from StringIO import StringIO
 import base64 #TODO: The whole thing should work without base64. find out why it doesnt here
+
 
 from common.errors import BinaryException
 
@@ -232,13 +234,8 @@ class Binary(object):
             db.query(cls._core, stmnt, (binaryId,), commit=True)
         
 
-class Image(Binary):
-    def resize(self, w, h):
-        pass
-
-    def get_image_size(self):
-        pass
-
-    def generate_thumbnail(self):
-        pass
+class Image(Binary,PILImage):
+    def __init__(self):
+        PILImage.__init__(self)
+        Binary.__init__(self)
 
