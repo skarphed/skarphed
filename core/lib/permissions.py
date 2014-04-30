@@ -22,6 +22,11 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
+from skarphedcore.database import Database
+from skarphedcore.session import Session
+from skarphedcore.poke import PokeManager
+from skarphedcore.user import User
+
 from common.enums import ActivityType
 from common.errors import PermissionException
 
@@ -30,12 +35,10 @@ class Role(object):
     A Role is a collection of Permissions
     to be assigned to a user at once
     """
-    def __init__(self,core):
+    def __init__(self):
         """
         initializes a user
         """
-        self._core = core
-
         self._id = None
         self._name = ""
 
@@ -67,8 +70,6 @@ class Role(object):
         """
         Stores the current state of the role into the database
         """
-        sessionmanager = self._core.get_session_manager()
-
         if self._id is None:
             raise PermissionException(PermissionException.get_msg(0))
 
@@ -76,51 +77,49 @@ class Role(object):
             raise PermissionException(PermissionException.get_msg(1))
 
 
-        db = self._core.get_db()
+        db = Database()
         stmnt = "UPDATE OR INSERT INTO ROLES (ROL_ID, ROL_NAME) VALUES (?,?) MATCHING (ROL_ID) ;"
-        db.query(self._core,stmnt,(self._id,self._name),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.ROLE)
+        db.query(stmnt,(self._id,self._name),commit=True)
+        PokeManager.add_activity(ActivityType.ROLE)
 
     def add_permission(self, permission):
         """
         adds a given permission to this role
         """
-        sessionmanager = self._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
+        session_user = Session.get_current_session_user()
 
         if not session_user.check_permission(permission):
             raise PermissionException(PermissionException.get_msg(3))
 
-        db = self._core.get_db()
+        db = Database()
         stmnt = "UPDATE OR INSERT INTO ROLERIGHTS (RRI_ROL_ID, RRI_RIG_ID) \
                         VALUES (?, (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME= ?)) \
                       MATCHING (RRI_ROL_ID, RRI_RIG_ID);";
-        db.query(self._core,stmnt,(self._id, permission),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.ROLE)
+        db.query(stmnt,(self._id, permission),commit=True)
+        PokeManager.add_activity(ActivityType.ROLE)
 
     def remove_permission(self, permission):
         """
         removes a given permission from this role
         """
-        sessionmanager = self._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         
         if not session_user.check_permission(permission):
             raise PermissionException(PermissionException.get_msg(3))
 
-        db = self._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM ROLERIGHTS WHERE RRI_ROL_ID = ? AND RRI_RIG_ID = (SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ?); "
-        db.query(self._core,stmnt,(self._id,permission),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.ROLE)
+        db.query(stmnt,(self._id,permission),commit=True)
+        PokeManager.add_activity(ActivityType.ROLE)
 
     def get_permissions(self):
         """
         returns all permissions assigned to this role as an array of strings
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT RIG_NAME, RIG_ID FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) \
                     WHERE RRI_ROL_ID = ? ;"         
-        cur = db.query(self._core,stmnt,(self._id,))
+        cur = db.query(stmnt,(self._id,))
         res = cur.fetchallmap()
         return [row["RIG_NAME"] for row in res]
 
@@ -139,26 +138,24 @@ class Role(object):
         """
         returns the permissions that are grantable to this role
         """
-        permissionmanager = self._core.get_permission_manager()
-        return permissionmanager.get_grantable_permissions(self)
+        return Permission.get_grantable_permissions(self)
 
     def delete(self):
         """
         deletes this role from the database
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM ROLES WHERE ROL_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.ROLE)
+        db.query(stmnt,(self._id,),commit=True)
+        PokeManager.add_activity(ActivityType.ROLE)
 
     def assign_to(self,user):
         """
         Assigns this role to a user
         """
-        sessionmanager = self._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
+        session_user = Session.get_current_session_user()
 
-        db = self._core.get_db()
+        db = Database()
         
         #check if sessionuser has role
         
@@ -166,7 +163,7 @@ class Role(object):
 
         stmnt = "SELECT COUNT(URI_RIG_ID) AS CNT FROM USERRIGHTS WHERE URI_RIG_ID IN \
             (SELECT RRI_RIG_ID FROM ROLERIGHTS WHERE RRI_ROL_ID = ? ) ;"
-        cur = db.query(self._core,stmnt,(self._id,))
+        cur = db.query(stmnt,(self._id,))
         res = cur.fetchone()[0]
 
         has_all_permissions_of_role = res == len(self.get_permissions())
@@ -178,8 +175,8 @@ class Role(object):
             if role["name"] == self._name:
                 stmnt = "UPDATE OR INSERT INTO USERROLES (URO_USR_ID, URO_ROL_ID) \
                     VALUES (?,?) MATCHING (URO_USR_ID, URO_ROL_ID) ;";
-                db.query(self._core,stmnt, (user.get_id(),self._id),commit=True)
-                self._core.get_poke_manager().add_activity(ActivityType.USER)
+                db.query(stmnt, (user.get_id(),self._id),commit=True)
+                PokeManager.add_activity(ActivityType.USER)
                 return
         raise PermissionException(PermissionException.get_msg(8))
 
@@ -187,20 +184,12 @@ class Role(object):
         """
         Revokes a role from a user 
         """
-        sessionmanager = self._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
+        session_user = Session.get_current_session_user()
 
-        db = self._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM USERROLES WHERE URO_USR_ID = ? AND URO_ROL_ID = ? ;";
-        db.query(self._core,stmnt,(user.get_id(),self._id),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.USER)
-
-    @classmethod
-    def set_core(cls, core):
-        """
-        sets the core of Role 
-        """
-        cls._core = core
+        db.query(stmnt,(user.get_id(),self._id),commit=True)
+        PokeManager.add_activity(ActivityType.USER)
 
     @classmethod
     def get_grantable_roles(cls,user):
@@ -213,8 +202,7 @@ class Role(object):
 
         #HERE BE DRAGONS! Check algorithm
 
-        sessionmanager = cls._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         session_permissions = session_user.get_permissions()
 
         ret = []
@@ -241,9 +229,9 @@ class Role(object):
         """
         Checks if a User has a role, specified by given user and role objects
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT URO_ROL_ID FROM USERROLES WHERE URO_ROL_ID = ? AND URO_USR_ID = ? ;"
-        cur = db.query(cls._core,stmnt,(role.get_id(),user.get_id()))
+        cur = db.query(stmnt,(role.get_id(),user.get_id()))
         res = cur.fetchall()
         return len(res) > 0
 
@@ -252,12 +240,12 @@ class Role(object):
         """
         Returns all roles as an array of Objects
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES ;"
-        cur = db.query(cls._core,stmnt)
+        cur = db.query(stmnt)
         ret = []
         for row in cur.fetchallmap():
-            role = Role(cls._core)
+            role = Role()
             role.set_id(row["ROL_ID"])
             role.set_name(row["ROL_NAME"])
             ret.append(role)
@@ -268,12 +256,12 @@ class Role(object):
         """
         Returns all roles that are assigned to a given user as Array of role objects
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES INNER JOIN USERROLES ON (ROL_ID = URO_ROL_ID) WHERE URO_USR_ID = ? ;"
-        cur = db.query(cls._core,stmnt,(user.get_id()))
+        cur = db.query(stmnt,(user.get_id()))
         ret = []
         for row in cur.fetchallmap():
-            role = Role(cls._core)
+            role = Role()
             role.set_id(row["ROL_ID"])
             role.set_name(row["ROL_NAME"])
             ret.append(role)
@@ -284,13 +272,13 @@ class Role(object):
         """
         Get a role from the database by a given roleId. returns a role object
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT ROL_ID, ROL_NAME FROM ROLES WHERE ROL_ID = ? ;"
-        cur = db.query(cls._core,stmnt,(role_id,))
+        cur = db.query(stmnt,(role_id,))
         res = cur.fetchonemap()
         if res is None:
             raise PermissionException(PermissionException.get_msg(14, role_id))
-        role = Role(cls._core)
+        role = Role()
         role.set_id(res["ROL_ID"])
         role.set_name(res["ROL_NAME"])
         return role 
@@ -302,16 +290,16 @@ class Role(object):
         if data["name"] is None:
             raise PermissionException(PermissionException.get_msg(11))
 
-        db = cls._core.get_db()
+        db = Database()
 
         stmnt = "SELECT ROL_ID FROM ROLES WHERE ROL_NAME = ? ;"
-        cur = db.query(cls._core,stmnt,(data["name"],))
+        cur = db.query(stmnt,(data["name"],))
         res = cur.fetchonemap()
         if res is not None:
             raise PermissionException(PermissionException.get_msg(13, data["name"]))
         
         role_id = db.get_seq_next("ROL_GEN")
-        role = Role(cls._core)
+        role = Role()
         role.set_id(role_id)
         role.set_name(data["name"])
         role.store()
@@ -328,13 +316,6 @@ class Role(object):
 
 class Permission(object):
     @classmethod
-    def set_core(cls, core):
-        """
-        sets the core of Permission
-        """
-        cls._core = core
-
-    @classmethod
     def check_permission(cls, permission, user):
         """
         checks whether a user has a specific permission
@@ -344,7 +325,7 @@ class Permission(object):
         elif type(user) != int:
             raise PermissionException(PermissionException.get_msg(9))
 
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "select 1 as RESULT from RDB$DATABASE  where CAST( ? AS VARCHAR(64)) in(select rig_name \
                 from USERROLES \
                 left join ROLES \
@@ -361,7 +342,7 @@ class Permission(object):
                   on rig_id = uri_rig_id \
                 where uri_usr_id = ?) ; " \
         
-        cur = db.query(cls._core,stmnt,(permission,user_id,user_id))
+        cur = db.query(stmnt,(permission,user_id,user_id))
 
         res = cur.fetchone()
         if res is None:
@@ -380,8 +361,7 @@ class Permission(object):
         """
         def inner_permission(func):
             def tortilla(*args,**kwargs):
-                session_manager = cls._core.get_session_manager()
-                current_user = session_manager.get_current_session_user()
+                current_user = Session.get_current_session_user()
                 if not cls.check_permission(permission, current_user):
                     raise PermissionException(PermissionException.get_msg(15, info=permission))
                 func(*args, **kwargs)
@@ -393,11 +373,11 @@ class Permission(object):
         """
         Creates a new permission in database
         """
-        db = cls._core.get_db()
+        db = Database()
         new_id = db.get_seq_next('RIG_GEN')
         stmnt = "INSERT INTO RIGHTS (RIG_ID, RIG_NAME) VALUES (?,?) ;"
-        db.query(cls._core,stmnt,(new_id,module+"."+permission),commit=True)
-        cls._core.get_poke_manager().add_activity(ActivityType.PERMISSION)
+        db.query(stmnt,(new_id,module+"."+permission),commit=True)
+        PokeManager.add_activity(ActivityType.PERMISSION)
         return module+"."+permission
 
     @classmethod
@@ -405,10 +385,10 @@ class Permission(object):
         """
         removes a permission from the database
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM RIGHTS WHERE RIG_NAME = ? ;"
-        db.query(cls._core, stmnt, (permission,),commit=True)
-        cls._core.get_poke_manager().add_activity(ActivityType.PERMISSION)
+        db.query(stmnt, (permission,),commit=True)
+        PokeManager.add_activity(ActivityType.PERMISSION)
 
     @classmethod
     def get_permissions_for_user(cls, user):
@@ -421,7 +401,7 @@ class Permission(object):
         elif type(user) != int:
             raise PermissionException(PermissionException.get_msg(9))
 
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT RIG_NAME \
                   FROM USERRIGHTS \
                     INNER JOIN RIGHTS ON RIG_ID = URI_RIG_ID \
@@ -431,7 +411,7 @@ class Permission(object):
                     INNER JOIN ROLERIGHTS ON URO_ROL_ID = RRI_ROL_ID \
                     INNER JOIN RIGHTS ON RRI_RIG_ID = RIG_ID \
                   WHERE URO_USR_ID = ?;"
-        cur = db.query(cls._core, stmnt, (user.get_id(),user.get_id()))
+        cur = db.query(stmnt, (user.get_id(),user.get_id()))
         res = cur.fetchall()
         return [row[0] for row in res]
 
@@ -444,9 +424,8 @@ class Permission(object):
         The return values are associative arrays that look like this:
         array('right'=>$sessionRight,'granted'=>true)
         """
-        db = cls._core.get_db()
-        sessionmanager = cls._core.get_session_manager()
-        session_user = sessionmanager.get_current_session_user()
+        db = Database()
+        session_user = Session.get_current_session_user()
         session_permissions = Permission.get_permissions_for_user(session_user)
 
         result = []
@@ -458,13 +437,13 @@ class Permission(object):
         if obj.__class__.__name__ == "User":
             stmnt1 = "SELECT RIG_NAME FROM RIGHTS INNER JOIN USERRIGHTS ON (RIG_ID = URI_RIG_ID) WHERE URI_USR_ID = ? ;"
             stmnt2 = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) INNER JOIN USERROLES ON (URO_ROL_ID = RRI_ROL_ID) WHERE URO_USR_ID = ? ;"
-            cur = db.query(cls._core,stmnt1,(obj.get_id(),))
+            cur = db.query(stmnt1,(obj.get_id(),))
             res1 = list(set(cur.fetchallmap()))
-            cur = db.query(cls._core,stmnt2,(obj.get_id(),))
+            cur = db.query(stmnt2,(obj.get_id(),))
             res2 = list(set(cur.fetchallmap()))
         elif obj.__class__.__name__ == "Role":
             stmnt = "SELECT RIG_NAME FROM RIGHTS INNER JOIN ROLERIGHTS ON (RIG_ID = RRI_RIG_ID) WHERE RRI_ROL_ID = ? ;"
-            cur = db.query(cls._core,stmnt,(obj.get_id(),))
+            cur = db.query(stmnt,(obj.get_id(),))
             res1 = list(set(cur.fetchallmap()))
 
         result_permissions = [row['RIG_NAME'] for row in res1]
@@ -484,9 +463,9 @@ class Permission(object):
         Returns the database Id for a given right string identifier
         returns None if not existing
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT RIG_ID FROM RIGHTS WHERE RIG_NAME = ? ;"
-        cur = db.query(cls._core,stmnt,(permission,))
+        cur = db.query(stmnt,(permission,))
         res = cur.fetchallmap()
         try:
             return res[0]["RIG_ID"]
@@ -498,8 +477,7 @@ class Permission(object):
         """
         creates the permissions of a newly installed module
         """
-        user_manager = cls._core.get_user_manager()
-        rootuser = user_manager.get_root_user()
+        rootuser = User.get_root_user()
         module_name = module.get_name()
         permissions = module.get_permissions()
         for permission in permissions:
@@ -512,8 +490,7 @@ class Permission(object):
         """
         updates the permissions of a module
         """
-        user_manager = cls._core.get_user_manager()
-        rootuser = user_manager.get_root_user()
+        rootuser = User.get_root_user()
         module_name = module.get_name()
         permissions = module.get_permissions()
         current = [s.replace(module_name+".","",1) for s in cls.get_permissions_for_module(module)]
@@ -531,60 +508,19 @@ class Permission(object):
         removes the permissions of a module
         """
         module_name = module.get_name()
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
-        db.query(cls._core, stmnt, (module_name+"%",),commit=True)
+        db.query(stmnt, (module_name+"%",),commit=True)
 
     @classmethod
     def get_permissions_for_module(cls,module):
         """
         gets the permissions of a module
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT RIG_NAME FROM RIGHTS WHERE RIG_NAME LIKE ? ;"
-        cur = db.query(cls._core,stmnt,(module.get_name()+".%",))
+        cur = db.query(stmnt,(module.get_name()+".%",))
         rows = cur.fetchallmap()
         rows = [s['RIG_NAME'] for s in rows]        
         return rows
 
-
-class PermissionManager(object):
-    """
-    Permission Manger wraps Role's and Permission's classmethods
-    """
-    def __init__(self,core):
-        """
-        Initialize PermissionManager
-        """
-        self._core = core
-        Permission.set_core(core)
-        Role.set_core(core)
-
-        self.permission = Permission.permission
-        self.check_permission = Permission.check_permission
-        self.create_permission = Permission.create_permission
-        self.create_permissions_for_module = Permission.create_permissions_for_module
-        self.remove_permissions_for_module = Permission.remove_permissions_for_module
-        self.remove_permission = Permission.remove_permission
-        self.update_permissions_for_module = Permission.update_permissions_for_module
-        self.get_permissions_for_user = Permission.get_permissions_for_user
-        self.get_grantable_permissions = Permission.get_grantable_permissions
-        self.get_grantable_roles = Role.get_grantable_roles
-        self.has_role_user = Role.has_role_user
-        self.get_id_for_permission = Permission.get_id_for_permission
-        self.get_roles = Role.get_roles
-        self.get_roles_for_user = Role.get_roles_for_user
-        self.get_role = Role.get_role
-        self.create_role = Role.create_role
-
-    def get_parent(self):
-        """
-        returns PermissionManager's coreobject
-        """
-        return self._core
-
-    def get_core(self):
-        """
-        returns PermissionManager's coreobject
-        """
-        return self._core

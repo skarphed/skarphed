@@ -22,8 +22,7 @@
 # If not, see http://www.gnu.org/licenses/.
 ###########################################################
 
-from json import JSONDecoder
-
+import json
 from common.errors import ConfigurationException
 
 
@@ -37,36 +36,37 @@ class Configuration(object):
     4. Configuration values in CONFIG-Table of Database
     It is initialized in this order
     """
+    _borgmind = {}    
 
     CONF_NOT_LOAD = 0
     CONF_LOAD_GLOBAL = 1
     CONF_LOAD_LOCAL = 2
     CONF_LOAD_DB = 3
 
-    def __init__(self, core):
+    def __init__(self, coreconfig):
         """
         Initializes global-and local-level config
         """
-        self._core = core
+        self.__dict__ = Configuration._borgmind
+        if self.__dict__ == {}:
+            self._configuration = {}
+            self._state = self.CONF_NOT_LOAD
 
-        self._configuration = {}
-        self._state = self.CONF_NOT_LOAD
+            coreconfig = self._core.get_core_config(self)
+            self._configuration["global.libpath"] = coreconfig["SCV_LIBPATH"]
+            self._configuration["global.webpath"] = coreconfig["SCV_WEBPATH"]
+            self._configuration["global.modpath"] = coreconfig["SCV_MODPATH"]
+            self._configuration["global.binary_cache"] = coreconfig["SCV_BINARY_CACHEPATH"]
+            self._configuration["core.instance_id"] = coreconfig["SCV_INSTANCE_SCOPE_ID"]
+            self._configuration["core.webpath"] = self._configuration["global.webpath"]+ self._configuration["core.instance_id"]
+            self._state = self.CONF_LOAD_GLOBAL
 
-        coreconfig = self._core.get_core_config(self)
-        self._configuration["global.libpath"] = coreconfig["SCV_LIBPATH"]
-        self._configuration["global.webpath"] = coreconfig["SCV_WEBPATH"]
-        self._configuration["global.modpath"] = coreconfig["SCV_MODPATH"]
-        self._configuration["global.binary_cache"] = coreconfig["SCV_BINARY_CACHEPATH"]
-        self._configuration["core.instance_id"] = coreconfig["SCV_INSTANCE_SCOPE_ID"]
-        self._configuration["core.webpath"] = self._configuration["global.webpath"]+ self._configuration["core.instance_id"]
-        self._state = self.CONF_LOAD_GLOBAL
-
-        configfile = open(self._configuration["core.webpath"]+"/config.json")
-        configjson = configfile.read()
-        configfile.close()
-        self._configuration.update(JSONDecoder().decode(configjson))
-        self._local_config_keys = self._configuration.keys()
-        self._state = self.CONF_LOAD_LOCAL
+            configfile = open(self._configuration["core.webpath"]+"/config.json")
+            configjson = configfile.read()
+            configfile.close()
+            self._configuration.update(json.loads(configjson))
+            self._local_config_keys = self._configuration.keys()
+            self._state = self.CONF_LOAD_LOCAL
 
     def init_from_db(self):
         """

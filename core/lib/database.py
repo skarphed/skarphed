@@ -27,6 +27,7 @@ import fdb
 import time
 import os
 
+from skarphedcore.configuration import Configuration
 from common.errors import DatabaseException
     
 
@@ -34,26 +35,27 @@ class Database(object):
     """
     The Database-Class handles the connection to a Firebird 2.5+ Database
     """
-    def __init__(self, core):
+    _borgmind = {}
+    def __init__(self):
         """
         The Database loads connectiondata to the database from the config of Core
         """
-        self._core = core
-        
-        self._connection = None
-        self._ip = None
-        self._dbname = None
-        self._user = None
-        self._password = None
+        self.__dict__ = Database._borgmind
+        if self.__dict__ == {}:
+            self._connection = None
+            self._ip = None
+            self._dbname = None
+            self._user = None
+            self._password = None
 
-        self._queryCache = QueryCache()
-
-        config = self._core.get_configuration()
-        self.set_ip(config.get_entry('db.ip'))
-        self.set_db_name(config.get_entry('db.name'))
-        self.set_user(config.get_entry('db.user'))
-        self.set_password(config.get_entry('db.password'))
-        self.connect()
+            self._queryCache = QueryCache()
+            
+            c = Configuration()
+            self.set_ip(c.get_entry('db.ip'))
+            self.set_db_name(c.get_entry('db.name'))
+            self.set_user(c.get_entry('db.user'))
+            self.set_password(c.get_entry('db.password'))
+            self.connect()
 
     def connect(self):
         """
@@ -110,13 +112,13 @@ class Database(object):
         """
         self._connection.commit()
 
-    def query(self, module, statement, args=(), forceNoCache=False, commit=False):
+    def query(self, statement, args=(), module=None, forceNoCache=False, commit=False):
         """
         execute a query on the database. be sure to deliver the module.
         it is necessary to determine tablenames
         """
         try:
-            mutex = self._core.get_configuration().get_entry("core.webpath")+"/db.mutex"
+            mutex = Configuration().get_entry("core.webpath")+"/db.mutex"
 
             if commit: #only if writing stuff
                 while os.path.exists(mutex):
@@ -126,7 +128,7 @@ class Database(object):
 
             if self._connection is None:
                 raise DatabaseException(DatabaseException.get_msg(2))
-            if module.get_name() != "de.masterprogs.skarphed.core":
+            if module is not None:
                 statement = self._replace_module_tables(module,statement)
             cur = self._connection.cursor()    
             try:
@@ -243,16 +245,16 @@ class Database(object):
         stmnt = "SELECT MDT_ID \
                         FROM MODULETABLES \
                         WHERE MDT_MOD_ID = ? ;"
-        cur = self.query(self._core,stmnt,(module.get_id(),))
+        cur = self.query(stmnt,(module.get_id(),))
         rows = cur.fetchallmap()
         for row in rows:
             tab_id = "0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
             stmnt = "DROP TABLE TAB_%s ;"%tab_id
-            self.query(self._core,stmnt,commit=True)
+            self.query(stmnt,commit=True)
             stmnt = "DROP GENERATOR SEQ_%s ;"%tab_id
-            self.query(self._core,stmnt,commit=True)
+            self.query(stmnt,commit=True)
             stmnt = "DELETE FROM MODULETABLES WHERE MDT_ID = ? ;"
-            self.query(self._core,stmnt,(row["MDT_ID"],),commit=True)
+            self.query(stmnt,(row["MDT_ID"],),commit=True)
 
     def update_tables_for_module(self, module):
         """
@@ -260,7 +262,7 @@ class Database(object):
         """
         tables = module.get_tables()
         stmnt = "SELECT MDT_NAME FROM MODULETABLES WHERE MDT_MOD_ID = ? ;"
-        cur = self.query(self._core,stmnt,(module.get_id(),))
+        cur = self.query(stmnt,(module.get_id(),))
         rows = cur.fetchallmap()
         for row in rows:
             if row["MDT_NAME"] not in [tbl["name"] for tbl in tables]:
@@ -281,17 +283,17 @@ class Database(object):
         stmnt_add = "ALTER TABLE %s ADD %s %s ;"
 
         db_tablename = self._replace_module_tables(module,"${"+table["name"]+"}")
-        cur = self.query(self._core, stmnt, (db_tablename,))
+        cur = self.query( stmnt, (db_tablename,))
         rows = cur.fetchallmap()
         for row in rows:
             field_name = row["RDB$FIELD_NAME"].strip()
             if field_name == "MOD_INSTANCE_ID":
                 continue
             if field_name not in [col["name"] for col in table["columns"]]:
-                self.query(self._core, stmnt_drop%(db_tablename, field_name),commit=True)
+                self.query( stmnt_drop%(db_tablename, field_name),commit=True)
         for col in table["columns"]:
             if col["name"] not in [r["RDB$FIELD_NAME"].strip() for r in rows]:
-                self.query(self._core, stmnt_add%(db_tablename, col["name"], col["type"]),commit=True)
+                self.query( stmnt_add%(db_tablename, col["name"], col["type"]),commit=True)
         
     def create_tables_for_module(self, module):
         """
@@ -309,16 +311,16 @@ class Database(object):
         stmnt = "SELECT MDT_ID \
                         FROM MODULETABLES \
                         WHERE MDT_MOD_ID = ? AND MDT_NAME = ? ;"
-        cur = self.query(self._core,stmnt,(module.get_id(),tablename))
+        cur = self.query(stmnt,(module.get_id(),tablename))
         rows = cur.fetchallmap()
         row = rows[0]
         tab_string = "0"*(6-len(str(row["MDT_ID"])))+str(row["MDT_ID"])
         stmnt = "DROP TABLE TAB_%s"%tab_string
-        self.query(self._core,stmnt,commit=True)
+        self.query(stmnt,commit=True)
         stmnt = "DROP GENERATOR SEQ_%s"%tab_string
-        self.query(self._core,stmnt,commit=True)
+        self.query(stmnt,commit=True)
         stmnt = "DELETE FROM MODULETABLES WHERE MDT_ID = ? ;"
-        self.query(self._core,stmnt,(row["MDT_ID"],),commit=True)
+        self.query(stmnt,(row["MDT_ID"],),commit=True)
 
     def _create_table_for_module(self, module, table):
         """
@@ -347,12 +349,12 @@ class Database(object):
         
 
         mst_stmnt = "INSERT INTO MODULETABLES (MDT_ID, MDT_NAME, MDT_MOD_ID ) VALUES ( ?, ?, ?) ;"
-        self.query(self._core, mst_stmnt, (new_table_id, table["name"], module.get_id()),commit=True)
-        self.query(self._core, stmnt,commit=True)
+        self.query( mst_stmnt, (new_table_id, table["name"], module.get_id()),commit=True)
+        self.query( stmnt,commit=True)
         stmnt = "CREATE GENERATOR SEQ_%s ;"%new_table_string
-        self.query(self._core, stmnt,commit=True)
+        self.query( stmnt,commit=True)
         stmnt = "SET GENERATOR SEQ_%s TO 1 ;"%new_table_string
-        self.query(self._core, stmnt,commit=True)
+        self.query( stmnt,commit=True)
 
         #if autoincrement is not None:
         #    
@@ -371,22 +373,7 @@ class Database(object):
         #                END
         #            END^
         #            SET TERM ; ^"""%{'autoinc':autoincrement,'nts':new_table_string}
-        #    self._core.log(stmnt)
-        #    self.query(self._core,stmnt,commit=True)
-
-
-
-    def get_parent(self):
-        """
-        returns Database's coreobject
-        """
-        return self._core
-
-    def get_core(self):
-        """
-        returns Database's coreobject
-        """
-        return self._core
+        #    self.query(stmnt,commit=True)
 
 
 class QueryCache(object):

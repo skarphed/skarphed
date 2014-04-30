@@ -24,16 +24,16 @@
 
 import json
 
+from skarphedcore.module import ModuleManager
+
 class AJAXHandler(object):
     """
     This shit handles all shit that is AJAX and shit
     """
-    def __init__(self, core, callstring):
+    def __init__(self, callstring):
         """
         Initialize
         """
-        self._core = core
-
         call = json.loads(callstring)
 
         self._widget_id = call["w"]
@@ -45,8 +45,7 @@ class AJAXHandler(object):
         """
         Handles an AJAX call
         """
-        module_manager = self._core.get_module_manager()
-        widget = module_manager.get_widget(self._widget_id)
+        widget = ModuleManager.get_widget(self._widget_id)
         html = widget.render_html(self._params)
         js   = widget.render_javascript(self._params)
         answer = {'h':html, 'j':js}

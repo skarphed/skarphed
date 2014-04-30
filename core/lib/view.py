@@ -31,17 +31,20 @@ from copy import deepcopy
 
 from ajax import AJAXScript
 
+from skarphedcore.configuration import Configuration
+from skarphedcore.database import Database
+from skarphedcore.poke import PokeManager
+from skarphedcore.module import ModuleManager
+from skarphedcore.binary import Binary
+from skarphedcore.css import CSSManager
+from skarphedcore.action import Menu
+from skarphedcore.view import View
+
 from common.enums import ActivityType, BoxOrientation
 from common.errors import ViewException, PageException
 
 class View(object):
     CURRENTLY_RENDERING = None
-    @classmethod
-    def set_core(cls, core):
-        """
-        trivial
-        """
-        cls._core = core
 
     @classmethod
     def get_currently_rendering_view(cls):
@@ -60,9 +63,9 @@ class View(object):
         more sense to load them on demand than to load
         them on every skarphed start
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT VIE_ID, VIE_NAME, VIE_DEFAULT FROM VIEWS ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         res = cur.fetchallmap()
         ret = []
         for row in res:
@@ -78,20 +81,20 @@ class View(object):
         """
         returns the view that is given by this id
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT VIE_NAME, VIE_SIT_ID, VIE_VIE_BASEVIEW, VIE_DEFAULT\
                   FROM VIEWS WHERE VIE_ID = ? ;"
-        cur = db.query(cls._core, stmnt, (int(nr),))
+        cur = db.query(stmnt, (int(nr),))
         row = cur.fetchonemap()
         if row is None:
             raise ViewException(ViewException.get_msg(0))
         else:
-            configuration = cls._core.get_configuration()
+            configuration = Configuration()
             rendermode = configuration.get_entry("core.rendermode")
             if rendermode == "pure":
-                view = PureView(cls._core)
+                view = PureView()
             elif rendermode == "ajax":
-                view = AJAXView(cls._core)
+                view = AJAXView()
             view.set_name(row["VIE_NAME"])
             view.set_default(row["VIE_DEFAULT"])
             view.set_page(row["VIE_SIT_ID"])
@@ -106,7 +109,7 @@ class View(object):
         stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS \
                     WHERE VIW_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID = ?) \
                  UNION SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
-        cur = db.query(cls._core, stmnt, (view.get_id(), view.get_id()))
+        cur = db.query(stmnt, (view.get_id(), view.get_id()))
         rows = cur.fetchallmap()
         space_widget_mapping = {}
         for row in rows:
@@ -123,7 +126,7 @@ class View(object):
                      FROM BOXES LEFT JOIN BOXWIDGETS ON (BOX_ID = BWT_BOX_ID) \
                      WHERE BWT_VIE_ID = ? OR (BWT_VIE_ID IS NULL AND BOX_SIT_ID = ?)) \
                  ORDER BY UNIONSORT, BWT_BOX_ID, BWT_ORDER ;"
-        cur = db.query(cls._core, stmnt, (view.get_id(), view.get_page(),
+        cur = db.query(stmnt, (view.get_id(), view.get_page(),
                                           view.get_id(), view.get_page()))
         rows = cur.fetchallmap()
         box_mapping = {}
@@ -144,7 +147,7 @@ class View(object):
                      SELECT VWP_KEY, VWP_VALUE, VWP_WGT_ID, 1 AS UNIONSORT FROM VIEWWIDGETPARAMS \
                      WHERE VWP_VIE_ID = ?)\
                  ORDER BY UNIONSORT, VWP_WGT_ID;"
-        cur = db.query(cls._core, stmnt, (view.get_id(),view.get_id()))
+        cur = db.query(stmnt, (view.get_id(),view.get_id()))
         rows = cur.fetchallmap()
         widget_param_mapping = {}
         for row in rows:
@@ -158,9 +161,9 @@ class View(object):
 
     @classmethod
     def get_default_view(cls):
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT VIE_ID FROM VIEWS WHERE VIE_DEFAULT = 1 ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         row = cur.fetchonemap()
         if row is not None:
             return cls.get_from_id(row["VIE_ID"])
@@ -176,9 +179,9 @@ class View(object):
         """
         if len(name) > 128:
             return None # Prevents DB-Error. Change VIE_NAME in scvdb.sql too if changing here
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT VIE_ID FROM VIEWS WHERE VIE_NAME = ? ;"
-        cur = db.query(cls._core, stmnt, (str(name),))
+        cur = db.query(stmnt, (str(name),))
         row = cur.fetchonemap()
         if row is None:
             raise ViewException(ViewException.get_msg(0))
@@ -212,12 +215,12 @@ class View(object):
         except ValueError:
             raise ViewException(ViewException.get_msg(7))
 
-        configuration = cls._core.get_configuration()
+        configuration = Configuration()
         rendermode = configuration.get_entry("core.rendermode")
         if rendermode == "pure":
-            view = PureView(cls._core)
+            view = PureView()
         elif rendermode == "ajax":
-            view = AJAXView(cls._core)
+            view = AJAXView()
 
         if json.has_key('s'):
             view.set_page(json['s'])
@@ -254,19 +257,19 @@ class View(object):
 
     @classmethod
     def create(cls, page, name, json):
-        view = View(cls._core)
+        view = View()
 
     @classmethod
     def create_default_view(cls):
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT VIE_ID FROM VIEWS WHERE VIE_DEFAULT = 1 ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         row = cur.fetchonemap()
         if row is None:
             view_id = db.get_seq_next("VIE_GEN")
             stmnt = "INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_NAME, VIE_DEFAULT) \
                        VALUES (?,1,'default',1) ;"
-            db.query(cls._core, stmnt, (view_id,), commit=True)
+            db.query(stmnt, (view_id,), commit=True)
 
     @classmethod
     def delete_mappings_with_module(cls, module):
@@ -274,13 +277,13 @@ class View(object):
         Delete all mappings that concern the given widget
         Usually called when a whole module is uninstalled 
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_WGT_ID IN (SELECT WGT_ID FROM WIDGETS WHERE WGT_MOD_ID = ? ) ;"
-        db.query(cls._core, stmnt, (module.get_id(),),commit=True)
+        db.query(stmnt, (module.get_id(),),commit=True)
         stmnt = "DELETE FROM BOXWIDGETS WHERE BWT_WGT_ID IN (SELECT WGT_ID FROM WIDGETS WHERE WGT_MOD_ID = ? ) ;"
-        db.query(cls._core, stmnt, (module.get_id(),),commit=True)
+        db.query(stmnt, (module.get_id(),),commit=True)
         stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VWP_WGT_ID IN (SELECT WGT_ID FROM WIDGETS WHERE WGT_MOD_ID = ? ) ;"
-        db.query(cls._core, stmnt, (module.get_id(),),commit=True)
+        db.query(stmnt, (module.get_id(),),commit=True)
         return
 
     @classmethod
@@ -289,21 +292,19 @@ class View(object):
         Delete all mappings that concern the given widget
         Usually called when a widget is deleted 
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_WGT_ID = ? ;"
-        db.query(cls._core, stmnt, (widget.get_id(),),commit=True)
+        db.query(stmnt, (widget.get_id(),),commit=True)
         stmnt = "DELETE FROM BOXWIDGETS WHERE BWT_WGT_ID = ? ;"
-        db.query(cls._core, stmnt, (widget.get_id(),),commit=True)
+        db.query(stmnt, (widget.get_id(),),commit=True)
         stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VWP_WGT_ID = ? ;"
-        db.query(cls._core, stmnt, (widget.get_id(),),commit=True)
+        db.query(stmnt, (widget.get_id(),),commit=True)
         return
 
-    def __init__(self,core):
+    def __init__(self):
         """
         initializes View for rendering
         """
-        self._core = core
-
         self._id = None
 
         self._space_widget_mapping = {}
@@ -319,13 +320,13 @@ class View(object):
         """
         Creates a view derived from this view
         """
-        view = View(self._core)
+        view = View()
         view.set_baseview_id(self.get_id())
         view.set_page(self._page)
         return view
 
     def clone(self):
-        view = View(self._core)
+        view = View()
         view.set_space_widget_mapping(deepcopy(self.get_space_widget_mapping()))
         view.set_box_mapping(deepcopy(self.get_box_mapping()))
         view.set_widget_param_mapping(deepcopy(self.get_widget_param_mapping()))
@@ -400,8 +401,8 @@ class View(object):
 
     def get_box_info(self, box_id):
         stmnt = "SELECT BOX_ORIENTATION, BOX_NAME FROM BOXES WHERE BOX_ID = ? ;"
-        db = self._core.get_db()
-        cur = db.query(self._core, stmnt, (int(box_id),))
+        db = Database()
+        cur = db.query(stmnt, (int(box_id),))
         row = cur.fetchonemap()
         if row is None:
             raise ViewException(ViewException.get_msg(9))
@@ -456,7 +457,7 @@ class View(object):
         #TODO: Rewrite. Doesn't work anyways and needs code for boxes
         if self._post_widget_id is not None:
             return False
-        db = self._core.get_db()
+        db = Database()
         stmnt_params = []
         stmnt = "SELECT COUNT(VIW_VIE_ID) AS CNT, VIW_VIE_ID \
                  FROM VIEWWIDGETS INNER JOIN VIEWS ON VIW_VIE_ID = VIE_ID WHERE 1=0"
@@ -476,13 +477,13 @@ class View(object):
 
         db_param_mappingcounts = {}
 
-        cur = db.query(self._core, stmnt2, stmnt2_params)
+        cur = db.query(stmnt2, stmnt2_params)
         res2 = cur.fetchallmap()
 
         for row in res2:
             db_param_mappingcounts[row["VWP_VIE_ID"]] = row["CNT"]
 
-        cur = db.query(self._core, stmnt, stmnt_params)
+        cur = db.query(stmnt, stmnt_params)
         res1 = cur.fetchallmap()
 
         possible_views = []
@@ -501,7 +502,7 @@ class View(object):
 
         if len(possible_views) > 0:
             stmnt= "SELECT VIE_NAME FROM VIEWS WHERE VIE_ID = ? ;"
-            cur = db.query(self._core, stmnt, (possible_views[0],))
+            cur = db.query(stmnt, (possible_views[0],))
             row = cur.fetchonemap()
             return row["VIE_NAME"]
         else:
@@ -540,8 +541,7 @@ class View(object):
 
         encoder = JSONEncoder()
         viewjsonstring = quote(encoder.encode(target))
-        view_manager = self._core.get_view_manager()
-        checkview = view_manager.get_from_json(viewjsonstring)
+        checkview = View.get_from_json(viewjsonstring)
         existing_name = checkview.check_has_name()
         if existing_name == False:
             return "/web/?"+viewjsonstring
@@ -559,7 +559,7 @@ class View(object):
         when editing a view.
         """
         onlyOneOperation = onlySpaceWidgetMapping or onlyBoxMapping or onlyWidgetParamMapping
-        db = self._core.get_db()
+        db = Database()
         if self._id is None:
             self._id = db.get_seq_next("VIE_GEN")
         
@@ -567,12 +567,12 @@ class View(object):
         stmnt = "UPDATE OR INSERT INTO VIEWS (VIE_ID, VIE_SIT_ID, VIE_VIE_BASEVIEW, \
                     VIE_NAME, VIE_DEFAULT) \
                  VALUES (?,?,?,?,?) MATCHING (VIE_ID) ;"
-        db.query(self._core, stmnt, (self._id, self._page, self._baseview_id, self._name, int(self._default)), commit=True)
+        db.query(stmnt, (self._id, self._page, self._baseview_id, self._name, int(self._default)), commit=True)
 
         if not onlyOneOperation or onlySpaceWidgetMapping:
             # Get current space-widgetmapping to determine, which mappings to delete
             stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
-            cur = db.query(self._core, stmnt, (self.get_id(),))
+            cur = db.query(stmnt, (self.get_id(),))
             dbSpaceWidgetMap = {}
             for row in cur.fetchallmap():
                 dbSpaceWidgetMap[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
@@ -583,7 +583,7 @@ class View(object):
                 stmnt = "SELECT VIW_SPA_ID, VIW_WGT_ID FROM VIEWWIDGETS \
                          WHERE VIW_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID=?) ;"
                 baseviewSpaceWidgetMap = {}
-                cur = db.query(self._core, stmnt, (self.get_id(),))
+                cur = db.query(stmnt, (self.get_id(),))
                 for row in cur.fetchallmap():
                     baseviewSpaceWidgetMap[row["VIW_SPA_ID"]] = row["VIW_WGT_ID"]
 
@@ -597,7 +597,7 @@ class View(object):
                         and baseviewSpaceWidgetMap.has_key(space_id) \
                         and baseviewSpaceWidgetMap[space_id] == widget_id:
                     continue
-                db.query(self._core,stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
+                db.query(stmnt,(self._id, int(space_id), int(widget_id)),commit=True)
                 try:
                     del(dbSpaceWidgetMap[int(space_id)])
                 except KeyError: pass
@@ -605,12 +605,12 @@ class View(object):
             # delete Removed Widgets
             stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? AND VIW_SPA_ID = ? ;"
             for space_id in dbSpaceWidgetMap.keys():
-                db.query(self._core, stmnt, (self.get_id(), space_id), commit=True)
+                db.query(stmnt, (self.get_id(), space_id), commit=True)
 
         if not onlyOneOperation or onlyBoxMapping:
             # get current box_widget_mapping to determine which mappings to delete
             stmnt = "SELECT BWT_BOX_ID, BWT_WGT_ID FROM BOXWIDGETS WHERE BWT_VIE_ID = ? ;"
-            cur = db.query(self._core, stmnt, (self.get_id(),))
+            cur = db.query(stmnt, (self.get_id(),))
             dbBoxMapping = {}
             for row in cur.fetchallmap():
                 dbBoxMapping[(row["BWT_BOX_ID"],row["BWT_WGT_ID"])] = 1
@@ -621,7 +621,7 @@ class View(object):
                 stmnt = "SELECT BWT_BOX_ID, BWT_WGT_ID, BWT_ORDER FROM BOXWIDGETS \
                          WHERE BWT_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID=?) ;"
                 baseviewBoxMapping = {}
-                cur = db.query(self._core, stmnt, (self.get_id(),))
+                cur = db.query(stmnt, (self.get_id(),))
                 for row in cur.fetchallmap():
                     baseviewBoxMapping[row["BWT_BOX_ID"],row["BWT_ORDER"]] = row["BWT_WGT_ID"]
 
@@ -637,7 +637,7 @@ class View(object):
                             and baseviewBoxMapping.has_key((box_id,order)) \
                             and baseviewBoxMapping[box_id,order] == widget_id:
                         continue
-                    db.query(self._core, stmnt, (box_id, widget_id, order, self.get_id()), \
+                    db.query(stmnt, (box_id, widget_id, order, self.get_id()), \
                              commit=True)
                     try:
                         del(dbBoxMapping[(int(box_id),int(widget_id))])
@@ -648,12 +648,12 @@ class View(object):
             stmnt = "DELETE FROM BOXWIDGETS \
                      WHERE BWT_BOX_ID = ? AND BWT_WGT_ID = ? AND BWT_VIE_ID = ? ;"
             for box_id, widget_id in dbBoxMapping.keys():
-                db.query(self._core, stmnt, (box_id, widget_id, self.get_id()), commit=True)
+                db.query(stmnt, (box_id, widget_id, self.get_id()), commit=True)
 
         if not onlyOneOperation or onlyWidgetParamMapping:
             # get all widget-param-mappings to determine which have to been deleted
             stmnt = "SELECT VWP_WGT_ID, VWP_KEY FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ;"
-            cur = db.query(self._core, stmnt, (self.get_id(),))
+            cur = db.query(stmnt, (self.get_id(),))
             dbWidgetParamMap = {}
             for row in cur.fetchallmap():
                 dbWidgetParamMap[(row["VWP_WGT_ID"],row["VWP_KEY"])] = 1
@@ -664,7 +664,7 @@ class View(object):
                 stmnt =  "SELECT VWP_WGT_ID, VWP_KEY, VWP_VALUE FROM VIEWWIDGETPARAMS\
                           WHERE VWP_VIE_ID = (SELECT VIE_VIE_BASEVIEW FROM VIEWS WHERE VIE_ID=?) ;"
                 baseviewWidgetParamMap = {}
-                cur = db.query(self._core, stmnt, (self.get_id(),))
+                cur = db.query(stmnt, (self.get_id(),))
                 for row in cur.fetchallmap():
                     baseviewWidgetParamMap[row["VWP_WGT_ID"], row["VWP_KEY"]] = row["VWP_VALUE"]
 
@@ -679,7 +679,7 @@ class View(object):
                             and baseviewWidgetParamMap.has_key((widget_id, key)) \
                             and baseviewWidgetParamMap[widget_id, key] == value:
                         continue
-                    db.query(self._core,stmnt,(self._id, int(widget_id), str(key), str(value)),\
+                    db.query(stmnt,(self._id, int(widget_id), str(key), str(value)),\
                              commit=True)
                     try:
                         del(dbWidgetParamMap[(widget_id,key)])
@@ -689,27 +689,27 @@ class View(object):
             stmnt = "DELETE FROM VIEWWIDGETPARAMS \
                      WHERE VPW_VIE_ID = ? AND VWP_WGT_ID = ? AND VWP_KEY = ? ;"
             for widget_id, key in dbWidgetParamMap.keys():
-                db.query(self._core, stmnt, (self.get_id(), widget_id, key), commit=True)
+                db.query(stmnt, (self.get_id(), widget_id, key), commit=True)
 
-        self._core.get_poke_manager().add_activity(ActivityType.VIEW)
+        PokeManager.add_activity(ActivityType.VIEW)
 
     def delete(self):
         """
         deletes this view from the database
         """
 
-        db = self._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM VIEWWIDGETPARAMS WHERE VWP_VIE_ID = ? ;"
-        db.query(self._core, stmnt, (self._id,),commit=True)
+        db.query(stmnt, (self._id,),commit=True)
         stmnt = "DELETE FROM VIEWWIDGETS WHERE VIW_VIE_ID = ? ;"
-        db.query(self._core, stmnt, (self._id,),commit=True)
+        db.query(stmnt, (self._id,),commit=True)
         stmnt = "DELETE FROM BOXWIDGETS WHERE BWT_VIE_ID = ? ;"
-        db.query(self._core, stmnt, (self._id,),commit=True)
+        db.query(stmnt, (self._id,),commit=True)
         stmnt = "UPDATE WIDGETS SET WGT_VIE_BASEVIEW = NULL, WGT_SPA_BASESPACE = NULL WHERE WGT_VIE_BASEVIEW = ? ;"
-        db.query(self._core, stmnt, (self._id,),commit=True)
+        db.query(stmnt, (self._id,),commit=True)
         stmnt = "DELETE FROM VIEWS WHERE VIE_ID = ? ;"
-        db.query(self._core, stmnt, (self._id,),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.VIEW)
+        db.query(stmnt, (self._id,),commit=True)
+        PokeManager.add_activity(ActivityType.VIEW)
 
 class PureView(View):
     """
@@ -729,7 +729,7 @@ class PureView(View):
             if action.get_url() is not None:
                 return action.get_url()
             elif action.get_view_id() is not None:
-                view = actionlist._core.get_view_manager().get_from_id(action.get_view_id())
+                view = View.get_from_id(action.get_view_id())
                 name = view.get_name()
                 return "/web/"+quote(name)
             elif action.get_space() is not None and action.get_widget_id() is not None:
@@ -742,8 +742,7 @@ class PureView(View):
         #AJAX-rendermode regarded here: ↓
         encoder = JSONEncoder()
         viewjsonstring = quote(encoder.encode(target))
-        view_manager = self._core.get_view_manager()
-        checkview = view_manager.get_from_json(viewjsonstring)
+        checkview = View.get_from_json(viewjsonstring)
         existing_name = checkview.check_has_name()
         if existing_name == False:
             return "/web/?"+viewjsonstring
@@ -769,19 +768,17 @@ class PureView(View):
           </body>
         </html>
         """
-        page_manager = self._core.get_page_manager()
-        page = page_manager.get_page(self._page) 
+        page = Page.get_page(self._page) 
 
         head = page.get_html_head()
         body = page.get_html_body()
 
-        module_manager = self._core.get_module_manager()
         # Find placeholders to substitute
         
         space_name_map = page.get_space_names()
         for space, widget_id in self._space_widget_mapping.items():
             space_name = space_name_map[space]
-            widget = module_manager.get_widget(widget_id)
+            widget = ModuleManager.get_widget(widget_id)
 
             args = {} 
             if self._widget_param_mapping.has_key(widget_id):
@@ -803,7 +800,7 @@ class PureView(View):
             box_orientation, box_name = self.get_box_info(box)
             box_html = StringIO.StringIO()
             for widget_id in boxcontent:
-                widget = module_manager.get_widget(widget_id)
+                widget = ModuleManager.get_widget(widget_id)
 
                 args = {} 
                 if self._widget_param_mapping.has_key(widget_id):
@@ -830,10 +827,10 @@ class PureView(View):
 
         body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
 
-        css_manager = self._core.get_css_manager()
+        css_manager = CSSManager()
         css_url = css_manager.get_css_url()
 
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         title = configuration.get_entry("core.name")
 
         page_css = page.get_css_filename()
@@ -864,12 +861,11 @@ class AJAXView(View):
             if action.get_url() is not None:
                 return action.get_url()
             elif action.get_view_id() is not None:
-                view = actionlist._core.get_view_manager().get_from_id(action.get_view_id())
+                view = View.get_from_id(action.get_view_id())
                 name = view.get_name()
                 return "/web/"+quote(name)
             elif action.get_space() is not None and action.get_widget_id() is not None:
-                page_manager = self._core.get_page_manager()
-                page = page_manager.get_page(self.get_page())
+                page = Page.get_page(self.get_page())
                 space_names = page.get_space_names()
                 space_name = space_names[action.get_space()]
                 linkjson.append({"w":action.get_widget_id(), "s":space_name, "p":{}})
@@ -896,19 +892,17 @@ class AJAXView(View):
         </html>
         """
         js_frame = """<script type="text/javascript" id="%d_scr">%s</script>"""
-        page_manager = self._core.get_page_manager()
-        page = page_manager.get_page(self._page) 
+        page = Page.get_page(self._page) 
 
         head = page.get_html_head()
         body = page.get_html_body()
 
-        module_manager = self._core.get_module_manager()
         # Find placeholders to substitute
         
         space_name_map = page.get_space_names()
         for space, widget_id in self._space_widget_mapping.items():
             space_name = space_name_map[space]
-            widget = module_manager.get_widget(widget_id)
+            widget = ModuleManager.get_widget(widget_id)
 
             args = {} 
             if self._widget_param_mapping.has_key(widget_id):
@@ -932,7 +926,7 @@ class AJAXView(View):
             box_orientation, box_name = self.get_box_info(box)
             box_html = StringIO.StringIO()
             for widget_id in boxcontent:
-                widget = module_manager.get_widget(widget_id)
+                widget = ModuleManager.get_widget(widget_id)
 
                 args = {} 
                 if self._widget_param_mapping.has_key(widget_id):
@@ -961,10 +955,10 @@ class AJAXView(View):
 
         body = re.sub(r"<%[^%>]+%>","",body) #Replace all unused spaces with emptystring
 
-        css_manager = self._core.get_css_manager()
+        css_manager = CSSManager()
         css_url = css_manager.get_css_url()
 
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         title = configuration.get_entry("core.name")
 
         page_css = page.get_css_filename()
@@ -976,23 +970,6 @@ class AJAXView(View):
                       'head':head,
                       'body':body}
 
-class ViewManager(object):
-    def __init__(self, core):
-        self._core = core
-
-        View.set_core(core)
-        self.get_viewlist = View.get_viewlist
-        self.get_from_id = View.get_from_id
-        self.get_from_name = View.get_from_name
-        self.get_from_json = View.get_from_json
-        self.get_default_view = View.get_default_view
-        self.create_default_view = View.create_default_view
-        self.get_currently_rendering_view = View.get_currently_rendering_view
-        self.create = View.create
-        self.delete_mappings_with_widget = View.delete_mappings_with_widget
-        self.delete_mappings_with_module = View.delete_mappings_with_module
-
-
 class Page(object):
     """
     The Page represents one HTML-Document that contains
@@ -1001,14 +978,10 @@ class Page(object):
     Spaces
     """
     @classmethod
-    def set_core(cls, core):
-        cls._core = core
-
-    @classmethod
     def get_pages(cls):
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT SIT_ID FROM SITES ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         res = cur.fetchallmap()
         ret = []
         for row in res:
@@ -1020,13 +993,13 @@ class Page(object):
         """
         Returns a Page in the Database that has the given id
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT SIT_NAME, SIT_DESCRIPTION, SIT_HTML, SIT_HTML_HEAD, SIT_BIN_MINIMAP, SIT_BIN_CSS \
                  FROM SITES WHERE SIT_ID = ? ;"
-        cur = db.query(cls._core, stmnt, (int(nr),))
+        cur = db.query(stmnt, (int(nr),))
         res = cur.fetchonemap()
         if res:
-            page = Page(cls._core)
+            page = Page()
             page._name = res["SIT_NAME"]
             page._description = res["SIT_DESCRIPTION"]
             page._id = int(nr)
@@ -1047,11 +1020,11 @@ class Page(object):
         Pages are delivered as a package by templates. And They are all
         to be removed at Template uninstallation
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM SITES ;"
-        db.query(cls._core, stmnt, commit=True)
+        db.query(stmnt, commit=True)
         stmnt = "DELETE FROM SPACES ;"
-        db.query(cls._core, stmnt, commit=True)
+        db.query(stmnt, commit=True)
 
     @classmethod
     def create(cls, name, internal_name, description, html_body, html_head, css, minimap=None):
@@ -1068,11 +1041,9 @@ class Page(object):
         if len(placeholders) < 1:
             pass # Eventually we need to check for Pages with no spaces. Not an error yet
 
-        binary_manager = cls._core.get_binary_manager()
-        
         minimap_id = None
         if minimap is not None:
-            minimap_binary = binary_manager.create("image/png", minimap)
+            minimap_binary = Binary.create("image/png", minimap)
             minimap_binary.set_filename(internal_name+"_minimap.png")
             minimap_binary.store()
             minimap_id = minimap_binary.get_id()
@@ -1085,10 +1056,10 @@ class Page(object):
         stmnt = "INSERT INTO SITES (SIT_ID, SIT_HTML, SIT_HTML_HEAD, SIT_DESCRIPTION, SIT_NAME, SIT_BIN_MINIMAP, SIT_BIN_CSS) \
                  VALUES (?,?,?,?,?,?,?) ;"
 
-        db = cls._core.get_db()
+        db = Database()
         new_sit_id = db.get_seq_next("SIT_GEN")
 
-        db.query(cls._core, stmnt , (new_sit_id, html_body, html_head, description, name, minimap_id, css_id), commit=True)
+        db.query(stmnt , (new_sit_id, html_body, html_head, description, name, minimap_id, css_id), commit=True)
 
         stmnt_space= "INSERT INTO SPACES (SPA_ID, SPA_SIT_ID, SPA_NAME ) VALUES (?,?,?) ; "
         stmnt_box = "INSERT INTO BOXES (BOX_ID, BOX_SIT_ID, BOX_NAME, BOX_ORIENTATION) VALUES (?,?,?,?) ;"
@@ -1099,17 +1070,15 @@ class Page(object):
             name = splitted[1]
             if typ == "space":
                 new_space_id = db.get_seq_next("SPA_GEN")
-                db.query(cls._core, stmnt_space, (new_space_id, new_sit_id, name), commit=True )
+                db.query(stmnt_space, (new_space_id, new_sit_id, name), commit=True )
             elif typ == "vbox" or typ == "hbox":
                 new_box_id = db.get_seq_next("BOX_GEN")
                 orientation = int(typ == "vbox")
-                db.query(cls._core, stmnt_box, (new_box_id, new_sit_id, name, orientation), commit=True)
+                db.query(stmnt_box, (new_box_id, new_sit_id, name, orientation), commit=True)
         # only changes when template changes, so no activity
 
 
-    def __init__(self,core):
-        self._core = core
-
+    def __init__(self):
         self._id = None
         self._name = None
         self._description = None
@@ -1139,13 +1108,12 @@ class Page(object):
         gets the menus that belong to this page from action_manager
         and returns them
         """
-        action_manager = self._core.get_action_manager()
-        return action_manager.get_menus_of_page(self)
+        return Menu.get_menus_of_page(self)
 
     def get_space_names(self):
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT SPA_ID, SPA_NAME FROM SPACES WHERE SPA_SIT_ID = ? ;"
-        cur = db.query(self._core,stmnt,(self.get_id(),))
+        cur = db.query(stmnt,(self.get_id(),))
         ret = {}
         rows = cur.fetchallmap()
         for row in rows:
@@ -1153,9 +1121,9 @@ class Page(object):
         return ret
 
     def get_box_info(self):
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT BOX_ID, BOX_NAME, BOX_ORIENTATION FROM BOXES WHERE BOX_SIT_ID = ? ;"
-        cur = db.query(self._core, stmnt, (self.get_id(),))
+        cur = db.query(stmnt, (self.get_id(),))
         ret = {}
         rows = cur.fetchallmap()
         for row in rows:
@@ -1170,32 +1138,20 @@ class Page(object):
         raise PageException(PageException.get_msg(1))  
 
     def get_css_filename(self):
-        binary_manager = self._core.get_binary_manager()
-        binary_css = binary_manager.get_by_id(self._css_id)
-        return binary_css.get_filename()
+        return Binary.get_by_id(self._css_id).get_filename()
 
     def delete(self):
-        binary_manager = self._core.get_binary_manager()
-        minimap_bin = binary_manager.get_by_id(self._minimap_id)
+        minimap_bin = Binary.get_by_id(self._minimap_id)
         minimap_bin.delete()
 
-        css_bin = binary_manager.get_by_id(self._css_id)
+        css_bin = Binary.get_by_id(self._css_id)
         css_bin.delete()
 
-        db = self._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM SPACES WHERE SPA_SIT_ID = ? ;"
-        db.query(self._core, stmnt, (self.get_id(),), commit=True)
+        db.query(stmnt, (self.get_id(),), commit=True)
 
         stmnt = "DELETE FROM SITES WHERE SIT_ID = ? ;"
-        db.query(self._core, stmnt, (self.get_id(),), commit=True)
+        db.query(stmnt, (self.get_id(),), commit=True)
         # only changes when template changes, so no activity
         
-class PageManager(object):
-    def __init__(self, core):
-        self._core = core
-
-        Page.set_core(core)
-        self.get_page = Page.get_page
-        self.get_pages = Page.get_pages
-        self.create = Page.create
-        self.delete_all_pages = Page.delete_all_pages

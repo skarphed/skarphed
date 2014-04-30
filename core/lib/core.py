@@ -51,31 +51,19 @@ class Core(object):
     """
     The Core class is the interface to the world of Skarphed
     """
+    _borgmind = {}
     def __init__(self, core_config):
         """
         Initialize configuration and database-connection
         """
-        self._core_config = core_config
-
-        self._configuration = Configuration(self)
-        self._database = Database(self)
-        self._configuration.init_from_db()
-        self._user_manager = None
-        self._permission_manager = None
-        self._operation_manager = None
-        self._module_manager = None
-        self._session_manager = None
-        self._css_manager = None
-        self._action_manager = None
-        self._binary_manager = None
-        self._view_manager = None
-        self._page_manager = None
-        self._template_manager = None
-        self._pki_manager = None
-        self._poke_manager = None
-        
-        self.response_body = []
-        self.response_header = []
+        self.__dict__ = Core._borgmind
+        if self.__dict__ == {}:
+            c = Configuration(core_config)
+            Database()
+            c.init_from_db()
+            
+            self.response_body = []
+            self.response_header = []
 
     def get_core_config(self,obj):
         """
@@ -277,7 +265,7 @@ class Core(object):
             session_manager.set_current_session(session_manager.get_session(environment['HTTP_COOKIE']))
 
         callstring = environment["PATH_INFO"].replace("/ajax/","",1)
-        answer = AJAXHandler(self,callstring).get_answer()
+        answer = AJAXHandler(callstring).get_answer()
         
         self.response_body.append(answer.encode('utf-8'))
 

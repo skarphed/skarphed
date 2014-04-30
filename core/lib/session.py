@@ -28,21 +28,12 @@ from random import randrange
 from Cookie import SimpleCookie
 from helper import datetime2fdbTimestamp
 
+from skarphedcore.configuration import Configuration
+from skarphedcore.database import Database
+from skarphedcore.core import Core
+from skarphedcore.user import User
+
 from common.errors import SessionException
-
-class SessionManager(object):
-    """
-    Wraps Session's classmethod
-    """
-    def __init__(self, core):
-        self._core = core
-        Session.set_core(core)
-
-        self.get_session = Session.get_session
-        self.create_session = Session.create_session
-        self.get_current_session = Session.get_current_session
-        self.set_current_session = Session.set_current_session
-        self.get_current_session_user = Session.get_current_session_user
 
 class Session(object):
     """
@@ -51,12 +42,6 @@ class Session(object):
     TODO: Session takes env-vars in account when verifying the id of the client
     """
     CURRENT_SESSION = None
-    @classmethod
-    def set_core(cls,core):
-        """
-        trivial
-        """
-        cls._core = core
 
     @classmethod
     def get_session(cls,cookies):
@@ -66,18 +51,17 @@ class Session(object):
         cookie = SimpleCookie(cookies)
         session_id = cookie['session_id'].value
         
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT SES_USR_ID, SES_EXPIRES FROM SESSIONS WHERE SES_ID = ? ;"
 
-        cur = db.query(cls._core,stmnt,(session_id,))
+        cur = db.query(stmnt,(session_id,))
         row = cur.fetchonemap()
 
         session=None
 
         if row is not None:
-            user_manager = cls._core.get_user_manager()
-            user = user_manager.get_user_by_id(row["SES_USR_ID"])
-            session = Session(cls._core,user)
+            user = User.get_user_by_id(row["SES_USR_ID"])
+            session = Session(user)
             session._id = session_id
             expiration = row["SES_EXPIRES"]
             if expiration < datetime.now():
@@ -92,10 +76,10 @@ class Session(object):
         """
         creates a session for a given user
         """
-        s = Session(cls._core,user)
+        s = Session(user)
         cookie = SimpleCookie()
         cookie["session_id"] = s.get_id()
-        cls._core.response_header.append(
+        Core().response_header.append(
                 ("Set-Cookie", cookie.output().replace("Set-Cookie: ","",1))
             )
         s.store()
@@ -135,16 +119,15 @@ class Session(object):
             ret+=chr(x)
         return ret
 
-    def __init__(self,core, user):
+    def __init__(self, user):
         """
         initializes a session
         """
-        self._core = core
-        configuration = self._core.get_configuration() #TODO: Introduce Configvalue sessionduration
+        #TODO: Introduce Configvalue sessionduration
 
         self._id = sha256(self._generateRandomString(24)).hexdigest()
         self._user = user.get_id()
-        self._expiration = datetime.now()+timedelta(0,int(configuration.get_entry("core.session_duration"))*3600)
+        self._expiration = datetime.now()+timedelta(0,int(Configuration().get_entry("core.session_duration"))*3600)
 
     def get_id(self):
         """
@@ -156,15 +139,13 @@ class Session(object):
         """
         extends this session by a timespan defined as "core.session_extend" in hours in configuration
         """
-        configuration = self._core.get_configuration()
-        self._expiration += timedelta(0,int(configuration.get_entry("core.session_extend"))*3600)
+        self._expiration += timedelta(0,int(Configuration().get_entry("core.session_extend"))*3600)
 
     def get_user(self):
         """
         returns this session's user
         """
-        usermanager = self._core.get_user_manager()
-        return usermanager.get_user_by_id(self._user)
+        return User.get_user_by_id(self._user)
 
     def set_user(self,user):
         """
@@ -184,17 +165,17 @@ class Session(object):
         if self._user is None:
             raise SessionException(SessionException.get_msg(3))
         else:
-            db = self._core.get_db()
+            db = Database()
             stmnt = "UPDATE OR INSERT INTO SESSIONS (SES_ID, SES_USR_ID, SES_EXPIRES) VALUES (?,?,?) MATCHING (SES_ID) ;"
             
             exp = datetime2fdbTimestamp(self._expiration)
 
-            db.query(self._core,stmnt,(self._id,self._user,exp),commit=True)
+            db.query(stmnt,(self._id,self._user,exp),commit=True)
 
     def delete(self):
         """
         deletes this session
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM SESSIONS WHERE SES_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,),commit=True)
+        db.query(stmnt,(self._id,),commit=True)

@@ -24,6 +24,9 @@
 
 import json
 
+from skarphedcore.database import Database
+from skarphedcore.session import Session
+
 from common.errors import PokeException
 from common.enums import ActivityType
 
@@ -45,22 +48,13 @@ class PokeManager(object):
     """
 
     @classmethod
-    def __init__(cls, core):
-        """
-        trivial
-        """
-        cls._core = core
-        ActivityReport.set_core(core)
-
-    @classmethod
     def add_activity(cls, activity_type):
         """
         Registers an activity to the Pokesystem
         """
-        session_manager = cls._core.get_session_manager()
-        session = session_manager.get_current_session()
+        session = Session.get_current_session()
 
-        activity = Activity(cls._core)
+        activity = Activity()
         if session is not None:
             activity.set_session_id(session.get_id())
         
@@ -74,12 +68,11 @@ class PokeManager(object):
         Pulls together poke-response information for the current client
         """
         activity_report = ActivityReport.generate()
-        session_manager = cls._core.get_session_manager()
-        session = session_manager.get_current_session()
-        db = cls._core.get_db()
+        session = Session.get_current_session()
+        db = Database()
         stmnt = "UPDATE OR INSERT INTO SESSIONPOKE (SPO_SES_ID, SPO_ATV_ID) VALUES (?, \
                 MAXVALUE(COALESCE((SELECT SPO_ATV_ID FROM SESSIONPOKE WHERE SPO_SES_ID = ?), 0) ,?)) MATCHING (SPO_SES_ID) ;"
-        db.query(cls._core, stmnt, (session.get_id(), session.get_id(), activity_report._latest_id+1), commit=True)
+        db.query(stmnt, (session.get_id(), session.get_id(), activity_report._latest_id+1), commit=True)
         cls.cleanup()
         return activity_report.to_dict()
 
@@ -88,23 +81,20 @@ class PokeManager(object):
         """
         Remove activities that are no longer needed
         """
-        session_manager = cls._core.get_session_manager()
-        session = session_manager.get_current_session()
+        session = Session.get_current_session()
 
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM SESSIONPOKE WHERE SPO_SES_ID IN (SELECT SES_ID FROM SESSIONS WHERE SES_EXPIRES < CURRENT_TIMESTAMP) ;"
-        db.query(cls._core, stmnt, (session.get_id(),), commit=True)
+        db.query(stmnt, (session.get_id(),), commit=True)
         stmnt = "DELETE FROM ACTIVITIES WHERE ATV_ID < COALESCE ((SELECT MIN(SPO_ATV_ID) FROM SESSIONPOKE WHERE SPO_SES_ID != ?),0) ;"
-        db.query(cls._core, stmnt, (session.get_id(),), commit=True)
+        db.query(stmnt, (session.get_id(),), commit=True)
 
 
 class Activity(object):
     """
     An activity is a change that occurs on a skarphed core
     """
-    def __init__(self, core):
-        self._core = core
-
+    def __init__(self):
         self._id = None
         self._activity_type = None
         self._session_id = None
@@ -131,26 +121,22 @@ class Activity(object):
         self._session_id = session_id
 
     def store(self):
-        db = self._core.get_db()
+        db = Database()
         if self._id is None:
             self.set_id(db.get_seq_next("ATV_GEN"))
         stmnt = "UPDATE OR INSERT INTO ACTIVITIES (ATV_ID, ATV_TYPE, ATV_SES_ID) VALUES (?,?,?) MATCHING (ATV_ID) ;"
-        db.query(self._core, stmnt, (self.get_id(), self.get_activity_type(), self.get_session_id()), commit=True)
+        db.query(stmnt, (self.get_id(), self.get_activity_type(), self.get_session_id()), commit=True)
 
     def delete(self):
-        db = self._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM ACTIVITIES WHERE ATV_ID = ? ;"
-        db.query(self._core, stmnt, (self.get_id(),), commit=True)
+        db.query(stmnt, (self.get_id(),), commit=True)
 
 class ActivityReport(object):
     """
     Generates packed information about Activities that happened
     since the user checked for activities last time
     """
-    @classmethod
-    def set_core(cls, core):
-        cls._core = core
-
     def __init__(self):
         self._activities = []
         self._latest_id = 0
@@ -173,19 +159,18 @@ class ActivityReport(object):
         how many activities have happened since the last poke
         further it contains the activity types.
         """
-        session_manager = cls._core.get_session_manager()
-        session  = session_manager.get_current_session()
+        session  = Session.get_current_session()
 
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT ATV_TYPE, MAX(ATV_ID) AS LATEST_ID, COUNT(ATV_ID) AS AMOUNT FROM ACTIVITIES WHERE ATV_SES_ID != ? OR ATV_SES_ID IS NULL AND ATV_ID >= \
                 COALESCE((SELECT SPO_ATV_ID FROM SESSIONPOKE WHERE SPO_SES_ID = ?),0) GROUP BY ATV_TYPE;"
-        cur = db.query(cls._core, stmnt, (session.get_id(), session.get_id()))
+        cur = db.query(stmnt, (session.get_id(), session.get_id()))
 
         activity_report = ActivityReport()
 
         res = cur.fetchallmap()
         for row in res:
-            activity = Activity(cls._core)
+            activity = Activity()
             activity.set_id(row["LATEST_ID"])
             activity.set_activity_type(row["ATV_TYPE"])
 

@@ -28,21 +28,17 @@ import shutil
 from StringIO import StringIO
 from json import JSONDecoder
 
+from skarphedcore.configuration import Configuration
+from skarphedcore.database import Database
+from skarphedcore.core import Core
+from skarphedcore.module import ModuleManager
+from skarphedcore.binary import Binary
+from skarphedcore.css import CSSManager
+from skarphedcore.view import Page, View
+from skarphedcore.poke import PokeManager
+
 from common.enums import ActivityType
 from common.errors import TemplateException
-
-
-class TemplateManager(object):
-    def __init__(self, core):
-        self._core = core 
-        Template.set_core(self._core)
-        
-        self.get_current_template = Template.get_current_template
-        self.install_from_data = Template.install_from_data
-        self.is_template_installed = Template.is_template_installed
-        self.fetch_templates_for_gui = Template.fetch_templates_for_gui
-        self.install_from_repo = Template.install_from_repo
-
 
 
 class Template(object):
@@ -53,31 +49,26 @@ class Template(object):
     Furthermore it hold the template-data in RAM to deliver it faster
     to the clients.
     """
-
-    @classmethod
-    def set_core(cls, core):
-        cls._core = core
-
     @classmethod
     def get_current_template(cls):
         """
         Receives .tar.gz'ed data and generates templatedata from it
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT TPL_NAME, TPL_DESC, TPL_AUTHOR FROM TEMPLATE_INFO ;"
 
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         tpldata = cur.fetchonemap()
         if tpldata is None:
             raise TemplateException(TemplateException.get_msg(1))
 
-        tpl = Template(cls._core)
+        tpl = Template()
         tpl.set_name(tpldata['TPL_NAME'])
         tpl.set_description(tpldata['TPL_DESC'])
         tpl.set_author(tpldata['TPL_AUTHOR'])
 
         stmnt = "SELECT TPB_BIN_ID FROM TEMPLATE_BINARIES WHERE TPB_TPL_ID = 0 ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         rows = cur.fetchallmap()
         for row in rows:
             tpl.add_binary(row['TPB_BIN_ID'])
@@ -86,13 +77,13 @@ class Template(object):
 
     @classmethod
     def fetch_templates_for_gui(cls):
-        repository = cls._core.get_module_manager().get_repository()
+        repository = ModuleManager.get_repository()
         data = repository.get_all_templates()
         return data
 
     @classmethod
     def install_from_repo(cls, nr):
-        repository = cls._core.get_module_manager().get_repository()
+        repository = ModuleManager.get_repository()
         data = repository.download_template(nr)
         return cls.install_from_data(data)
 
@@ -114,7 +105,7 @@ class Template(object):
 
         errorlog = []
 
-        configuration = cls._core.get_configuration()
+        configuration = Configuration()
         webpath = configuration.get_entry("core.webpath")
         temp_installpath = webpath+"/tpl_install"
         os.mkdir(temp_installpath)
@@ -151,7 +142,7 @@ class Template(object):
                            'type':'PackageFile',
                            'msg':'File not in Package general.css'})
         
-        css_manager = cls._core.get_css_manager()
+        css_manager = CSSManager()
         general_csspropertyset = None
         try:
             general_csspropertyset = css_manager.create_csspropertyset_from_css(general_css)
@@ -242,16 +233,14 @@ class Template(object):
             old_template = cls.get_current_template()
             old_template.uninstall()
 
-        new_template = Template(cls._core)
+        new_template = Template()
         new_template.set_name(manifest['name'])
         new_template.set_description(manifest['description'])
         new_template.set_author(manifest['author'])
 
         #create pages
-        page_manager = cls._core.get_page_manager()
-        binary_manager = cls._core.get_binary_manager()
         for page in pagedata:
-            page_manager.create(page['name'],
+            Page.create(page['name'],
                                 page['internal_name'],
                                 page['desc'],
                                 page['html_body'],
@@ -268,11 +257,11 @@ class Template(object):
                 bin_file.close()
                 # TODO: Find more generic way to determine mimetype
                 if bin_filename.endswith(".png"):
-                    binary = binary_manager.create("image/png", bin_data)
+                    binary = Binary.create("image/png", bin_data)
                 if bin_filename.endswith(".jpeg") or bin_filename.endswith(".jpg"):
-                    binary = binary_manager.create("image/jpeg", bin_data)
+                    binary = Binary.create("image/jpeg", bin_data)
                 else:
-                    binary = binary_manager.create("application/octet-stream", bin_data)
+                    binary = Binary.create("application/octet-stream", bin_data)
                 if binary is not None:
                     binary.set_filename(bin_filename)
                     binary.store()
@@ -292,11 +281,10 @@ class Template(object):
         cleanup(temp_installpath)
 
         #create a defaultview if there isnt
-        view_manager = cls._core.get_view_manager()
-        view_manager.create_default_view()
+        View.create_default_view()
 
         if release_maintenance_mode:
-            cls._core.deactivate_maintenance_mode()
+            Core().deactivate_maintenance_mode()
 
         return errorlog
 
@@ -306,15 +294,13 @@ class Template(object):
         """
         checks whether there is a template installed
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT COUNT(*) AS AMNT FROM TEMPLATE_INFO ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         row = cur.fetchonemap()
         return bool(row['AMNT'])
 
-    def __init__(self, core):
-        self._core = core
-
+    def __init__(self):
         self._name = None
         self._description = None
         self._author = None
@@ -356,37 +342,35 @@ class Template(object):
         """
         stores the template information in the database
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "UPDATE OR INSERT INTO TEMPLATE_INFO (TPL_ID, TPL_NAME, TPL_DESC, TPL_AUTHOR) \
                  VALUES (0, ?, ?, ? ) MATCHING (TPL_ID) ;"
-        db.query(self._core, stmnt, (self._name, self._description, self._author), commit=True)
+        db.query(stmnt, (self._name, self._description, self._author), commit=True)
 
         stmnt = "INSERT INTO TEMPLATE_BINARIES (TPB_TPL_ID, TPB_BIN_ID) VALUES (?,?) ;"
         for bin_id in self._binaries:
-            db.query(self._core, stmnt, (0, bin_id), commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.TEMPLATE)
+            db.query(stmnt, (0, bin_id), commit=True)
+        PokeManager.add_activity(ActivityType.TEMPLATE)
 
     def uninstall(self):
         """
         Uninstalls this template
         """
-        db = self._core.get_db()
+        db = Database()
 
-        binary_manager = self._core.get_binary_manager()
         for bin_id in self._binaries:
-            bin = binary_manager.get_by_id(bin_id)
+            bin = Binary.get_by_id(bin_id)
             bin.delete()
         stmnt = "DELETE FROM TEMPLATE_BINARIES ;"
-        db.query(self._core, stmnt, commit=True)
+        db.query(stmnt, commit=True)
         
         #Destroy Pages
-        page_manager = self._core.get_page_manager()
-        page_manager.delete_all_pages()
+        Page.delete_all_pages()
 
         #Set Page ID-Generator to 1
         db.set_seq_to('SIT_GEN',1)
 
         stmnt = "DELETE FROM TEMPLATE_INFO ;"
-        db.query(self._core, stmnt, commit=True)
+        db.query(stmnt, commit=True)
 
-        self._core.get_poke_manager().add_activity(ActivityType.TEMPLATE)
+        PokeManager.add_activity(ActivityType.TEMPLATE)

@@ -26,6 +26,8 @@ import os
 import Crypto.PublicKey.RSA as RSA
 from StringIO import StringIO
 
+from skarphedcore.database import Database
+
 class Pki(object):
     """
     Skarphed Instances need a PublicKey/PrivateKey-Pair
@@ -37,13 +39,6 @@ class Pki(object):
     of the administrators system.
     """
     @classmethod
-    def set_core(cls, core):
-        """
-        Sets the core
-        """
-        cls._core = core
-
-    @classmethod
     def initialize(cls):
         """
         """
@@ -51,9 +46,9 @@ class Pki(object):
         cls._public_key = None
         cls._private_key = None
 
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT PKI_HAS_PKI FROM PKI WHERE PKI_ID = 3 ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         row = cur.fetchonemap()
         if row is not None:
             cls._pki_is_present = bool(row["PKI_HAS_PKI"])
@@ -66,9 +61,9 @@ class Pki(object):
         """
         Load the keys
         """
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT PKI_ID, PKI_KEY FROM PKI WHERE PKI_ID IN (1,2) ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         for row in cur.fetchallmap():
             if row["PKI_ID"] == 1:
                 cls._private_key = RSA.importKey(row["PKI_KEY"])
@@ -85,12 +80,12 @@ class Pki(object):
         privatekey = key.exportKey()
         pubkey = key.publickey().exportKey()
 
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "INSERT INTO PKI (PKI_ID, PKI_KEY, PKI_HAS_PKI) VALUES (?,?, NULL) ;"
-        db.query(cls._core, stmnt, (1, privatekey), commit=True)
-        db.query(cls._core, stmnt, (2, pubkey), commit=True)
+        db.query(stmnt, (1, privatekey), commit=True)
+        db.query(stmnt, (2, pubkey), commit=True)
         stmnt = "INSERT INTO PKI (PKI_ID, PKI_KEY, PKI_HAS_PKI) VALUES (3, NULL, 1) ;"
-        db.query(cls._core, stmnt, commit=True)
+        db.query(stmnt, commit=True)
         cls._pki_is_present = True
 
     @classmethod
@@ -133,16 +128,4 @@ class Pki(object):
         signer = PKCS1_v1_5.new(cls._private_key)
         signature = signer.sign(hashed)
         return signature
-
-
-
-
-class PkiManager(object):
-    def __init__(self, core):
-        Pki.set_core(core)
-        Pki.initialize()
-
-        self.get_public_key = Pki.get_public_key
-        self.get_private_key = Pki.get_private_key
-        self.sign = Pki.sign
 

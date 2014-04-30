@@ -27,6 +27,11 @@ from random import randrange
 
 ROOT_USER_ID = 1
 
+from skarphedcore.database import Database
+from skarphedcore.permission import Permission
+from skarphedcore.poke import PokeManager
+from skarphedcore.session import Session
+
 from common.enums import ActivityType
 from common.errors import UserException
 
@@ -34,12 +39,10 @@ class User(object):
     """
     The User Object represents a user in the Skarphed system
     """
-    def __init__(self,core):
+    def __init__(self):
         """
         Initialize User
         """
-        self._core = core
-
         self._id = None
         self._name = None
         self._password = None
@@ -85,10 +88,9 @@ class User(object):
         """
         Checks if this user has a specific Permission
         """
-        permissionmanager = self._core.get_permission_manager()
         if self.get_id() == ROOT_USER_ID and self.get_name() == "root":
             return True
-        return permissionmanager.check_permission(permission,self)
+        return Permission.check_permission(permission,self)
 
     def authenticate(self,password):
         """
@@ -103,7 +105,7 @@ class User(object):
         """
         Changes the password of a User
         """
-        db = self._core.get_db()
+        db = Database()
         if (sha512(old_password.encode('utf-8')+self._salt).hexdigest() == self._password ) \
                 != new_user: # != substituts xor
             pw, salt = self._generateSaltedPassword(new_password)
@@ -112,7 +114,7 @@ class User(object):
             self.store()
 
             stmnt = "SELECT USR_PASSWORD FROM USERS WHERE USR_ID = ?";
-            cur = db.query(self._core,stmnt,(self._id,))
+            cur = db.query(stmnt,(self._id,))
             res = cur.fetchone()
             if res[0] != self._password:
                 raise UserException(UserException.get_msg(0))
@@ -146,105 +148,99 @@ class User(object):
         if self.get_id() == ROOT_USER_ID:
             raise UserException(UserException.get_msg(14))
 
-        db = self._core.get_db()
+        db = Database()
 
         stmnt_uri="DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? ;"
         stmnt_uro="DELETE FROM USERROLES WHERE URO_USR_ID = ? ;"
         stmnt_usr="DELETE FROM USERS WHERE USR_ID = ? ;"
-        res = db.query(self._core, stmnt_uri, (self._id,),commit=True)
-        res = db.query(self._core, stmnt_uro, (self._id,),commit=True)
-        res = db.query(self._core, stmnt_usr, (self._id,),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.USER)
+        res = db.query(stmnt_uri, (self._id,),commit=True)
+        res = db.query(stmnt_uro, (self._id,),commit=True)
+        res = db.query(stmnt_usr, (self._id,),commit=True)
+        PokeManager.add_activity(ActivityType.USER)
 
     def store(self):
         """
         stores this user into database
         """
-        db = self._core.get_db()
+        db = Database()()
         if self._id == None:
             stmnt = "INSERT INTO USERS (USR_ID, USR_NAME, USR_PASSWORD, USR_SALT) \
                       VALUES (?,?,?,?);"
             self.set_id(db.get_seq_next('USR_GEN'))
-            db.query(self._core,stmnt,(self._id, self._name, self._password, self._salt),commit=True)
+            db.query(stmnt,(self._id, self._name, self._password, self._salt),commit=True)
         else:
             stmnt =  "UPDATE USERS SET \
                         USR_NAME = ?, \
                         USR_PASSWORD = ?, \
                         USR_SALT = ? \
                       WHERE USR_ID = ?"
-            db.query(self._core,stmnt,(self._name, self._password, self._salt, self._id),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.USER)
+            db.query(stmnt,(self._name, self._password, self._salt, self._id),commit=True)
+        PokeManager.add_activity(ActivityType.USER)
 
     def has_role(self, role):
         """
         checks if this user has the given role
         """
-        permissionmanager = self._core.get_permission_manager()
-        return permissionmanager.has_role_user(role,self)
+        return Permission.has_role_user(role,self)
 
     def get_permissions(self):
         """
         returns the permissions of this user as list of strings
         """
-        permissionmanager = self._core.get_permission_manager()
-        return permissionmanager.get_permissions_for_user(self)        
+        return Permission.get_permissions_for_user(self)        
 
     def get_roles(self):
         """
         returns roles this user is assigned to as list of strings
         """
-        permissionmanager = self._core.get_permission_manager()
-        return permissionmanager.get_roles_for_user(self)        
+        return Permission.get_roles_for_user(self)        
 
     def grant_permission(self, permission, ignore_check=False):
         """
         grants a permission to the user
         """
-        db = self._core.get_db()
-        permissionmanager = self._core.get_permission_manager()
+        db = Database()
         session_user = None
         if not ignore_check:
             session_user = self._core.get_session_manager().get_current_session_user()
 
-        permission_id = permissionmanager.get_id_for_permission(permission)
+        permission_id = Permission.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
         if not ignore_check and not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(6))
         stmnt = "UPDATE OR INSERT INTO USERRIGHTS VALUES (?,?) MATCHING (URI_USR_ID,URI_RIG_ID) ;"
-        db.query(self._core,stmnt,(self._id,permission_id),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.USER)
+        db.query(stmnt,(self._id,permission_id),commit=True)
+        PokeManager().add_activity(ActivityType.USER)
 
     def revoke_permission(self,permission, ignore_check=False):
         """
         revokes a permission from the user
         """
-        db = self._core.get_db()
-        permissionmanager = self._core.get_permission_manager()
+        db = Database()
         session_user = None
 
         if self.get_id() == ROOT_USER_ID and self.get_name() == "root":
             raise UserException(UserException.get_msg(16))
 
         if not ignore_check:
-            session_user = self._core.get_session_manager().get_current_session_user()
+            session_user = Session.get_current_session_user()
 
-        permission_id = permissionmanager.get_id_for_permission(permission)
+        permission_id = Permission.get_id_for_permission(permission)
         if permission_id is None:
             raise UserException(UserException.get_msg(5, permission))
         if not ignore_check and not session_user.check_permission(permission):
             raise UserException(UserException.get_msg(8))            
         stmnt = "DELETE FROM USERRIGHTS WHERE URI_USR_ID = ? AND URI_RIG_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,permission_id),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.USER)
+        db.query(stmnt,(self._id,permission_id),commit=True)
+        PokeManager().add_activity(ActivityType.USER)
 
     def get_grantable_permissions(self):
         """
         get the permissions that can be assigned to this user
         returns list of strings
         """
-        permissionmanager = self._core.get_permission_manager()
-        return permissionmanager.get_grantable_permissions(self)
+        return Permission.get_grantable_permissions(self)
 
 
     def get_grantable_roles(self):
@@ -253,8 +249,7 @@ class User(object):
         returns list of dict: 
         {'name':string, 'granted':bool,'id':int  }
         """
-        permissionmanager = self._core.get_permission_manager()
-        return permissionmanager.get_grantable_roles(self)
+        return Permission.get_grantable_roles(self)
 
     def assign_role(self,role):
         """
@@ -271,26 +266,19 @@ class User(object):
         return role.revoke_from(self)
 
     @classmethod
-    def set_core(cls, core):
-        """
-        sets the core of User 
-        """
-        cls._core = core
-
-    @classmethod
     def get_user_by_name(cls,username):
         """
         returns the user with the given name or raises exception
         """
-        db = cls._core.get_db()
+        db = Database()
 
         stmnt = "SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS WHERE USR_NAME= ? ;"
-        cur = db.query(cls._core, stmnt, (username,))
+        cur = db.query(stmnt, (username,))
         res = cur.fetchonemap()
 
         if res is None:
             raise UserException(UserException.get_msg(9,username))
-        user = User(cls._core)
+        user = User()
         user.set_id(res['USR_ID'])
         user.set_name(res['USR_NAME'])
         user.set_password(res['USR_PASSWORD'])
@@ -306,15 +294,15 @@ class User(object):
         """
         returns the user with the given id or raises exception
         """
-        db = cls._core.get_db()
+        db = Database()
 
         stmnt = "SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS WHERE USR_ID= ? ;"
-        cur = db.query(cls._core, stmnt, (nr,))
+        cur = db.query(stmnt, (nr,))
         res = cur.fetchonemap()
 
         if res is None:
             raise UserException(UserException.get_msg(11,nr))
-        user = User(cls._core)
+        user = User()
         user.set_id(res['USR_ID'])
         user.set_name(res['USR_NAME'])
         user.set_password(res['USR_PASSWORD'])
@@ -326,14 +314,14 @@ class User(object):
         """
         returns all users as array of User-objects
         """
-        db = cls._core.get_db()
+        db = Database()
 
         stmnt = "SELECT USR_ID, USR_NAME, USR_PASSWORD, USR_SALT FROM USERS ;"
-        cur = db.query(cls._core, stmnt)
+        cur = db.query(stmnt)
         users = []
         res = cur.fetchallmap()
         for row in res:
-            user = User(cls._core)
+            user = User()
             user.set_id(row['USR_ID'])
             user.set_name(row['USR_NAME'])
             user.set_password(row['USR_PASSWORD'])
@@ -361,7 +349,7 @@ class User(object):
         else:
             raise UserException(UserException.get_msg(15, username))
         cls._check_password(password)
-        user = User(cls._core)
+        user = User()
         user.set_name(username)
         user.set_password("")
         user.set_salt("")
@@ -379,34 +367,4 @@ class User(object):
         for user in users:
             ret.append({"name":user.get_name(),"id":user.get_id()})
         return ret
-
-class UserManager(object):
-    """
-    UserManger wraps User's classmethods
-    """
-    def __init__(self,core):
-        """
-        Initialize UserManager
-        """
-        self._core = core
-        User.set_core(core)
-
-        self.get_user_by_id = User.get_user_by_id
-        self.get_user_by_name = User.get_user_by_name
-        self.get_root_user = User.get_root_user
-        self.get_users = User.get_users
-        self.create_user = User.create_user
-        self.get_users_for_admin_interface = User.get_users_for_admin_interface
-
-    def get_parent(self):
-        """
-        returns Database's coreobject
-        """
-        return self._core
-
-    def get_core(self):
-        """
-        returns Database's coreobject
-        """
-        return self._core
 

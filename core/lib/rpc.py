@@ -30,10 +30,22 @@ import base64
 import os
 import subprocess
 
-class Rpc(object):
-    def __init__(self, core):
-        self._core = core
+from skarphedcore.configuration import Configuration
+from skarphedcore.core import Core
+from skarphedcore.operation import Operation
+from skarphedcore.permission import Permission, Role
+from skarphedcore.user import User
+from skarphedcore.module import ModuleManager
+from skarphedcore.session import Session
+from skarphedcore.binary import Binary
+from skarphedcore.template import Template
+from skarphedcore.action import Action, ActionList, Menu, MenuItem
+from skarphedcore.view import Page, View
+from skarphedcore.css import CSSManager
+from skarphedcore.pki import Pki
+from skarphedcore.poke import PokeManager
 
+class Rpc(object):
     def __call__(self, instructions):
         jd = JSONDecoder()
         je = JSONEncoder()
@@ -42,7 +54,7 @@ class Rpc(object):
             instructions = jd.decode(instructions)
         except ValueError, e:
             answer['error'] = "could not decode instructions"
-            self._core.response_body.append(je.encode(answer))
+            Core().response_body.append(je.encode(answer))
             return
 
         method = instructions['method']
@@ -52,7 +64,7 @@ class Rpc(object):
             answer['error'] = {}
             answer['error']['message'] = "The Rpc-backed does not support this method %s"%method
             answer['error']['class'] = "RpcException"
-            self._core.response_body.append(je.encode(answer))
+            Core().response_body.append(je.encode(answer))
             return
         try:
             exec "res = self.%s(params)"%method
@@ -63,11 +75,11 @@ class Rpc(object):
             answer['error']['traceback'] = error.getvalue()
             answer['error']['class'] = e.__class__.__name__
             answer['error']['message'] = str(e)
-            self._core.response_body.append(je.encode(answer))
+            Core().response_body.append(je.encode(answer))
             return
         else:
             answer['result'] = res
-            self._core.response_body.append(je.encode(answer))
+            Core().response_body.append(je.encode(answer))
     
     # RPC - Method-Implementations____________________________
 
@@ -76,20 +88,18 @@ class Rpc(object):
         method_name = params[1]
         parameter = params[2]
 
-        module_manager = self._core.get_module_manager()
-        module = module_manager.get_module(module_id)
+        module = ModuleManager.get_module(module_id)
         exec "res = module.%s(*parameter)"%method_name
         return res
 
     def getServerInfo(self,params):
-        return self._core.get_configuration().get_entry("core.name")
+        return Configuration().get_entry("core.name")
 
     def getInstanceId(self, params):
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
 
         if session_user.check_permission('skarphed.manageserverdata'):
-            config = self._core.get_configuration()
+            config = Configuration()
             return config.get_entry('core.instance_id')
         else:
             return None
@@ -98,23 +108,20 @@ class Rpc(object):
         username = unicode(params[0])
         password = unicode(params[1])
         
-        session_manager = self._core.get_session_manager()
-
         try:
-            user_manager = self._core.get_user_manager()
+            user = User.get_user_by_name(username)
         except UserException , e:
-            session = session_manager.get_current_session()
+            session = Session.get_current_session()
             if session is not None:
                 session.delete()
             return False
 
-        user = user_manager.get_user_by_name(username)
 
         if user.authenticate(password):
-            session = session_manager.create_session(user)
+            session = Session.create_session(user)
             return user.get_permissions()
         else:
-            session = session_manager.get_current_session()
+            session = Session.get_current_session()
             if session is not None:
                 session.delete()
             return False
@@ -124,39 +131,32 @@ class Rpc(object):
         new_password = unicode(params[1])
         old_password = unicode(params[2])
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
 
         if user_id == session_user.get_id():
             session_user.alter_password(new_password,old_password)
         else:
             if session_user.check_permission("skarphed.users.alter_password"):
-                user_manager = self._core.get_user_manager()
-                user = user_manager.get_user_by_id(user_id)
+                user = User.get_user_by_id(user_id)
                 user.alter_password(new_password,"",True)
         return True
 
     def getPublicKey(self, params):
-        pki_manager = self._core.get_pki_manager()
-        return pki_manager.get_public_key(as_string=True)
+        return Pki.get_public_key(as_string=True)
 
 
     def getUsers(self,params):
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.users.view'):
-            user_manager = self._core.get_user_manager()
-            users = user_manager.get_users_for_admin_interface()
+            users = User.get_users_for_admin_interface()
             return users
         return False
 
     def getRoles(self,params):
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.roles.view'):
             ret = []
-            permission_manager = self._core.get_permission_manager()
-            for role in permission_manager.get_roles():
+            for role in Permission.get_roles():
                 ret.append({"id":role.get_id(), "name": role.get_name()})
             return ret
         return False
@@ -165,22 +165,18 @@ class Rpc(object):
         username = unicode(params[0])
         password = unicode(params[1])
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.users.create'):
-            user_manager = self._core.get_user_manager()
-            user_manager.create_user(username,password)
+            User.create_user(username,password)
         return True
 
     def grantRightToUser(self,params):
         user_id = int(params[0])
         permission_name  = str(params[1])
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.users.grant_revoke'):
-            user_manager = self._core.get_user_manager()
-            user = user_manager.get_user_by_id(user_id)
+            user = User.get_user_by_id(user_id)
             user.grant_permission(permission_name)
             return True
 
@@ -188,26 +184,22 @@ class Rpc(object):
         user_id = int(params[0])
         permission_name = str(params[1])
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.users.grant_revoke'):
-            user_manager = self._core.get_user_manager()
-            user = user_manager.get_user_by_id(user_id)
+            user = User.get_user_by_id(user_id)
             user.revoke_permission(permission_name)
             return True
 
     def getRightsForUserPage(self,params):
         user_id = int(params[0])
-        user_manager = self._core.get_user_manager()
-        user = user_manager.get_user_by_id(user_id)
+        user = User.get_user_by_id(user_id)
         return user.get_grantable_permissions()
 
     def grantRightToRole(self,params):
         role_id = int(params[0])
         permission_name = str(params[1])
 
-        permission_manager = self._core.get_permission_manager()
-        role = permission_manager.get_role(role_id)
+        role = Role.get_role(role_id)
         role.add_permission(permission_name)
         role.store()
 
@@ -215,66 +207,54 @@ class Rpc(object):
         role_id = int(params[0])
         permission_name = str(params[1])
 
-        permission_manager = self._core.get_permission_manager()
-        role = permission_manager.get_role(role_id)
+        role = Role.get_role(role_id)
         role.remove_permission(permission_name)
         role.store()
 
     def getRightsForRolePage(self,params):
         role_id = int(params[0])
 
-        role = self._core.get_permission_manager().get_role(role_id)
+        role = Role.get_role(role_id)
         return role.get_grantable_permissions()
 
     def createRole(self,params):
         data = params[0]
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.roles.create'):
-            permission_manager = self._core.get_permission_manager()
-            role = permission_manager.create_role(data)
+            role = Role.create_role(data)
         return role.get_id()
 
     def deleteRole(self, params):
         role_id = int(params[0])
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.roles.delete'):
-            permission_manager = self._core.get_permission_manager()
-            role = permission_manager.get_role(role_id)
+            role = Role.get_role(role_id)
             role.delete()
 
     def getRolesForUserPage(self, params):
         user_name = params[0] # TODO get user by id instead of name
-        user_manager = self._core.get_user_manager()
-        user = user_manager.get_user_by_name(user_name)
+        user = User.get_user_by_name(user_name)
         return user.get_grantable_roles()
 
     def assignRoleToUser(self, params):
         user_name = params[0] # TODO get user by id instead of name
         role_id = params[1]
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.users.grant_revoke'):
-            permission_manager = self._core.get_permission_manager()
-            user_manager = self._core.get_user_manager()
-            role = permission_manager.get_role(role_id)
-            user_manager.get_user_by_name(user_name).assign_role(role)
+            role = Role.get_role(role_id)
+            User.get_user_by_name(user_name).assign_role(role)
 
     def revokeRoleFromUser(self, params):
         user_name = params[0] # TODO get user by id instead of name
         role_id = params[1]
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.users.grant_revoke'):
-            permission_manager = self._core.get_permission_manager()
-            user_manager = self._core.get_user_manager()
-            role = permission_manager.get_role(role_id)
-            user_manager.get_user_by_name(user_name).revoke_role(role)
+            role = Role.get_role(role_id)
+            User.get_user_by_name(user_name).revoke_role(role)
 
     def getCssPropertySet(self,params):
         try:
@@ -292,10 +272,9 @@ class Rpc(object):
         else:
             session = None
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.css.edit'):
-            css_manager = self._core.get_css_manager()
+            css_manager = CSSManager()
             if module_id == None and widget_id == None and session == None:
                 css_propertyset = css_manager.get_csspropertyset()
             else:
@@ -306,104 +285,87 @@ class Rpc(object):
     def setCssPropertySet(self, params):
         data = params[0]
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.css.edit'):
-            css_manager = self._core.get_css_manager()
-            css_propertyset = css_manager.create_csspropertyset_from_serial(data)
+            css_propertyset = CSSManager().create_csspropertyset_from_serial(data)
             css_propertyset.store()
 
     def getModules(self,params):
         get_installed_only = bool(params[0])
 
-        module_manager = self._core.get_module_manager()
         repo_state = True
         repo_state = module_manager.get_repository().ping()
         
-        modules = module_manager.get_module_info(get_installed_only or not repo_state)
+        modules = ModuleManager.get_module_info(get_installed_only or not repo_state)
         return {'modules':modules,'repostate':repo_state}
 
     def getGuiForModule(self, params):
         module_id = int(params[0])
 
-        module_manager = self._core.get_module_manager()
-        module = module_manager.get_module(module_id)
+        module = ModuleManager.get_module(module_id)
         moduleguidata = base64.b64encode(module.get_guidata())
-        pki_manager = self._core.get_pki_manager()
-        signature = pki_manager.sign(moduleguidata)
-        configuration = self._core.get_configuration()
+        signature = Pki.sign(moduleguidata)
 
         return {'data':moduleguidata,
                 'signature':base64.b64encode(signature),
-                'libstring':configuration.get_entry('global.modpath')}
+                'libstring':Configuration.get_entry('global.modpath')}
 
     def changeRepository(self, params):
         ip = str(params[0])
         port = int(params[1])
 
-        module_manager = self._core.get_module_manager()
-        module_manager.set_repository(ip, port, '(default)')
+        ModuleManager.set_repository(ip, port, '(default)')
 
     def retrieveRepository(self, params):
-        module_manager = self._core.get_module_manager()
-        repo = module_manager.get_repository()
+        repo = ModuleManager.get_repository()
         return {"id":repo.get_id(), "ip":repo.get_ip(), 
                 "port":repo.get_port(), "name": repo.get_name()}
 
     def updateModule(self, params):
         nr = str(params[0])
 
-        module_manager = self._core.get_module_manager()
-        module = module_manager.get_module(nr)
-        module_meta = module_manager.get_meta_from_module(module)
-        module_manager.invoke_update(module_meta)
+        module = ModuleManager.get_module(nr)
+        module_meta = ModuleManager.get_meta_from_module(module)
+        ModuleManager.invoke_update(module_meta)
         return True
 
     def invokeUpdateModules(self, params):
-        module_manager = self._core.get_module_manager()
-        module_manager.updateModules()
+        ModuleManager.updateModules()
         return 0
 
     def uninstallModule(self, params):
         module_meta = params[0]
 
-        module_manager = self._core.get_module_manager()
-        module_manager.invoke_uninstall(module_meta)
+        ModuleManager.invoke_uninstall(module_meta)
         return 0
 
     def installModule(self, params):
         module_meta = params[0]
 
-        module_manager = self._core.get_module_manager()
-        module_manager.invoke_install(module_meta)
+        ModuleManager.invoke_install(module_meta)
         return 0        
 
     def dropOperation(self, params):
         operation_id = int(params[0])
 
-        operation_manager = self._core.get_operation_manager()
-        operation_manager.drop_operation(operation_id)
+        Operation.drop_operation(operation_id)
 
     def retryOperation(self, params):
         operation_id = int(params[0])
 
-        operation_manager = self._core.get_operation_manager()
-        operation_manager.retry_operation(operation_id)
+        Operation.retry_operation(operation_id)
 
     def cancelOperation(self, params):
         operation_id = int(params[0])
 
-        operation_manager = self._core.get_operation_manager()
-        operation_manager.cancel_operation(operation_id)
+        Operation.cancel_operation(operation_id)
 
     def deleteUser(self, params):
         user_id = int(params[0])
 
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if session_user.check_permission('skarphed.users.delete'):
-            user_manager = self._core.get_user_manager()
-            user = user_manager.get_user_by_id(user_id)
+            user = User.get_user_by_id(user_id)
             user.delete()
 
     def getOperations(self, params):
@@ -411,15 +373,12 @@ class Rpc(object):
         if len(params) == 1:
             operationtypes = params[0]
 
-        operation_manager = self._core.get_operation_manager()
-        operations = operation_manager.get_current_operations_for_gui(operationtypes)
+        operations = Operation.get_current_operations_for_gui(operationtypes)
 
         return operations
 
     def retrieveSites(self, params):
-        page_manager = self._core.get_page_manager()
-
-        pages = page_manager.get_pages()
+        pages = Page.get_pages()
         ret = []
         for page in pages:
             spaces = page.get_space_names()
@@ -436,8 +395,7 @@ class Rpc(object):
     def getSite(self, params):
         page_id = int(params[0])
         
-        page_manager = self._core.get_page_manager()
-        page = page_manager.get_page(page_id)
+        page = Page.get_page(page_id)
         spaces = page.get_space_names()
         boxes = page.get_box_info()
         ret = {
@@ -454,8 +412,7 @@ class Rpc(object):
         space_id = int(params[1])
         widget_id = int(params[2])
 
-        view_manager = self._core.get_view_manager()
-        view = view_manager.get_from_id(view_id)
+        view = View.get_from_id(view_id)
         view.place_widget_in_space(space_id, widget_id)
         view.store()
 
@@ -463,16 +420,13 @@ class Rpc(object):
         view_id = int(params[0])
         space_id = int(params[1])
 
-        view_manager = self._core.get_view_manager()
-        view = view_manager.get_from_id(view_id)
+        view = View.get_from_id(view_id)
         view.remove_widget_from_space(space_id)
         view.store()
 
     def getCurrentTemplate(self, params):
-        template_manager = self._core.get_template_manager()
-
-        if template_manager.is_template_installed():
-            current_template = template_manager.get_current_template()
+        if Template.is_template_installed():
+            current_template = Template.get_current_template()
             return {'name': current_template.get_name(),
                     'description': current_template.get_description(),
                     'author': current_template.get_author()}
@@ -486,19 +440,16 @@ class Rpc(object):
 
         #TODO check for permission
 
-        template_manager = self._core.get_template_manager()
-        errorlog = template_manager.install_from_data(templatedata)
+        errorlog = Template.install_from_data(templatedata)
         return errorlog
 
     def installTemplateFromRepo(self, params):
         repo_template_id = int(params[0])
-        template_manager = self._core.get_template_manager()
-        errorlog = template_manager.install_from_repo(repo_template_id)
+        errorlog = Template.install_from_repo(repo_template_id)
         return errorlog
 
     def refreshAvailableTemplates(self, params):
-        template_manager = self._core.get_template_manager()
-        templates = template_manager.fetch_templates_for_gui()
+        templates = Template.fetch_templates_for_gui()
         ret = [{
                 'id':t['id'],
                 'name':t['name'],
@@ -511,24 +462,21 @@ class Rpc(object):
         module_id = int(params[0])
         new_widget_name = unicode(params[1])
 
-        module_manager = self._core.get_module_manager()
-        module = module_manager.get_module(module_id)
+        module = ModuleManager.get_module(module_id)
         module.create_widget(new_widget_name)
         return
 
     def deleteWidget(self, params):
         widget_id = int(params[0])
 
-        module_manager = self._core.get_module_manager()
-        widget = module_manager.get_widget(widget_id)
+        widget = ModuleManager.get_widget(widget_id)
         widget.delete()
         return
 
     def getWidgetsOfModule(self, params):
         module_id = int(params[0])
 
-        module_manager = self._core.get_module_manager()
-        module = module_manager.get_module(module_id)
+        module = ModuleManager.get_module(module_id)
         widgets = module.get_widgets()
 
         return [{'id':widget.get_id(), 'name':widget.get_name(), 'gviews':widget.is_generating_views(), 'baseview':widget.get_baseview_id(), 'basespace':widget.get_baseview_space_id()} for widget in widgets]
@@ -536,8 +484,7 @@ class Rpc(object):
     def getMenusOfSite(self,params):
         page_id = int(params[0])
 
-        page_manager = self._core.get_page_manager()
-        page = page_manager.get_page(page_id)
+        page = Page.get_page(page_id)
         menus = page.get_menus()
         ret = []
         for menu in menus:
@@ -550,8 +497,7 @@ class Rpc(object):
     def getMenuItemsOfMenu(self, params):
         menu_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu_items = action_manager.get_menu_by_id(menu_id).get_menu_items()
+        menu_items = Menu.get_menu_by_id(menu_id).get_menu_items()
 
         ret = []
         for menu_item in menu_items:
@@ -563,8 +509,7 @@ class Rpc(object):
     def getMenuItemsOfMenuItem(self, params):
         menu_item_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu_items = action_manager.get_menu_item_by_id(menu_item_id).get_menu_items()
+        menu_items = MenuItem.get_menu_item_by_id(menu_item_id).get_menu_items()
 
         ret = []
         for menu_item in menu_items:
@@ -576,49 +521,42 @@ class Rpc(object):
     def increaseMenuItemOrder(self, params):
         menu_item_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu_item = action_manager.get_menu_item_by_id(menu_item_id)
+        menu_item = MenuItem.get_menu_item_by_id(menu_item_id)
         menu_item.increase_order()
         return 0
 
     def decreaseMenuItemOrder(self, params):
         menu_item_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu_item = action_manager.get_menu_item_by_id(menu_item_id)
+        menu_item = MenuItem.get_menu_item_by_id(menu_item_id)
         menu_item.decrease_order()
         return 0
 
     def moveToBottomMenuItemOrder(self, params):
         menu_item_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu_item = action_manager.get_menu_item_by_id(menu_item_id)
+        menu_item = MenuItem.get_menu_item_by_id(menu_item_id)
         menu_item.move_to_bottom_order()
         return 0
 
     def moveToTopMenuItemOrder(self, params):
         menu_item_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu_item = action_manager.get_menu_item_by_id(menu_item_id)
+        menu_item = MenuItem.get_menu_item_by_id(menu_item_id)
         menu_item.move_to_top_order()
         return 0
 
     def createMenuForSite(self, params):
         page_id = int(params[0])
 
-        page_manager = self._core.get_page_manager()
-        page = page_manager.get_page(page_id)
+        page = Page.get_page(page_id)
 
-        action_manager = self._core.get_action_manager()
-        action_manager.create_menu(page)
+        Menu.create_menu(page)
 
     def deleteMenu(self, params):
         menu_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu = action_manager.get_menu_by_id(menu_id)
+        menu = Menu.get_menu_by_id(menu_id)
         menu.delete()
 
     def createMenuItem(self, params):
@@ -626,14 +564,12 @@ class Rpc(object):
         parent_type = unicode(params[1])
 
         if parent_type == "menu":
-            action_manager = self._core.get_action_manager()
-            menu = action_manager.get_menu_by_id(parent_id)
-            action_manager.create_menu_item(menu)
+            menu = Menu.get_menu_by_id(parent_id)
+            Menu.create_menu_item(menu)
             return 0
         elif parent_type == "menuItem":
-            action_manager = self._core.get_action_manager()
-            menu_item = action_manager.get_menu_item_by_id(parent_id)
-            action_manager.create_menu_item(None,menu_item)
+            menu_item = MenuItem.get_menu_item_by_id(parent_id)
+            MenuItem.create_menu_item(None,menu_item)
             return 0
         else:
             return 1
@@ -641,8 +577,7 @@ class Rpc(object):
     def deleteMenuItem(self, params):
         menu_item_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu_item = action_manager.get_menu_item_by_id(menu_item_id)
+        menu_item = MenuItem.get_menu_item_by_id(menu_item_id)
         menu_item.delete()
         return 0
 
@@ -650,16 +585,14 @@ class Rpc(object):
         menu_item_id = int(params[0])
         new_name = unicode(params[1])
 
-        action_manager = self._core.get_action_manager()
-        menu_item = action_manager.get_menu_item_by_id(menu_item_id)
+        menu_item = MenuItem.get_menu_item_by_id(menu_item_id)
         menu_item.set_name(new_name)
         return 0
 
     def getActionsOfActionList(self, params):
         action_list_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        action_list = action_manager.get_action_list_by_id(action_list_id)
+        action_list = ActionList.get_action_list_by_id(action_list_id)
         actions = action_list.get_actions()
 
         ret = []
@@ -677,56 +610,49 @@ class Rpc(object):
     def addActionToActionList(self, params):
         action_list_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        action_list = action_manager.get_action_list_by_id(action_list_id)
-        action_manager.create_action(action_list, None, "")
+        action_list = ActionList.get_action_list_by_id(action_list_id)
+        Action.create_action(action_list, None, "")
         return 0
 
     def deleteAction(self, params):
         action_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        action = action_manager.get_action_by_id(action_id)
+        action = Action.get_action_by_id(action_id)
         action.delete()
         return 0
 
     def increaseActionOrder(self, params):
         action_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        action = action_manager.get_action_by_id(action_id)
+        action = Action.get_action_by_id(action_id)
         action.increase_order()
         return 0
 
     def decreaseActionOrder(self, params):
         action_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        action = action_manager.get_action_by_id(action_id)
+        action = Action.get_action_by_id(action_id)
         action.decrease_order()
         return 0
 
     def moveToTopActionOrder(self, params):
         action_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        action = action_manager.get_action_by_id(action_id)
+        action = Action.get_action_by_id(action_id)
         action.move_to_top_order()
         return 0
 
     def moveToBottomActionOrder(self, params):
         action_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        action = action_manager.get_action_by_id(action_id)
+        action = Action.get_action_by_id(action_id)
         action.move_to_bottom_order()
         return 0
 
     def getActionListForMenuItem(self, params):
         menu_item_id = int(params[0])
 
-        action_manager = self._core.get_action_manager()
-        menu_item = action_manager.get_menu_item_by_id(menu_item_id)
+        menu_item = MenuItem.get_menu_item_by_id(menu_item_id)
         action_list = menu_item.get_action_list()
         return {"id":action_list.get_id()}
 
@@ -734,8 +660,7 @@ class Rpc(object):
         action_id = int(params[0])
         url = str(params[1])
 
-        action_manager = self._core.get_action_manager()
-        action = action_manager.get_action_by_id(action_id)
+        action = Action.get_action_by_id(action_id)
         action.set_url(url)
         return 0
 
@@ -744,8 +669,7 @@ class Rpc(object):
         widget_id = int(params[1])
         space = int(params[2])
 
-        action_manager = self._core.get_action_manager()
-        action = action_manager.get_action_by_id(action_id)
+        action = Action.get_action_by_id(action_id)
         action.set_widget_space_constellation(widget_id, space)
         return 0
 
@@ -753,8 +677,7 @@ class Rpc(object):
         action_id = int(params[0])
         view_id = int(params[1])
 
-        action_manager = self._core.get_action_manager()
-        action = action_manager.get_action_by_id(action_id)
+        action = Action.get_action_by_id(action_id)
         action.set_view_id(view_id)
         return 0
 
@@ -762,43 +685,39 @@ class Rpc(object):
         menu_id = int(params[0])
         new_name = unicode(params[1])
 
-        action_manager = self._core.get_action_manager()
-        menu = action_manager.get_menu_by_id(menu_id)
+        menu = Menu.get_menu_by_id(menu_id)
         menu.set_name(new_name)
         return 0
 
     def startOperationDaemon(self,params):
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if not session_user.check_permission("skarphed.manageserverdata"):
             return False
 
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         os.system("python "+configuration.get_entry("core.webpath")+\
                   "/operation_daemon.py start "+ configuration.get_entry("core.instance_id"))
 
     def stopOperationDaemon(self,params):
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if not session_user.check_permission("skarphed.manageserverdata"):
             return False
 
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         os.system("python "+configuration.get_entry("core.webpath")+\
                   "/operation_daemon.py stop "+ configuration.get_entry("core.instance_id"))
 
     def restartOperationDaemon(self,params):
-        session_manager = self._core.get_session_manager()
-        session_user = session_manager.get_current_session_user()
+        session_user = Session.get_current_session_user()
         if not session_user.check_permission("skarphed.manageserverdata"):
             return False
 
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         os.system("python "+configuration.get_entry("core.webpath")+\
                   "/operation_daemon.py restart "+ configuration.get_entry("core.instance_id"))
 
     def getOperationDaemonStatus(self,params):
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         res = os.system("python "+configuration.get_entry("core.webpath")+\
                   "/operation_daemon.py status "+ configuration.get_entry("core.instance_id"))
 
@@ -809,15 +728,12 @@ class Rpc(object):
         return running
 
     def retrieveViews(self, params):
-        view_manager = self._core.get_view_manager()
-        viewlist = view_manager.get_viewlist()
-        return viewlist
+        return View.get_viewlist()
     
     def getView(self, params):
         view_id = int(params[0])
 
-        view_manager = self._core.get_view_manager()
-        view = view_manager.get_from_id(view_id)
+        view = View.get_from_id(view_id)
         ret = {
             'id' : view.get_id(),
             'name' : view.get_name(),
@@ -833,8 +749,7 @@ class Rpc(object):
         view_id = int(params[0])
         mapping = dict(params[1])
 
-        view_manager = self._core.get_view_manager()
-        view = view_manager.get_from_id(view_id)
+        view = View.get_from_id(view_id)
         view.set_space_widget_mapping(mapping)
         view.store(onlySpaceWidgetMapping=True)
         return True
@@ -843,8 +758,7 @@ class Rpc(object):
         view_id = int(params[0])
         mapping = dict(params[1])
 
-        view_manager = self._core.get_view_manager()
-        view = view_manager.get_from_id(view_id)
+        view = View.get_from_id(view_id)
         view.set_box_mapping(mapping)
         view.store(onlyBoxMapping=True)
         return True
@@ -854,8 +768,7 @@ class Rpc(object):
         widget_id = int(params[1])
         mapping = int(params[2])
 
-        view_manager = self._core.get_view_manager()
-        view = view_manager.get_from_id(view_id)
+        view = View.get_from_id(view_id)
         view.set_params_for_widget(widget_id, mapping)
         view.store(onlyWidgetParamMapping=True)
 
@@ -863,71 +776,65 @@ class Rpc(object):
         data = base64.b64decode(params[0])
         filename = str(params[1])
 
-        binary_manager = self._core.get_binary_manager()
         #TODO: Care about mimetype recognition
-        binary = binary_manager.create(data, "benis/unknown", filename)
+        binary = Binary.create(data, "benis/unknown", filename)
         binary.store()
         return binary.get_id()
 
     def loadMedia(self, params):
-        binary_manager = self._core.get_binary_manager()
-        return binary_manager.get_binaries_for_gui()
+        return Binary.get_binaries_for_gui()
 
     def deleteBinaries(self, params):
         binary_ids = params[0]
         
-        binary_manager = self._core.get_binary_manager()
-        binary_manager.delete_binaries(binary_ids)
+        Binary.delete_binaries(binary_ids)
         return None
 
     def changeMaintenanceMode(self, params):
         state = bool(params[0])
 
-        session_user = self._core.get_session_manager().get_current_session_user()
+        session_user = Session.get_current_session_user()
         if not session_user.check_permission('skarphed.manageserverdata'):
             return False
 
         if state:
-            self._core.activate_maintenance_mode()
+            Core().activate_maintenance_mode()
         else:
-            self._core.deactivate_maintenance_mode()
+            Core().deactivate_maintenance_mode()
 
         return True
 
     def retrieveMaintenanceMode(self, params):
-        return self._core.is_maintenance_mode()
+        return Core().is_maintenance_mode()
 
     def changeRendermode(self,params):
         mode = str(params[0])
 
-        session_user = self._core.get_session_manager().get_current_session_user()
+        session_user = Session.get_current_session_user()
         if not session_user.check_permission('skarphed.manageserverdata'):
             return False
 
-        return self._core.set_rendermode(mode)
+        return Core().set_rendermode(mode)
 
     def retrieveRendermode(self,params):
-        return self._core.get_rendermode()
+        return Core().get_rendermode()
 
     def widgetActivateViewGeneration(self, params):
         widget_id = int(params[0])
         view_id = int(params[1])
         space_id = int(params[2])
 
-        module_manager = self._core.get_module_manager()
-        view_manager = self._core.get_view_manager()
-        view = view_manager.get_from_id(view_id)
-        widget = module_manager.get_widget(widget_id)
+        view = View.get_from_id(view_id)
+        widget = ModuleManager.get_widget(widget_id)
         widget.activate_viewgeneration(view, space_id)
         return
 
     def widgetDeactivateViewGeneration(self, params):
         widget_id = int(params[0])
 
-        module_manager = self._core.get_module_manager()
-        widget = module_manager.get_widget(widget_id)
+        widget = ModuleManager.get_widget(widget_id)
         widget.deactivate_viewgeneration()
         return
 
     def poke(self, params):
-        return self._core.get_poke_manager().poke()
+        return PokeManager.poke()

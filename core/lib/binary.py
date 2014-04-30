@@ -29,21 +29,10 @@ import Image as PILImage
 from StringIO import StringIO
 import base64 #TODO: The whole thing should work without base64. find out why it doesnt here
 
+from skarphedcore.configuration import Configuration
+from skarphedcore.session import Session
 
 from common.errors import BinaryException
-
-class BinaryManager(object):
-    def __init__(self,core):
-        self._core = core
-
-        Binary.set_core(core)
-
-        self.create = Binary.create
-        self.get_by_id = Binary.get_by_id
-        self.get_by_md5 = Binary.get_by_md5
-        self.get_by_filename = Binary.get_by_filename
-        self.get_binaries_for_gui = Binary.get_binaries_for_gui
-        self.delete_binaries = Binary.delete_binaries
 
 class Binary(object):
     """
@@ -51,12 +40,8 @@ class Binary(object):
     or linked on websites.
     """
     @classmethod
-    def set_core(cls, core):
-        cls._core = core
-
-    @classmethod
     def create(cls, mime, data, filename=""):
-        bin = Binary(cls._core)
+        bin = Binary()
         
         filename = md5hash(data).hexdigest()[:6]+"_"+filename
 
@@ -69,14 +54,14 @@ class Binary(object):
     @classmethod
     def get_by_filename(cls, filename):
         data_fetched = False
-        configuration = cls._core.get_configuration()
+        configuration = Configuration()
         binary_cache_path = os.path.join(configuration.get_entry("global.binary_cache"),
                                          configuration.get_entry("core.instance_id"))
 
         if not os.path.exists(binary_cache_path):
             os.mkdir(binary_cache_path,True)
 
-        db = cls._core.get_db()
+        db = Database()
         if os.path.exists(os.path.join(binary_cache_path, filename)):
             cachefile = open(os.path.join(binary_cache_path, filename),"rb")
             data = cachefile.read()
@@ -88,12 +73,12 @@ class Binary(object):
             stmnt = "SELECT BIN_ID, BIN_MIME,   \
                      (SELECT BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? AND BIN_MD5 != ? AND BIN_SHA256 != ?) AS BIN_DATA \
                      FROM BINARIES WHERE BIN_FILENAME = ?  ;"
-            cur = db.query(cls._core , stmnt, (filename, md5, sha256, filename))
+            cur = db.query(stmnt, (filename, md5, sha256, filename))
             row = cur.fetchonemap()
             if row is not None:
                 data_fetched = True
                 if row["BIN_DATA"] is None:
-                    bin = Binary(cls._core)
+                    bin = Binary()
                     bin.set_id(row["BIN_ID"])
                     bin.set_filename(filename)
                     bin.set_mime(row["BIN_MIME"])
@@ -103,10 +88,10 @@ class Binary(object):
                 raise BinaryException(BinaryException.get_msg(0, filename))
         if not data_fetched:
             stmnt = "SELECT BIN_ID, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_FILENAME = ? ;"
-            cur = db.query(cls._core , stmnt, (filename,))
+            cur = db.query(stmnt, (filename,))
             row = cur.fetchonemap()
         if row is not None:
-            bin = Binary(cls._core)
+            bin = Binary()
             bin.set_id(row["BIN_ID"])
             bin.set_filename(filename)
             bin.set_mime(row["BIN_MIME"])
@@ -122,12 +107,12 @@ class Binary(object):
 
     @classmethod
     def get_by_id(cls, nr):
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT BIN_FILENAME, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_ID = ? ;"
-        cur = db.query(cls._core , stmnt, (nr,))
+        cur = db.query(stmnt, (nr,))
         row = cur.fetchonemap()
         if row is not None:
-            bin = Binary(cls._core)
+            bin = Binary()
             bin.set_id(nr)
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
@@ -138,12 +123,12 @@ class Binary(object):
 
     @classmethod
     def get_by_md5(cls, md5):
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT BIN_FILENAME, BIN_ID, BIN_MIME, BIN_DATA FROM BINARIES WHERE BIN_MD5 = ? ;"
-        cur = db.query(cls._core , stmnt, (md5,))
+        cur = db.query(stmnt, (md5,))
         row = cur.fetchonemap()
         if row is not None:
-            bin = Binary(cls._core)
+            bin = Binary()
             bin.set_id(row["BIN_ID"])
             bin.set_filename(row["BIN_FILENAME"])
             bin.set_mime(row["BIN_MIME"])
@@ -152,9 +137,7 @@ class Binary(object):
         else:
             raise BinaryException(BinaryException.get_msg(1, md5))
 
-    def __init__(self, core):
-        self._core = core
-
+    def __init__(self):
         self._id = None
         self._filename = None
         self._mime = None
@@ -188,25 +171,25 @@ class Binary(object):
         """
         Stores this binary into the database
         """
-        db = self._core.get_db()
+        db = Database()
         data_io = base64.b64encode(self._data)
         md5 = md5hash(self._data).hexdigest()
         sha256 = sha256hash(self._data).hexdigest()
         if self._id is None:
             self.set_id(db.get_seq_next("BIN_GEN"))
 
-        user_id = self._core.get_session_manager().get_current_session_user().get_id()
+        user_id = Session.get_current_session_user().get_id()
         stmnt = "UPDATE OR INSERT INTO BINARIES (BIN_ID, BIN_FILENAME, BIN_MIME, BIN_USR_OWNER, \
                    BIN_USR_LASTCHANGE, \
                    BIN_DATE_LASTCHANGE, BIN_SHA256, BIN_MD5, BIN_DATA) \
                  VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ? ) MATCHING (BIN_ID) ;"
-        db.query(self._core,stmnt, (self._id, self._filename, self._mime, user_id, user_id, sha256, md5, data_io),commit=True)
+        db.query(stmnt, (self._id, self._filename, self._mime, user_id, user_id, sha256, md5, data_io),commit=True)
 
     def delete(self):
-        db = self._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM BINARIES WHERE BIN_ID = ? ;"
-        db.query(self._core, stmnt, (self.get_id(),), commit=True)
-        configuration = self._core.get_configuration()
+        db.query(stmnt, (self.get_id(),), commit=True)
+        configuration = Configuration()
         binary_cache_path = os.path.join(configuration.get_entry("global.binary_cache"),
                                          configuration.get_entry("core.instance_id"))
         os.unlink(os.path.join(binary_cache_path, self.get_filename()))
@@ -214,10 +197,10 @@ class Binary(object):
     @classmethod    
     def get_binaries_for_gui(cls):
         #TODO: Check permission
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "SELECT BIN_ID, BIN_FILENAME, BIN_MIME, OCTET_LENGTH(BIN_DATA) AS BIN_SIZE \
                  FROM BINARIES ;"
-        cur = db.query(cls._core, stmnt, ())
+        cur = db.query(stmnt, ())
         ret = []
         for dataset in cur.fetchallmap():
             ret.append({'filename': dataset['BIN_FILENAME'],
@@ -228,10 +211,10 @@ class Binary(object):
 
     @classmethod
     def delete_binaries(cls, binaryIds):
-        db = cls._core.get_db()
+        db = Database()
         stmnt = "DELETE FROM BINARIES WHERE BIN_ID = ? ;"
         for binaryId in binaryIds:
-            db.query(cls._core, stmnt, (binaryId,), commit=True)
+            db.query(stmnt, (binaryId,), commit=True)
         
 
 class Image(Binary,PILImage):

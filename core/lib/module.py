@@ -1,12 +1,3 @@
-#!/usr/bin/python
-#-*- coding: utf-8 -*-
-
-###########################################################
-# © 2011 Daniel 'grindhold' Brendle and Team
-#
-# This file is part of Skarphed.
-#
-# Skarphed is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU Affero General Public License 
 # as published by the Free Software Foundation, either 
 # version 3 of the License, or (at your option) any later 
@@ -31,10 +22,14 @@ import tarfile
 import shutil
 import math
 
-from operation import ModuleInstallOperation, ModuleUninstallOperation, ModuleUpdateOperation, ModuleOperation
-from database import DatabaseException
-from permissions import PermissionException
-from view import ViewException
+from skarphedcore.operation import ModuleInstallOperation, ModuleUninstallOperation, ModuleUpdateOperation, ModuleOperation
+from skarphedcore.configuration import Configuration
+from skarphedcore.database import Database, DatabaseException
+from skarpehdcore.core import Core
+from skarphedcore.permissions import Permission, PermissionException
+from skarphedcore.view import View, ViewException
+from skarphedcore.action import Action
+from skarphedcore.css import CSSManager
 
 from helper import sluggify
 
@@ -42,9 +37,7 @@ from common.enums import ActivityType, JSMandatory
 from common.errors import ModuleCoreException, ConfigurationException
 
 class AbstractModule(object):
-    def __init__(self,core):
-        self._core=core
-
+    def __init__(self):
         self._id = None
         self._name = None
         self._hrname = None
@@ -130,7 +123,7 @@ class AbstractModule(object):
         """
         if name=="":
             raise ModuleCoreException(ModuleCoreException.get_msg(10))
-        w = Widget(self._core, self)
+        w = Widget(self)
         w.set_name(name)
         w.store()
 
@@ -138,13 +131,13 @@ class AbstractModule(object):
         """
         returns an instance of thre requested module with a set instanceId
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT WGT_ID, WGT_NAME, WGT_VIE_BASEVIEW, WGT_SPA_BASESPACE FROM WIDGETS WHERE WGT_MOD_ID = ? AND WGT_ID = ? ;"
-        cur = db.query(self._core, stmnt, (self._id,widget_id))
+        cur = db.query(stmnt, (self._id,widget_id))
 
         row = cur.fetchonemap()
         if row is not None:
-            widget = Widget(self._core, self, row["WGT_ID"])
+            widget = Widget(self, row["WGT_ID"])
             widget.set_name(row["WGT_NAME"])
             widget.set_baseview_id(row["WGT_VIE_BASEVIEW"])
             widget.set_baseview_space_id(row["WGT_SPA_BASESPACE"])
@@ -156,13 +149,13 @@ class AbstractModule(object):
         """
         returns an instance of thre requested module with a set instanceId
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT WGT_ID, WGT_NAME, WGT_VIE_BASEVIEW, WGT_SPA_BASESPACE FROM WIDGETS WHERE WGT_MOD_ID = ? ;"
-        cur = db.query(self._core, stmnt, (self._id,))
+        cur = db.query(stmnt, (self._id,))
 
         widgets = []
         for row in cur.fetchallmap():
-            widget = Widget(self._core, self, row["WGT_ID"])
+            widget = Widget(self, row["WGT_ID"])
             widget.set_name(row["WGT_NAME"])
             widget.set_baseview_id(row["WGT_VIE_BASEVIEW"])
             widget.set_baseview_space_id(row["WGT_SPA_BASESPACE"])
@@ -170,7 +163,7 @@ class AbstractModule(object):
         return widgets
 
     def get_guidata(self):
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         modpath = configuration.get_entry("global.modpath")
 
         modulepath = modpath+"/"+self._name+"/v"+\
@@ -194,10 +187,9 @@ class AbstractModule(object):
         If there is a widget id given, it changes the same
         configuration value of this widget.
         """
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         if widget_id is not None:
-            module_manager = self._core.get_module_manager()
-            widget = module_manager.get_widget(widget_id)
+            widget = Module.get_widget(widget_id)
             configuration.set_entry(entry,value,widget=widget)
         else:    
             configuration.set_entry(entry,value,module=self)
@@ -208,10 +200,9 @@ class AbstractModule(object):
         If there is a widget id given, it returns the
         configuration value of this widget. (MUST EXIST)
         """
-        configuration = self._core.get_configuration()
+        configuration = Configuration()
         if widget_id is not None:
-            module_manager = self._core.get_module_manager()
-            widget = module_manager.get_widget(widget_id)
+            widget = Module.get_widget(widget_id)
             return configuration.get_entry(entry,widget=widget)
         else:    
             return configuration.get_entry(entry,module=self)
@@ -220,13 +211,11 @@ class AbstractModule(object):
         """
         Acutally generates a named view according to the configuration of the widget
         """
-        module_manager = self._core.get_module_manager()
-        widget = module_manager.get_widget(widget_id)
+        widget = Module.get_widget(widget_id)
         widget.generate_view(viewname, commands)
 
 class Widget(object):
-    def __init__(self, core, module, nr=None):
-        self._core= core
+    def __init__(self, module, nr=None):
         self._id = nr
         self._module= module
         self._name = None
@@ -283,7 +272,7 @@ class Widget(object):
         return self._module.render_javascript(self._id,args)
 
     def store(self):
-        db = self._core.get_db()
+        db = Database()
 
         if self._id is None:
             self._id = db.get_seq_next('WGT_GEN')
@@ -293,34 +282,31 @@ class Widget(object):
 
         stmnt = "UPDATE OR INSERT INTO WIDGETS (WGT_ID, WGT_NAME, WGT_SIT_ID, WGT_MOD_ID, WGT_VIE_BASEVIEW, WGT_SPA_BASESPACE) \
                     VALUES (?,?,?,?,?,?) MATCHING (WGT_ID) ;"
-        db.query(self._core,stmnt,(self._id,self._name, self._site_id,self._module.get_id(), self._baseview_id, self._baseview_space_id ),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.WIDGET)
+        db.query(stmnt,(self._id,self._name, self._site_id,self._module.get_id(), self._baseview_id, self._baseview_space_id ),commit=True)
+        PokeManager.add_activity(ActivityType.WIDGET)
 
     def get_module(self):
         """
         Returns the module of this widget
         """
-        module_manager = self._core.get_module_manager()
-        return module_manager.get_module_from_widget_id(self.get_id())
+        return Module.get_module_from_widget_id(self.get_id())
 
     def delete(self):
-        db = self._core.get_db()
+        db = Database()
 
         if self._id is None:
             raise ModuleCoreException(ModuleCoreException.get_msg(2))
 
-        action_manager = self._core.get_action_manager()
-        action_manager.delete_actions_with_widget(self)
+        Action.delete_actions_with_widget(self)
 
-        view_manager = self._core.get_view_manager()
-        view_manager.delete_mappings_with_widget(self)
+        View.delete_mappings_with_widget(self)
 
-        css_manager = self._core.get_css_manager()
+        css_manager = CSSManager()
         css_manager.delete_definitions_with_widget(self)
 
         stmnt = "DELETE FROM WIDGETS WHERE WGT_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,),commit=True)
-        self._core.get_poke_manager().add_activity(ActivityType.WIDGET)
+        db.query(stmnt,(self._id,),commit=True)
+        PokeManager.add_activity(ActivityType.WIDGET)
 
     def activate_viewgeneration(self, baseview, space_id):
         """
@@ -356,8 +342,7 @@ class Widget(object):
         except ConfigurationException:
             setting = "False"
         if setting == "True":
-            viewmanager = self._core.get_view_manager()
-            newview = viewmanager.get_from_id(self.get_baseview_id()).derive()
+            newview = View.get_from_id(self.get_baseview_id()).derive()
             viewname = sluggify(viewname)
             extcount = 0
             while True:
@@ -397,81 +382,84 @@ class Widget(object):
 
 
 class ModuleManager(object):
-    def __init__(self,core):
-        self._core = core
-
-    def get_module(self,module_id):
+    @staticmethod
+    def get_module(module_id):
         """
         returns an instance of the requested module
         """
         module_id = int(module_id)
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT MOD_NAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV FROM MODULES WHERE MOD_ID = ? ;"
-        cur = db.query(self._core,stmnt,(module_id,))
+        cur = db.query(stmnt,(module_id,))
         row = cur.fetchonemap()
         if row is not None:
             exec "from skarphedcore.modules.%s.v%d_%d_%d import Module as ModuleImplementation"%(row["MOD_NAME"], row["MOD_VERSIONMAJOR"], row["MOD_VERSIONMINOR"], row["MOD_VERSIONREV"])
-            module = ModuleImplementation(self._core) 
+            module = ModuleImplementation() 
             module.set_id(module_id)
             return module
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(6))
 
-    def get_module_by_name(self,name):
-        nr = self._get_module_id_from_name(name)
-        return self.get_module(nr)
+    @classmethod
+    def get_module_by_name(cls,name):
+        nr = cls._get_module_id_from_name(name)
+        return cls.get_module(nr)
     
-    def get_widget(self,widget_id):
+    @classmethod
+    def get_widget(cls,widget_id):
         """
         returns an instance of thre requested module with a set instanceId
         """
-        module = self._get_module_from_widget_id(widget_id)
+        module = cls._get_module_from_widget_id(widget_id)
         widget = module.get_widget(widget_id)
         return widget
 
-    def _get_module_id_from_name(self,module_name):
+    @staticmethod
+    def _get_module_id_from_name(module_name):
         """
         returns the module id of the given module_name
         """
         module_name = str(module_name)
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT MOD_ID FROM MODULES WHERE MOD_NAME = ? ;"
-        cur = db.query(self._core,stmnt,(module_name,))
+        cur = db.query(stmnt,(module_name,))
         row = cur.fetchonemap()
         if row is not None:
             return int(row["MOD_ID"])
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(6))
     
-    def get_module_from_widget_id(self,widget_id):
-        return self._get_module_from_widget_id(widget_id)
+    @classmethod
+    def get_module_from_widget_id(cls,widget_id):
+        return cls._get_module_from_widget_id(widget_id)
 
-    def _get_module_from_widget_id(self,widget_id):
+    @classmethod
+    def _get_module_from_widget_id(cls, widget_id):
         """
         returns the module that belongs to a widget with the given id
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT WGT_MOD_ID FROM WIDGETS WHERE WGT_ID = ? ;"
-        cur = db.query(self._core,stmnt,(widget_id,))
+        cur = db.query(stmnt,(widget_id,))
         row = cur.fetchonemap()
         if row is not None:
-            return self.get_module(row["WGT_MOD_ID"])
+            return cls.get_module(row["WGT_MOD_ID"])
         else:
             raise ModuleCoreException(ModuleCoreException.get_msg(7))
 
-    def check_integrity(self):
+    @classmethod
+    def check_integrity(cls):
         """
         Verifies, that all modules that are entered in the database
         for this instance, are in fact installed on the server that
         this instance runs on
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "SELECT MOD_NAME, MOD_DISPLAYNAME,MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV FROM MODULES ;"
-        cur = db.query(self._core,stmnt)
+        cur = db.query(stmnt)
         rows = cur.fetchallmap()
         for row in rows:
-            configuration = self._core.get_configuration()
-            modpath = configuration.get_entry("global.modpath")
+            modpath = Configuration().get_entry("global.modpath")
 
             modulepath = modpath+"/"+row["MOD_NAME"]+"/v"+\
                                   str(row["MOD_VERSIONMAJOR"])+"_"+ \
@@ -483,14 +471,14 @@ class ModuleManager(object):
                                "version_major":row["MOD_VERSIONMAJOR"],
                                "version_minor":row["MOD_VERSIONMINOR"],
                                "revision":row["MOD_VERSIONREV"]}
-                self.install_module(module_meta)
+                cls.install_module(module_meta)
 
-    def install_module(self,module_meta):
+    @classmethod
+    def install_module(cls, module_meta):
         """
         prepares the module installation by invoking the download
         """
-        configuration = self._core.get_configuration()
-        modpath = configuration.get_entry("global.modpath")
+        modpath = Configuration().get_entry("global.modpath")
 
         modulepath = modpath+"/"+module_meta["name"]+"/v"+\
                               str(module_meta["version_major"])+"_"+ \
@@ -505,10 +493,11 @@ class ModuleManager(object):
             open(modpath+"/"+module_meta["name"]+"/__init__.py","w").close()
             os.mkdir(modulepath)
 
-        repo = self.get_repository()
-        return self.install_module_write_changes(repo.download_module(module_meta), modulepath)
+        repo = cls.get_repository()
+        return cls.install_module_write_changes(repo.download_module(module_meta), modulepath)
 
-    def install_module_write_changes(self, datapath, modulepath):
+    @classmethod
+    def install_module_write_changes(cls, datapath, modulepath):
         """
         actually write changes to local installation
         """
@@ -522,23 +511,22 @@ class ModuleManager(object):
 
         # REGISTER THE MODULE IN DB
         try:
-            nr = self._register_module(manifest)
+            nr = cls._register_module(manifest)
         except DatabaseException, e: #revert stuff on error
-            self._core.log(e)
+            Core().log(e)
             shutil.rmtree(modulepath)
             os.remove(datapath)
             raise e
 
-        module = self.get_module(nr)
+        module = cls.get_module(nr)
 
-        permissionmanager = self._core.get_permission_manager()
-        db = self._core.get_db()
+        db = Database()
 
         # CREATE PERMISSIONS FOR MOUDLE
         try:
-            permissionmanager.create_permissions_for_module(module)
+            Permission.create_permissions_for_module(module)
         except PermissionException, e: #revert on error
-            self._unregister_module(module)
+            cls._unregister_module(module)
             shutil.rmtree(modulepath)
             os.remove(datapath)
             raise e
@@ -547,17 +535,17 @@ class ModuleManager(object):
         try:
             db.create_tables_for_module(module)
         except DatabaseException, e:
-            self._unregister_module(module)
+            cls._unregister_module(module)
             shutil.rmtree(modulepath)
-            permissionmanager.remove_permissions_for_module(module)
+            Permission.remove_permissions_for_module(module)
             os.remove(datapath)
             raise e
         
         os.remove(datapath)
-        self._core.get_poke_manager().add_activity(ActivityType.MODULE)
+        PokeManager.add_activity(ActivityType.MODULE)
 
-
-    def update_module(self,module):
+    @classmethod
+    def update_module(cls,module):
         """
         updates the given module
         """
@@ -569,13 +557,12 @@ class ModuleManager(object):
         # - permissions aendern
         # - datenbank-versionseintraege updaten
         if module.__class__.__name__ != "Module":
-            nr = self._get_module_id_from_name(module_meta["name"])
-            module = self.get_module(nr)
+            nr = cls._get_module_id_from_name(module_meta["name"])
+            module = cls.get_module(nr)
 
-        configuration = self._core.get_configuration()
-        modpath = configuration.get_entry('global.modpath')
+        modpath = Configuration().get_entry('global.modpath')
 
-        repo = self.get_repository()
+        repo = cls.get_repository()
         latest_version = repo.get_latest_version(module)
 
         latest_path = modpath+"/"+latest_version["name"]+"/v"+\
@@ -583,83 +570,78 @@ class ModuleManager(object):
                               str(latest_version["version_minor"])+"_"+ \
                               str(latest_version["revision"])
 
-        if self.compare_versions(latest_version, module) == 1:
+        if cls.compare_versions(latest_version, module) == 1:
             if not os.path.exists(latest_path):
                 datapath = repo.download_module(latest_version)
                 os.mkdir(latest_path)
                 tar = tarfile.open(datapath, "r:gz")
                 tar.extractall(latest_path)
-            nr = self._get_module_id_from_name(latest_version["name"])
+            nr = cls._get_module_id_from_name(latest_version["name"])
 
-            db = self._core.get_db()
+            db = Database()
             stmnt = "UPDATE MODULES SET MOD_VERSIONMAJOR = ?, \
                                         MOD_VERSIONMINOR = ?, \
                                         MOD_VERSIONREV = ? \
                         WHERE MOD_ID = ? ;"
-            db.query(self._core,stmnt,(latest_version["version_major"],
+            db.query(stmnt,(latest_version["version_major"],
                                        latest_version["version_minor"],
                                        latest_version["revision"], 
                                        nr),commit=True)
-            updated_module = self.get_module(nr)
+            updated_module = cls.get_module(nr)
             db.update_tables_for_module(updated_module)
-            permissionmanager = self._core.get_permission_manager()
-            permissionmanager.update_permissions_for_module(updated_module)
+            Permission.update_permissions_for_module(updated_module)
 
-        self._core.get_poke_manager().add_activity(ActivityType.MODULE)
+        PokeManager.add_activity(ActivityType.MODULE)
 
-
-    def uninstall_module(self,module, hard=False):
+    @classmethod
+    def uninstall_module(cls,module, hard=False):
         """
         uninstall a module
         the flag "hard" actually deletes the files of this module in modpath
         module can be module or module meta
         """
         if module.__class__.__name__ != "Module":
-            nr = self._get_module_id_from_name(module_meta["name"])
-            module = self.get_module(nr)
+            nr = cls._get_module_id_from_name(module_meta["name"])
+            module = cls.get_module(nr)
 
-        action_manager = self._core.get_action_manager()
-        action_manager.delete_actions_with_module(module)
+        Action.delete_actions_with_module(module)
+        View.delete_mappings_with_module(module)
+        CSSManager().delete_definitions_with_module(module)
 
-        view_manager = self._core.get_view_manager()
-        view_manager.delete_mappings_with_module(module)
-
-        css_manager = self._core.get_css_manager()
-        css_manager.delete_definitions_with_module(module)
-
-        db = self._core.get_db()
-        permissionmanager = self._core.get_permission_manager()
+        db = Database()
         db.remove_tables_for_module(module)
-        permissionmanager.remove_permissions_for_module(module)
+        Permission.remove_permissions_for_module(module)
 
         if hard:
-            configuration = self._core.get_configuration()
-            modpath = configuration.get_entry('global.modpath')
+            modpath = Configuration().get_entry('global.modpath')
             version = module.get_version()
             shutil.rmtree(modpath+"/"+module.get_name()+"/v"+version[0]+"_"+version[1]+"_"+version[2])
 
-        self._unregister_module(module)
-        self._core.get_poke_manager().add_activity(ActivityType.MODULE)
+        cls._unregister_module(module)
+        PokeManager.add_activity(ActivityType.MODULE)
 
-    def _register_module(self,manifest):
+    @staticmethod
+    def _register_module(manifest):
         """
         registers a module into the database
         """
-        db = self._core.get_db()
+        db = Database()
         nr = db.get_seq_next("MOD_GEN")
         stmnt = "INSERT INTO MODULES (MOD_ID, MOD_NAME, MOD_DISPLAYNAME, MOD_VERSIONMAJOR, MOD_VERSIONMINOR, MOD_VERSIONREV, MOD_JSMANDATORY) \
                       VALUES (?,?,?,?,?,?,?) ;"
-        db.query(self._core,stmnt,(nr,manifest["name"],manifest["hrname"],
+        db.query(stmnt,(nr,manifest["name"],manifest["hrname"],
                                    manifest["version_major"],manifest["version_minor"],
                                    manifest["revision"],manifest["js_mandatory"]),commit=True)
         return nr
 
-    def _unregister_module(self,module):
-        db = self._core.get_db()
+    @staticmethod
+    def _unregister_module(module):
+        db = Database()
         stmnt = "DELETE FROM MODULES WHERE MOD_NAME = ? ;" 
-        db.query(self._core,stmnt,(module.get_name(),),commit=True)
+        db.query(stmnt,(module.get_name(),),commit=True)
 
-    def get_meta_from_module(self,module):
+    @staticmethod
+    def get_meta_from_module(module):
         d = {
             "name":module.get_name(),
             "hrname":module.get_hrname(),
@@ -670,25 +652,28 @@ class ModuleManager(object):
         }
         return d
 
-    def get_repository(self):
+    @staticmethod
+    def get_repository():
         """
         returns this instance's repository
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "select rep_id, rep_name, rep_ip, rep_port, rep_lastupdate from repositories where rep_id = 1;"
-        cur = db.query(self._core,stmnt)
+        cur = db.query(stmnt)
         row = cur.fetchonemap()
-        return Repository(self._core,row["REP_ID"],row["REP_NAME"],row["REP_IP"],row["REP_PORT"],row["REP_LASTUPDATE"])
+        return Repository(row["REP_ID"],row["REP_NAME"],row["REP_IP"],row["REP_PORT"],row["REP_LASTUPDATE"])
 
-    def set_repository(self, ip, port, name):
+    @staticmethod
+    def set_repository(ip, port, name):
         """
         changes this instance's repository
         """
-        repository = Repository(self._core, None, name, ip, port, None)
+        repository = Repository(None, name, ip, port, None)
         repository.store()
         return repository
 
-    def compare_versions(self,module1,module2):
+    @classmethod
+    def compare_versions(cls, module1, module2):
         """
         compares the versions of module1 and module2
         if module 1 is newer, returns 1
@@ -696,11 +681,10 @@ class ModuleManager(object):
         if equal, returns 0
         """
 
-        module_manager = self._core.get_module_manager()
         if type(module1) != dict:
-            module1 = module_manager.get_meta_from_module(module1)
+            module1 = cls.get_meta_from_module(module1)
         if type(module2) != dict:
-            module2 = module_manager.get_meta_from_module(module2)
+            module2 = cls.get_meta_from_module(module2)
         if module1["version_major"] > module2["version_major"]:
             return 1
         elif module1["version_major"] == module2["version_major"]:
@@ -718,71 +702,72 @@ class ModuleManager(object):
         else:
             return -1
 
-    def invoke_install(self, module_meta):
+    @staticmethod
+    def invoke_install(module_meta):
         """
         registers an operation, that installs a module
         """
-        operationmanager = self._core.get_operation_manager() # Call is needed to initialize OPM with Core
-        op = ModuleInstallOperation(self._core)
+        op = ModuleInstallOperation()
         op.set_values(module_meta)
         op.store()
 
-    def invoke_update(self, module_meta):
+    @staticmethod
+    def invoke_update(module_meta):
         """
         registers an operation, that updates a module
         """
-        oprationmanager = self._core.get_operation_manager() # Call is needed to initialize OPM with Core
-        op = ModuleUpdateOperation(self._core)
+        op = ModuleUpdateOperation()
         op.set_values(module_meta)
         op.store()
 
-    def invoke_uninstall(self, module_meta):
+    @staticmethod
+    def invoke_uninstall(module_meta):
         """
         registers an operation, that uninstalls a module
         """
-        operationmanager = self._core.get_operation_manager() # Call is needed to initialize OPM with Core
-        op = ModuleUninstallOperation(self._core)
+        op = ModuleUninstallOperation()
         op.set_values(module_meta)
         op.store()
 
-    def update_modules(self):
+    @classmethod
+    def update_modules(cls):
         """
         update all modules of this instance
         """
-        modules = self.get_modules()
+        modules = cls.get_modules()
         for module in modules:
-            self.invoke_update(self.get_meta_from_module(module))
+            cls.invoke_update(cls.get_meta_from_module(module))
 
-    def get_modules(self):
-        db = self._core.get_db()
+    @classmethod
+    def get_modules(cls):
+        db = Database()
         stmnt = "SELECT MOD_ID FROM MODULES ;"
-        cur = db.query(self._core,stmnt)
+        cur = db.query(stmnt)
         ids = cur.fetchallmap()
-        return [self.get_module(i["MOD_ID"]) for i in ids]
+        return [cls.get_module(i["MOD_ID"]) for i in ids]
 
-    def get_module_info(self, only_installed=False):
+    @classmethod
+    def get_module_info(cls, only_installed=False):
         """
         get metalist of all installed modules with additional information
          - is there a possible update
         """
         meta_records = []
-        for module in self.get_modules():
-            meta_record = self.get_meta_from_module(module)
+        for module in cls.get_modules():
+            meta_record = cls.get_meta_from_module(module)
             meta_record.update({'installed':True,'serverModuleId':module.get_id()})
             meta_records.append(meta_record)
-
-        operation_manager = self._core.get_operation_manager() # To initialize cls._core of operations
 
         repository_joblocks = ModuleOperation.get_currently_processed_modules()
 
         if not only_installed:
-            repo = self.get_repository()
+            repo = cls.get_repository()
             repomodules = repo.get_all_modules()
             for repomodule in repomodules:
                 module_on_system = False
                 for meta_record in meta_records:
                     if repomodule["name"] == meta_record["name"]:
-                        if self.compare_versions(repomodule, meta_record) == 1:
+                        if cls.compare_versions(repomodule, meta_record) == 1:
                             meta_record["toUpdate"] = True
                         for repository_joblock in repository_joblocks:
                             if repository_joblock["name"] == meta_record["name"]:
@@ -798,9 +783,7 @@ class ModuleManager(object):
         return meta_records
 
 class Repository(object):
-    def __init__(self, core, nr=None, name=None, ip=None, port=80, lastupdate=None):
-        self._core = core
-
+    def __init__(self, nr=None, name=None, ip=None, port=80, lastupdate=None):
         self._id = nr
         self._name = name
         self._ip = ip
@@ -883,29 +866,25 @@ class Repository(object):
 
     def get_all_versions(self, module):
         if type(module) != dict:
-            modulemanager = self._core.get_module_manager()
-            module = modulemanager.get_meta_from_module(module)
+            module = ModuleManager.get_meta_from_module(module)
         result = self._http_call({'c':2,'m':module})
         return result["r"]
 
     def get_latest_version(self, module):
         if type(module) != dict:
-            modulemanager = self._core.get_module_manager()
-            module = modulemanager.get_meta_from_module(module)
+            module = ModuleManager.get_meta_from_module(module)
         result = self._http_call({'c':7,'m':module})
         return result["r"]
 
     def get_dependencies(self, module):
         if type(module) != dict:
-            modulemanager = self._core.get_module_manager()
-            module = modulemanager.get_meta_from_module(module)
+            module = ModuleManager.get_meta_from_module(module)
         result = self._http_call({'c':3,'m':module})
         return result["r"]
 
     def get_descending_dependencies(self, module):
         if type(module) != dict:
-            modulemanager = self._core.get_module_manager()
-            module = modulemanager.get_meta_from_module(module)
+            module = ModuleManager.get_meta_from_module(module)
         result = self._http_call({'c':4,'m':module})
         return result["r"]
 
@@ -927,8 +906,7 @@ class Repository(object):
         returns the data directly!
         """
         if type(module) != dict:
-            modulemanager = self._core.get_module_manager()
-            module = modulemanager.get_meta_from_module(module)
+            module = ModuleManager.get_meta_from_module(module)
         result = self._http_call({'c':5,'m':module},timeout=1800)
         if result is None:
             raise ModuleCoreException(ModuleCoreException.get_msg(2))
@@ -964,10 +942,10 @@ class Repository(object):
         """
         currently only one repository can be owned by one skarphed instance
         """
-        db = self._core.get_db()
+        db = Database()
         stmnt = "UPDATE OR INSERT INTO REPOSITORIES (REP_ID, REP_NAME, REP_IP, REP_PORT, REP_LASTUPDATE, REP_PUBLICKEY) VALUES (1,?,?,?,?,?) MATCHING (REP_ID) ;"
-        db.query(self._core,stmnt,(self._name, self._ip, self._port, self._lastupdate, self.get_public_key()),commit=True)
-        self._core.get_poke_manager.add_activity(ActivityType.REPOSITORY)
+        db.query(stmnt,(self._name, self._ip, self._port, self._lastupdate, self.get_public_key()),commit=True)
+        PokeManager.add_activity(ActivityType.REPOSITORY)
 
 
     def delete(self):
@@ -976,8 +954,8 @@ class Repository(object):
         """
         if self._id is None:
             raise ModuleCoreException(ModuleCoreException.get_msg(4))
-        db = self._core.get_db()
+        db = Database()
 
         stmnt = "DELETE FROM REPOSITORIES WHERE REP_ID = ? ;"
-        db.query(self._core,stmnt,(self._id,),commit=True)
-        self._core.get_poke_manager.add_activity(ActivityType.REPOSITORY)
+        db.query(stmnt,(self._id,),commit=True)
+        PokeManager.add_activity(ActivityType.REPOSITORY)
